@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CharacterTraitViewController: UITableViewController, UITableViewDataSource  {
+class CharacterTraitViewController: UITableViewController {
 	
 	/* From wikipedia
 	Wärme (z. B. Wohlfühlen in Gesellschaft)
@@ -35,7 +35,7 @@ class CharacterTraitViewController: UITableViewController, UITableViewDataSource
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		
-		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.characterTraitCellId) as! UITableViewCell
+		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.characterTraitCellId)!
 		cell.textLabel!.text = characterTraits[indexPath.row]
 		cell.detailTextLabel!.text = "No comment"
 		/*

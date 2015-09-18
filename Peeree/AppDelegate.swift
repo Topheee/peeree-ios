@@ -10,11 +10,10 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-	var window: UIWindow?
 	
 	static internal let kPrefFirstLaunch = "peeree-prefs-first-launch"
 
+	var window: UIWindow?
 
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 		// Override point for customization after application launch.
@@ -25,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 			
 			let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
 			
-			self.window!.rootViewController = (storyboard.instantiateInitialViewController() as! UIViewController)
+			self.window!.rootViewController = (storyboard.instantiateInitialViewController()!)
 			self.window!.makeKeyAndVisible()
 		}
 		

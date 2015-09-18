@@ -17,11 +17,11 @@ class CharacterTrait: NSCoding {
 	
 	private static let appliesKey = "appliesKey"
 	
-	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeInteger(applies.rawValue, forKey: CharacterTrait.appliesKey)
+	@objc required init?(coder aDecoder: NSCoder) {
+		applies = ApplyType(rawValue: aDecoder.decodeIntegerForKey(CharacterTrait.appliesKey))!
 	}
 	
-	@objc required init(coder aDecoder: NSCoder) {
-		applies = ApplyType(rawValue: aDecoder.decodeIntegerForKey(CharacterTrait.appliesKey))!
+	@objc func encodeWithCoder(aCoder: NSCoder) {
+		aCoder.encodeInteger(applies.rawValue, forKey: CharacterTrait.appliesKey)
 	}
 }

@@ -20,9 +20,9 @@ class PeerDescription: NSCoding {
 		//TODO
 	}
 	
-	@objc required init(coder aDecoder: NSCoder) {
+	@objc required init?(coder aDecoder: NSCoder) {
 		//TODO
-		displayName = DisplayName(coder: aDecoder)
+		displayName = DisplayName(coder: aDecoder)!
 		characterTraits = []
 	}
 }

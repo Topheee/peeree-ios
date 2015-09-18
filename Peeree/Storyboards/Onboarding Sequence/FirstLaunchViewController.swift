@@ -102,7 +102,7 @@ class FirstLaunchViewController: UIPageViewController, UIPageViewControllerDeleg
 		var ret: UIViewController?
 		switch (viewController.title!) {
 		case "Second":
-			ret = self.storyboard!.instantiateViewControllerWithIdentifier("FirstViewController") as? UIViewController
+			ret = self.storyboard!.instantiateViewControllerWithIdentifier("FirstViewController")
 		default:
 			ret = nil
 		}
@@ -114,7 +114,7 @@ class FirstLaunchViewController: UIPageViewController, UIPageViewControllerDeleg
 		var ret: UIViewController?
 		switch (viewController.title!) {
 		case "First":
-			ret = self.storyboard!.instantiateViewControllerWithIdentifier("SecondViewController") as? UIViewController
+			ret = self.storyboard!.instantiateViewControllerWithIdentifier("SecondViewController")
 		default:
 			ret = nil
 		}

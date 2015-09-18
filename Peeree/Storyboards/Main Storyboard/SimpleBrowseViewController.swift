@@ -50,32 +50,28 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 		// Dispose of any resources that can be recreated.
 	}
 
-	func advertiserAssistantDidDismissInvitation(advertiserAssistant: MCAdvertiserAssistant!) {
-		if let assistant = advertiserAssistant {
-			NSLog("advertiserAssistantDidDismissInvitation", assistant)
-		}
+	func advertiserAssistantDidDismissInvitation(advertiserAssistant: MCAdvertiserAssistant) {
+		NSLog("advertiserAssistantDidDismissInvitation", advertiserAssistant)
 	}
 	
-	func advertiserAssistantWillPresentInvitation(advertiserAssistant: MCAdvertiserAssistant!) {
-		if let ad = advertiserAssistant {
-			
-		}
+	func advertiserAssistantWillPresentInvitation(advertiserAssistant: MCAdvertiserAssistant) {
+		
 	}
 	
 	func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
 		
-		if (range.length + range.location > count(textField.text) )
+		if (range.length + range.location > textField.text!.characters.count )
 		{
 			return false;
 		}
 		
-		let newLength = count(textField.text) + count(string) - range.length
+		let newLength = textField.text!.characters.count + string.characters.count - range.length
 		return newLength <= SimpleBrowseViewController.maxPeerNameCharacters
 	}
 	
 	@IBAction func peerNameChanged(sender: UITextField) {
-		if count(sender.text) <= SimpleBrowseViewController.maxPeerNameCharacters {
-			LocalPeerManager.setLocalPeerName(sender.text)
+		if sender.text!.characters.count <= SimpleBrowseViewController.maxPeerNameCharacters {
+			LocalPeerManager.setLocalPeerName(sender.text!)
 		}
 	}
 	
@@ -93,7 +89,7 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 		} else if !sender.on {
 			var localPeer = LocalPeerManager.getLocalPeer()
 			if localPeerName != nil && localPeerName.text != "" {
-				LocalPeerManager.setLocalPeerName(localPeerName.text)
+				LocalPeerManager.setLocalPeerName(localPeerName.text!)
 				localPeer = LocalPeerManager.getLocalPeer()
 			}
 			if let peerID = localPeer {
@@ -115,34 +111,34 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 		}
 	}
 	
-	func browserViewController(browserViewController: MCBrowserViewController!, shouldPresentNearbyPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) -> Bool {
-		NSLog("FirstViewController.browserViewController: shouldPresentNearbyPeer:%@ withDiscoveryInfo:%@ ", peerID.displayName, info)
+	func browserViewController(browserViewController: MCBrowserViewController, shouldPresentNearbyPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) -> Bool {
+		NSLog("FirstViewController.browserViewController: shouldPresentNearbyPeer:%@ withDiscoveryInfo:%@ ", peerID.displayName, info!)
 		return true
 	}
 	
-	func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
+	func browserViewControllerDidFinish(browserViewController: MCBrowserViewController) {
 		NSLog("%s\n", __FUNCTION__)
 		dismissViewControllerAnimated(true, completion: nil)
 	}
 	
-	func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
+	func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController) {
 		NSLog("%s\n", __FUNCTION__)
 		dismissViewControllerAnimated(true, completion: nil)
 	}
 	
-	func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
+	func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
 		NSLog("%s\n", __FUNCTION__)
 	}
 	
-	func session(session: MCSession!, didStartReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, withProgress progress: NSProgress!) {
+	func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {
 		//non of our business
 	}
 	
-	func session(session: MCSession!, didReceiveStream stream: NSInputStream!, withName streamName: String!, fromPeer peerID: MCPeerID!) {
+	func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
 		//non of our business
 	}
 	
-	func session(session: MCSession!, didReceiveData data: NSData!, fromPeer peerID: MCPeerID!) {
+	func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
 		//non of our business
 		//dispatch_async(dispatch_get_main_queue(), <#block: dispatch_block_t##() -> Void#>)
 		dispatch_async(dispatch_get_main_queue()) {
@@ -150,7 +146,7 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 		}
 	}
 	
-	func session(session: MCSession!, didFinishReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, atURL localURL: NSURL!, withError error: NSError!) {
+	func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
 		//non of our business
 	}
 	
@@ -158,7 +154,7 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 		if browserSession == nil {
 			var localPeer = LocalPeerManager.getLocalPeer()
 			if localPeerName != nil && localPeerName.text != "" {
-				LocalPeerManager.setLocalPeerName(localPeerName.text)
+				LocalPeerManager.setLocalPeerName(localPeerName.text!)
 				localPeer = LocalPeerManager.getLocalPeer()
 			}
 			if let peerID = localPeer {

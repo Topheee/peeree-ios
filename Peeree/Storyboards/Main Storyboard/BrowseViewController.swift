@@ -10,7 +10,26 @@ import UIKit
 
 class BrowseViewController: UITableViewController {
 	
+	var filter: BrowseFilterSettings?
+	
 	@IBAction func unwindToBrowseViewController(segue: UIStoryboardSegue) {
 		
+	}
+	
+	override func viewDidAppear(animated: Bool) {
+		let userDefs = NSUserDefaults.standardUserDefaults()
+		let data = userDefs.objectForKey(BrowseFilterSettings.kPrefKey) as? NSData
+		if data == nil {
+			filter = BrowseFilterSettings()
+		} else {
+			filter = NSKeyedUnarchiver.unarchiveObjectWithData(data!) as? BrowseFilterSettings
+			if filter == nil {
+				filter = BrowseFilterSettings()
+			}
+		}
+	}
+	
+	override func viewDidDisappear(animated: Bool) {
+		filter = nil
 	}
 }

@@ -79,7 +79,7 @@ class LocalPeerManagerTests: XCTestCase {
 		}
 		
 		var tooLongName = ""
-		for i in 0...8 {
+		for _ in 0...8 {
 			//will make tooLongName 64 bytes long, which exceeds the maximum length of a peer display name
 			tooLongName += "12345678"
 		}
@@ -94,7 +94,7 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
 	func testDiscoveryServiceID() {
 		let toTest = LocalPeerManager.kDiscoveryServiceID
-		let toTestLen = count(toTest)
+		let toTestLen = toTest.characters.count
 		XCTAssertFalse(toTestLen < 1 || toTestLen > 15, "service id must be 1–15 characters long")
 		var buffer = [CChar](count: toTestLen, repeatedValue: 0)
 		var hyphenBuf = [CChar](count: 2, repeatedValue: 0)

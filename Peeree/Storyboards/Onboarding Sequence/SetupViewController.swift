@@ -14,6 +14,6 @@ class SetupViewController: UIViewController {
 		let defs = NSUserDefaults.standardUserDefaults()
 		defs.setBool(true, forKey: AppDelegate.kPrefFirstLaunch)
 		let storyboard = UIStoryboard(name:"Main", bundle: nil)
-		self.showViewController(storyboard.instantiateInitialViewController() as! UIViewController, sender: self)
+		self.showViewController(storyboard.instantiateInitialViewController()!, sender: self)
 	}
 }

@@ -30,6 +30,7 @@
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */; };
+		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
 		9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
 		9DEAE8CE1B6415EF00D4F6BF /* HideableProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */; };
@@ -73,6 +74,7 @@
 		9DA0F7CC1B5C3AB900F3BA87 /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7D11B5C3AB900F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
+		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
 		9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HideableProperty.swift; path = Model/HideableProperty.swift; sourceTree = "<group>"; };
@@ -107,17 +109,17 @@
 		9D29231F1B91AB9A00B5B622 /* Main Storyboard */ = {
 			isa = PBXGroup;
 			children = (
-				9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */,
-				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
-				9D8A592F1B92EC4500164C9F /* MeViewController.swift */,
 				9DA0F7C01B5C3AB800F3BA87 /* Main.storyboard */,
-				9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */,
 				9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */,
+				9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */,
+				9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */,
 				9D8A59401B92FABE00164C9F /* FilterViewController.swift */,
-				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
+				9D8A592F1B92EC4500164C9F /* MeViewController.swift */,
 				9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */,
 				9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */,
+				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
 				9D8A59481B92FF2000164C9F /* ShopViewController.swift */,
+				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
@@ -218,6 +220,7 @@
 				9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */,
 				9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */,
 				9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */,
+				9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -266,7 +269,9 @@
 		9DA0F7AD1B5C3AB800F3BA87 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9DA0F7B41B5C3AB800F3BA87 = {
@@ -339,6 +344,7 @@
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
+				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
@@ -411,6 +417,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -477,6 +484,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -487,6 +495,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -505,6 +514,7 @@
 				);
 				INFOPLIST_FILE = PeereeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};
@@ -520,6 +530,7 @@
 				);
 				INFOPLIST_FILE = PeereeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};

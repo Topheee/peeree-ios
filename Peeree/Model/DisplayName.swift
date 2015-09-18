@@ -35,7 +35,7 @@ class DisplayName: NSObject, NSCoding {
 		aCoder.encodeBool(shortenLastname, forKey: "shortenLastname")
 	}
 	
-	@objc required init(coder aDecoder: NSCoder) {
+	@objc required init?(coder aDecoder: NSCoder) {
 		var stringValue: String
 		var hiddenValue: Bool
 		
