@@ -92,18 +92,14 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 				LocalPeerManager.setLocalPeerName(localPeerName.text!)
 				localPeer = LocalPeerManager.getLocalPeer()
 			}
-			if let peerID = localPeer {
+			if let peer = localPeer {
 				//TODO fill securityIdentity
-				if let peer = localPeer {
-					let session = MCSession(peer: peer, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required)
-					adAssistant = MCAdvertiserAssistant(serviceType: LocalPeerManager.kDiscoveryServiceID, discoveryInfo: greeting, session: session)
-					
-					if let advertiser = adAssistant {
-						adAssistant.start()
-						if let adI = adIndicator {
-							adI.hidden = false
-						}
-					}
+				let session = MCSession(peer: peer, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required)
+				adAssistant = MCAdvertiserAssistant(serviceType: LocalPeerManager.kDiscoveryServiceID, discoveryInfo: greeting, session: session)
+			
+				adAssistant.start()
+				if let adI = adIndicator {
+					adI.hidden = false
 				}
 			} else if localPeerName != nil {
 				localPeerName.becomeFirstResponder()

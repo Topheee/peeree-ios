@@ -14,6 +14,8 @@ class SingleSelViewController: UIViewController {
 	@IBOutlet var descriptionTextView: UITextView!
 	@IBOutlet var selectionPickerView: UIPickerView!
 	
+	internal var dataSource: SingleSelViewControllerDataSource!
+	
 	override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
 		NSLog("SingleSelViewController.%@", __FUNCTION__)
 		return true
@@ -29,14 +31,11 @@ class SingleSelViewController: UIViewController {
 	}
 	
 	override func didMoveToParentViewController(parent: UIViewController?) {
-		var _dataSource = parent as? SingleSelViewControllerDataSource
-		if _dataSource == nil {
-			_dataSource = presentingViewController as? SingleSelViewControllerDataSource
-		}
-		if let dataSource = _dataSource {
+		if dataSource != nil {
 			headingLabel.text = dataSource.headingOfSingleSelViewController(self)
 			subHeadingLabel.text = dataSource.subHeadingOfSingleSelViewController(self)
 			selectionPickerView.dataSource = dataSource
+			selectionPickerView.delegate = dataSource
 			descriptionTextView.text = dataSource.descriptionOfSingleSelViewController(self)
 		}
 	}

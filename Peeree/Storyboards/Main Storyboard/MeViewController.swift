@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MeViewController: UIViewController, SingleSelViewControllerDataSource {
+class MeViewController: UIViewController, SingleSelViewControllerDataSource, UITableViewDataSource, UITableViewDelegate {
 	@IBOutlet var scrollView: UIScrollView!
 	@IBOutlet var contentView: UIView!
 	
@@ -19,6 +19,7 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	@IBOutlet var statusButton: UIButton!
 	
 	private let possibleStatuses = ["no comment", "married", "divorced", "going to be divorced", "in a relationship", "single"]
+	private var spokenLanguages = [("english", false), ("german", false), ("french", false), ("spanish", true), ("danish", false), ("italian", false)]
 	
 	override func performSegueWithIdentifier(identifier: String, sender: AnyObject?) {
 		NSLog("MeViewController.%@", __FUNCTION__)
@@ -31,6 +32,13 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	}
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+		if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
+			singleSelVC.dataSource = self
+		} else if let multipleSelVC = segue.destinationViewController as? UITableViewController {
+			multipleSelVC.title = "Spoken Languages"
+			multipleSelVC.tableView.dataSource = self
+			multipleSelVC.tableView.delegate = self
+		}
 		NSLog("MeViewController.%@", __FUNCTION__)
 	}
 	
@@ -68,5 +76,27 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		statusButton.titleLabel?.text = possibleStatuses[row]
+	}
+	
+	func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		return spokenLanguages.count
+	}
+	
+	func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+		let ret = UITableViewCell(style: .Default, reuseIdentifier: "defMultipleSelCell")
+		ret.textLabel!.text = spokenLanguages[indexPath.row].0
+		ret.accessoryType = spokenLanguages[indexPath.row].1 ? .Checkmark : .None
+		ret.selectionStyle = .None
+		return ret
+	}
+	
+	func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+		spokenLanguages[indexPath.row].1 = true
+		tableView.cellForRowAtIndexPath(indexPath)?.accessoryType = .Checkmark
+	}
+	
+	func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
+		spokenLanguages[indexPath.row].1 = false
+		tableView.cellForRowAtIndexPath(indexPath)?.accessoryType = .None
 	}
 }

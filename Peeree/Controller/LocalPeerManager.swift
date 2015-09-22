@@ -25,7 +25,7 @@ public class LocalPeerManager {
 	 *	@return the MCPeerID of the local machine.
 	 */
 	static public func getLocalPeer() -> MCPeerID? {
-		if let peer = localPeer {
+		if localPeer != nil {
 			return localPeer
 		}
 		//load from preferences at first access

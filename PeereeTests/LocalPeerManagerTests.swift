@@ -99,7 +99,7 @@ class LocalPeerManagerTests: XCTestCase {
 		var buffer = [CChar](count: toTestLen, repeatedValue: 0)
 		var hyphenBuf = [CChar](count: 2, repeatedValue: 0)
 		toTest.getCString(&buffer, maxLength: toTestLen, encoding: NSASCIIStringEncoding)
-		var blubb = "-".getCString(&hyphenBuf, maxLength: 2, encoding: NSASCIIStringEncoding)
+		"-".getCString(&hyphenBuf, maxLength: 2, encoding: NSASCIIStringEncoding)
 		var idx: Int
 		//for character in buffer {
 		//only go to toTestLen-1 to ommit trainling 0

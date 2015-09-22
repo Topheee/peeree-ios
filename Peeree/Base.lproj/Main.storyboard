@@ -21,40 +21,40 @@
                             <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VD9-ZK-Mut">
                                 <rect key="frame" x="4" y="335" width="592" height="216"/>
                             </pickerView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setting heading" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PmK-PJ-CZQ">
-                                <rect key="frame" x="50" y="104" width="120" height="19.5"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sub heading" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L0w-Xf-iKf">
-                                <rect key="frame" x="50" y="124" width="81" height="17"/>
+                                <rect key="frame" x="45" y="114" width="81" height="17"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4uZ-oe-KQ1">
-                                <rect key="frame" x="50" y="176" width="500" height="124"/>
+                                <rect key="frame" x="45" y="156" width="505" height="171"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setting heading" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PmK-PJ-CZQ">
+                                <rect key="frame" x="45" y="94" width="120" height="19.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="VD9-ZK-Mut" firstAttribute="top" secondItem="4uZ-oe-KQ1" secondAttribute="bottom" constant="35" id="2Vx-2Q-aLX"/>
-                            <constraint firstItem="4uZ-oe-KQ1" firstAttribute="top" secondItem="L0w-Xf-iKf" secondAttribute="bottom" constant="35" id="4x9-RU-YGd"/>
+                            <constraint firstItem="VD9-ZK-Mut" firstAttribute="top" secondItem="4uZ-oe-KQ1" secondAttribute="bottom" constant="8" id="2Vx-2Q-aLX"/>
+                            <constraint firstItem="4uZ-oe-KQ1" firstAttribute="top" secondItem="L0w-Xf-iKf" secondAttribute="bottom" constant="25" id="4x9-RU-YGd"/>
                             <constraint firstAttribute="trailingMargin" secondItem="4uZ-oe-KQ1" secondAttribute="trailing" constant="30" id="53z-2o-nsh"/>
-                            <constraint firstItem="PmK-PJ-CZQ" firstAttribute="top" secondItem="OUm-Uo-9GQ" secondAttribute="bottom" constant="40" id="6rJ-Je-oTk"/>
-                            <constraint firstItem="4uZ-oe-KQ1" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" constant="30" id="8oX-lJ-Rb2"/>
+                            <constraint firstItem="PmK-PJ-CZQ" firstAttribute="top" secondItem="OUm-Uo-9GQ" secondAttribute="bottom" constant="30" id="6rJ-Je-oTk"/>
                             <constraint firstItem="L0w-Xf-iKf" firstAttribute="top" secondItem="PmK-PJ-CZQ" secondAttribute="bottom" constant="0.5" id="DUD-X5-n0V"/>
                             <constraint firstAttribute="trailingMargin" secondItem="VD9-ZK-Mut" secondAttribute="trailing" constant="-16" id="Pwn-VV-Wrp"/>
                             <constraint firstItem="L0w-Xf-iKf" firstAttribute="leading" secondItem="PmK-PJ-CZQ" secondAttribute="leading" id="cMe-49-ZXa"/>
                             <constraint firstItem="a9U-e5-AoJ" firstAttribute="top" secondItem="VD9-ZK-Mut" secondAttribute="bottom" id="eiU-0V-3iY"/>
+                            <constraint firstItem="4uZ-oe-KQ1" firstAttribute="leading" secondItem="L0w-Xf-iKf" secondAttribute="leading" id="ejf-uH-0Mw"/>
                             <constraint firstAttribute="centerY" secondItem="4uZ-oe-KQ1" secondAttribute="centerY" id="hrp-2z-xr7"/>
                             <constraint firstItem="VD9-ZK-Mut" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" constant="-16" id="nJ3-Nb-OLz"/>
-                            <constraint firstItem="PmK-PJ-CZQ" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" constant="30" id="yqm-tv-zbs"/>
+                            <constraint firstItem="PmK-PJ-CZQ" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" constant="25" id="yqm-tv-zbs"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -83,7 +83,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="checkmark" indentationWidth="10" reuseIdentifier="defMultipleSelCell" textLabel="cHI-dZ-waQ" style="IBUITableViewCellStyleDefault" id="bcA-hR-ukp">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" accessoryType="checkmark" indentationWidth="10" reuseIdentifier="defMultipleSelCell" textLabel="cHI-dZ-waQ" style="IBUITableViewCellStyleDefault" id="bcA-hR-ukp">
                                 <rect key="frame" x="0.0" y="86" width="600" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="bcA-hR-ukp" id="Xxf-ht-isY">
