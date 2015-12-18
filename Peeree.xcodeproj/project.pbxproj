@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
+		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D77C7151B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D77C7141B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift */; };
-		9D8A592C1B92EC3900164C9F /* SimpleBrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592B1B92EC3900164C9F /* SimpleBrowseViewController.swift */; };
 		9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
 		9D8A59321B92EC5200164C9F /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D8A59311B92EC5200164C9F /* FirstLaunch.storyboard */; };
@@ -24,12 +24,17 @@
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
 		9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
-		9D8A59491B92FF2000164C9F /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59481B92FF2000164C9F /* ShopViewController.swift */; };
 		9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594A1B93043000164C9F /* PinsViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
+		9D9911801BC6F7A600B729FE /* PeereeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D99117F1BC6F7A600B729FE /* PeereeViewController.swift */; };
+		9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA039811C1B21EE003D1624 /* ShopViewController.swift */; };
+		9DA039841C1B257C003D1624 /* WalletController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA039831C1B257C003D1624 /* WalletController.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */; };
+		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
+		9DCFFD891C1DC3D4004687FB /* RemotePeerManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */; };
+		9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */; };
 		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
 		9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
@@ -49,6 +54,8 @@
 /* Begin PBXFileReference section */
 		9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FirstLaunchViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/FirstLaunchViewController.swift"; sourceTree = "<group>"; };
 		9D2923261B91E50B00B5B622 /* SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupViewController.swift"; sourceTree = "<group>"; };
+		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
+		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D77C7141B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManagerTests.swift; sourceTree = "<group>"; };
 		9D8A592B1B92EC3900164C9F /* SimpleBrowseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SimpleBrowseViewController.swift; path = "Storyboards/Main Storyboard/SimpleBrowseViewController.swift"; sourceTree = "<group>"; };
 		9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTraitViewController.swift; path = "Storyboards/Main Storyboard/CharacterTraitViewController.swift"; sourceTree = "<group>"; };
@@ -62,9 +69,11 @@
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultipleSelViewController.swift; path = "Storyboards/Main Storyboard/MultipleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
-		9D8A59481B92FF2000164C9F /* ShopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShopViewController.swift; path = "Storyboards/Main Storyboard/ShopViewController.swift"; sourceTree = "<group>"; };
 		9D8A594A1B93043000164C9F /* PinsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinsViewController.swift; path = "Storyboards/Main Storyboard/PinsViewController.swift"; sourceTree = "<group>"; };
-		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Peeree/Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
+		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
+		9D99117F1BC6F7A600B729FE /* PeereeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeViewController.swift; path = Controller/PeereeViewController.swift; sourceTree = "<group>"; };
+		9DA039811C1B21EE003D1624 /* ShopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShopViewController.swift; path = "Storyboards/Main Storyboard/ShopViewController.swift"; sourceTree = "<group>"; };
+		9DA039831C1B257C003D1624 /* WalletController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WalletController.swift; path = Controller/WalletController.swift; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -74,6 +83,9 @@
 		9DA0F7CC1B5C3AB900F3BA87 /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7D11B5C3AB900F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
+		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
+		9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManagerTests.swift; sourceTree = "<group>"; };
+		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
@@ -102,6 +114,9 @@
 			isa = PBXGroup;
 			children = (
 				9D8A59381B92F2A500164C9F /* LocalPeerManager.swift */,
+				9D99117F1BC6F7A600B729FE /* PeereeViewController.swift */,
+				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
+				9DA039831C1B257C003D1624 /* WalletController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -118,11 +133,20 @@
 				9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */,
 				9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */,
 				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
-				9D8A59481B92FF2000164C9F /* ShopViewController.swift */,
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
+				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
+			sourceTree = "<group>";
+		};
+		9D6F7B901BC82A70007CD234 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */,
+				9D6F7B931BC82AD5007CD234 /* RootView.swift */,
+			);
+			name = View;
 			sourceTree = "<group>";
 		};
 		9D8A59291B92EB7800164C9F /* Storyboards */ = {
@@ -141,7 +165,7 @@
 				9D8A59311B92EC5200164C9F /* FirstLaunch.storyboard */,
 				9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */,
 				9D2923261B91E50B00B5B622 /* SetupViewController.swift */,
-				9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */,
+				9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */,
 			);
 			name = "Onboarding Sequence";
 			sourceTree = "<group>";
@@ -175,13 +199,14 @@
 		9DA0F7B71B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXGroup;
 			children = (
-				9D8A59341B92F07700164C9F /* Maybe Later */,
 				9D8A59291B92EB7800164C9F /* Storyboards */,
 				9D29231E1B91AB7A00B5B622 /* Controller */,
 				9DEAE8C81B63ED3700D4F6BF /* Model */,
+				9D6F7B901BC82A70007CD234 /* View */,
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
 				9DA0F7C51B5C3AB800F3BA87 /* LaunchScreen.xib */,
+				9D8A59341B92F07700164C9F /* Maybe Later */,
 				9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */,
 			);
 			path = Peeree;
@@ -200,6 +225,7 @@
 			children = (
 				9D77C7141B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift */,
 				9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */,
+				9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */,
 				9DA0F7D01B5C3AB900F3BA87 /* Supporting Files */,
 			);
 			path = PeereeTests;
@@ -221,6 +247,7 @@
 				9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */,
 				9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */,
 				9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */,
+				9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -333,13 +360,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D9911801BC6F7A600B729FE /* PeereeViewController.swift in Sources */,
+				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
-				9D8A59491B92FF2000164C9F /* ShopViewController.swift in Sources */,
 				9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */,
 				9D8A59391B92F2A500164C9F /* LocalPeerManager.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
+				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
@@ -347,9 +376,11 @@
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
+				9DA039841C1B257C003D1624 /* WalletController.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
+				9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */,
+				9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
-				9D8A592C1B92EC3900164C9F /* SimpleBrowseViewController.swift in Sources */,
 				9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
@@ -362,6 +393,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */,
+				9DCFFD891C1DC3D4004687FB /* RemotePeerManagerTests.swift in Sources */,
 				9D77C7151B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -433,7 +465,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -471,7 +503,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

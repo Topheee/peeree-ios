@@ -87,10 +87,10 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 				adI.hidden = true
 			}
 		} else if !sender.on {
-			var localPeer = LocalPeerManager.getLocalPeer()
+			var localPeer = LocalPeerManager.getLocalPeerID()
 			if localPeerName != nil && localPeerName.text != "" {
 				LocalPeerManager.setLocalPeerName(localPeerName.text!)
-				localPeer = LocalPeerManager.getLocalPeer()
+				localPeer = LocalPeerManager.getLocalPeerID()
 			}
 			if let peer = localPeer {
 				//TODO fill securityIdentity
@@ -136,7 +136,6 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 	
 	func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
 		//non of our business
-		//dispatch_async(dispatch_get_main_queue(), <#block: dispatch_block_t##() -> Void#>)
 		dispatch_async(dispatch_get_main_queue()) {
 			NSLog("%@\n", data)
 		}
@@ -148,10 +147,10 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 	
 	@IBAction func startBrowsing(sender: UIButton) {
 		if browserSession == nil {
-			var localPeer = LocalPeerManager.getLocalPeer()
+			var localPeer = LocalPeerManager.getLocalPeerID()
 			if localPeerName != nil && localPeerName.text != "" {
 				LocalPeerManager.setLocalPeerName(localPeerName.text!)
-				localPeer = LocalPeerManager.getLocalPeer()
+				localPeer = LocalPeerManager.getLocalPeerID()
 			}
 			if let peerID = localPeer {
 				//TODO fill securityIdentity

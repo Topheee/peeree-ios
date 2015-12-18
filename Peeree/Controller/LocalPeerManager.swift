@@ -15,26 +15,97 @@ import MultipeerConnectivity
  */
 public class LocalPeerManager {
 	
-	static private let kPrefPeerID = "peeree-prefs-peerID"
-	static public let kDiscoveryServiceID = "peeree-discover"
+	private class ObservedLocalPeerDescription: LocalPeerDescription {
+		override var firstname: String {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var lastname: String {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var peerID: MCPeerID {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var hasPicture: Bool {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var hasVagina: Bool {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var age: Int {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var status: Int {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var country: Int {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var languages: [Bool] {
+			didSet {
+				// TODO evaluate, whether this works, since the values in the array may change, but not the array itself, and so this event may not be triggered
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var characterTraits: [CharacterTrait] {
+			// TODO evaluate, whether this works, since the values in the array may change, but not the array itself, and so this event may not be triggered
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var version: String {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+		override var _picture: UIImage? {
+			didSet {
+				LocalPeerManager.localPeerDescriptionChanged()
+			}
+		}
+	}
 	
-	static private var localPeer: MCPeerID?
+	static private func localPeerDescriptionChanged() {
+		NSUserDefaults.standardUserDefaults().setObject(localPeerDescription!, forKey:kPrefPeerDesc)
+		// TODO maybe propagate this with an notification
+	}
+	
+	static /* private */ let kPrefPeerID = "peeree-prefs-peerID"
+	static private let kPrefPeerDesc = "peeree-prefs-peer-description"
+	
+	// TODO maybe set these to nil when a memory warning occurs
+	static private var localPeerID: MCPeerID?
+	static private var localPeerDescription: ObservedLocalPeerDescription?
 	
 	/**
 	 *	Unarchives the MCPeerID from NSUserDefaults, if it is already created.
 	 *	@return the MCPeerID of the local machine.
 	 */
-	static public func getLocalPeer() -> MCPeerID? {
-		if localPeer != nil {
-			return localPeer
-		}
-		//load from preferences at first access
-		let defs = NSUserDefaults.standardUserDefaults()
-		if let peerData = defs.objectForKey(kPrefPeerID) as? NSData {
-			localPeer = NSKeyedUnarchiver.unarchiveObjectWithData(peerData) as? MCPeerID
-			return localPeer
-		}
-		return nil
+	static public func getLocalPeerID() -> MCPeerID? {
+		return localPeerID ?? NSUserDefaults.standardUserDefaults().objectForKey(kPrefPeerID) as? MCPeerID
+	}
+	
+	/**
+	 *	Currently only used for test cases.
+	 *	TODO Maybe expose this to the user, but first figure out the consequences!
+	 */
+	static public func dropLocalPeerID() {
+		NSUserDefaults.standardUserDefaults().removeObjectForKey(kPrefPeerID)
 	}
 	
 	/**
@@ -42,12 +113,21 @@ public class LocalPeerManager {
 	 *	@param name	the new name of the local device on the network.
 	 */
 	static public func setLocalPeerName(name: String) {
-		if localPeer == nil || name != localPeer!.displayName {
-			let tmpPeer = MCPeerID(displayName: name)
-			//TODO exception-handling of MCPeerID constructor
-			localPeer = tmpPeer
-			let defs = NSUserDefaults.standardUserDefaults()
-			defs.setObject(NSKeyedArchiver.archivedDataWithRootObject(tmpPeer), forKey: kPrefPeerID)
+		if localPeerID == nil || name != localPeerID!.displayName {
+			localPeerID = MCPeerID(displayName: name)
+			if let localPeerID = localPeerID {
+				let defs = NSUserDefaults.standardUserDefaults()
+				defs.setObject(localPeerID, forKey: kPrefPeerID)
+				// TODO maybe propagate this with an notification or otherwise inform the RemotePeerManager, that it has to restart its services
+			}
 		}
+	}
+	
+	/**
+	 *	Unarchives the MCPeerID from NSUserDefaults, if it is already created.
+	 *	@return the MCPeerID of the local machine.
+	 */
+	static func getLocalPeerDescription() -> LocalPeerDescription {
+		return localPeerDescription ?? NSUserDefaults.standardUserDefaults().objectForKey(kPrefPeerDesc) as? ObservedLocalPeerDescription ?? ObservedLocalPeerDescription()
 	}
 }

@@ -10,7 +10,7 @@ import UIKit
 
 class FilterViewController: UIViewController {
 	
-	var backend: BrowseFilterSettings?
+	var backend: BrowseFilterSettings!
 	
 	@IBOutlet var ageMaxLabel: UILabel!
 	@IBOutlet var ageMaxSlider: UISlider!
@@ -18,12 +18,16 @@ class FilterViewController: UIViewController {
 	@IBOutlet var ageMinLabel: UILabel!
 	@IBOutlet var ageMinSlider: UISlider!
 	
+	@IBOutlet var genderSeg: UISegmentedControl!
+	@IBOutlet var langSeg: UISegmentedControl!
+	
+	
 	private func updatePrefs() {
-		let userDefs = NSUserDefaults.standardUserDefaults()
-		backend!.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
-		backend!.ageMin = ageMinSlider.value
-		let data = NSKeyedArchiver.archivedDataWithRootObject(backend!)
-		userDefs.setObject(data, forKey: BrowseFilterSettings.kPrefKey)
+		backend.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
+		backend.ageMin = ageMinSlider.value
+		backend.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
+		backend.atLeastMyLanguage = langSeg.selectedSegmentIndex == 1
+		backend.writeToDefaults()
 	}
 	
 	private func updateAgeMinLabel() {
@@ -36,10 +40,7 @@ class FilterViewController: UIViewController {
 		ageMaxLabel.text = newValue
 	}
 	
-	@IBAction func changeAgeMaxEnd(sender: UISlider) {
-		updatePrefs()
-	}
-	@IBAction func changeAgeMinEnd(sender: UISlider) {
+	@IBAction func changeFilter(sender: AnyObject) {
 		updatePrefs()
 	}
 	
@@ -60,19 +61,10 @@ class FilterViewController: UIViewController {
 	}
 	
 	override func viewDidAppear(animated: Bool) {
-		let userDefs = NSUserDefaults.standardUserDefaults()
-		let data = userDefs.objectForKey(BrowseFilterSettings.kPrefKey) as? NSData
-		if data == nil {
-			backend = BrowseFilterSettings()
-		} else {
-			backend = NSKeyedUnarchiver.unarchiveObjectWithData(data!) as? BrowseFilterSettings
-			if backend == nil {
-				backend = BrowseFilterSettings()
-			}
-		}
-		ageMaxSlider.value = backend!.ageMax
+		backend = BrowseFilterSettings.sharedSettings
+		ageMaxSlider.value = backend.ageMax
 		updateAgeMaxLabel()
-		ageMinSlider.value = backend!.ageMin
+		ageMinSlider.value = backend.ageMin
 		updateAgeMinLabel()
 	}
 	

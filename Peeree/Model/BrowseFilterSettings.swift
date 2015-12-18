@@ -10,7 +10,11 @@ import Foundation
 
 class BrowseFilterSettings: NSObject, NSCoding {
 	
-	static internal let kPrefKey = "peeree-prefs-browse-filter"
+	static private let kPrefKey = "peeree-prefs-browse-filter"
+	
+	static var sharedSettings: BrowseFilterSettings {
+		return NSUserDefaults.standardUserDefaults().objectForKey(BrowseFilterSettings.kPrefKey) as? BrowseFilterSettings ?? BrowseFilterSettings()
+	}
 	
 	enum GenderType: Int {
 		case Unspecified = 0, Male, Female
@@ -46,5 +50,9 @@ class BrowseFilterSettings: NSObject, NSCoding {
 		aCoder.encodeFloat(ageMax, forKey: BrowseFilterSettings.kAgeMaxKey)
 		aCoder.encodeInteger(gender.rawValue, forKey: BrowseFilterSettings.kGenderKey)
 		aCoder.encodeBool(atLeastMyLanguage, forKey: BrowseFilterSettings.kLanguageKey)
+	}
+	
+	func writeToDefaults() {
+		NSUserDefaults.standardUserDefaults().setObject(self, forKey: BrowseFilterSettings.kPrefKey)
 	}
 }

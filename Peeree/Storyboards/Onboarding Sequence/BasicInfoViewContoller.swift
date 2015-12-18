@@ -9,5 +9,15 @@
 import UIKit
 
 class BasicInfoViewContoller: UIViewController {
+	@IBOutlet var backButton: UIButton!
 	
+	override func viewDidLoad() {
+		backButton.alpha = 0.0
+	}
+	
+	override func viewDidAppear(animated: Bool) {
+		UIView.animateWithDuration(2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.AllowUserInteraction, animations: { () -> Void in
+			self.backButton.alpha = 1.0
+		}, completion: nil)
+	}
 }

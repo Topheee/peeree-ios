@@ -16,7 +16,7 @@ import class Peeree.LocalPeerManager
  */
 class LocalPeerManagerTests: XCTestCase {
 	//copied from LocalPeerManager
-	static private let kPrefPeerID = "kobusch-prefs-peerID"
+	//static private let kPrefPeerID = "kobusch-prefs-peerID"
 	
 	static private var peerData: NSData? = nil
 	
@@ -27,7 +27,7 @@ class LocalPeerManagerTests: XCTestCase {
 		NSLog("%s\n", __FUNCTION__)
 		//keep the preferences as they were
 		let defs = NSUserDefaults.standardUserDefaults()
-		peerData = defs.objectForKey(kPrefPeerID) as? NSData
+		peerData = defs.objectForKey(LocalPeerManager.kPrefPeerID) as? NSData
 		if let data = peerData {
 			NSLog("\tretrieved %@ from preferences", data)
 		}
@@ -40,7 +40,7 @@ class LocalPeerManagerTests: XCTestCase {
 		NSLog("%s\n", __FUNCTION__)
 		if let data = peerData {
 			let defs = NSUserDefaults.standardUserDefaults()
-			defs.setObject(NSKeyedArchiver.archivedDataWithRootObject(data), forKey: kPrefPeerID)
+			defs.setObject(NSKeyedArchiver.archivedDataWithRootObject(data), forKey: LocalPeerManager.kPrefPeerID)
 			NSLog("\twrote %@ to preferences", data)
 		}
 	}
@@ -50,7 +50,7 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
     override func setUp() {
 		super.setUp()
-		NSUserDefaults.standardUserDefaults().removeObjectForKey(LocalPeerManagerTests.kPrefPeerID)
+		LocalPeerManager.dropLocalPeerID()
     }
     
     override func tearDown() {
@@ -94,12 +94,12 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
 	func testDiscoveryServiceID() {
 		let toTest = LocalPeerManager.kDiscoveryServiceID
-		let toTestLen = toTest.characters.count
+		let toTestLen = toTest.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
 		XCTAssertFalse(toTestLen < 1 || toTestLen > 15, "service id must be 1–15 characters long")
 		var buffer = [CChar](count: toTestLen, repeatedValue: 0)
 		var hyphenBuf = [CChar](count: 2, repeatedValue: 0)
-		toTest.getCString(&buffer, maxLength: toTestLen, encoding: NSASCIIStringEncoding)
-		"-".getCString(&hyphenBuf, maxLength: 2, encoding: NSASCIIStringEncoding)
+		toTest.getCString(&buffer, maxLength: toTestLen, encoding: NSUTF8StringEncoding)
+		"-".getCString(&hyphenBuf, maxLength: 2, encoding: NSUTF8StringEncoding)
 		var idx: Int
 		//for character in buffer {
 		//only go to toTestLen-1 to ommit trainling 0

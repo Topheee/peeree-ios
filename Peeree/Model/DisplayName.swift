@@ -12,7 +12,6 @@ class DisplayName: NSObject, NSCoding {
 	//possible parts of the displayed name
 	private var lastname: HideableProperty<String>
 	private var firstname: HideableProperty<String>
-	private var nickname: HideableProperty<String>
 	//shorten name parts if length of display name exceeds bluetooth handshake length
 	private var shortenLastname: Bool = false //think about these two. Do we need them? Is it a good idea to shorten it or should be ask the user what to do?
 	private var shortenFirstname: Bool = false //maybe like "your name exceeds 63 characters in length. It won't be fully visible to peers"
@@ -25,10 +24,6 @@ class DisplayName: NSObject, NSCoding {
 		aCoder.encodeBool(firstname.hidden, forKey: "firstname" + ".hidden")
 		if !firstname.hidden {
 			aCoder.encodeObject(firstname.value, forKey: "firstname")
-		}
-		aCoder.encodeBool(nickname.hidden, forKey: "nickname" + ".hidden")
-		if !nickname.hidden {
-			aCoder.encodeObject(nickname.value, forKey: "nickname")
 		}
 		
 		aCoder.encodeBool(shortenFirstname, forKey: "shortenFirstname")
@@ -53,13 +48,6 @@ class DisplayName: NSObject, NSCoding {
 			stringValue = ""
 		}
 		firstname = HideableProperty(value: stringValue, hidden: hiddenValue)
-		hiddenValue = aDecoder.decodeBoolForKey("nickname" + ".hidden")
-		if !hiddenValue {
-			stringValue = aDecoder.decodeObjectForKey("nickname") as! String
-		} else {
-			stringValue = ""
-		}
-		nickname = HideableProperty(value: stringValue, hidden: hiddenValue)
 		
 		shortenFirstname = aDecoder.decodeBoolForKey("shortenFirstname")
 		shortenLastname = aDecoder.decodeBoolForKey("shortenLastname")

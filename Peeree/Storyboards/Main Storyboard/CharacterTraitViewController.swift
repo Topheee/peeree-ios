@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CharacterTraitViewController: UITableViewController {
+class CharacterTraitViewController: UITableViewController, SingleSelViewControllerDataSource {
 	
 	/* From wikipedia
 	Wärme (z. B. Wohlfühlen in Gesellschaft)
@@ -28,30 +28,72 @@ class CharacterTraitViewController: UITableViewController {
 	Perfektionismus
 	Anspannung
 	*/
-	let characterTraits = ["warmness", "emotional stability", "dominance", "vitality", "rule awareness", "social competence", "sensitiveness", "vigilance", "escapism", "privateness", "solicitousness", "openness to change", "frugalilty", "perfectionism", "strain"]
+	// let characterTraits = ["warmness", "emotional stability", "dominance", "vitality", "rule awareness", "social competence", "sensitiveness", "vigilance", "escapism", "privateness", "solicitousness", "openness to change", "frugalilty", "perfectionism", "strain"]
+	internal var characterTraits: Array<CharacterTrait>?
+	var selectedTrait: NSIndexPath?
 	
-	static let characterTraitCellId = "characterTraitCell"
+	static let cellID = "characterTraitCell"
 	
+	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+		if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
+			singleSelVC.dataSource = self
+		}
+	}
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		
-		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.characterTraitCellId)!
-		cell.textLabel!.text = characterTraits[indexPath.row]
-		cell.detailTextLabel!.text = "No comment"
-		/*
-		let traitLabel = cell.viewWithTag(1) as! UILabel
-		let traitValueSlider = cell.viewWithTag(2) as! UISlider
-		let valueLabel = cell.viewWithTag(3) as! UILabel
-		traitLabel.text = characterTraits[indexPath.row]
-		traitValueSlider.value = 50.0
-		valueLabel.text = "50%"
-		*/
+		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
+		let trait = characterTraits![indexPath.row]
+		cell.textLabel!.text = trait.name
+		cell.detailTextLabel!.text = CharacterTrait.applyTypeNames[trait.applies.rawValue]
 		return cell
 	}
 	
 	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return characterTraits.count
+		if let traits = characterTraits {
+			return traits.count
+		}
+		return 0
 	}
 	
-	// TODO SingleSelVC with heading 'Description', subheading '<character trait>', selection heading 'Applies to me' and selection options of 'no comment' and so on.
+	override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+		selectedTrait = indexPath
+	}
+	
+	func headingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+		// TODO localization
+		return "How about..."
+	}
+	
+	func subHeadingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+		if let traits = characterTraits {
+			return traits[selectedTrait!.row].name
+		}
+		return ""
+	}
+	
+	func descriptionOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+		if let traits = characterTraits {
+			return traits[selectedTrait!.row].description
+		}
+		return ""
+	}
+	
+	func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+		return 1
+	}
+	
+	func pickerView(pickerView: UIPickerView,
+		numberOfRowsInComponent component: Int) -> Int {
+			return CharacterTrait.applyTypeNames.count
+	}
+	
+	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+		return CharacterTrait.applyTypeNames[row]
+	}
+	
+	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+		characterTraits![selectedTrait!.row].applies = CharacterTrait.ApplyType(rawValue: row)!
+		self.tableView.reloadRowsAtIndexPaths([selectedTrait!], withRowAnimation: .None)
+	}
 }

@@ -8,6 +8,6 @@
 
 import UIKit
 
-class BrowseSettingsViewController: UIViewController {
+class BrowseSettingsViewController: BasicInfoViewContoller {
 	
 }

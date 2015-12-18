@@ -28,6 +28,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 			self.window!.makeKeyAndVisible()
 		}
 		
+		struct Theme {
+			let globalTintRed: CGFloat
+			let globalTintGreen: CGFloat
+			let globalTintBlue: CGFloat
+			let globalTintColor: UIColor
+			let globalBackgroundRed: CGFloat
+			let globalBackgroundGreen: CGFloat
+			let globalBackgroundBlue: CGFloat
+			let globalBackgroundColor: UIColor
+			let barBackgroundColor : UIColor
+			
+			init(globalTintRed: CGFloat, globalTintGreen: CGFloat, globalTintBlue: CGFloat, globalBackgroundRed: CGFloat, globalBackgroundGreen: CGFloat, globalBackgroundBlue: CGFloat) {
+				self.globalTintRed = globalTintRed
+				self.globalTintGreen = globalTintGreen
+				self.globalTintBlue = globalTintBlue
+				self.globalTintColor = UIColor(red: self.globalTintRed, green: self.globalTintGreen, blue: self.globalTintBlue, alpha: 1.0)
+				self.globalBackgroundRed = globalBackgroundRed
+				self.globalBackgroundGreen = globalBackgroundGreen
+				self.globalBackgroundBlue = globalBackgroundBlue
+				self.globalBackgroundColor = UIColor(red: globalBackgroundRed, green: globalBackgroundGreen, blue: globalBackgroundBlue, alpha: 1.0)
+				self.barBackgroundColor = UIColor(red: globalBackgroundRed*0.5, green: globalBackgroundGreen*0.5, blue: globalBackgroundBlue*0.5, alpha: 1.0)
+			}
+		}
+		
+		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
+		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
+		//let theme = Theme(globalTintRed: 255/255, globalTintGreen: 128/255, globalTintBlue: 0/255, globalBackgroundRed: 204/255 /*213/255*/, globalBackgroundGreen: 1.0 /*250/255*/, globalBackgroundBlue: 127/255 /*128/255*/) //sugar melon
+		//let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
+		RootView.appearance().tintColor = theme.globalTintColor
+		RootView.appearance().backgroundColor = theme.globalBackgroundColor
+		
+		UINavigationBar.appearance().tintColor = theme.globalTintColor
+		UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
+		
+		UITabBar.appearance().tintColor = theme.globalTintColor
+		UITabBar.appearance().backgroundColor = theme.barBackgroundColor
+		
+		UITableView.appearance().backgroundColor = theme.globalBackgroundColor
+		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+		
+		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
+		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
+		
 		return true
 	}
 

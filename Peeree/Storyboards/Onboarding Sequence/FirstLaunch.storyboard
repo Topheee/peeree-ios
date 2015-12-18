@@ -1,56 +1,55 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="76G-gL-j3x">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8191" systemVersion="15A284" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="76G-gL-j3x">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--First Info-->
         <scene sceneID="5Js-Xy-AcI">
             <objects>
-                <viewController title="First Info" id="u4v-7y-Tsp" sceneMemberID="viewController">
+                <viewController title="First Info" id="u4v-7y-Tsp" customClass="BasicInfoViewContoller" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="luJ-S4-VDb"/>
                         <viewControllerLayoutGuide type="bottom" id="oYr-FL-zLy"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="GM2-V1-SU7">
+                    <view key="view" contentMode="scaleToFill" id="GM2-V1-SU7" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What's p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9jk-wL-g6X">
-                                <rect key="frame" x="16" y="40" width="93.5" height="19.5"/>
+                                <rect key="frame" x="20" y="40" width="94.5" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What are the benefits?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KcC-Nq-Owu">
-                                <rect key="frame" x="16" y="227" width="167.5" height="19.5"/>
+                                <rect key="frame" x="20" y="227" width="171.5" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTy-Q0-LK7">
-                                <rect key="frame" x="16" y="59" width="568" height="49.5"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <string key="text">Peer to Peer (or shortly, p2p) is a networking approach, where all participants are connected together, without any server invited</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CnE-9c-xa9">
-                                <rect key="frame" x="16" y="247" width="568" height="66.5"/>
+                                <rect key="frame" x="20" y="247" width="560" height="66.5"/>
+                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <string key="text">Using this technology, you get rid of lots of annoying stuff. In this app, there are no Servers, no Cloud, no Internet (except for purchasing), no Ads, no Observation and no spies involved.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Social p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f2c-qQ-EOF">
-                                <rect key="frame" x="16" y="424" width="88" height="19.5"/>
+                                <rect key="frame" x="20" y="424" width="87.5" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hNb-m5-TrK">
-                                <rect key="frame" x="16" y="443" width="568" height="66.5"/>
+                                <rect key="frame" x="20" y="443" width="560" height="66.5"/>
+                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <string key="text">Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what servers do.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -58,6 +57,7 @@
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8Y-IF-X4f">
                                 <rect key="frame" x="252" y="518" width="96" height="30"/>
+                                <animations/>
                                 <state key="normal" title="Sounds great!">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -65,7 +65,16 @@
                                     <segue destination="hfq-X5-JCR" kind="unwind" unwindAction="unwindToOnboardingViewController:" id="RgC-20-rSl"/>
                                 </connections>
                             </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTy-Q0-LK7">
+                                <rect key="frame" x="20" y="59" width="560" height="49.5"/>
+                                <animations/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <string key="text">Peer to Peer (or shortly, p2p) is a networking approach, where all participants are connected together, without any server invited</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
                         </subviews>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="b8Y-IF-X4f" firstAttribute="top" secondItem="hNb-m5-TrK" secondAttribute="bottom" constant="8" id="07W-xk-Asg"/>
@@ -89,6 +98,9 @@
                     </view>
                     <toolbarItems/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="backButton" destination="b8Y-IF-X4f" id="tbs-S2-fRd"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PlR-6f-0M3" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <exit id="hfq-X5-JCR" userLabel="Exit" sceneMemberID="exit"/>
@@ -103,9 +115,10 @@
                         <viewControllerLayoutGuide type="top" id="nML-by-ZMu"/>
                         <viewControllerLayoutGuide type="bottom" id="kWS-QZ-uzq"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Mhb-QC-SA2">
+                    <view key="view" contentMode="scaleToFill" id="Mhb-QC-SA2" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                 </viewController>
@@ -116,33 +129,26 @@
         <!--First-->
         <scene sceneID="qqt-6g-vCs">
             <objects>
-                <viewController storyboardIdentifier="FirstViewController" title="First" id="9TP-2c-bIB" customClass="BasicInfoViewContoller" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="FirstViewController" title="First" id="9TP-2c-bIB" customClass="WelcomeViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ykf-X6-JqU"/>
                         <viewControllerLayoutGuide type="bottom" id="Y2O-gr-2jl"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="bRA-E3-VRs">
+                    <view key="view" contentMode="scaleToFill" id="bRA-E3-VRs" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello and welcome to Peeree, the best social p2p app!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
-                                <rect key="frame" x="36" y="50" width="528" height="19.5"/>
+                                <rect key="frame" x="40" y="275.5" width="520" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dKq-6a-5ij">
-                                <rect key="frame" x="180" y="236" width="240" height="128"/>
-                                <accessibility key="accessibilityConfiguration">
-                                    <accessibilityTraits key="traits" none="YES" image="YES" notEnabled="YES"/>
-                                </accessibility>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="240" id="JMC-FF-evz"/>
-                                    <constraint firstAttribute="height" constant="128" id="xZ3-qK-wNs"/>
-                                </constraints>
-                            </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
-                                <rect key="frame" x="222" y="85" width="156" height="30"/>
+                                <rect key="frame" x="223.5" y="303" width="153" height="30"/>
+                                <animations/>
+                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="What does that mean?">
                                     <color key="titleColor" red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
@@ -151,56 +157,69 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <animations/>
                         <constraints>
+                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" constant="-15" id="95G-wi-9h6"/>
                             <constraint firstAttribute="centerX" secondItem="rNF-0l-DWJ" secondAttribute="centerX" id="J51-TC-smp"/>
                             <constraint firstAttribute="centerX" secondItem="XwS-Db-Ixl" secondAttribute="centerX" id="UJy-zS-4xz"/>
-                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" constant="15" id="Whm-4j-UaB"/>
-                            <constraint firstAttribute="centerY" secondItem="dKq-6a-5ij" secondAttribute="centerY" id="azG-ZU-cyD"/>
-                            <constraint firstAttribute="centerX" secondItem="dKq-6a-5ij" secondAttribute="centerX" id="eo0-Yb-Nh7"/>
+                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" constant="8" id="Whm-4j-UaB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rNF-0l-DWJ" secondAttribute="trailing" constant="20" id="fJU-DB-Kod"/>
-                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="30" id="hmV-zl-nps"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" constant="20" id="mE9-QB-jIc"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="infoButton" destination="XwS-Db-Ixl" id="mjg-2n-5uh"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mCM-H7-tKi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="981" y="374"/>
         </scene>
+        <!--Main-->
+        <scene sceneID="c5p-Gx-sqi">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" id="HjA-eK-uZw" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="b4n-dZ-4Sl" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="981" y="1441"/>
+        </scene>
         <!--Second Info-->
         <scene sceneID="dqd-TC-ceS">
             <objects>
-                <viewController title="Second Info" id="ZHr-Cu-27s" sceneMemberID="viewController">
+                <viewController title="Second Info" id="ZHr-Cu-27s" customClass="BasicInfoViewContoller" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ltd-Rj-ntk"/>
                         <viewControllerLayoutGuide type="bottom" id="50h-uu-h3C"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Oys-4H-QDE">
+                    <view key="view" contentMode="scaleToFill" id="Oys-4H-QDE" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="puP-SH-wIK">
-                                <rect key="frame" x="16" y="487" width="568" height="66.5"/>
+                                <rect key="frame" x="20" y="487" width="560" height="66.5"/>
+                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <string key="text">So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" text="Nothing of the information you provide in this app will be sent through the internet, not even to us." translatesAutoresizingMaskIntoConstraints="NO" id="ibO-UX-4Wp">
-                                <rect key="frame" x="16" y="59" width="568" height="49.5"/>
+                                <rect key="frame" x="20" y="59" width="560" height="49.5"/>
+                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="We don`t want to do anything with your data" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="72V-9S-Gur">
-                                <rect key="frame" x="16" y="40" width="568" height="19.5"/>
+                                <rect key="frame" x="20" y="40" width="560" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zeZ-rx-b1e">
-                                <rect key="frame" x="283" y="562" width="35" height="30"/>
+                                <rect key="frame" x="283.5" y="562" width="34" height="30"/>
+                                <animations/>
                                 <state key="normal" title="Back">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -209,12 +228,14 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This data is only presented to people around you" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Xq-JK-AvQ">
-                                <rect key="frame" x="16" y="467" width="568" height="19.5"/>
+                                <rect key="frame" x="20" y="467" width="560" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailingMargin" secondItem="72V-9S-Gur" secondAttribute="trailing" id="1BL-Q3-feF"/>
@@ -233,6 +254,9 @@
                             <constraint firstItem="puP-SH-wIK" firstAttribute="trailing" secondItem="Oys-4H-QDE" secondAttribute="trailingMargin" id="y94-u0-YC2"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="backButton" destination="zeZ-rx-b1e" id="qfJ-4e-Yxd"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WGo-sY-6jH" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <exit id="qZp-TR-cRi" userLabel="Exit" sceneMemberID="exit"/>
@@ -247,47 +271,48 @@
                         <viewControllerLayoutGuide type="top" id="aJo-bN-TNl"/>
                         <viewControllerLayoutGuide type="bottom" id="Mhf-wI-av8"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="m34-t7-ma0">
+                    <view key="view" contentMode="scaleToFill" id="m34-t7-ma0" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="90I-D0-RlC">
                                 <rect key="frame" x="225" y="175" width="150" height="150"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="150" id="StY-W5-jUT"/>
                                     <constraint firstAttribute="height" constant="150" id="XPJ-P5-hm2"/>
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setup your basic data" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
-                                <rect key="frame" x="219" y="50" width="163" height="19.5"/>
+                                <rect key="frame" x="218" y="50" width="164.5" height="19.5"/>
+                                <animations/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="187" y="78" width="226" height="30"/>
+                                <rect key="frame" x="190" y="78" width="219" height="30"/>
+                                <animations/>
+                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="What do you want with my data?"/>
                                 <connections>
                                     <segue destination="ZHr-Cu-27s" kind="show" identifier="" id="jir-RQ-5Yf"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Take a picture" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sv5-P8-qju">
-                                <rect key="frame" x="246" y="194" width="107" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
-                                <rect key="frame" x="256" y="550" width="91" height="30"/>
+                                <rect key="frame" x="256" y="550" width="92" height="30"/>
+                                <animations/>
                                 <state key="normal" title="Get started &gt;">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
                                     <action selector="finishIntroduction:" destination="BiV-OX-JbO" eventType="touchUpInside" id="CKQ-vV-94V"/>
+                                    <segue destination="HjA-eK-uZw" kind="show" id="Nle-Q1-I6R"/>
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
                                 <rect key="frame" x="241" y="379" width="117" height="29"/>
+                                <animations/>
                                 <segments>
                                     <segment title="Male"/>
                                     <segment title="Female"/>
@@ -298,16 +323,25 @@
                                 <subviews>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Forename" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
                                         <rect key="frame" x="20" y="8" width="85.5" height="30"/>
+                                        <animations/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
+                                        <textInputTraits key="textInputTraits" enablesReturnKeyAutomatically="YES"/>
+                                        <connections>
+                                            <action selector="filledFirstname:" destination="BiV-OX-JbO" eventType="editingDidEnd" id="Ncx-MW-Nwc"/>
+                                            <outlet property="delegate" destination="BiV-OX-JbO" id="Hhu-jd-DPH"/>
+                                        </connections>
                                     </textField>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Lastname" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="nfN-1w-tOm">
                                         <rect key="frame" x="113" y="8" width="85.5" height="30"/>
+                                        <animations/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
+                                        <textInputTraits key="textInputTraits" enablesReturnKeyAutomatically="YES"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="BiV-OX-JbO" id="oi9-eD-fb3"/>
+                                        </connections>
                                     </textField>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <animations/>
                                 <constraints>
                                     <constraint firstItem="nfN-1w-tOm" firstAttribute="baseline" secondItem="maF-ir-g9C" secondAttribute="baseline" id="Alm-So-YXO"/>
                                     <constraint firstItem="nfN-1w-tOm" firstAttribute="width" secondItem="maF-ir-g9C" secondAttribute="width" id="F5R-SS-Mc6"/>
@@ -318,25 +352,44 @@
                                     <constraint firstAttribute="bottom" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="8" id="n6O-iy-iW0"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
+                                <rect key="frame" x="257.5" y="235" width="85" height="30"/>
+                                <animations/>
+                                <state key="normal" title="Take Picture">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="y22-GL-fWO"/>
+                                </connections>
+                            </button>
                         </subviews>
+                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
                             <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" id="94p-Kz-qxS"/>
                             <constraint firstAttribute="centerX" secondItem="90I-D0-RlC" secondAttribute="centerX" id="AUn-sh-c75"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="90I-D0-RlC" secondAttribute="centerY" id="AxW-Te-C9j"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
                             <constraint firstAttribute="centerX" secondItem="zPz-96-f6k" secondAttribute="centerX" constant="-2.25" id="Hzk-4o-vV7"/>
                             <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="20" id="OFo-82-Vic"/>
                             <constraint firstAttribute="centerX" secondItem="JLo-5M-7YM" secondAttribute="centerX" id="PC3-oH-0Lt"/>
                             <constraint firstAttribute="centerY" secondItem="90I-D0-RlC" secondAttribute="centerY" constant="50" id="RBE-0C-Op6"/>
-                            <constraint firstItem="90I-D0-RlC" firstAttribute="top" secondItem="sv5-P8-qju" secondAttribute="bottom" constant="-40" id="c7Q-Rl-0Bq"/>
-                            <constraint firstAttribute="centerX" secondItem="sv5-P8-qju" secondAttribute="centerX" id="j1O-SV-2pB"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="top" secondItem="zPz-96-f6k" secondAttribute="bottom" id="mIA-ZO-uX1"/>
                             <constraint firstItem="zPz-96-f6k" firstAttribute="top" secondItem="90I-D0-RlC" secondAttribute="bottom" constant="8" id="mb2-AR-r0N"/>
                             <constraint firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="aJo-bN-TNl" secondAttribute="bottom" constant="30" id="v9p-sf-Eqm"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="firstnameTextField" destination="maF-ir-g9C" id="eOV-1u-6aU"/>
+                        <outlet property="genderPicker" destination="g3H-jE-mTR" id="Eg6-dD-7vi"/>
+                        <outlet property="infoButton" destination="yag-kE-4K4" id="aqF-QY-2gM"/>
+                        <outlet property="lastnameTextField" destination="nfN-1w-tOm" id="enD-Bo-BwO"/>
+                        <outlet property="launchAppButton" destination="WkH-8i-IuH" id="1wU-Ld-ktE"/>
+                        <outlet property="picButton" destination="bd8-Ey-isT" id="8PK-y8-tbX"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zM0-44-3Vw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
