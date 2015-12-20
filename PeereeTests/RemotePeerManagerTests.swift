@@ -8,12 +8,9 @@
 
 import XCTest
 
-import class Peeree.LocalPeerManager
-import class Peeree.RemotePeerManager
-
 class RemotePeerManagerTests: XCTestCase {
 	
-	static let rpm = RemotePeerManager.sharedManager
+	let rpm = RemotePeerManager.sharedManager
 
     override func setUp() {
         super.setUp()
@@ -48,6 +45,33 @@ class RemotePeerManagerTests: XCTestCase {
 		LocalPeerManager.setLocalPeerName("test")
 		
 		rpm.goOnline()
+	}
+	
+	/**
+	*	Tests whether RemotePeerManager.kDiscoveryServiceID is valid
+	*	Test cases:
+	*	- has the id the right length?
+	*	- are only valid characters included?
+	*/
+	func testDiscoveryServiceID() {
+		let toTest = RemotePeerManager.kDiscoveryServiceID
+		let toTestLen = toTest.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
+		XCTAssertFalse(toTestLen < 1 || toTestLen > 15, "service id must be 1–15 characters long")
+		var buffer = [CChar](count: toTestLen, repeatedValue: 0)
+		var hyphenBuf = [CChar](count: 2, repeatedValue: 0)
+		toTest.getCString(&buffer, maxLength: toTestLen, encoding: NSUTF8StringEncoding)
+		"-".getCString(&hyphenBuf, maxLength: 2, encoding: NSUTF8StringEncoding)
+		var idx: Int
+		//for character in buffer {
+		//only go to toTestLen-1 to ommit trainling 0
+		for idx = 0; idx < toTestLen-1; idx++ {
+			let character = buffer[idx]
+			let char32: Int32 = Int32(character)
+			let test1 = isalnum(char32) != 0
+			let test2 = character == hyphenBuf[0]
+			let test = test1 || test2
+			XCTAssertTrue(test, "only alphanumeric and hyphen characters are allowed in service ids")
+		}
 	}
 
 }

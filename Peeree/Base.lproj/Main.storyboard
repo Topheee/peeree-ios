@@ -946,8 +946,8 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="JtG-Ju-Bnv">
-                                <rect key="frame" x="4" y="325.5" width="592" height="225.5"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="JtG-Ju-Bnv">
+                                <rect key="frame" x="4" y="325.5" width="592" height="274.5"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="pastPinCell" textLabel="VkH-1S-w7s" detailTextLabel="3kw-BG-Q1l" rowHeight="44" style="IBUITableViewCellStyleSubtitle" id="DjU-D4-ftG">
@@ -976,8 +976,8 @@
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="HZZ-Nc-7xZ">
-                                <rect key="frame" x="4" y="64" width="592" height="198"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="HZZ-Nc-7xZ">
+                                <rect key="frame" x="4" y="20" width="592" height="242"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="pinPointOfferingCell" id="a0D-Y7-7CO">
@@ -1001,7 +1001,7 @@
                                                     </state>
                                                 </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10€" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oGU-uX-Yfb">
-                                                    <rect key="frame" x="493.5" y="13.5" width="28.5" height="20.5"/>
+                                                    <rect key="frame" x="493" y="13" width="28.5" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                                     <nil key="highlightedColor"/>
@@ -1163,10 +1163,10 @@
             </objects>
             <point key="canvasLocation" x="717" y="1451"/>
         </scene>
-        <!--Table View Controller-->
+        <!--Shop-->
         <scene sceneID="IvK-ra-mpe">
             <objects>
-                <tableViewController id="BiV-gd-ipE" sceneMemberID="viewController">
+                <tableViewController id="BiV-gd-ipE" customClass="ShopViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="43f-5z-3HO">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1226,7 +1226,7 @@
                             <outlet property="delegate" destination="BiV-gd-ipE" id="uwp-VR-xTS"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="ztX-TG-LEe"/>
+                    <navigationItem key="navigationItem" title="Shop" id="ztX-TG-LEe"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yZb-hg-En0" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1305,7 +1305,7 @@
         <image name="second" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
+        <segue reference="7Nf-9B-BLi"/>
         <segue reference="Lgq-xA-Oyd"/>
-        <segue reference="NbJ-vu-9Fg"/>
     </inferredMetricsTieBreakers>
 </document>

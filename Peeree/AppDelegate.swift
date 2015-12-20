@@ -11,14 +11,13 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 	
-	static internal let kPrefFirstLaunch = "peeree-prefs-first-launch"
+	static let kPrefSkipOnboarding = "peeree-prefs-skip-onboarding"
 
 	var window: UIWindow?
 
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 		// Override point for customization after application launch.
-		let defs = NSUserDefaults.standardUserDefaults()
-		if defs.objectForKey(AppDelegate.kPrefFirstLaunch) == nil {
+		if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.kPrefSkipOnboarding) {
 			//this is the first launch of the app, so we show the first launch UI
 			self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
 			

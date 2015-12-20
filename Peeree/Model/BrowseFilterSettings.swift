@@ -13,7 +13,7 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	static private let kPrefKey = "peeree-prefs-browse-filter"
 	
 	static var sharedSettings: BrowseFilterSettings {
-		return NSUserDefaults.standardUserDefaults().objectForKey(BrowseFilterSettings.kPrefKey) as? BrowseFilterSettings ?? BrowseFilterSettings()
+		return unarchiveObjectFromUserDefs(kPrefKey) ?? BrowseFilterSettings()
 	}
 	
 	enum GenderType: Int {
@@ -53,6 +53,6 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	}
 	
 	func writeToDefaults() {
-		NSUserDefaults.standardUserDefaults().setObject(self, forKey: BrowseFilterSettings.kPrefKey)
+		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.kPrefKey)
 	}
 }

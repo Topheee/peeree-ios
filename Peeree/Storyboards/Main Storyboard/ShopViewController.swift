@@ -15,11 +15,11 @@ class ShopViewController: UITableViewController {
 	private func createWalletInfoCell(tableView: UITableView, indexPath: NSIndexPath) -> UITableViewCell {
 		let ret = tableView.dequeueReusableCellWithIdentifier("walletInfoCell", forIndexPath: indexPath)
 		switch indexPath.row {
-		case 1:
+		case 0:
 			ret.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency")
 			ret.detailTextLabel?.text = String(WalletController.getAvailablePinPoints())
 			break
-		case 2:
+		case 1:
 			ret.textLabel?.text = NSLocalizedString("Account", comment: "")
 			// TODO make this mutual or remove it
 			ret.detailTextLabel?.text = String("christopher@merlin.de")

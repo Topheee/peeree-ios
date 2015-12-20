@@ -7,9 +7,8 @@
 //
 
 import UIKit
+import MultipeerConnectivity
 import XCTest
-
-import class Peeree.LocalPeerManager
 
 /**
  *	Contains tests of the LocalPeerManager class.
@@ -18,7 +17,7 @@ class LocalPeerManagerTests: XCTestCase {
 	//copied from LocalPeerManager
 	//static private let kPrefPeerID = "kobusch-prefs-peerID"
 	
-	static private var peerData: NSData? = nil
+	static private var peerData: MCPeerID? = nil
 	
 	/**
 	 *	Saves the user default preferences until the tests are finished.
@@ -26,8 +25,7 @@ class LocalPeerManagerTests: XCTestCase {
 	static override func setUp() {
 		NSLog("%s\n", __FUNCTION__)
 		//keep the preferences as they were
-		let defs = NSUserDefaults.standardUserDefaults()
-		peerData = defs.objectForKey(LocalPeerManager.kPrefPeerID) as? NSData
+		peerData = LocalPeerManager.getLocalPeerID()
 		if let data = peerData {
 			NSLog("\tretrieved %@ from preferences", data)
 		}
@@ -39,9 +37,11 @@ class LocalPeerManagerTests: XCTestCase {
 	static override func tearDown() {
 		NSLog("%s\n", __FUNCTION__)
 		if let data = peerData {
-			let defs = NSUserDefaults.standardUserDefaults()
-			defs.setObject(NSKeyedArchiver.archivedDataWithRootObject(data), forKey: LocalPeerManager.kPrefPeerID)
+			LocalPeerManager.setLocalPeerName(data.displayName)
 			NSLog("\twrote %@ to preferences", data)
+			if !data.isEqual(LocalPeerManager.getLocalPeerID()) {
+				NSLog("\tthe peer ID changes, even if you create one with the same display name")
+			}
 		}
 	}
 	
@@ -67,10 +67,10 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
     func testSetAndGetLocalPeer() {
 		//local peer has to be nil here since we removed it in setUp()
-		XCTAssertNil(LocalPeerManager.getLocalPeer(), "local peer has to be nil")
+		XCTAssertNil(LocalPeerManager.getLocalPeerID(), "local peer has to be nil")
 		
 		LocalPeerManager.setLocalPeerName("testName")
-		let testPeer = LocalPeerManager.getLocalPeer()
+		let testPeer = LocalPeerManager.getLocalPeerID()
 		
 		XCTAssertNotNil(testPeer, "local peer ID was not created, though a name was specified")
 		
@@ -85,32 +85,5 @@ class LocalPeerManagerTests: XCTestCase {
 		}
 		//TODO XCTAssertThrows with tooLongName and "" as parameter for setLocalPeerName
     }
-	
-	/**
-	 *	Tests whether LocalPeerManager.kDiscoveryServiceID is valid
-	 *	Test cases:
-	 *	- has the id the right length?
-	 *	- are only valid characters included?
-	 */
-	func testDiscoveryServiceID() {
-		let toTest = LocalPeerManager.kDiscoveryServiceID
-		let toTestLen = toTest.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
-		XCTAssertFalse(toTestLen < 1 || toTestLen > 15, "service id must be 1–15 characters long")
-		var buffer = [CChar](count: toTestLen, repeatedValue: 0)
-		var hyphenBuf = [CChar](count: 2, repeatedValue: 0)
-		toTest.getCString(&buffer, maxLength: toTestLen, encoding: NSUTF8StringEncoding)
-		"-".getCString(&hyphenBuf, maxLength: 2, encoding: NSUTF8StringEncoding)
-		var idx: Int
-		//for character in buffer {
-		//only go to toTestLen-1 to ommit trainling 0
-		for idx = 0; idx < toTestLen-1; idx++ {
-			let character = buffer[idx]
-			let char32: Int32 = Int32(character)
-			let test1 = isalnum(char32) != 0
-			let test2 = character == hyphenBuf[0]
-			let test = test1 || test2
-			XCTAssertTrue(test, "only alphanumeric and hyphen characters are allowed in service ids")
-		}
-	}
 
 }

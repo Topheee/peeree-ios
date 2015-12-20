@@ -17,8 +17,7 @@ class SetupViewController: UIViewController, UITextFieldDelegate {
 	@IBOutlet var genderPicker: UISegmentedControl!
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
-		let defs = NSUserDefaults.standardUserDefaults()
-		defs.setBool(true, forKey: AppDelegate.kPrefFirstLaunch)
+		NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
 		//let storyboard = UIStoryboard(name:"Main", bundle: nil)
 		//self.showViewController(storyboard.instantiateInitialViewController()!, sender: self)
 	}
