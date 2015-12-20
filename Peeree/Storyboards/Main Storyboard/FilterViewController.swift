@@ -19,14 +19,12 @@ class FilterViewController: UIViewController {
 	@IBOutlet var ageMinSlider: UISlider!
 	
 	@IBOutlet var genderSeg: UISegmentedControl!
-	@IBOutlet var langSeg: UISegmentedControl!
 	
 	
 	private func updatePrefs() {
 		backend.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
 		backend.ageMin = ageMinSlider.value
 		backend.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
-		backend.atLeastMyLanguage = langSeg.selectedSegmentIndex == 1
 		backend.writeToDefaults()
 	}
 	

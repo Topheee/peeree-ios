@@ -23,7 +23,6 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	private static let kAgeMinKey = "ageMin"
 	private static let kAgeMaxKey = "ageMax"
 	private static let kGenderKey = "gender"
-	private static let kLanguageKey = "language"
 	
 	//range from 10..100
 	var ageMin: Float = 10.0
@@ -31,8 +30,6 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	var ageMax: Float = 0.0
 	
 	var gender: GenderType = .Unspecified
-	
-	var atLeastMyLanguage = false
 	
 	override init() {
 		
@@ -42,14 +39,12 @@ class BrowseFilterSettings: NSObject, NSCoding {
 		gender = GenderType(rawValue: aDecoder.decodeIntegerForKey(BrowseFilterSettings.kGenderKey))!
 		ageMin = aDecoder.decodeFloatForKey(BrowseFilterSettings.kAgeMinKey)
 		ageMax = aDecoder.decodeFloatForKey(BrowseFilterSettings.kAgeMaxKey)
-		atLeastMyLanguage = aDecoder.decodeBoolForKey(BrowseFilterSettings.kLanguageKey)
 	}
 	
 	@objc func encodeWithCoder(aCoder: NSCoder) {
 		aCoder.encodeFloat(ageMin, forKey: BrowseFilterSettings.kAgeMinKey)
 		aCoder.encodeFloat(ageMax, forKey: BrowseFilterSettings.kAgeMaxKey)
 		aCoder.encodeInteger(gender.rawValue, forKey: BrowseFilterSettings.kGenderKey)
-		aCoder.encodeBool(atLeastMyLanguage, forKey: BrowseFilterSettings.kLanguageKey)
 	}
 	
 	func writeToDefaults() {

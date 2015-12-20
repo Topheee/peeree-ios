@@ -8,14 +8,13 @@
 
 import UIKit
 
-class MeViewController: UIViewController, SingleSelViewControllerDataSource, UITableViewDataSource, UITableViewDelegate {
+class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	@IBOutlet var scrollView: UIScrollView!
 	@IBOutlet var contentView: UIView!
 	
 	@IBOutlet var forenameTextField: UITextField!
 	@IBOutlet var lastnameTextField: UITextField!
 	@IBOutlet var ageTextField: UITextField!
-	@IBOutlet var countryTextField: UITextField!
 	@IBOutlet var statusButton: UIButton!
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -24,11 +23,13 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource, UIT
 		} else if let charTraitVC = segue.destinationViewController as?
 			CharacterTraitViewController {
 			charTraitVC.characterTraits = LocalPeerManager.getLocalPeerDescription().characterTraits
-		} else if let multipleSelVC = segue.destinationViewController as? UITableViewController {
-			multipleSelVC.title = NSLocalizedString("Spoken Languages", comment: "Title of the spoken languages selection view controller")
-			multipleSelVC.tableView.dataSource = self
-			multipleSelVC.tableView.delegate = self
 		}
+		// TODO remove this
+//		else if let multipleSelVC = segue.destinationViewController as? UITableViewController {
+//			multipleSelVC.title = NSLocalizedString("Spoken Languages", comment: "Title of the spoken languages selection view controller")
+//			multipleSelVC.tableView.dataSource = self
+//			multipleSelVC.tableView.delegate = self
+//		}
 	}
 	
 	override func viewDidLayoutSubviews() {
@@ -65,27 +66,5 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource, UIT
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		statusButton.titleLabel?.text = LocalPeerDescription.possibleStatuses[row]
-	}
-	
-	func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return LocalPeerDescription.possibleLanguages.count
-	}
-	
-	func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-		let ret = UITableViewCell(style: .Default, reuseIdentifier: "defMultipleSelCell")
-		ret.textLabel!.text = LocalPeerDescription.possibleLanguages[indexPath.row]
-		ret.accessoryType = LocalPeerManager.getLocalPeerDescription().languages[indexPath.row] ? .Checkmark : .None
-		ret.selectionStyle = .None
-		return ret
-	}
-	
-	func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-		LocalPeerManager.getLocalPeerDescription().languages[indexPath.row] = true
-		tableView.cellForRowAtIndexPath(indexPath)?.accessoryType = .Checkmark
-	}
-	
-	func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
-		LocalPeerManager.getLocalPeerDescription().languages[indexPath.row] = false
-		tableView.cellForRowAtIndexPath(indexPath)?.accessoryType = .None
 	}
 }

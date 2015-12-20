@@ -51,17 +51,6 @@ class LocalPeerManager {
 				LocalPeerManager.localPeerDescriptionChanged()
 			}
 		}
-		override var country: Int {
-			didSet {
-				LocalPeerManager.localPeerDescriptionChanged()
-			}
-		}
-		override var languages: [Bool] {
-			didSet {
-				// TODO evaluate, whether this works, since the values in the array may change, but not the array itself, and so this event may not be triggered
-				LocalPeerManager.localPeerDescriptionChanged()
-			}
-		}
 		override var characterTraits: [CharacterTrait] {
 			// TODO evaluate, whether this works, since the values in the array may change, but not the array itself, and so this event may not be triggered
 			didSet {
