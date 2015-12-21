@@ -1,5 +1,5 @@
 //
-//  LocalPeerManagerTests.swift
+//  UserPeerManagerTests.swift
 //  Peeree
 //
 //  Created by Christopher Kobusch on 22.07.15.
@@ -11,10 +11,10 @@ import MultipeerConnectivity
 import XCTest
 
 /**
- *	Contains tests of the LocalPeerManager class.
+ *	Contains tests of the UserPeerManager class.
  */
-class LocalPeerManagerTests: XCTestCase {
-	//copied from LocalPeerManager
+class UserPeerManagerTests: XCTestCase {
+	//copied from UserPeerManager
 	//static private let kPrefPeerID = "kobusch-prefs-peerID"
 	
 	static private var peerData: MCPeerID? = nil
@@ -25,7 +25,7 @@ class LocalPeerManagerTests: XCTestCase {
 	static override func setUp() {
 		NSLog("%s\n", __FUNCTION__)
 		//keep the preferences as they were
-		peerData = LocalPeerManager.getLocalPeerID()
+		peerData = UserPeerManager.getPeerDescription().networkDescription.peerID
 		if let data = peerData {
 			NSLog("\tretrieved %@ from preferences", data)
 		}
@@ -37,9 +37,9 @@ class LocalPeerManagerTests: XCTestCase {
 	static override func tearDown() {
 		NSLog("%s\n", __FUNCTION__)
 		if let data = peerData {
-			LocalPeerManager.setLocalPeerName(data.displayName)
+			UserPeerManager.setLocalPeerName(data.displayName)
 			NSLog("\twrote %@ to preferences", data)
-			if !data.isEqual(LocalPeerManager.getLocalPeerID()) {
+			if !data.isEqual(UserPeerManager.getPeerDescription().networkDescription.peerID) {
 				NSLog("\tthe peer ID changes, even if you create one with the same display name")
 			}
 		}
@@ -50,7 +50,7 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
     override func setUp() {
 		super.setUp()
-		LocalPeerManager.dropLocalPeerID()
+		UserPeerManager.dropLocalPeerID()
     }
     
     override func tearDown() {
@@ -59,7 +59,7 @@ class LocalPeerManagerTests: XCTestCase {
     }
 	
 	/**
-	 *	Tests LocalPeerManager.setLocalPeer() and LocalPeerManager.getLocalPeer()
+	 *	Tests UserPeerManager.setLocalPeer() and UserPeerManager.getLocalPeer()
 	 *	Test cases:
 	 *	- is the local peer nil when the user defaults are empty?
 	 *	- is the local peer not nil, when a valid name was set?
@@ -67,10 +67,10 @@ class LocalPeerManagerTests: XCTestCase {
 	 */
     func testSetAndGetLocalPeer() {
 		//local peer has to be nil here since we removed it in setUp()
-		XCTAssertNil(LocalPeerManager.getLocalPeerID(), "local peer has to be nil")
+		XCTAssertNil(UserPeerManager.getPeerDescription().networkDescription.peerID, "local peer has to be nil")
 		
-		LocalPeerManager.setLocalPeerName("testName")
-		let testPeer = LocalPeerManager.getLocalPeerID()
+		UserPeerManager.setLocalPeerName("testName")
+		let testPeer = UserPeerManager.getPeerDescription().networkDescription.peerID
 		
 		XCTAssertNotNil(testPeer, "local peer ID was not created, though a name was specified")
 		

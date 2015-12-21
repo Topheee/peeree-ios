@@ -21,7 +21,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	/*
 	 *	Since bluetooth connections are not very reliable, all peers are cached for a reasonable amount of time (at least 30 Minutes).
 	 */
-	private var cachedPeers: [MCPeerID : LocalPeerDescription] = [:]
+	private var cachedPeers: [MCPeerID : LocalPeerInfo] = [:]
 	/*
 	 *	All the Bluetooth stuff.
 	 *	Should be private, but then, we cannot mock them.
@@ -32,24 +32,22 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	 *	All remote peers the app is currently connected to. This property is immediatly updated when a new connection is set up or an existing is cut off.
 	 */
 	var availablePeers = Set<MCPeerID>()
-	var pinnedPeers: [LocalPeerDescription] = []
+	var pinnedPeers: [LocalPeerInfo] = []
 	
 	var delegate: RemotePeerManagerDelegate?
 	
 	func goOnline() {
+		let peerID = UserPeerInfo.instance.peerID
+
 		if btAdvertiser == nil {
-			if let peerID = LocalPeerManager.getLocalPeerID() {
 				// TODO maybe provide some information in discoveryInfo
 				btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.kDiscoveryServiceID)
 				btAdvertiser!.delegate = self
-			}
 		}
 		btAdvertiser?.startAdvertisingPeer()
 		if btBrowser == nil {
-			if let peerID = LocalPeerManager.getLocalPeerID() {
 				btBrowser = MCNearbyServiceBrowser(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
 				btBrowser!.delegate = self
-			}
 		}
 		btBrowser?.startBrowsingForPeers()
 	}
@@ -121,7 +119,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	}
 	
 	private func beginPeerDescriptionDownloading(forPeer: MCPeerID) {
-		btBrowser?.invitePeer(forPeer, toSession: MCSession(peer: LocalPeerManager.getLocalPeerID()!, securityIdentity: nil, encryptionPreference: .Required), withContext: nil, timeout: RemotePeerManager.kInvitationTimeout)
+		btBrowser?.invitePeer(forPeer, toSession: MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: .Required), withContext: nil, timeout: RemotePeerManager.kInvitationTimeout)
 	}
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer: NSError) {
@@ -130,7 +128,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
 		// TODO The nearby peer should treat any data it receives as potentially untrusted. To learn more about working with untrusted data, read Secure Coding Guide.
-		invitationHandler(true, MCSession(peer: LocalPeerManager.getLocalPeerID()!, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required))
+		invitationHandler(true, MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required))
 	}
 	
 	@objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {

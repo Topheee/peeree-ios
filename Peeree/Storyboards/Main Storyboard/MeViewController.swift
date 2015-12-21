@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MeViewController: UIViewController, SingleSelViewControllerDataSource {
+class MeViewController: UIViewController, SingleSelViewControllerDataSource, UITextFieldDelegate, UserPeerInfoDelegate {
 	@IBOutlet var scrollView: UIScrollView!
 	@IBOutlet var contentView: UIView!
 	
@@ -17,12 +17,14 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	@IBOutlet var ageTextField: UITextField!
 	@IBOutlet var statusButton: UIButton!
 	
+	private var isIdentityChanging = false
+	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
 			singleSelVC.dataSource = self
 		} else if let charTraitVC = segue.destinationViewController as?
 			CharacterTraitViewController {
-			charTraitVC.characterTraits = LocalPeerManager.getLocalPeerDescription().characterTraits
+			charTraitVC.characterTraits = UserPeerInfo.instance.characterTraits
 		}
 		// TODO remove this
 //		else if let multipleSelVC = segue.destinationViewController as? UITableViewController {
@@ -38,6 +40,25 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 		scrollView.layoutIfNeeded()
 		scrollView.contentSize = contentView.bounds.size
 	}
+	
+	override func viewWillAppear(animated: Bool) {
+		forenameTextField.text = UserPeerInfo.instance.givenName
+		lastnameTextField.text = UserPeerInfo.instance.familyName
+	}
+	
+	override func viewDidAppear(animated: Bool) {
+		UserPeerInfo.instance.delegate = self
+	}
+	
+	override func viewDidDisappear(animated: Bool) {
+//		if UserPeerInfo.instance.delegate! == self as UserPeerInfoDelegate {
+			UserPeerInfo.instance.delegate = nil
+//		}
+	}
+	
+	// MARK: -
+	
+	// MARK: SingleSelViewControllerDataSource
 	
 	func headingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
 		return NSLocalizedString("Relationship status", comment: "Heading of the relation ship status picker view controller")
@@ -57,14 +78,60 @@ class MeViewController: UIViewController, SingleSelViewControllerDataSource {
 	
 	func pickerView(pickerView: UIPickerView,
 		numberOfRowsInComponent component: Int) -> Int {
-		return LocalPeerDescription.possibleStatuses.count
+		return SerializablePeerInfo.possibleStatuses.count
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return LocalPeerDescription.possibleStatuses[row]
+		return SerializablePeerInfo.possibleStatuses[row]
 	}
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		statusButton.titleLabel?.text = LocalPeerDescription.possibleStatuses[row]
+		statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[row]
+	}
+	
+	// MARK: UITextFieldDelegate
+	
+	func textFieldShouldReturn(textField: UITextField) -> Bool {
+		textField.resignFirstResponder()
+		return true
+	}
+	
+	func textFieldShouldEndEditing(textField: UITextField) -> Bool {
+		textField.resignFirstResponder()
+		if let newValue = textField.text {
+			switch textField {
+			case forenameTextField:
+				if newValue != UserPeerInfo.instance.givenName {
+					isIdentityChanging = true
+					UserPeerInfo.instance.givenName = newValue
+				}
+			case lastnameTextField:
+				if newValue != UserPeerInfo.instance.familyName {
+					isIdentityChanging = true
+					UserPeerInfo.instance.familyName = newValue
+				}
+			default:
+				break
+			}
+		}
+		return true
+	}
+	
+	func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
+		return !(isIdentityChanging || forenameTextField.isFirstResponder() || lastnameTextField.isFirstResponder())
+	}
+	
+	func userCancelledIDChange() {
+		isIdentityChanging = false
+		forenameTextField.text = UserPeerInfo.instance.givenName
+		lastnameTextField.text = UserPeerInfo.instance.familyName
+	}
+	
+	func userConfirmedIDChange() {
+		isIdentityChanging = false
+	}
+	
+	func idChangeDialogPresented() {
+		// nothing
 	}
 }

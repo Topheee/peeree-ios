@@ -8,42 +8,44 @@
 
 import Foundation
 
-class CharacterTrait: NSCoding {
+class CharacterTrait: NSObject, NSSecureCoding {
 	enum ApplyType: Int {
 		case No = 0, Yes, MoreOrLess, DontKnow
 	}
 	
-	private static let applKey = "applies"
-	private static let descKey = "description"
-	private static let nameKey = "name"
+	private static let ApplKey = "applies"
+	private static let DescKey = "description"
+	private static let NameKey = "name"
 	
-	// TODO remove this internal static let kPrefDictKey = "peeree-prefs-char-traits"
+	@objc static func supportsSecureCoding() -> Bool {
+		return true
+	}
 	
 	// TODO localization
-	internal static let applyTypeNames = ["no", "yes", "more or less", "don't know"]
+	internal static let ApplyTypeNames = ["no", "yes", "more or less", "don't know"]
 	
 	// does this trait apply to the peer?
 	var applies: ApplyType
 	// what is this trait about?
-	var description: String
+	var traitDescription: String
 	var name: String
 	
-	init(name: String, description: String) {
+	@objc required init(name: String, description: String) {
 		applies = .DontKnow
-		self.description = description
+		self.traitDescription = description
 		self.name = name
 	}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
-		applies = ApplyType(rawValue: aDecoder.decodeIntegerForKey(CharacterTrait.applKey))!
-		description = aDecoder.decodeObjectForKey(CharacterTrait.descKey) as! String
-		name = aDecoder.decodeObjectForKey(CharacterTrait.nameKey) as! String
+		applies = ApplyType(rawValue: aDecoder.decodeIntegerForKey(CharacterTrait.ApplKey))!
+		traitDescription = aDecoder.decodeObjectForKey(CharacterTrait.DescKey) as! String
+		name = aDecoder.decodeObjectForKey(CharacterTrait.NameKey) as! String
 	}
 	
 	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeInteger(applies.rawValue, forKey: CharacterTrait.applKey)
-		aCoder.encodeObject(description, forKey: CharacterTrait.descKey)
-		aCoder.encodeObject(name, forKey: CharacterTrait.nameKey)
+		aCoder.encodeInteger(applies.rawValue, forKey: CharacterTrait.ApplKey)
+		aCoder.encodeObject(description, forKey: CharacterTrait.DescKey)
+		aCoder.encodeObject(name, forKey: CharacterTrait.NameKey)
 	}
 	
 	static func standardTraits() -> Array<CharacterTrait> {

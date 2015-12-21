@@ -8,21 +8,22 @@
 
 import Foundation
 
+// TODO change to observed things like UserPeerInfo
 class BrowseFilterSettings: NSObject, NSCoding {
 	
-	static private let kPrefKey = "peeree-prefs-browse-filter"
+	private static let PrefKey = "peeree-prefs-browse-filter"
+	
+	private static let AgeMinKey = "ageMin"
+	private static let AgeMaxKey = "ageMax"
+	private static let GenderKey = "gender"
 	
 	static var sharedSettings: BrowseFilterSettings {
-		return unarchiveObjectFromUserDefs(kPrefKey) ?? BrowseFilterSettings()
+		return unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
 	}
 	
 	enum GenderType: Int {
 		case Unspecified = 0, Male, Female
 	}
-	
-	private static let kAgeMinKey = "ageMin"
-	private static let kAgeMaxKey = "ageMax"
-	private static let kGenderKey = "gender"
 	
 	//range from 10..100
 	var ageMin: Float = 10.0
@@ -36,18 +37,18 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
-		gender = GenderType(rawValue: aDecoder.decodeIntegerForKey(BrowseFilterSettings.kGenderKey))!
-		ageMin = aDecoder.decodeFloatForKey(BrowseFilterSettings.kAgeMinKey)
-		ageMax = aDecoder.decodeFloatForKey(BrowseFilterSettings.kAgeMaxKey)
+		gender = GenderType(rawValue: aDecoder.decodeIntegerForKey(BrowseFilterSettings.GenderKey))!
+		ageMin = aDecoder.decodeFloatForKey(BrowseFilterSettings.AgeMinKey)
+		ageMax = aDecoder.decodeFloatForKey(BrowseFilterSettings.AgeMaxKey)
 	}
 	
 	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeFloat(ageMin, forKey: BrowseFilterSettings.kAgeMinKey)
-		aCoder.encodeFloat(ageMax, forKey: BrowseFilterSettings.kAgeMaxKey)
-		aCoder.encodeInteger(gender.rawValue, forKey: BrowseFilterSettings.kGenderKey)
+		aCoder.encodeFloat(ageMin, forKey: BrowseFilterSettings.AgeMinKey)
+		aCoder.encodeFloat(ageMax, forKey: BrowseFilterSettings.AgeMaxKey)
+		aCoder.encodeInteger(gender.rawValue, forKey: BrowseFilterSettings.GenderKey)
 	}
 	
 	func writeToDefaults() {
-		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.kPrefKey)
+		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
 	}
 }

@@ -58,15 +58,11 @@ class FilterViewController: UIViewController {
 		updateAgeMaxLabel()
 	}
 	
-	override func viewDidAppear(animated: Bool) {
+	override func viewWillAppear(animated: Bool) {
 		backend = BrowseFilterSettings.sharedSettings
 		ageMaxSlider.value = backend.ageMax
 		updateAgeMaxLabel()
 		ageMinSlider.value = backend.ageMin
 		updateAgeMinLabel()
-	}
-	
-	override func viewDidDisappear(animated: Bool) {
-		backend = nil
 	}
 }

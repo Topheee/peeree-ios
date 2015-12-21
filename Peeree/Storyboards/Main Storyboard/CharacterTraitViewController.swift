@@ -45,7 +45,7 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
 		let trait = characterTraits![indexPath.row]
 		cell.textLabel!.text = trait.name
-		cell.detailTextLabel!.text = CharacterTrait.applyTypeNames[trait.applies.rawValue]
+		cell.detailTextLabel!.text = CharacterTrait.ApplyTypeNames[trait.applies.rawValue]
 		return cell
 	}
 	
@@ -85,11 +85,11 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 	
 	func pickerView(pickerView: UIPickerView,
 		numberOfRowsInComponent component: Int) -> Int {
-			return CharacterTrait.applyTypeNames.count
+			return CharacterTrait.ApplyTypeNames.count
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return CharacterTrait.applyTypeNames[row]
+		return CharacterTrait.ApplyTypeNames[row]
 	}
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
