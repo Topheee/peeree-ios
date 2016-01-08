@@ -9,40 +9,30 @@
 import UIKit
 
 class SingleSelViewController: UIViewController {
-	@IBOutlet var headingLabel: UILabel!
-	@IBOutlet var subHeadingLabel: UILabel!
-	@IBOutlet var descriptionTextView: UITextView!
 	@IBOutlet var selectionPickerView: UIPickerView!
 	
-	internal var dataSource: SingleSelViewControllerDataSource!
-	
-	override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
-		NSLog("SingleSelViewController.%@", __FUNCTION__)
-		return true
+	var dataSource: SingleSelViewControllerDataSource? {
+		didSet {
+			if selectionPickerView != nil {
+				selectionPickerView.dataSource = dataSource
+				selectionPickerView.delegate = dataSource
+			}
+		}
 	}
+	
+	// MARK: - Navigation
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-		NSLog("SingleSelViewController.%@", __FUNCTION__)
-	}
-	
-	override func performSegueWithIdentifier(identifier: String, sender: AnyObject?) {
-		NSLog("SingleSelViewController.%@", __FUNCTION__)
-		super.performSegueWithIdentifier(identifier, sender: sender)
-	}
-	
-	override func didMoveToParentViewController(parent: UIViewController?) {
-		if dataSource != nil {
-			headingLabel.text = dataSource.headingOfSingleSelViewController(self)
-			subHeadingLabel.text = dataSource.subHeadingOfSingleSelViewController(self)
-			selectionPickerView.dataSource = dataSource
-			selectionPickerView.delegate = dataSource
-			descriptionTextView.text = dataSource.descriptionOfSingleSelViewController(self)
+		if let descriptionVC = segue.destinationViewController as? BasicDescriptionViewController {
+			descriptionVC.dataSource = dataSource
 		}
+	}
+	
+	override func viewDidLoad() {
+		selectionPickerView.dataSource = dataSource
+		selectionPickerView.delegate = dataSource
 	}
 }
 
-protocol SingleSelViewControllerDataSource: UIPickerViewDataSource, UIPickerViewDelegate {
-	func headingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String?
-	func subHeadingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String?
-	func descriptionOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String?
+protocol SingleSelViewControllerDataSource: BasicDescriptionViewControllerDataSource, UIPickerViewDataSource, UIPickerViewDelegate {
 }

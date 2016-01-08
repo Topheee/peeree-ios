@@ -7,8 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D08E2D71C4030B30045388A /* BasicDescription.storyboard */; };
+		9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D08E2D91C4031050045388A /* BasicDescriptionViewController.swift */; };
+		9D08E2DB1C40325E0045388A /* BasicDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D08E2D91C4031050045388A /* BasicDescriptionViewController.swift */; };
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
+		9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
+		9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
 		9D883A4B1C26B64A00702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
@@ -73,9 +78,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9D08E2D71C4030B30045388A /* BasicDescription.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BasicDescription.storyboard; path = Peeree/Storyboards/Common/BasicDescription.storyboard; sourceTree = "<group>"; };
+		9D08E2D91C4031050045388A /* BasicDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicDescriptionViewController.swift; path = Peeree/Storyboards/Common/BasicDescriptionViewController.swift; sourceTree = "<group>"; };
 		9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FirstLaunchViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/FirstLaunchViewController.swift"; sourceTree = "<group>"; };
 		9D2923261B91E50B00B5B622 /* SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupViewController.swift"; sourceTree = "<group>"; };
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
+		9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateSelViewController.swift; path = "Storyboards/Main Storyboard/DateSelViewController.swift"; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D77C7141B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManagerTests.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
@@ -133,6 +141,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9D08E2D41C402FD30045388A /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				9D08E2D71C4030B30045388A /* BasicDescription.storyboard */,
+				9D08E2D91C4031050045388A /* BasicDescriptionViewController.swift */,
+			);
+			name = Common;
+			sourceTree = "<group>";
+		};
 		9D29231E1B91AB7A00B5B622 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +175,7 @@
 				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
+				9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
@@ -178,12 +196,13 @@
 				9D883A491C26B5A200702F9A /* GenericFunctions.swift */,
 			);
 			name = Helpers;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		9D8A59291B92EB7800164C9F /* Storyboards */ = {
 			isa = PBXGroup;
 			children = (
-				9D883A481C26B56400702F9A /* Helpers */,
+				9D08E2D41C402FD30045388A /* Common */,
 				9D8A592A1B92EB8300164C9F /* Onboarding Sequence */,
 				9D29231F1B91AB9A00B5B622 /* Main Storyboard */,
 			);
@@ -232,6 +251,7 @@
 		9DA0F7B71B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXGroup;
 			children = (
+				9D883A481C26B56400702F9A /* Helpers */,
 				9D8A59291B92EB7800164C9F /* Storyboards */,
 				9D29231E1B91AB7A00B5B622 /* Controller */,
 				9DEAE8C81B63ED3700D4F6BF /* Model */,
@@ -374,6 +394,7 @@
 			files = (
 				9D8A59371B92F18200164C9F /* LaunchScreen.xib in Resources */,
 				9D8A59361B92F17E00164C9F /* Main.storyboard in Resources */,
+				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
 				9D8A59321B92EC5200164C9F /* FirstLaunch.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
 			);
@@ -406,6 +427,7 @@
 				9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
+				9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */,
@@ -414,6 +436,7 @@
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
 				9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */,
 				9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */,
+				9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
 				9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
@@ -433,6 +456,7 @@
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */,
+				9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
 				9DDD0D4A1C24BBAF009A518F /* AppDelegate.swift in Sources */,
 				9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */,
@@ -449,6 +473,7 @@
 				9DDD0D391C24BBA1009A518F /* SingleSelViewController.swift in Sources */,
 				9DDD0D3A1C24BBA1009A518F /* ShopViewController.swift in Sources */,
 				9DDD0D491C24BBAF009A518F /* RootView.swift in Sources */,
+				9D08E2DB1C40325E0045388A /* BasicDescriptionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

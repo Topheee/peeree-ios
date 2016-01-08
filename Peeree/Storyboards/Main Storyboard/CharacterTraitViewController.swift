@@ -60,19 +60,19 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 		selectedTrait = indexPath
 	}
 	
-	func headingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+	func headingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 		// TODO localization
 		return "How about..."
 	}
 	
-	func subHeadingOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+	func subHeadingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 		if let traits = characterTraits {
 			return traits[selectedTrait!.row].name
 		}
 		return ""
 	}
 	
-	func descriptionOfSingleSelViewController(singleSelViewController: SingleSelViewController) -> String? {
+	func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 		if let traits = characterTraits {
 			return traits[selectedTrait!.row].description
 		}
