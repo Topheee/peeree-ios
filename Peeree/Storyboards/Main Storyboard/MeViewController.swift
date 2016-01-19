@@ -14,8 +14,10 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	
 	@IBOutlet var forenameTextField: UITextField!
 	@IBOutlet var lastnameTextField: UITextField!
-	@IBOutlet var ageTextField: UITextField!
+	@IBOutlet var ageButton: UIButton!
 	@IBOutlet var statusButton: UIButton!
+	@IBOutlet var portraitImageView: UIImageView!
+	@IBOutlet var genderControl: UISegmentedControl!
 	
 	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
 		private let container: MeViewController
@@ -50,7 +52,8 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-			container.statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[row]
+			UserPeerInfo.instance.statusID = row
+//			container.statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[row]
 		}
 	}
 	
@@ -77,6 +80,10 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 			//  TODO insert global min age
 			picker.maximumDate = NSDate(timeInterval: -60*60*24*365*13, sinceDate: NSDate())
 		}
+	}
+	
+	@IBAction func changeGender(sender: UISegmentedControl) {
+		UserPeerInfo.instance.hasVagina = sender.selectedSegmentIndex == 1
 	}
 	
 	private var isIdentityChanging = false
@@ -108,6 +115,30 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	override func viewWillAppear(animated: Bool) {
 		forenameTextField.text = UserPeerInfo.instance.givenName
 		lastnameTextField.text = UserPeerInfo.instance.familyName
+		statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID]
+		ageButton.titleLabel?.text = "\(UserPeerInfo.instance.age) years old"
+		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
+		
+		class CircleMaskView: UIView {
+			private override func drawRect(rect: CGRect) {
+				let circle = UIBezierPath(ovalInRect: rect)
+				let context = UIGraphicsGetCurrentContext()
+//				CGContextSetShadow(context, CGSize(width: 5.0, height: 5.0), 0.7)
+				CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0)
+				circle.fill()
+				//circle.strokeWithBlendMode(.SourceAtop, alpha: 0.5)
+			}
+			
+			init(forView: UIView) {
+				super.init(frame: CGRect(origin: CGPoint(), size: forView.frame.size))
+				self.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.0)
+			}
+
+			required init?(coder aDecoder: NSCoder) {
+			    fatalError("init(coder:) has not been implemented")
+			}
+		}
+		portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
 	}
 	
 	override func viewDidAppear(animated: Bool) {

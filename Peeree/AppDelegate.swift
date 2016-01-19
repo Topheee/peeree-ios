@@ -70,6 +70,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		
+		UINavigationBar.appearance().backgroundColor = theme.globalBackgroundColor.colorWithAlphaComponent(0.3)
+		
 		return true
 	}
 

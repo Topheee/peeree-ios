@@ -21,6 +21,7 @@ class DateSelViewController: UIViewController {
 	// MARK: - Navigation
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+		super.prepareForSegue(segue, sender: sender)
 		if let descriptionVC = segue.destinationViewController as? BasicDescriptionViewController {
 			descriptionVC.dataSource = dataSource
 		}
