@@ -8,6 +8,17 @@
 
 import Foundation
 
+/*
+0. WalletController registers itself as observer for app store notifications
+1. ShopController requests pin point offerings
+2. ShopController receives pin point offerings
+3. ShopViewController shows offerings
+4. User picks offering
+5. ShopController makes payment request at App Store
+6. App Store calls WalletController, that product will be delivered
+7. App Store delivers product
+8. WalletController increments the amount of pin points and notifies the current view controller about it
+ */
 
 /*
 *	The WalletController maintains the bought pin points of the user and, in future releases, the already bought premium features, as well as enabling them on the user's demand.

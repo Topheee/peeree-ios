@@ -38,6 +38,10 @@
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
+		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
+		9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
+		9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
+		9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
 		9DDD0D311C24BBA1009A518F /* BrowseSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */; };
 		9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */; };
 		9DDD0D331C24BBA1009A518F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
@@ -115,6 +119,8 @@
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
 		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
 		9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManagerTests.swift; sourceTree = "<group>"; };
+		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CircleMaskView.swift; path = View/CircleMaskView.swift; sourceTree = "<group>"; };
+		9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCNearbyServiceBrowserMock.swift; path = Helpers/Mocks/MCNearbyServiceBrowserMock.swift; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
@@ -186,6 +192,7 @@
 			children = (
 				9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */,
 				9D6F7B931BC82AD5007CD234 /* RootView.swift */,
+				9DD049441C5FC80800A91C71 /* CircleMaskView.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -193,6 +200,7 @@
 		9D883A481C26B56400702F9A /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				9DD049471C5FD53C00A91C71 /* Mocks */,
 				9D883A491C26B5A200702F9A /* GenericFunctions.swift */,
 			);
 			name = Helpers;
@@ -290,6 +298,15 @@
 				9DA0F7D11B5C3AB900F3BA87 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		9DD049471C5FD53C00A91C71 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */,
+			);
+			name = Mocks;
+			path = Peeree;
 			sourceTree = "<group>";
 		};
 		9DEAE8C81B63ED3700D4F6BF /* Model */ = {
@@ -427,6 +444,7 @@
 				9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
+				9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
@@ -442,6 +460,7 @@
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9DEAE8CE1B6415EF00D4F6BF /* HideableProperty.swift in Sources */,
+				9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,11 +472,13 @@
 				9DDD0D421C24BBA9009A518F /* PeerDescription.swift in Sources */,
 				9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */,
 				9DDD0D361C24BBA1009A518F /* MultipleSelViewController.swift in Sources */,
+				9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */,
 				9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
+				9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9DDD0D4A1C24BBAF009A518F /* AppDelegate.swift in Sources */,
 				9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */,
 				9DDD0D431C24BBA9009A518F /* DisplayName.swift in Sources */,

@@ -112,33 +112,16 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 		scrollView.contentSize = contentView.bounds.size
 	}
 	
+	override func viewDidLoad() {
+		portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
+	}
+	
 	override func viewWillAppear(animated: Bool) {
 		forenameTextField.text = UserPeerInfo.instance.givenName
 		lastnameTextField.text = UserPeerInfo.instance.familyName
 		statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID]
 		ageButton.titleLabel?.text = "\(UserPeerInfo.instance.age) years old"
 		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
-		
-		class CircleMaskView: UIView {
-			private override func drawRect(rect: CGRect) {
-				let circle = UIBezierPath(ovalInRect: rect)
-				let context = UIGraphicsGetCurrentContext()
-//				CGContextSetShadow(context, CGSize(width: 5.0, height: 5.0), 0.7)
-				CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0)
-				circle.fill()
-				//circle.strokeWithBlendMode(.SourceAtop, alpha: 0.5)
-			}
-			
-			init(forView: UIView) {
-				super.init(frame: CGRect(origin: CGPoint(), size: forView.frame.size))
-				self.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.0)
-			}
-
-			required init?(coder aDecoder: NSCoder) {
-			    fatalError("init(coder:) has not been implemented")
-			}
-		}
-		portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
 	}
 	
 	override func viewDidAppear(animated: Bool) {

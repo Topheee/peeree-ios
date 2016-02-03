@@ -27,7 +27,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	 *	Should be private, but then, we cannot mock them.
 	 */
 	/* private */ var btAdvertiser: MCNearbyServiceAdvertiser?
-	/* private */ var btBrowser: MCNearbyServiceBrowser?
+	/* private */ var btBrowser: MCNearbyServiceBrowserMock?
 	/*
 	 *	All remote peers the app is currently connected to. This property is immediatly updated when a new connection is set up or an existing is cut off.
 	 */
@@ -37,43 +37,28 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	var delegate: RemotePeerManagerDelegate?
 	
 	func goOnline() {
+		if !(btAdvertiser == nil || btBrowser == nil) { return }
+		
 		let peerID = UserPeerInfo.instance.peerID
-
-		if btAdvertiser == nil {
-				// TODO maybe provide some information in discoveryInfo
-				btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.kDiscoveryServiceID)
-				btAdvertiser!.delegate = self
-		}
+		
+		// TODO maybe provide some information in discoveryInfo
+		btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.kDiscoveryServiceID)
+		btAdvertiser!.delegate = self
+		
 		btAdvertiser?.startAdvertisingPeer()
-		if btBrowser == nil {
-				btBrowser = MCNearbyServiceBrowser(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
-				btBrowser!.delegate = self
-		}
+		
+		btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
+		btBrowser!.delegate = self
+		
 		btBrowser?.startBrowsingForPeers()
 	}
 	
 	func goOffline() {
 		btAdvertiser?.stopAdvertisingPeer()
 		btBrowser?.stopBrowsingForPeers()
+		btAdvertiser = nil
+		btBrowser = nil
 		// TODO cancel and close all sessions. Seems, that we have to store them somewhere (maybe in the availablePeers tuple)
-	}
-	
-	private func lostConnection(toPeer: MCPeerID) {
-		availablePeers.remove(toPeer)
-		delegate?.remotePeerDisappeared(toPeer)
-	}
-	
-	private func newConnection(toPeer: MCPeerID) {
-		if availablePeers.contains(toPeer) { return }
-		availablePeers.insert(toPeer)
-		
-		delegate?.remotePeerAppeared(toPeer)
-		
-		if cachedPeers[toPeer] == nil {
-			// immediatly begin to retrieve downloading information
-			// TODO if this needs too much energy, disable this feature or make it optional. Note, that in this case filtering is not possible (except, we use the discovery info dict)
-			beginPeerDescriptionDownloading(toPeer)
-		}
 	}
 	
 	func getPinStatus(forPeer: MCPeerID) -> String {
@@ -122,6 +107,8 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		btBrowser?.invitePeer(forPeer, toSession: MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: .Required), withContext: nil, timeout: RemotePeerManager.kInvitationTimeout)
 	}
 	
+	// MARK: - MCNearbyServiceAdvertiserDelegate
+	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer: NSError) {
 		// TODO implement this
 	}
@@ -130,6 +117,8 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		// TODO The nearby peer should treat any data it receives as potentially untrusted. To learn more about working with untrusted data, read Secure Coding Guide.
 		invitationHandler(true, MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required))
 	}
+	
+	// MARK: - MCSessionDelegate
 	
 	@objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
 		// maybe use this, to display in the browser view controller, when we set up a new connection
@@ -164,16 +153,31 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		}
 	}
 	
+	// MARK: - MCNearbyServiceBrowserDelegate
+	
 	@objc func browser(browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: NSError) {
 		// TODO error handling
 	}
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-		newConnection(peerID)
+		if availablePeers.contains(peerID) { return }
+		
+		availablePeers.insert(peerID)
+		
+		let d = delegate ?? AppDelegate.sharedDelegate
+		d.remotePeerAppeared(peerID)
+		
+		if cachedPeers[peerID] == nil {
+			// immediatly begin to retrieve downloading information
+			// TODO if this needs too much energy, disable this feature or make it optional. Note, that in this case filtering is not possible (except, we use the discovery info dict)
+			beginPeerDescriptionDownloading(peerID)
+		}
 	}
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-		lostConnection(peerID)
+		availablePeers.remove(peerID)
+		let d = delegate ?? AppDelegate.sharedDelegate
+		d.remotePeerDisappeared(peerID)
 	}
 }
 

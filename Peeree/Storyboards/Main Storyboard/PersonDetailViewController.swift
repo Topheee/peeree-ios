@@ -12,11 +12,17 @@ class PersonDetailViewController: UIViewController {
 	@IBOutlet var scrollView: UIScrollView!
 	@IBOutlet var contentView: UIView!
 	
+	@IBOutlet var portraitImageView: UIImageView!
+	
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
 		
 		scrollView.layoutIfNeeded()
 		scrollView.contentSize = contentView.bounds.size
+	}
+	
+	override func viewDidLoad() {
+		portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
 	}
 	
 }

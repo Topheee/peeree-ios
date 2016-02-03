@@ -20,8 +20,13 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	}
 	
 	override func viewDidAppear(animated: Bool) {
+		super.viewDidAppear(animated)
 		filteredAvailablePeersCache = RemotePeerManager.sharedManager.filteredPeers(BrowseFilterSettings.sharedSettings)
 		RemotePeerManager.sharedManager.delegate = self
+		
+		tabBarController?.tabBar.items?[0].badgeValue = nil
+				
+		RemotePeerManager.sharedManager.goOnline()
 	}
 	
 	override func viewDidDisappear(animated: Bool) {
@@ -46,9 +51,9 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	}
 	
 	func remotePeerAppeared(peer: MCPeerID) {
-		filteredAvailablePeersCache.append((peer.displayName, RemotePeerManager.sharedManager.getPinStatus(peer)))
+		filteredAvailablePeersCache.append(peer.displayName, RemotePeerManager.sharedManager.getPinStatus(peer))
 		// TODO extend NSTableView with indexPathOfLastRowInSection(_: Int)
-		let idxPath = NSIndexPath(forRow: filteredAvailablePeersCache.count, inSection: 0)
+		let idxPath = NSIndexPath(forRow: filteredAvailablePeersCache.count-1, inSection: 0)
 		self.tableView.insertRowsAtIndexPaths([idxPath], withRowAnimation: .Fade)
 	}
 	

@@ -7,16 +7,27 @@
 //
 
 import UIKit
+import MultipeerConnectivity
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate {
 	
 	static let kPrefSkipOnboarding = "peeree-prefs-skip-onboarding"
+	
+	static var sharedDelegate: AppDelegate { return UIApplication.sharedApplication().delegate as! AppDelegate }
 
 	var window: UIWindow?
+	var isActive: Bool = false
 
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-		// Override point for customization after application launch.
+		//Set<UIUserNotificationCategory>?
+		if UIApplication.instancesRespondToSelector(Selector("registerUserNotificationSettings:")) {
+			//only ask on iOS 8 or later
+			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Alert, categories: nil))
+			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Badge, categories: nil))
+			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Sound, categories: nil))
+		}
+		
 		if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.kPrefSkipOnboarding) {
 			//this is the first launch of the app, so we show the first launch UI
 			self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
@@ -83,6 +94,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	func applicationDidEnterBackground(application: UIApplication) {
 		// Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
 		// If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+		RemotePeerManager.sharedManager.delegate = self // TODO restore old delegate
+		isActive = false
 	}
 
 	func applicationWillEnterForeground(application: UIApplication) {
@@ -91,12 +104,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 	func applicationDidBecomeActive(application: UIApplication) {
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+		isActive = true
 	}
 
 	func applicationWillTerminate(application: UIApplication) {
 		// Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 	}
 
-
+	func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+		print(__FUNCTION__)
+	}
+	
+	func remotePeerAppeared(peer: MCPeerID) {
+		if !isActive {
+			let note = UILocalNotification()
+			// TODO localization
+			note.alertBody = "Found " + peer.displayName
+//			note.alertBody = NSLocalizedString("Open in Peeree", comment: "Launch the app Peeree")
+			note.fireDate = NSDate().dateByAddingTimeInterval(1)
+			UIApplication.sharedApplication().scheduleLocalNotification(note)
+			print("scheduled notification")
+		} else {
+			if let topVC = window?.rootViewController as? UITabBarController {
+				if let oldBadge = topVC.tabBar.items?[0].badgeValue {
+					if let oldBadgeValue = Int(oldBadge) {
+						topVC.tabBar.items?[0].badgeValue = String(oldBadgeValue+1)
+					}
+				} else {
+					topVC.tabBar.items?[0].badgeValue = "1"
+				}
+			}
+		}
+	}
+	
+	func remotePeerDisappeared(peer: MCPeerID) {
+		if let topVC = window?.rootViewController as? UITabBarController {
+			if let oldBadge = topVC.tabBar.items?[0].badgeValue {
+				if let oldBadgeValue = Int(oldBadge) {
+					topVC.tabBar.items?[0].badgeValue = oldBadgeValue == 1 ? nil : String(oldBadgeValue-1)
+				}
+			}
+		}
+	}
 }
-
