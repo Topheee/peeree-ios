@@ -30,7 +30,12 @@ class UserPeerInfo: LocalPeerInfo {
 	var delegate: UserPeerInfoDelegate?
 	
 	var dateOfBirth: NSDate {
-		didSet { if dateOfBirth != oldValue { dirtied() } }
+		didSet {
+			if dateOfBirth != oldValue {
+				age = -Int(dateOfBirth.timeIntervalSinceNow / (3600*24*365))
+				dirtied()
+			}
+		}
 	}
 	
 	override var givenName: String {
@@ -66,9 +71,9 @@ class UserPeerInfo: LocalPeerInfo {
 		}
 	}
 	override var age: Int {
-		get {
-			return -Int(dateOfBirth.timeIntervalSinceNow / (3600*24*365))
-		}
+        get {
+            return super.age
+        }
 		set {
 			fatalError("The age of the local user is defined by it's date of birth")
 		}
@@ -79,7 +84,15 @@ class UserPeerInfo: LocalPeerInfo {
 	override var statusID: Int {
 		didSet { if statusID != oldValue { dirtied() } }
 	}
-	// TODO figure out what to do with the picture, characterTraits (maybe restrict the direct access and provide proxy methods) and version stuff
+    override var picture: UIImage? {
+        get {
+            return super.picture
+        }
+        set {
+            _picture = newValue
+        }
+    }
+	// TODO figure out what to do with characterTraits (maybe restrict the direct access and provide proxy methods) and version stuff
 	
 	required init() {
 		dateOfBirth = NSDate(timeIntervalSinceNow: -3600*24*365*18)
@@ -198,21 +211,31 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
 		get {
 			// TODO localization with NSPersonNameFormatter
 			let formatter = NSPersonNameComponentsFormatter()
-			formatter.style = .Long
 			let styles: [NSPersonNameComponentsFormatterStyle] = [.Long, .Medium, .Short, .Abbreviated]
 			var ret: String
 			var i = 0
 			repeat {
 				formatter.style = styles[i]
 				ret = formatter.stringFromPersonNameComponents(personName)
-			} while ret.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 63 && ++i < styles.count
+                i = i+1
+			} while ret.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 63 && i < styles.count
 			if i == styles.count {
 				// TODO substring of 60 bytes length plus "..." string
 				//ret = ret.substringToIndex(64) + "..."
 			}
+            if ret.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) == 0 {
+                //we need a value here for creating valid MCPeerIDs in the peerID getter
+                ret = "Unknown"
+            }
 			return ret
 		}
 	}
+    var fullName: String {
+        let formatter = NSPersonNameComponentsFormatter()
+        formatter.style = .Long
+        return formatter.stringFromPersonNameComponents(personName)
+    }
+    
 	private var _peerID: MCPeerID?
 	var peerID: MCPeerID {
 		if _peerID == nil { _peerID = MCPeerID(displayName: displayName) }

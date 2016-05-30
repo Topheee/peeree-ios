@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import MobileCoreServices
+import CoreFoundation
 
-class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDelegate {
+class MeViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate,
+UINavigationControllerDelegate, UserPeerInfoDelegate {
 	@IBOutlet var scrollView: UIScrollView!
 	@IBOutlet var contentView: UIView!
 	
@@ -16,7 +19,7 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	@IBOutlet var lastnameTextField: UITextField!
 	@IBOutlet var ageButton: UIButton!
 	@IBOutlet var statusButton: UIButton!
-	@IBOutlet var portraitImageView: UIImageView!
+	@IBOutlet var portraitImageButton: UIButton!
 	@IBOutlet var genderControl: UISegmentedControl!
 	
 	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
@@ -85,6 +88,35 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	@IBAction func changeGender(sender: UISegmentedControl) {
 		UserPeerInfo.instance.hasVagina = sender.selectedSegmentIndex == 1
 	}
+    @IBAction func changePicture(sender: AnyObject) {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        imagePicker.mediaTypes = [kUTTypeImage as String]
+        
+        let presentPicker = {
+            self.presentViewController(imagePicker, animated: true, completion: nil)
+        }
+        let cameraHandler = {(alertAction: UIAlertAction) -> Void in
+            imagePicker.sourceType = .Camera
+            presentPicker()
+        }
+        let photoLibraryHandler = {(alertAction: UIAlertAction) -> Void in
+            imagePicker.sourceType = .PhotoLibrary
+            presentPicker()
+        }
+        
+        if UIImagePickerController.isSourceTypeAvailable(.Camera) && UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
+            let alertController = UIAlertController()
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device"), style: .Default, handler: cameraHandler))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device"), style: .Default, handler: photoLibraryHandler))
+            presentViewController(alertController, animated: true, completion: nil)
+        } else if UIImagePickerController.isSourceTypeAvailable(.Camera) {
+            cameraHandler(UIAlertAction(title: "", style: .Default, handler: nil))
+        } else if UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
+            photoLibraryHandler(UIAlertAction(title: "", style: .Default, handler: nil))
+        }
+    }
 	
 	private var isIdentityChanging = false
 	
@@ -113,15 +145,17 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	}
 	
 	override func viewDidLoad() {
-		portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
+		portraitImageButton.maskView = CircleMaskView(forView: portraitImageButton)
 	}
 	
 	override func viewWillAppear(animated: Bool) {
 		forenameTextField.text = UserPeerInfo.instance.givenName
 		lastnameTextField.text = UserPeerInfo.instance.familyName
 		statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID]
+        // TODO localization
 		ageButton.titleLabel?.text = "\(UserPeerInfo.instance.age) years old"
 		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
+        portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "Sample Profile Pick")
 	}
 	
 	override func viewDidAppear(animated: Bool) {
@@ -134,9 +168,7 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 //		}
 	}
 	
-	// MARK: -
-	
-	// MARK: UITextFieldDelegate
+	// MARK: - UITextField Delegate
 	
 	func textFieldShouldReturn(textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
@@ -166,7 +198,43 @@ class MeViewController: UIViewController, UITextFieldDelegate, UserPeerInfoDeleg
 	
 	func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
 		return !(isIdentityChanging || forenameTextField.isFirstResponder() || lastnameTextField.isFirstResponder())
-	}
+    }
+    
+    // MARK: - UIImagePickerController Delegate
+    
+    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        // picker.parentViewController is nil, but I don't know why
+//        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        var originalImage, editedImage, imageToSave: UIImage?
+            
+        editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
+        originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage
+        
+        if editedImage != nil {
+            imageToSave = editedImage
+        } else {
+            imageToSave = originalImage
+        }
+        
+        // Save the new image (original or edited) to the Camera Roll
+        if imageToSave != nil {
+            if picker.sourceType == .Camera {
+                UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
+            }
+            
+            UserPeerInfo.instance.picture = imageToSave
+            portraitImageButton.imageView?.image = imageToSave
+        }
+        
+        // picker.parentViewController is nil, but I don't know why
+//        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
 	
 	func userCancelledIDChange() {
 		isIdentityChanging = false

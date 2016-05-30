@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="76G-gL-j3x">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="76G-gL-j3x">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--First Info-->
         <scene sceneID="5Js-Xy-AcI">
             <objects>
-                <viewController title="First Info" id="u4v-7y-Tsp" customClass="ScrollableInfoViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="First Info" id="u4v-7y-Tsp" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="luJ-S4-VDb"/>
                         <viewControllerLayoutGuide type="bottom" id="oYr-FL-zLy"/>
@@ -27,78 +27,66 @@
                                     <segue destination="hfq-X5-JCR" kind="unwind" unwindAction="unwindToOnboardingViewController:" id="RgC-20-rSl"/>
                                 </connections>
                             </button>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AtL-8x-bYw">
-                                <rect key="frame" x="0.0" y="12" width="600" height="506"/>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AtL-8x-bYw">
+                                <rect key="frame" x="0.0" y="20" width="600" height="498"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iIj-m8-Aok">
-                                        <rect key="frame" x="0.0" y="0.0" width="600" height="400.5"/>
-                                        <subviews>
-                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CnE-9c-xa9">
-                                                <rect key="frame" x="20" y="156" width="560" height="79"/>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <string key="text">Using this technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no internet (except for purchasing), no ads, no observation and no spies involved.</string>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                            </textView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Social p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f2c-qQ-EOF">
-                                                <rect key="frame" x="20" y="255" width="109.5" height="25.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What are the benefits?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KcC-Nq-Owu">
-                                                <rect key="frame" x="20" y="131" width="212.5" height="25.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTy-Q0-LK7">
-                                                <rect key="frame" x="20" y="53" width="560" height="58"/>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <string key="text">Peer to Peer (or, shortly, p2p) is a networking approach, where all participants are connected together, without any server invited.</string>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                            </textView>
-                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hNb-m5-TrK">
-                                                <rect key="frame" x="20" y="280" width="560" height="100"/>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <string key="text">Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms do.</string>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                            </textView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What's p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9jk-wL-g6X">
-                                                <rect key="frame" x="20" y="28" width="118" height="25.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstItem="9jk-wL-g6X" firstAttribute="leading" secondItem="iIj-m8-Aok" secondAttribute="leading" constant="20" id="2nk-Ae-x1p"/>
-                                            <constraint firstAttribute="bottom" secondItem="hNb-m5-TrK" secondAttribute="bottom" constant="20" id="DKo-jA-AsZ"/>
-                                            <constraint firstItem="CnE-9c-xa9" firstAttribute="top" secondItem="KcC-Nq-Owu" secondAttribute="bottom" id="Dll-oW-875"/>
-                                            <constraint firstItem="hNb-m5-TrK" firstAttribute="leading" secondItem="9jk-wL-g6X" secondAttribute="leading" id="JUv-o4-Wie"/>
-                                            <constraint firstItem="f2c-qQ-EOF" firstAttribute="leading" secondItem="9jk-wL-g6X" secondAttribute="leading" id="QiT-7f-7ba"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="hNb-m5-TrK" secondAttribute="trailing" constant="12" id="SeY-V2-Idc"/>
-                                            <constraint firstItem="NTy-Q0-LK7" firstAttribute="leading" secondItem="9jk-wL-g6X" secondAttribute="leading" id="Xmh-UH-Lqy"/>
-                                            <constraint firstItem="CnE-9c-xa9" firstAttribute="leading" secondItem="9jk-wL-g6X" secondAttribute="leading" id="aFw-dD-2Fd"/>
-                                            <constraint firstItem="KcC-Nq-Owu" firstAttribute="top" secondItem="NTy-Q0-LK7" secondAttribute="bottom" constant="20" id="b9W-2P-Gav"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="CnE-9c-xa9" secondAttribute="trailing" constant="12" id="dxW-s1-XzO"/>
-                                            <constraint firstItem="CnE-9c-xa9" firstAttribute="leading" secondItem="iIj-m8-Aok" secondAttribute="leadingMargin" constant="12" id="f3k-Y2-LI6"/>
-                                            <constraint firstItem="NTy-Q0-LK7" firstAttribute="leading" secondItem="iIj-m8-Aok" secondAttribute="leadingMargin" constant="12" id="iRp-EK-AYr"/>
-                                            <constraint firstItem="hNb-m5-TrK" firstAttribute="leading" secondItem="iIj-m8-Aok" secondAttribute="leadingMargin" constant="12" id="mOK-ht-cFB"/>
-                                            <constraint firstItem="f2c-qQ-EOF" firstAttribute="top" secondItem="CnE-9c-xa9" secondAttribute="bottom" constant="20" id="nF6-mT-Rs7"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="NTy-Q0-LK7" secondAttribute="trailing" constant="12" id="oft-gn-i6E"/>
-                                            <constraint firstItem="NTy-Q0-LK7" firstAttribute="top" secondItem="9jk-wL-g6X" secondAttribute="bottom" id="pwY-rZ-9RH"/>
-                                            <constraint firstItem="KcC-Nq-Owu" firstAttribute="leading" secondItem="9jk-wL-g6X" secondAttribute="leading" id="q2V-aq-Ei6"/>
-                                            <constraint firstItem="9jk-wL-g6X" firstAttribute="top" secondItem="iIj-m8-Aok" secondAttribute="topMargin" constant="20" id="r7h-uC-Hxa"/>
-                                            <constraint firstItem="hNb-m5-TrK" firstAttribute="top" secondItem="f2c-qQ-EOF" secondAttribute="bottom" id="v4I-61-nWn"/>
-                                        </constraints>
-                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Social p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="N0T-2N-CeX">
+                                        <rect key="frame" x="20" y="114.5" width="109.5" height="25.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What are the benefits?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iru-Do-AIT">
+                                        <rect key="frame" x="20" y="251" width="212.5" height="25.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MGM-oO-Qvr">
+                                        <rect key="frame" x="20" y="48.5" width="560" height="58"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <string key="text">Peer to Peer (or, shortly, p2p) is a networking approach, where all participants are connected together, without any server invited.</string>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1pm-ik-jEH">
+                                        <rect key="frame" x="20" y="143" width="560" height="100"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <string key="text">Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms do.</string>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What's p2p?" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9yU-Fl-2qt">
+                                        <rect key="frame" x="20" y="20" width="118" height="25.5"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yKG-bc-RCP">
+                                        <rect key="frame" x="20" y="279.5" width="560" height="79"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <string key="text">Using this technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no internet (except for purchasing), no ads, no observation and no spies involved.</string>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="iIj-m8-Aok" firstAttribute="leading" secondItem="AtL-8x-bYw" secondAttribute="leading" id="JU5-W0-orx"/>
-                                    <constraint firstItem="iIj-m8-Aok" firstAttribute="top" secondItem="AtL-8x-bYw" secondAttribute="top" id="nB3-Ry-5xC"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="yKG-bc-RCP" secondAttribute="bottom" constant="12" id="3iP-gD-GlG"/>
+                                    <constraint firstItem="9yU-Fl-2qt" firstAttribute="top" secondItem="AtL-8x-bYw" secondAttribute="top" constant="20" id="5H3-gC-y0x"/>
+                                    <constraint firstItem="iru-Do-AIT" firstAttribute="leading" secondItem="9yU-Fl-2qt" secondAttribute="leading" id="5d0-VH-x5P"/>
+                                    <constraint firstItem="iru-Do-AIT" firstAttribute="top" secondItem="1pm-ik-jEH" secondAttribute="bottom" constant="8" id="GUB-Km-ZGH"/>
+                                    <constraint firstItem="1pm-ik-jEH" firstAttribute="leading" secondItem="9yU-Fl-2qt" secondAttribute="leading" id="IXV-iX-h3l"/>
+                                    <constraint firstItem="MGM-oO-Qvr" firstAttribute="top" secondItem="9yU-Fl-2qt" secondAttribute="bottom" constant="3" id="JCs-Vo-4Uw"/>
+                                    <constraint firstItem="yKG-bc-RCP" firstAttribute="top" secondItem="iru-Do-AIT" secondAttribute="bottom" constant="3" id="Ltw-af-vqf"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="yKG-bc-RCP" secondAttribute="trailing" constant="12" id="MJv-RX-Wbs"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="1pm-ik-jEH" secondAttribute="trailing" constant="12" id="RAv-ww-55D"/>
+                                    <constraint firstItem="N0T-2N-CeX" firstAttribute="top" secondItem="MGM-oO-Qvr" secondAttribute="bottom" constant="8" id="Rga-Ng-uuE"/>
+                                    <constraint firstItem="9yU-Fl-2qt" firstAttribute="leading" secondItem="AtL-8x-bYw" secondAttribute="leading" constant="20" id="SXp-OX-f5V"/>
+                                    <constraint firstItem="yKG-bc-RCP" firstAttribute="leading" secondItem="9yU-Fl-2qt" secondAttribute="leading" id="TG5-wO-h3h"/>
+                                    <constraint firstItem="N0T-2N-CeX" firstAttribute="leading" secondItem="9yU-Fl-2qt" secondAttribute="leading" id="VcV-U1-sn3"/>
+                                    <constraint firstItem="1pm-ik-jEH" firstAttribute="top" secondItem="N0T-2N-CeX" secondAttribute="bottom" constant="3" id="X3R-da-8T7"/>
+                                    <constraint firstItem="MGM-oO-Qvr" firstAttribute="leading" secondItem="9yU-Fl-2qt" secondAttribute="leading" id="d1O-XH-erS"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="MGM-oO-Qvr" secondAttribute="trailing" constant="12" id="xHQ-Es-1V1"/>
                                 </constraints>
                             </scrollView>
                         </subviews>
@@ -106,9 +94,9 @@
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="b8Y-IF-X4f" secondAttribute="centerX" id="36P-8L-HJU"/>
                             <constraint firstAttribute="trailing" secondItem="AtL-8x-bYw" secondAttribute="trailing" id="MhQ-N8-EeF"/>
+                            <constraint firstItem="MGM-oO-Qvr" firstAttribute="width" secondItem="GM2-V1-SU7" secondAttribute="width" constant="-40" id="NiG-TX-rDr"/>
                             <constraint firstItem="oYr-FL-zLy" firstAttribute="top" secondItem="b8Y-IF-X4f" secondAttribute="bottom" constant="8" id="V5y-m5-JF8"/>
                             <constraint firstItem="AtL-8x-bYw" firstAttribute="top" secondItem="GM2-V1-SU7" secondAttribute="topMargin" constant="20" id="af6-YT-QhA"/>
-                            <constraint firstItem="iIj-m8-Aok" firstAttribute="width" secondItem="GM2-V1-SU7" secondAttribute="width" id="dvK-5D-6Kq"/>
                             <constraint firstItem="b8Y-IF-X4f" firstAttribute="top" secondItem="AtL-8x-bYw" secondAttribute="bottom" id="ngw-kU-BLG"/>
                             <constraint firstItem="AtL-8x-bYw" firstAttribute="leading" secondItem="GM2-V1-SU7" secondAttribute="leading" id="sXe-vg-KzN"/>
                         </constraints>
@@ -117,7 +105,6 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="backButton" destination="b8Y-IF-X4f" id="tbs-S2-fRd"/>
-                        <outlet property="contentView" destination="iIj-m8-Aok" id="VJ7-70-Dxx"/>
                         <outlet property="scrollView" destination="AtL-8x-bYw" id="0tu-em-r99"/>
                     </connections>
                 </viewController>
@@ -285,7 +272,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="90I-D0-RlC">
-                                <rect key="frame" x="225" y="175" width="150" height="150"/>
+                                <rect key="frame" x="225" y="195" width="150" height="150"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="150" id="StY-W5-jUT"/>
                                     <constraint firstAttribute="height" constant="150" id="XPJ-P5-hm2"/>
@@ -298,7 +285,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="190" y="100.5" width="219" height="30"/>
+                                <rect key="frame" x="190" y="100" width="219" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="What do you want with my data?"/>
                                 <connections>
@@ -312,18 +299,27 @@
                                 </state>
                                 <connections>
                                     <action selector="finishIntroduction:" destination="BiV-OX-JbO" eventType="touchUpInside" id="CKQ-vV-94V"/>
-                                    <segue destination="HjA-eK-uZw" kind="show" id="Nle-Q1-I6R"/>
+                                    <segue destination="HjA-eK-uZw" kind="showDetail" action="showViewController:sender:" id="Nle-Q1-I6R"/>
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
-                                <rect key="frame" x="241" y="379" width="117" height="29"/>
+                                <rect key="frame" x="241" y="396" width="117" height="29"/>
                                 <segments>
                                     <segment title="Male"/>
                                     <segment title="Female"/>
                                 </segments>
                             </segmentedControl>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
+                                <rect key="frame" x="257" y="255" width="85" height="30"/>
+                                <state key="normal" title="Take Picture">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="y22-GL-fWO"/>
+                                </connections>
+                            </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zPz-96-f6k">
-                                <rect key="frame" x="193" y="333" width="218.5" height="46"/>
+                                <rect key="frame" x="191" y="350" width="218.5" height="46"/>
                                 <subviews>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Forename" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
                                         <rect key="frame" x="20" y="8" width="85.5" height="30"/>
@@ -353,15 +349,6 @@
                                     <constraint firstAttribute="bottom" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="8" id="n6O-iy-iW0"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="257" y="235" width="85" height="30"/>
-                                <state key="normal" title="Take Picture">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="y22-GL-fWO"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -371,12 +358,12 @@
                             <constraint firstAttribute="centerX" secondItem="90I-D0-RlC" secondAttribute="centerX" id="AUn-sh-c75"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="90I-D0-RlC" secondAttribute="centerY" id="AxW-Te-C9j"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
-                            <constraint firstAttribute="centerX" secondItem="zPz-96-f6k" secondAttribute="centerX" constant="-2.25" id="Hzk-4o-vV7"/>
+                            <constraint firstAttribute="centerX" secondItem="zPz-96-f6k" secondAttribute="centerX" id="Hzk-4o-vV7"/>
                             <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="20" id="OFo-82-Vic"/>
                             <constraint firstAttribute="centerX" secondItem="JLo-5M-7YM" secondAttribute="centerX" id="PC3-oH-0Lt"/>
-                            <constraint firstAttribute="centerY" secondItem="90I-D0-RlC" secondAttribute="centerY" constant="50" id="RBE-0C-Op6"/>
+                            <constraint firstAttribute="centerY" secondItem="90I-D0-RlC" secondAttribute="centerY" constant="30" id="RBE-0C-Op6"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="top" secondItem="zPz-96-f6k" secondAttribute="bottom" id="mIA-ZO-uX1"/>
-                            <constraint firstItem="zPz-96-f6k" firstAttribute="top" secondItem="90I-D0-RlC" secondAttribute="bottom" constant="8" id="mb2-AR-r0N"/>
+                            <constraint firstItem="zPz-96-f6k" firstAttribute="top" secondItem="90I-D0-RlC" secondAttribute="bottom" constant="5" id="mb2-AR-r0N"/>
                             <constraint firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="aJo-bN-TNl" secondAttribute="bottom" constant="40" id="v9p-sf-Eqm"/>
                         </constraints>
@@ -388,6 +375,7 @@
                         <outlet property="lastnameTextField" destination="nfN-1w-tOm" id="enD-Bo-BwO"/>
                         <outlet property="launchAppButton" destination="WkH-8i-IuH" id="1wU-Ld-ktE"/>
                         <outlet property="picButton" destination="bd8-Ey-isT" id="8PK-y8-tbX"/>
+                        <outlet property="textFieldToPictureConstraint" destination="mb2-AR-r0N" id="OdI-NH-VYL"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zM0-44-3Vw" userLabel="First Responder" sceneMemberID="firstResponder"/>

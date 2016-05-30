@@ -8,7 +8,7 @@
 
 import UIKit
 
-class FirstLaunchViewController: UIPageViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
+class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
 	
 	@IBAction func unwindToOnboardingViewController(segue: UIStoryboardSegue) {
 		NSLog("%@", "unwind")
@@ -24,20 +24,22 @@ class FirstLaunchViewController: UIPageViewController, UIPageViewControllerDeleg
 		pageViewController.delegate = self
 		pageViewController.dataSource = self
 		pageViewController.setViewControllers([self.storyboard!.instantiateViewControllerWithIdentifier("FirstViewController")], direction: .Forward, animated: false, completion: {done in })
-		
+        
+        let pageView = pageViewController.view
+        
 		self.addChildViewController(pageViewController)
-		self.view.addSubview(pageViewController.view)
+		self.view.addSubview(pageView)
 		
 		// Set the page view controller's bounds using an inset rect so that self's view is visible around the edges of the pages.
 		var pageViewRect = self.view.bounds
 		if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
 			pageViewRect = CGRectInset(pageViewRect, 40.0, 40.0)
 		}
-		pageViewController.view.frame = pageViewRect
+		pageView.frame = pageViewRect
 		
 		pageViewController.didMoveToParentViewController(self)
 		
-		// Add the page view controller's gesture recognizers to the book view controller's view so that the gestures are started more easily.
+		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
 	}
 	

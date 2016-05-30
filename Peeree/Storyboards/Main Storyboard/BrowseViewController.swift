@@ -13,23 +13,34 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	
 	private static let peerDisplayCellId = "peerDisplayCell"
 	
-	var filteredAvailablePeersCache: [(String, String)] = []
+	var filteredAvailablePeersCache: [(MCPeerID, String, String)] = []
 	
 	@IBAction func unwindToBrowseViewController(segue: UIStoryboardSegue) {
 		
 	}
 	
+	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+		super.prepareForSegue(segue, sender: sender)
+		if let personDetailVC = segue.destinationViewController as? PersonDetailViewController {
+			if let tappedCell = sender as? UITableViewCell {
+				if tappedCell.reuseIdentifier == BrowseViewController.peerDisplayCellId {
+					personDetailVC.displayedPeer = filteredAvailablePeersCache[tappedCell.tag].0
+				}
+			}
+		}
+	}
+	
 	override func viewDidAppear(animated: Bool) {
 		super.viewDidAppear(animated)
 		filteredAvailablePeersCache = RemotePeerManager.sharedManager.filteredPeers(BrowseFilterSettings.sharedSettings)
+		tableView.reloadData()
 		RemotePeerManager.sharedManager.delegate = self
 		
 		tabBarController?.tabBar.items?[0].badgeValue = nil
-				
-		RemotePeerManager.sharedManager.goOnline()
 	}
 	
 	override func viewDidDisappear(animated: Bool) {
+		super.viewDidDisappear(animated)
 		RemotePeerManager.sharedManager.delegate = nil
 		filteredAvailablePeersCache.removeAll()
 	}
@@ -45,13 +56,15 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCellWithIdentifier(BrowseViewController.peerDisplayCellId)!
 		let peer = filteredAvailablePeersCache[indexPath.row]
-		cell.textLabel!.text = peer.0
-		cell.detailTextLabel!.text = peer.1
+		cell.textLabel!.text = peer.1
+		cell.detailTextLabel!.text = peer.2
+		cell.tag = indexPath.row
 		return cell
 	}
 	
 	func remotePeerAppeared(peer: MCPeerID) {
-		filteredAvailablePeersCache.append(peer.displayName, RemotePeerManager.sharedManager.getPinStatus(peer))
+		
+		filteredAvailablePeersCache.append(peer, peer.displayName, RemotePeerManager.sharedManager.getPinStatus(peer))
 		// TODO extend NSTableView with indexPathOfLastRowInSection(_: Int)
 		let idxPath = NSIndexPath(forRow: filteredAvailablePeersCache.count-1, inSection: 0)
 		self.tableView.insertRowsAtIndexPaths([idxPath], withRowAnimation: .Fade)

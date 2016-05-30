@@ -15,6 +15,8 @@
 		9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
+		9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
+		9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
 		9D883A4B1C26B64A00702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
 		9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
@@ -68,7 +70,6 @@
 		9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
 		9DEAE8CE1B6415EF00D4F6BF /* HideableProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */; };
-		9DF7A68B1C25B03100FB4E98 /* ScrollableInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF7A68A1C25B03100FB4E98 /* ScrollableInfoViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +90,7 @@
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
 		9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateSelViewController.swift; path = "Storyboards/Main Storyboard/DateSelViewController.swift"; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
+		9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCSessionMock.swift; path = Helpers/Mocks/MCSessionMock.swift; sourceTree = "<group>"; };
 		9D77C7141B5FBCCC00F8BCCA /* LocalPeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManagerTests.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
 		9D8A592B1B92EC3900164C9F /* SimpleBrowseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SimpleBrowseViewController.swift; path = "Storyboards/Main Storyboard/SimpleBrowseViewController.swift"; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 		9D8A594A1B93043000164C9F /* PinsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinsViewController.swift; path = "Storyboards/Main Storyboard/PinsViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
 		9D99117F1BC6F7A600B729FE /* PeereeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeViewController.swift; path = Controller/PeereeViewController.swift; sourceTree = "<group>"; };
+		9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		9DA039811C1B21EE003D1624 /* ShopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShopViewController.swift; path = "Storyboards/Main Storyboard/ShopViewController.swift"; sourceTree = "<group>"; };
 		9DA039831C1B257C003D1624 /* WalletController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WalletController.swift; path = Controller/WalletController.swift; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,7 +129,6 @@
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
 		9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HideableProperty.swift; path = Model/HideableProperty.swift; sourceTree = "<group>"; };
-		9DF7A68A1C25B03100FB4E98 /* ScrollableInfoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ScrollableInfoViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/ScrollableInfoViewController.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -225,7 +227,6 @@
 				9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */,
 				9D2923261B91E50B00B5B622 /* SetupViewController.swift */,
 				9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */,
-				9DF7A68A1C25B03100FB4E98 /* ScrollableInfoViewController.swift */,
 			);
 			name = "Onboarding Sequence";
 			sourceTree = "<group>";
@@ -241,6 +242,7 @@
 		9DA0F7AC1B5C3AB800F3BA87 = {
 			isa = PBXGroup;
 			children = (
+				9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */,
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
 				9DA0F7CF1B5C3AB900F3BA87 /* PeereeTests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
@@ -304,6 +306,7 @@
 			isa = PBXGroup;
 			children = (
 				9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */,
+				9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */,
 			);
 			name = Mocks;
 			path = Peeree;
@@ -440,13 +443,13 @@
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
-				9DF7A68B1C25B03100FB4E98 /* ScrollableInfoViewController.swift in Sources */,
 				9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
 				9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
+				9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
@@ -468,6 +471,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9DDD0D461C24BBA9009A518F /* BrowseFilterSettings.swift in Sources */,
 				9DDD0D421C24BBA9009A518F /* PeerDescription.swift in Sources */,
 				9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */,
@@ -614,6 +618,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_LOCALIZABILITY_EMPTY_CONTEXT = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
@@ -625,6 +635,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_LOCALIZABILITY_EMPTY_CONTEXT = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";

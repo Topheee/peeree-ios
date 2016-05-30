@@ -86,21 +86,25 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		return displayString
 	}
 	
-	func filteredPeers(forFilterSettings: BrowseFilterSettings) -> [(String, String)] {
-		var ret: [(String, String)] = []
+	func filteredPeers(forFilterSettings: BrowseFilterSettings) -> [(MCPeerID, String, String)] {
+		var ret: [(MCPeerID, String, String)] = []
 		for elem in availablePeers.enumerate() {
 			if let description = cachedPeers[elem.element] {
-				let matchingGender = forFilterSettings.gender == .Unspecified || (forFilterSettings.gender == .Female && description.hasVagina)
-				let matchingAge = forFilterSettings.ageMin <= Float(description.age) && (forFilterSettings.ageMax == 0.0 || forFilterSettings.ageMax >= Float(description.age))
-				// TODO implement atLeastMyLanguage
-				//let matchingLanguage = !forFilterSettings.atLeastMyLanguage
-				
-				if matchingAge && matchingGender {
-					ret.append((elem.element.displayName, getPinStatus(elem.element)))
+				if forFilterSettings.checkPeer(description) {
+					ret.append((elem.element, elem.element.displayName, getPinStatus(elem.element)))
 				}
+			} else {
+				ret.append((elem.element, elem.element.displayName, getPinStatus(elem.element)))
 			}
 		}
 		return ret
+	}
+	
+	func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> LocalPeerInfo? {
+		if let ret = cachedPeers[peerID] {
+			return ret
+		} else if download { beginPeerDescriptionDownloading(peerID) }
+		return nil
 	}
 	
 	private func beginPeerDescriptionDownloading(forPeer: MCPeerID) {
@@ -115,7 +119,9 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
 		// TODO The nearby peer should treat any data it receives as potentially untrusted. To learn more about working with untrusted data, read Secure Coding Guide.
-		invitationHandler(true, MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required))
+		let session = MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required)
+		session.delegate = self
+		invitationHandler(true, session)
 	}
 	
 	// MARK: - MCSessionDelegate
@@ -129,7 +135,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	}
 	
 	@objc func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-		// TODO implement this
+		cachedPeers[peerID] = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? LocalPeerInfo
 	}
 	
 	@objc func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
@@ -144,6 +150,14 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		switch state {
 		case .Connected:
 			// TODO inform browse view controller, so that it can switch to the person detailed view
+			// TODO test, whether the casts works as expected (thats, only encode the LocalPeerInfo subset)
+			let data = NSKeyedArchiver.archivedDataWithRootObject(UserPeerInfo.instance as LocalPeerInfo)
+            do {
+                try session.sendData(data, toPeers: [peerID], withMode: MCSessionSendDataMode.Reliable)
+            } catch let error as NSError {
+                // TODO handle send fails
+            }
+			
 			break
 		case .Connecting:
 			break

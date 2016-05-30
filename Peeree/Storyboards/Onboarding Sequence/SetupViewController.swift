@@ -15,6 +15,7 @@ class SetupViewController: UIViewController, UITextFieldDelegate {
 	@IBOutlet var firstnameTextField: UITextField!
 	@IBOutlet var lastnameTextField: UITextField!
 	@IBOutlet var genderPicker: UISegmentedControl!
+    @IBOutlet weak var textFieldToPictureConstraint: NSLayoutConstraint!
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
 		NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
@@ -50,7 +51,37 @@ class SetupViewController: UIViewController, UITextFieldDelegate {
 		self.view.flyInViews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
 		self.view.flyInViews([picButton], duration: 1.0, delay: 0.7, damping: 1.0, velocity: 1.0)
 	}
+    
+    func keyboardWillShow(notification: NSNotification) {
+        if let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
+            var keyboardFrameRect = CGRect()
+            keyboardFrame.getValue(&keyboardFrameRect)
+            
+            let textFieldsBottom = firstnameTextField.superview!.frame.origin.y + firstnameTextField.superview!.frame.height
+            let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
+            if textFieldsBottom > keyboardTop {
+                // TODO make this animation work
+                UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+                    self.textFieldToPictureConstraint.constant = self.textFieldToPictureConstraint.constant - textFieldsBottom + keyboardTop
+                }, completion: nil)
+            }
+        }
+    }
+    
+    func keyboardWillHide(notification: NSNotification) {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
+        // TODO make this animation work
+        UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+            self.textFieldToPictureConstraint.constant = 5.0
+            }, completion: nil)
+    }
 	
+    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow), name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil)
+        return true
+    }
+    
 	func textFieldShouldReturn(textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
 		return true

@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 		//Set<UIUserNotificationCategory>?
-		if UIApplication.instancesRespondToSelector(Selector("registerUserNotificationSettings:")) {
+		if UIApplication.instancesRespondToSelector(#selector(UIApplication.registerUserNotificationSettings(_:))) {
 			//only ask on iOS 8 or later
 			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Alert, categories: nil))
 			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Badge, categories: nil))
@@ -81,7 +81,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		
-		UINavigationBar.appearance().backgroundColor = theme.globalBackgroundColor.colorWithAlphaComponent(0.3)
+        UINavigationBar.appearance().backgroundColor = theme.globalBackgroundColor.colorWithAlphaComponent(0.3)
+        
+        RemotePeerManager.sharedManager.goOnline()
 		
 		return true
 	}
@@ -108,11 +110,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 	}
 
 	func applicationWillTerminate(application: UIApplication) {
-		// Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        
+        RemotePeerManager.sharedManager.goOffline()
 	}
 
 	func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
-		print(__FUNCTION__)
+        print(#function)
 	}
 	
 	func remotePeerAppeared(peer: MCPeerID) {
