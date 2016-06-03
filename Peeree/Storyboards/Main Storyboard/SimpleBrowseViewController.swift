@@ -30,8 +30,8 @@ class SimpleBrowseViewController: UIViewController, MCAdvertiserAssistantDelegat
 	static private let maxPeerNameCharacters = 63
 	static private let kBrowserSegueID = "kobusch-segue-browser"
 	
-	@IBOutlet var localPeerName: UITextField!
-	@IBOutlet var adIndicator: UIActivityIndicatorView!
+	@IBOutlet private var localPeerName: UITextField!
+	@IBOutlet private var adIndicator: UIActivityIndicatorView!
 	
 	let greeting = ["kobusch" : "hallo"]
 	var adAssistant: MCAdvertiserAssistant!

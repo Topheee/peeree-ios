@@ -10,12 +10,12 @@ import UIKit
 import MultipeerConnectivity
 
 class PersonDetailViewController: UIViewController {
-	@IBOutlet var scrollView: UIScrollView!
-	@IBOutlet var contentView: UIView!
+	@IBOutlet private var scrollView: UIScrollView!
+	@IBOutlet private var contentView: UIView!
 	
-	@IBOutlet var portraitImageView: UIImageView!
-	@IBOutlet var ageGenderLabel: UILabel!
-	@IBOutlet var stateLabel: UILabel!
+	@IBOutlet private var portraitImageView: UIImageView!
+	@IBOutlet private var ageGenderLabel: UILabel!
+	@IBOutlet private var stateLabel: UILabel!
 	
 	@IBAction func pinPeer(sender: UIButton) {
 		// TODO pin this peer

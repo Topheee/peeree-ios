@@ -12,15 +12,15 @@ import CoreFoundation
 
 class MeViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate,
 UINavigationControllerDelegate, UserPeerInfoDelegate {
-	@IBOutlet var scrollView: UIScrollView!
-	@IBOutlet var contentView: UIView!
+	@IBOutlet private var scrollView: UIScrollView!
+	@IBOutlet private var contentView: UIView!
 	
-	@IBOutlet var forenameTextField: UITextField!
-	@IBOutlet var lastnameTextField: UITextField!
-	@IBOutlet var ageButton: UIButton!
-	@IBOutlet var statusButton: UIButton!
-	@IBOutlet var portraitImageButton: UIButton!
-	@IBOutlet var genderControl: UISegmentedControl!
+	@IBOutlet private var forenameTextField: UITextField!
+	@IBOutlet private var lastnameTextField: UITextField!
+	@IBOutlet private var ageButton: UIButton!
+	@IBOutlet private var statusButton: UIButton!
+	@IBOutlet private var portraitImageButton: UIButton!
+	@IBOutlet private var genderControl: UISegmentedControl!
 	
 	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
 		private let container: MeViewController
@@ -56,7 +56,6 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 		
 		@objc func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 			UserPeerInfo.instance.statusID = row
-//			container.statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[row]
 		}
 	}
 	
@@ -146,20 +145,27 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 	
 	override func viewDidLoad() {
 		portraitImageButton.maskView = CircleMaskView(forView: portraitImageButton)
+        forenameTextField.inputView = UIDatePicker()
 	}
 	
 	override func viewWillAppear(animated: Bool) {
 		forenameTextField.text = UserPeerInfo.instance.givenName
 		lastnameTextField.text = UserPeerInfo.instance.familyName
-		statusButton.titleLabel?.text = SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID]
-        // TODO localization
-		ageButton.titleLabel?.text = "\(UserPeerInfo.instance.age) years old"
+        statusButton.setTitle(SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID], forState: .Normal)
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.timeStyle = .NoStyle
+        dateFormatter.dateStyle = .LongStyle
+        ageButton.setTitle(dateFormatter.stringFromDate(UserPeerInfo.instance.dateOfBirth), forState: .Normal)
 		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
         portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "Sample Profile Pick")
+        
+        for control in [ageButton, statusButton] {
+            control.setNeedsLayout()
+        }
 	}
 	
 	override func viewDidAppear(animated: Bool) {
-		UserPeerInfo.instance.delegate = self
+        UserPeerInfo.instance.delegate = self
 	}
 	
 	override func viewDidDisappear(animated: Bool) {

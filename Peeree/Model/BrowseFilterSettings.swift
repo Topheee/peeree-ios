@@ -18,7 +18,15 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	private static let GenderKey = "gender"
 	
 	static var sharedSettings: BrowseFilterSettings {
-		return unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
+        struct Singleton {
+            static var sharedInstance: BrowseFilterSettings!
+            static var token: dispatch_once_t = 0
+        }
+        dispatch_once(&Singleton.token, { () -> Void in
+            Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
+        })
+        
+		return Singleton.sharedInstance
 	}
 	
 	enum GenderType: Int {
@@ -32,7 +40,7 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	
 	var gender: GenderType = .Unspecified
 	
-	override init() {
+	private override init() {
 		
 	}
 	

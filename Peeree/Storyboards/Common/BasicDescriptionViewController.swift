@@ -9,9 +9,9 @@
 import UIKit
 
 class BasicDescriptionViewController: UIViewController {
-	@IBOutlet var headingLabel: UILabel!
-	@IBOutlet var subHeadingLabel: UILabel!
-	@IBOutlet var descriptionTextView: UITextView!
+	@IBOutlet private var headingLabel: UILabel!
+	@IBOutlet private var subHeadingLabel: UILabel!
+	@IBOutlet private var descriptionTextView: UITextView!
 	
 	var dataSource: BasicDescriptionViewControllerDataSource?
 	

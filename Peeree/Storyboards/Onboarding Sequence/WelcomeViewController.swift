@@ -9,7 +9,7 @@
 import UIKit
 
 class WelcomeViewController: UIViewController {
-	@IBOutlet var infoButton: UIButton!
+	@IBOutlet private var infoButton: UIButton!
 	
 	override func viewDidAppear(animated: Bool) {
 		if !animated {

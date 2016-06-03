@@ -9,7 +9,7 @@
 import UIKit
 
 class SingleSelViewController: UIViewController {
-	@IBOutlet var selectionPickerView: UIPickerView!
+	@IBOutlet private var selectionPickerView: UIPickerView!
 	
 	var dataSource: SingleSelViewControllerDataSource? {
 		didSet {

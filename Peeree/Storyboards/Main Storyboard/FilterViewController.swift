@@ -12,13 +12,13 @@ class FilterViewController: UIViewController {
 	
 	var backend: BrowseFilterSettings!
 	
-	@IBOutlet var ageMaxLabel: UILabel!
-	@IBOutlet var ageMaxSlider: UISlider!
+	@IBOutlet private var ageMaxLabel: UILabel!
+	@IBOutlet private var ageMaxSlider: UISlider!
 	
-	@IBOutlet var ageMinLabel: UILabel!
-	@IBOutlet var ageMinSlider: UISlider!
+	@IBOutlet private var ageMinLabel: UILabel!
+	@IBOutlet private var ageMinSlider: UISlider!
 	
-	@IBOutlet var genderSeg: UISegmentedControl!
+	@IBOutlet private var genderSeg: UISegmentedControl!
 	
 	
 	private func updatePrefs() {

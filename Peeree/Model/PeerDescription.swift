@@ -19,12 +19,16 @@ protocol UserPeerInfoDelegate {
 class UserPeerInfo: LocalPeerInfo {
 	private static let PrefKey = "UserPeerInfo"
 	private static let DateOfBirthKey = "dateOfBirth"
-	private static var _instance: UserPeerInfo?
 	static var instance: UserPeerInfo {
-		if _instance == nil {
-			_instance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
-		}
-		return _instance!
+        struct Singleton {
+            static var sharedInstance: UserPeerInfo!
+            static var token: dispatch_once_t = 0
+        }
+        dispatch_once(&Singleton.token, { () -> Void in
+            Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
+        })
+        
+        return Singleton.sharedInstance
 	}
 	
 	var delegate: UserPeerInfoDelegate?
@@ -32,7 +36,6 @@ class UserPeerInfo: LocalPeerInfo {
 	var dateOfBirth: NSDate {
 		didSet {
 			if dateOfBirth != oldValue {
-				age = -Int(dateOfBirth.timeIntervalSinceNow / (3600*24*365))
 				dirtied()
 			}
 		}

@@ -25,7 +25,7 @@ class UserPeerManagerTests: XCTestCase {
 	static override func setUp() {
 		NSLog("%s\n", __FUNCTION__)
 		//keep the preferences as they were
-		peerData = UserPeerManager.getPeerDescription().networkDescription.peerID
+		peerData = UserPeerManager.userPeerDescription.networkDescription.peerID
 		if let data = peerData {
 			NSLog("\tretrieved %@ from preferences", data)
 		}
@@ -39,7 +39,7 @@ class UserPeerManagerTests: XCTestCase {
 		if let data = peerData {
 			UserPeerManager.setLocalPeerName(data.displayName)
 			NSLog("\twrote %@ to preferences", data)
-			if !data.isEqual(UserPeerManager.getPeerDescription().networkDescription.peerID) {
+			if !data.isEqual(UserPeerManager.userPeerDescription.networkDescription.peerID) {
 				NSLog("\tthe peer ID changes, even if you create one with the same display name")
 			}
 		}
@@ -67,10 +67,10 @@ class UserPeerManagerTests: XCTestCase {
 	 */
     func testSetAndGetLocalPeer() {
 		//local peer has to be nil here since we removed it in setUp()
-		XCTAssertNil(UserPeerManager.getPeerDescription().networkDescription.peerID, "local peer has to be nil")
+		XCTAssertNil(UserPeerManager.userPeerDescription.networkDescription.peerID, "local peer has to be nil")
 		
 		UserPeerManager.setLocalPeerName("testName")
-		let testPeer = UserPeerManager.getPeerDescription().networkDescription.peerID
+		let testPeer = UserPeerManager.userPeerDescription.networkDescription.peerID
 		
 		XCTAssertNotNil(testPeer, "local peer ID was not created, though a name was specified")
 		

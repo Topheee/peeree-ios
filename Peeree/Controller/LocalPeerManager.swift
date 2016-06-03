@@ -71,10 +71,22 @@ class UserPeerManager {
 	
 	static /* private */ let kPrefPeerID = "peeree-prefs-peerID"
 	static private let kPrefPeerDesc = "peeree-prefs-peer-description"
-	
-	// TODO maybe set these to nil when a memory warning occurs
-//	static private var userPeerID: MCPeerID?
-	static private var userPeerDescription: LocalPeerDescription?
+    
+    /**
+     *	Unarchives the MCPeerID from NSUserDefaults, if it is already created.
+     *	@return the MCPeerID of the local machine.
+     */
+    static var userPeerDescription: LocalPeerDescription {
+        struct Singleton {
+            static var sharedInstance: LocalPeerDescription!
+            static var token: dispatch_once_t = 0
+        }
+        dispatch_once(&Singleton.token, { () -> Void in
+            Singleton.sharedInstance = unarchiveObjectFromUserDefs(kPrefPeerDesc) ?? LocalPeerDescription()
+        })
+        
+        return Singleton.sharedInstance
+    }
 	
 	/**
 	 *	Unarchives the MCPeerID from NSUserDefaults, if it is already created.
@@ -103,17 +115,6 @@ class UserPeerManager {
 //			// TODO maybe propagate this with an notification or otherwise inform the RemotePeerManager, that it has to restart its services
 //		}
 //	}
-	
-	/**
-	 *	Unarchives the MCPeerID from NSUserDefaults, if it is already created.
-	 *	@return the MCPeerID of the local machine.
-	 */
-	static func getPeerDescription() -> LocalPeerDescription {
-		if userPeerDescription == nil {
-			userPeerDescription = unarchiveObjectFromUserDefs(kPrefPeerDesc) ?? LocalPeerDescription()
-		}
-		return userPeerDescription!
-	}
 	
 	static func warnIdentityChange(proceedHandler: ((UIAlertAction) -> Void)?, cancelHandler: ((UIAlertAction) -> Void)?, completionHandler: (() -> Void)?) {
 		let ac = UIAlertController(title: NSLocalizedString("Change of Identity", comment: "Title message of alerting the user that he is about to change the unambigous representation of himself in the Peeree world."), message: NSLocalizedString("You are about to change your identification. If you continue, others, even the ones who pinned you, won't recognize you any more, even, if you reset your name to the previous one.", comment: "Description of 'Change of Identity'"), preferredStyle: .ActionSheet)

@@ -9,12 +9,12 @@
 import UIKit
 
 class SetupViewController: UIViewController, UITextFieldDelegate {
-	@IBOutlet var picButton: UIButton!
-	@IBOutlet var infoButton: UIButton!
-	@IBOutlet var launchAppButton: UIButton!
-	@IBOutlet var firstnameTextField: UITextField!
-	@IBOutlet var lastnameTextField: UITextField!
-	@IBOutlet var genderPicker: UISegmentedControl!
+	@IBOutlet private var picButton: UIButton!
+	@IBOutlet private var infoButton: UIButton!
+	@IBOutlet private var launchAppButton: UIButton!
+	@IBOutlet private var firstnameTextField: UITextField!
+	@IBOutlet private var lastnameTextField: UITextField!
+	@IBOutlet private var genderPicker: UISegmentedControl!
     @IBOutlet weak var textFieldToPictureConstraint: NSLayoutConstraint!
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
