@@ -79,9 +79,14 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 		}
 		
 		private func setupPicker(picker: UIDatePicker, inDateSel dateSelViewController: DateSelViewController) {
-			//  TODO insert global min age
+			//  TODO create global min age constant from this value
 			picker.maximumDate = NSDate(timeInterval: -60*60*24*365*13, sinceDate: NSDate())
+            picker.date = UserPeerInfo.instance.dateOfBirth
 		}
+        
+        private func pickerChanged(picker: UIDatePicker) {
+            UserPeerInfo.instance.dateOfBirth = picker.date
+        }
 	}
 	
 	@IBAction func changeGender(sender: UISegmentedControl) {

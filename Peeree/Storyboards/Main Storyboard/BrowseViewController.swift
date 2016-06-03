@@ -32,6 +32,7 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	
 	override func viewDidAppear(animated: Bool) {
 		super.viewDidAppear(animated)
+        tableView.tableFooterView = UIView(frame: CGRectZero)
 		filteredAvailablePeersCache = RemotePeerManager.sharedManager.filteredPeers(BrowseFilterSettings.sharedSettings)
 		tableView.reloadData()
 		RemotePeerManager.sharedManager.delegate = self

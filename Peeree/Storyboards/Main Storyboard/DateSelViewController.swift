@@ -12,12 +12,11 @@ class DateSelViewController: UIViewController {
 	@IBOutlet private var datePickerView: UIDatePicker!
 	
 	var dataSource: DateSelViewControllerDataSource?
-//		{
-//		didSet {
-//			descriptionVC.dataSource = dataSource
-//		}
-//	}
 	
+    @IBAction func pickerAction(sender: UIDatePicker) {
+        dataSource?.pickerChanged(sender)
+    }
+    
 	// MARK: - Navigation
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -34,5 +33,6 @@ class DateSelViewController: UIViewController {
 }
 
 protocol DateSelViewControllerDataSource: BasicDescriptionViewControllerDataSource {
-	func setupPicker(picker: UIDatePicker, inDateSel dateSelViewController: DateSelViewController) -> Void
+	func setupPicker(picker: UIDatePicker, inDateSel dateSelViewController: DateSelViewController)
+    func pickerChanged(picker: UIDatePicker)
 }

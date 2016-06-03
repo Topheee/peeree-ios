@@ -113,6 +113,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         
         RemotePeerManager.sharedManager.goOffline()
+        NSUserDefaults.standardUserDefaults().synchronize()
 	}
 
 	func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
@@ -127,6 +128,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 //			note.alertBody = NSLocalizedString("Open in Peeree", comment: "Launch the app Peeree")
 			note.fireDate = NSDate().dateByAddingTimeInterval(1)
 			UIApplication.sharedApplication().scheduleLocalNotification(note)
+            UIApplication.sharedApplication().applicationIconBadgeNumber += 1
 			print("scheduled notification")
 		} else {
 			if let topVC = window?.rootViewController as? UITabBarController {
