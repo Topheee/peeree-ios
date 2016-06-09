@@ -37,7 +37,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	var delegate: RemotePeerManagerDelegate?
 	
 	func goOnline() {
-		if !(btAdvertiser == nil || btBrowser == nil) { return }
+		guard btAdvertiser == nil || btBrowser == nil else { return }
 		
 		let peerID = UserPeerInfo.instance.peerID
 		
@@ -103,7 +103,9 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> LocalPeerInfo? {
 		if let ret = cachedPeers[peerID] {
 			return ret
-		} else if download { beginPeerDescriptionDownloading(peerID) }
+		} else if download {
+            beginPeerDescriptionDownloading(peerID)
+        }
 		return nil
 	}
 	
@@ -174,7 +176,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	}
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-		if availablePeers.contains(peerID) { return }
+		guard !availablePeers.contains(peerID) else { return }
 		
 		availablePeers.insert(peerID)
 		

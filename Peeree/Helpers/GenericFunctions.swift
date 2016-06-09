@@ -13,8 +13,8 @@ func archiveObjectInUserDefs<T: AnyObject>(object: T, forKey: String) {
 }
 
 func unarchiveObjectFromUserDefs<T: AnyObject>(forKey: String) -> T? {
-	if let data = NSUserDefaults.standardUserDefaults().objectForKey(forKey) as? NSData {
-		return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
+	guard let data = NSUserDefaults.standardUserDefaults().objectForKey(forKey) as? NSData else {
+		return nil
 	}
-	return nil
+    return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
 }

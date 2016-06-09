@@ -12,9 +12,10 @@ class WelcomeViewController: UIViewController {
 	@IBOutlet private var infoButton: UIButton!
 	
 	override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
 		if !animated {
 			//at the very first showing, the view appears unanimated, so only here we want to show the animation
-			self.view.flyInViews([infoButton], duration: 2.0, delay: 0.5, damping: 1.0, velocity: 1.0)
+			self.view.flyInSubviews([infoButton], duration: 2.0, delay: 0.5, damping: 1.0, velocity: 1.0)
 //			let endPos = infoButton.frame
 //			
 //			infoButton.frame.origin.y = self.view.frame.height

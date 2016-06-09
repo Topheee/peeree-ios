@@ -35,13 +35,15 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 	static let cellID = "characterTraitCell"
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        super.prepareForSegue(segue, sender: sender)
 		if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
 			singleSelVC.dataSource = self
 		}
 	}
+    
+    // - MARK: UITableView Data Source
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-		
 		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
 		let trait = characterTraits![indexPath.row]
 		cell.textLabel!.text = trait.name
@@ -50,42 +52,33 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 	}
 	
 	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		if let traits = characterTraits {
-			return traits.count
-		}
-		return 0
+        return characterTraits?.count ?? 0
 	}
 	
 	override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
 		selectedTrait = indexPath
 	}
+    
+    // - MARK: SingleSelViewController Data Source
 	
 	func headingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-		// TODO localization
-		return "How about..."
+		return NSLocalizedString("How about...", comment: "Heading of character trait view")
 	}
 	
 	func subHeadingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-		if let traits = characterTraits {
-			return traits[selectedTrait!.row].name
-		}
-		return ""
+        return characterTraits?[selectedTrait!.row].name ?? ""
 	}
 	
 	func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-		if let traits = characterTraits {
-			return traits[selectedTrait!.row].description
-		}
-		return ""
+        return characterTraits?[selectedTrait!.row].description ?? ""
 	}
 	
 	func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
 		return 1
 	}
 	
-	func pickerView(pickerView: UIPickerView,
-		numberOfRowsInComponent component: Int) -> Int {
-			return CharacterTrait.ApplyTypeNames.count
+	func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return CharacterTrait.ApplyTypeNames.count
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {

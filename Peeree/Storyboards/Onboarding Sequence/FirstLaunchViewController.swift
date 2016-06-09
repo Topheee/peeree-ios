@@ -43,11 +43,6 @@ class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate,
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
 	}
 	
-	override func didReceiveMemoryWarning() {
-		super.didReceiveMemoryWarning()
-		// Dispose of any resources that can be recreated.
-	}
-	
 	// MARK: - UIPageViewController delegate methods
 	
 	func pageViewController(pageViewController: UIPageViewController, spineLocationForInterfaceOrientation orientation: UIInterfaceOrientation) -> UIPageViewControllerSpineLocation {
@@ -111,11 +106,11 @@ class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate,
 	}
 	
 	func presentationCountForPageViewController(pageViewController: UIPageViewController) -> Int {
-		return 2;
+		return 2
 	}
 	
 	func presentationIndexForPageViewController(pageViewController: UIPageViewController) -> Int {
-		return 0;
+		return 0
 	}
 
 }

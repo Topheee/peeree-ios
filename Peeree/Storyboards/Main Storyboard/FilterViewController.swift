@@ -20,24 +20,6 @@ class FilterViewController: UIViewController {
 	
 	@IBOutlet private var genderSeg: UISegmentedControl!
 	
-	
-	private func updatePrefs() {
-		backend.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
-		backend.ageMin = ageMinSlider.value
-		backend.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
-		backend.writeToDefaults()
-	}
-	
-	private func updateAgeMinLabel() {
-		let newValue = Int(ageMinSlider.value)
-		ageMinLabel.text = "\(newValue)"
-	}
-	
-	private func updateAgeMaxLabel() {
-		let newValue = ageMaxSlider.value == ageMaxSlider.maximumValue ? "∞" : "\(Int(ageMaxSlider.value))"
-		ageMaxLabel.text = newValue
-	}
-	
 	@IBAction func changeFilter(sender: AnyObject) {
 		updatePrefs()
 	}
@@ -59,10 +41,28 @@ class FilterViewController: UIViewController {
 	}
 	
 	override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
 		backend = BrowseFilterSettings.sharedSettings
 		ageMaxSlider.value = backend.ageMax
 		updateAgeMaxLabel()
 		ageMinSlider.value = backend.ageMin
 		updateAgeMinLabel()
-	}
+    }
+    
+    private func updatePrefs() {
+        backend.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
+        backend.ageMin = ageMinSlider.value
+        backend.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
+        backend.writeToDefaults()
+    }
+    
+    private func updateAgeMinLabel() {
+        let newValue = Int(ageMinSlider.value)
+        ageMinLabel.text = "\(newValue)"
+    }
+    
+    private func updateAgeMaxLabel() {
+        let newValue = ageMaxSlider.value == ageMaxSlider.maximumValue ? "∞" : "\(Int(ageMaxSlider.value))"
+        ageMaxLabel.text = newValue
+    }
 }

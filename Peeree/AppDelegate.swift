@@ -23,12 +23,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 		//Set<UIUserNotificationCategory>?
 		if UIApplication.instancesRespondToSelector(#selector(UIApplication.registerUserNotificationSettings(_:))) {
 			//only ask on iOS 8 or later
-			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Alert, categories: nil))
-			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Badge, categories: nil))
-			UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: UIUserNotificationType.Sound, categories: nil))
+            UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
 		}
 		
 		if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.kPrefSkipOnboarding) {
+//        if UserPeerInfo.instance.peerName == "" {
 			//this is the first launch of the app, so we show the first launch UI
 			self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
 			
@@ -125,11 +124,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 			let note = UILocalNotification()
 			// TODO localization
 			note.alertBody = "Found " + peer.displayName
-//			note.alertBody = NSLocalizedString("Open in Peeree", comment: "Launch the app Peeree")
 			note.fireDate = NSDate().dateByAddingTimeInterval(1)
+            note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
 			UIApplication.sharedApplication().scheduleLocalNotification(note)
-            UIApplication.sharedApplication().applicationIconBadgeNumber += 1
-			print("scheduled notification")
 		} else {
 			if let topVC = window?.rootViewController as? UITabBarController {
 				if let oldBadge = topVC.tabBar.items?[0].badgeValue {

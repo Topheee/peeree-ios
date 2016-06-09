@@ -8,77 +8,89 @@
 
 import UIKit
 
-class SetupViewController: UIViewController, UITextFieldDelegate {
+class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private var picButton: UIButton!
 	@IBOutlet private var infoButton: UIButton!
 	@IBOutlet private var launchAppButton: UIButton!
-	@IBOutlet private var firstnameTextField: UITextField!
-	@IBOutlet private var lastnameTextField: UITextField!
+	@IBOutlet private var nameTextField: UITextField!
 	@IBOutlet private var genderPicker: UISegmentedControl!
-    @IBOutlet weak var textFieldToPictureConstraint: NSLayoutConstraint!
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
-		NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
-		//let storyboard = UIStoryboard(name:"Main", bundle: nil)
-		//self.showViewController(storyboard.instantiateInitialViewController()!, sender: self)
+        guard let chosenName = nameTextField.text else { return }
+        guard chosenName != "" else { return }
+        
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
+        
+        UserPeerInfo.instance.peerName = chosenName
+        UserPeerInfo.instance.hasVagina = genderPicker.selectedSegmentIndex == 1
+        UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
 	}
 	
 	@IBAction func takePic(sender: UIButton) {
-		//TODO the user is now asked to take or choose a picture of him- or herself
-		self.view.flyInViews([firstnameTextField, lastnameTextField], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
+        showPicturePicker(NSLocalizedString("Omit portrait", comment: "Don't set a profile picture in onboarding")) { (action) in
+            self.omitPicture()
+        }
 	}
 	@IBAction func filledFirstname(sender: UITextField) {
-		self.view.flyInViews([genderPicker], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
+		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
 		UIView.animateWithDuration(1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
 			}, completion: nil)
 	}
 	
 	override func viewDidLoad() {
-		infoButton.alpha = 0.0
-		picButton.alpha = 0.0
-		firstnameTextField.alpha = 0.0
-		lastnameTextField.alpha = 0.0
-		genderPicker.alpha = 0.0
-		launchAppButton.alpha = 0.0
+        super.viewDidLoad()
+        for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] {
+            view.alpha = 0.0
+        }
+        picButton.maskView = CircleMaskView(forView: picButton)
 		
-		firstnameTextField.keyboardType = UIKeyboardType.NamePhonePad
-		lastnameTextField.keyboardType = UIKeyboardType.NamePhonePad
-		
+		nameTextField.keyboardType = UIKeyboardType.NamePhonePad
 	}
 	
 	override func viewDidAppear(animated: Bool) {
-		self.view.flyInViews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
-		self.view.flyInViews([picButton], duration: 1.0, delay: 0.7, damping: 1.0, velocity: 1.0)
+        super.viewDidAppear(animated)
+        guard picButton.imageForState(.Normal) == nil else { return }
+        
+        self.view.flyInSubviews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
+        self.view.flyInSubviews([picButton], duration: 1.0, delay: 1.0, damping: 1.0, velocity: 1.0)
 	}
     
+    override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
+        if identifier == "finishOnboardingSegue" {
+            return nameTextField.text != nil && nameTextField.text! != ""
+        }
+        return super.shouldPerformSegueWithIdentifier(identifier, sender: sender)
+    }
+    
     func keyboardWillShow(notification: NSNotification) {
-        if let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
-            var keyboardFrameRect = CGRect()
-            keyboardFrame.getValue(&keyboardFrameRect)
-            
-            let textFieldsBottom = firstnameTextField.superview!.frame.origin.y + firstnameTextField.superview!.frame.height
-            let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
-            if textFieldsBottom > keyboardTop {
-                // TODO make this animation work
-                UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: UIViewAnimationOptions.CurveEaseOut, animations: {
-                    self.textFieldToPictureConstraint.constant = self.textFieldToPictureConstraint.constant - textFieldsBottom + keyboardTop
+        guard let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue else { return }
+        
+        let keyboardFrameRect = keyboardFrame.CGRectValue()
+        
+        var oldFrame = nameTextField.frame
+        let textFieldsBottom = nameTextField.frame.origin.y + nameTextField.frame.height
+        let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
+        if textFieldsBottom > keyboardTop {
+            dispatch_async(dispatch_get_main_queue(), {
+                UIView.animateWithDuration(1.2, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.55, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+                    oldFrame.origin.y += keyboardTop - textFieldsBottom
+                    self.nameTextField.frame = oldFrame
                 }, completion: nil)
-            }
+            })
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
         NSNotificationCenter.defaultCenter().removeObserver(self)
-        // TODO make this animation work
-        UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: UIViewAnimationOptions.CurveEaseOut, animations: {
-            self.textFieldToPictureConstraint.constant = 5.0
-            }, completion: nil)
+        nameTextField.setNeedsLayout()
     }
+    
+    // MARK - UITextFieldDelegate
 	
     func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow), name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide), name: UIKeyboardWillHideNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow), name: UIKeyboardDidShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide), name: UIKeyboardDidHideNotification, object: nil)
         return true
     }
     
@@ -86,11 +98,33 @@ class SetupViewController: UIViewController, UITextFieldDelegate {
 		textField.resignFirstResponder()
 		return true
 	}
+    
+    override func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        super.imagePickerControllerDidCancel(picker)
+        omitPicture()
+    }
+    
+    override func pickedImage(image: UIImage) {
+        picButton.setTitle("", forState: .Normal)
+        picButton.setImage(image, forState: .Normal)
+        dispatch_async(dispatch_get_main_queue()) {
+            self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
+        }
+    }
+    
+    private func omitPicture() {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
+        }
+    }
 }
 
+/**
+ *	Animates views like they are flown in from the bottom of the screen.
+ *	@param views    the views to animate
+ */
 extension UIView {
-	func flyInViews(views: [UIView], duration: NSTimeInterval, delay: NSTimeInterval, damping: CGFloat, velocity: CGFloat) {
-		
+	func flyInSubviews(views: [UIView], duration: NSTimeInterval, delay: NSTimeInterval, damping: CGFloat, velocity: CGFloat) {
 		var positions = [CGRect]()
 		for value in views {
 			positions.append(value.frame)

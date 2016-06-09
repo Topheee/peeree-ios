@@ -13,10 +13,10 @@ class SingleSelViewController: UIViewController {
 	
 	var dataSource: SingleSelViewControllerDataSource? {
 		didSet {
-			if selectionPickerView != nil {
-				selectionPickerView.dataSource = dataSource
-				selectionPickerView.delegate = dataSource
-			}
+			guard selectionPickerView != nil else { return }
+            
+            selectionPickerView.dataSource = dataSource
+            selectionPickerView.delegate = dataSource
 		}
 	}
 	
@@ -30,6 +30,7 @@ class SingleSelViewController: UIViewController {
 	}
 	
 	override func viewDidLoad() {
+        super.viewDidLoad()
 		selectionPickerView.dataSource = dataSource
 		selectionPickerView.delegate = dataSource
 	}

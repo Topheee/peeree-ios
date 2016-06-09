@@ -21,13 +21,12 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		super.prepareForSegue(segue, sender: sender)
-		if let personDetailVC = segue.destinationViewController as? PersonDetailViewController {
-			if let tappedCell = sender as? UITableViewCell {
-				if tappedCell.reuseIdentifier == BrowseViewController.peerDisplayCellId {
-					personDetailVC.displayedPeer = filteredAvailablePeersCache[tappedCell.tag].0
-				}
-			}
-		}
+		guard let personDetailVC = segue.destinationViewController as? PersonDetailViewController else { return }
+        guard let tappedCell = sender as? UITableViewCell else { return }
+        
+        if tappedCell.reuseIdentifier == BrowseViewController.peerDisplayCellId {
+            personDetailVC.displayedPeer = filteredAvailablePeersCache[tappedCell.tag].0
+        }
 	}
 	
 	override func viewDidAppear(animated: Bool) {
@@ -37,7 +36,8 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 		tableView.reloadData()
 		RemotePeerManager.sharedManager.delegate = self
 		
-		tabBarController?.tabBar.items?[0].badgeValue = nil
+        tabBarController?.tabBar.items?[0].badgeValue = nil
+        UIApplication.sharedApplication().applicationIconBadgeNumber = 0
 	}
 	
 	override func viewDidDisappear(animated: Bool) {
@@ -45,6 +45,8 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 		RemotePeerManager.sharedManager.delegate = nil
 		filteredAvailablePeersCache.removeAll()
 	}
+    
+    // - MARK: UITableView Data Source
 	
 	override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
 		return 1

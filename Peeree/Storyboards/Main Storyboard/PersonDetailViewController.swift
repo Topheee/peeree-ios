@@ -10,9 +10,6 @@ import UIKit
 import MultipeerConnectivity
 
 class PersonDetailViewController: UIViewController {
-	@IBOutlet private var scrollView: UIScrollView!
-	@IBOutlet private var contentView: UIView!
-	
 	@IBOutlet private var portraitImageView: UIImageView!
 	@IBOutlet private var ageGenderLabel: UILabel!
 	@IBOutlet private var stateLabel: UILabel!
@@ -21,13 +18,7 @@ class PersonDetailViewController: UIViewController {
 		// TODO pin this peer
 	}
 	
-	var displayedPeer: MCPeerID!
-	
-	override func viewDidLayoutSubviews() {
-		super.viewDidLayoutSubviews()
-		scrollView.layoutIfNeeded()
-		scrollView.contentSize = contentView.bounds.size
-	}
+	var displayedPeer: MCPeerID?
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -35,25 +26,27 @@ class PersonDetailViewController: UIViewController {
 	}
 	
 	override func viewWillAppear(animated: Bool) {
-		super.viewDidAppear(animated)
-		if displayedPeer == nil {
-			// rewind to previous view controller
-			return
-		}
-		if let localPeerInfo = RemotePeerManager.sharedManager.getPeerInfo(forPeer: displayedPeer, download: true) {
-            navigationItem.title = localPeerInfo.fullName
-            //TODO localization
-			ageGenderLabel.text = "\(localPeerInfo.age) years old, \(localPeerInfo.hasVagina ? "female" : "male")"
-			stateLabel.text = SerializablePeerInfo.possibleStatuses[localPeerInfo.statusID]
-//			if localPeerInfo.hasPicture {
-//				if localPeerInfo.isPictureLoading {
-//					// TODO show waiting indicator
-//				} else {
-					portraitImageView.image = localPeerInfo.picture
-//				}
-//			} else {
-//				// TODO show now picture icon
-//			}
+		super.viewWillAppear(animated)
+		guard let peer = displayedPeer else { return }
+        var userPeerInfo: LocalPeerInfo? = nil
+        if UserPeerInfo.instance.peerID == displayedPeer {
+            userPeerInfo = UserPeerInfo.instance
+        }
+		guard let localPeerInfo = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peer, download: true) ?? userPeerInfo else { return }
+        
+        navigationItem.title = localPeerInfo.peerName
+        
+        //TODO localization
+        ageGenderLabel.text = "\(localPeerInfo.age) years old, \(localPeerInfo.hasVagina ? "female" : "male")"
+        stateLabel.text = SerializablePeerInfo.possibleStatuses[localPeerInfo.statusID]
+		if localPeerInfo.hasPicture {
+			if localPeerInfo.isPictureLoading {
+				// TODO show waiting indicator
+			} else {
+                portraitImageView.image = localPeerInfo.picture
+			}
+		} else {
+			// TODO show now picture icon
 		}
 	}
 }

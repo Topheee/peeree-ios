@@ -7,20 +7,15 @@
 //
 
 import UIKit
-import MobileCoreServices
-import CoreFoundation
 
-class MeViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate,
-UINavigationControllerDelegate, UserPeerInfoDelegate {
-	@IBOutlet private var scrollView: UIScrollView!
-	@IBOutlet private var contentView: UIView!
-	
-	@IBOutlet private var forenameTextField: UITextField!
-	@IBOutlet private var lastnameTextField: UITextField!
-	@IBOutlet private var ageButton: UIButton!
+class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
+	@IBOutlet private var nameTextField: UITextField!
+	@IBOutlet private var birthdayButton: UIButton!
 	@IBOutlet private var statusButton: UIButton!
 	@IBOutlet private var portraitImageButton: UIButton!
-	@IBOutlet private var genderControl: UISegmentedControl!
+    @IBOutlet private var genderControl: UISegmentedControl!
+    
+    private var isIdentityChanging = false
 	
 	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
 		private let container: MeViewController
@@ -45,9 +40,8 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 			return 1
 		}
 		
-		@objc func pickerView(pickerView: UIPickerView,
-			numberOfRowsInComponent component: Int) -> Int {
-				return SerializablePeerInfo.possibleStatuses.count
+		@objc func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+            return SerializablePeerInfo.possibleStatuses.count
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
@@ -81,7 +75,7 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 		private func setupPicker(picker: UIDatePicker, inDateSel dateSelViewController: DateSelViewController) {
 			//  TODO create global min age constant from this value
 			picker.maximumDate = NSDate(timeInterval: -60*60*24*365*13, sinceDate: NSDate())
-            picker.date = UserPeerInfo.instance.dateOfBirth
+            picker.date = UserPeerInfo.instance.dateOfBirth ?? picker.maximumDate!
 		}
         
         private func pickerChanged(picker: UIDatePicker) {
@@ -93,41 +87,18 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 		UserPeerInfo.instance.hasVagina = sender.selectedSegmentIndex == 1
 	}
     @IBAction func changePicture(sender: AnyObject) {
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
-        imagePicker.allowsEditing = true
-        imagePicker.mediaTypes = [kUTTypeImage as String]
-        
-        let presentPicker = {
-            self.presentViewController(imagePicker, animated: true, completion: nil)
-        }
-        let cameraHandler = {(alertAction: UIAlertAction) -> Void in
-            imagePicker.sourceType = .Camera
-            presentPicker()
-        }
-        let photoLibraryHandler = {(alertAction: UIAlertAction) -> Void in
-            imagePicker.sourceType = .PhotoLibrary
-            presentPicker()
-        }
-        
-        if UIImagePickerController.isSourceTypeAvailable(.Camera) && UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
-            let alertController = UIAlertController()
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device"), style: .Default, handler: cameraHandler))
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device"), style: .Default, handler: photoLibraryHandler))
-            presentViewController(alertController, animated: true, completion: nil)
-        } else if UIImagePickerController.isSourceTypeAvailable(.Camera) {
-            cameraHandler(UIAlertAction(title: "", style: .Default, handler: nil))
-        } else if UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
-            photoLibraryHandler(UIAlertAction(title: "", style: .Default, handler: nil))
+        showPicturePicker(NSLocalizedString("Delete portrait", comment: "Removing the own portrait image")) { (action) in
+            UserPeerInfo.instance.picture = nil
         }
     }
 	
-	private var isIdentityChanging = false
-	
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-		if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
-			singleSelVC.dataSource = StatusSelViewControllerDataSource(container: self)
-		} else if let charTraitVC = segue.destinationViewController as?
+        super.prepareForSegue(segue, sender: sender)
+        if let personDetailVC = segue.destinationViewController as? PersonDetailViewController {
+            personDetailVC.displayedPeer = UserPeerInfo.instance.peerID
+        } else if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
+            singleSelVC.dataSource = StatusSelViewControllerDataSource(container: self)
+        } else if let charTraitVC = segue.destinationViewController as?
 			CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerInfo.instance.characterTraits
 		} else if let dateSelVC = segue.destinationViewController as? DateSelViewController {
@@ -141,39 +112,37 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 //		}
 	}
 	
-	override func viewDidLayoutSubviews() {
-		super.viewDidLayoutSubviews()
-		
-		scrollView.layoutIfNeeded()
-		scrollView.contentSize = contentView.bounds.size
-	}
-	
 	override func viewDidLoad() {
-		portraitImageButton.maskView = CircleMaskView(forView: portraitImageButton)
-        forenameTextField.inputView = UIDatePicker()
+        super.viewDidLoad()
+        nameTextField.keyboardType = UIKeyboardType.NamePhonePad
 	}
 	
 	override func viewWillAppear(animated: Bool) {
-		forenameTextField.text = UserPeerInfo.instance.givenName
-		lastnameTextField.text = UserPeerInfo.instance.familyName
+        super.viewWillAppear(animated)
+		nameTextField.text = UserPeerInfo.instance.peerName
         statusButton.setTitle(SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID], forState: .Normal)
         let dateFormatter = NSDateFormatter()
         dateFormatter.timeStyle = .NoStyle
         dateFormatter.dateStyle = .LongStyle
-        ageButton.setTitle(dateFormatter.stringFromDate(UserPeerInfo.instance.dateOfBirth), forState: .Normal)
+        if let birthday = UserPeerInfo.instance.dateOfBirth {
+            birthdayButton.setTitle(dateFormatter.stringFromDate(birthday), forState: .Normal)
+        }
 		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
         portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "Sample Profile Pick")
+        portraitImageButton.imageView?.maskView = CircleMaskView(forView: portraitImageButton)
         
-        for control in [ageButton, statusButton] {
+        for control in [birthdayButton, statusButton] {
             control.setNeedsLayout()
         }
 	}
 	
 	override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         UserPeerInfo.instance.delegate = self
 	}
 	
 	override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
 //		if UserPeerInfo.instance.delegate! == self as UserPeerInfoDelegate {
 			UserPeerInfo.instance.delegate = nil
 //		}
@@ -188,69 +157,35 @@ UINavigationControllerDelegate, UserPeerInfoDelegate {
 	
 	func textFieldShouldEndEditing(textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
-		if let newValue = textField.text {
-			switch textField {
-			case forenameTextField:
-				if newValue != UserPeerInfo.instance.givenName {
-					isIdentityChanging = true
-					UserPeerInfo.instance.givenName = newValue
-				}
-			case lastnameTextField:
-				if newValue != UserPeerInfo.instance.familyName {
-					isIdentityChanging = true
-					UserPeerInfo.instance.familyName = newValue
-				}
-			default:
-				break
-			}
-		}
+		guard let newValue = textField.text else {
+            return true
+        }
+        
+        switch textField {
+        case nameTextField:
+            if newValue != UserPeerInfo.instance.peerName {
+                isIdentityChanging = true
+                UserPeerInfo.instance.peerName = newValue
+            }
+        default:
+            break
+        }
 		return true
 	}
 	
 	func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-		return !(isIdentityChanging || forenameTextField.isFirstResponder() || lastnameTextField.isFirstResponder())
+		return !(isIdentityChanging || nameTextField.isFirstResponder())
     }
     
-    // MARK: - UIImagePickerController Delegate
-    
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        // picker.parentViewController is nil, but I don't know why
-//        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-        self.dismissViewControllerAnimated(true, completion: nil)
-    }
-    
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        var originalImage, editedImage, imageToSave: UIImage?
-            
-        editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
-        originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage
-        
-        if editedImage != nil {
-            imageToSave = editedImage
-        } else {
-            imageToSave = originalImage
-        }
-        
-        // Save the new image (original or edited) to the Camera Roll
-        if imageToSave != nil {
-            if picker.sourceType == .Camera {
-                UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
-            }
-            
-            UserPeerInfo.instance.picture = imageToSave
-            portraitImageButton.imageView?.image = imageToSave
-        }
-        
-        // picker.parentViewController is nil, but I don't know why
-//        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-        self.dismissViewControllerAnimated(true, completion: nil)
+    override func pickedImage(image: UIImage) {
+        UserPeerInfo.instance.picture = image
+        portraitImageButton.setImage(image, forState: .Normal)
     }
     
 	
 	func userCancelledIDChange() {
 		isIdentityChanging = false
-		forenameTextField.text = UserPeerInfo.instance.givenName
-		lastnameTextField.text = UserPeerInfo.instance.familyName
+		nameTextField.text = UserPeerInfo.instance.peerName
 	}
 	
 	func userConfirmedIDChange() {
