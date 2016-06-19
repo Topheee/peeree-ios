@@ -18,3 +18,9 @@ func unarchiveObjectFromUserDefs<T: AnyObject>(forKey: String) -> T? {
 	}
     return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
 }
+
+extension RawRepresentable where Self.RawValue == String {
+    func localizedRawValue() -> String {
+        return NSBundle.mainBundle().localizedStringForKey(self.rawValue, value: nil, table: nil)
+    }
+}

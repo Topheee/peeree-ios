@@ -30,7 +30,7 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	}
 	
 	enum GenderType: Int {
-		case Unspecified = 0, Male, Female
+		case Unspecified = 0, Male, Female, Queer
 	}
 	
 	//range from 10..100
@@ -61,7 +61,7 @@ class BrowseFilterSettings: NSObject, NSCoding {
 	}
 	
 	func checkPeer(peer: SerializablePeerInfo) -> Bool {
-		let matchingGender = gender == .Unspecified || (gender == .Female && peer.hasVagina)
+		let matchingGender = gender == .Unspecified || (gender == .Female && peer.gender == .Female) || (gender == .Male && peer.gender == .Male)
 		let matchingAge = ageMin <= Float(peer.age) && (ageMax == 0.0 || ageMax >= Float(peer.age))
 		
 		return matchingAge && matchingGender

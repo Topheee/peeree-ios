@@ -10,6 +10,7 @@ import UIKit
 import MultipeerConnectivity
 
 class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
+    @IBOutlet weak var networkButton: UIButton!
 	
 	private static let peerDisplayCellId = "peerDisplayCell"
 	
@@ -19,6 +20,10 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 		
 	}
 	
+    @IBAction func toggleNetwork(sender: AnyObject) {
+        RemotePeerManager.sharedManager.peering = !RemotePeerManager.sharedManager.peering
+    }
+    
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		super.prepareForSegue(segue, sender: sender)
 		guard let personDetailVC = segue.destinationViewController as? PersonDetailViewController else { return }
@@ -46,7 +51,7 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 		filteredAvailablePeersCache.removeAll()
 	}
     
-    // - MARK: UITableView Data Source
+    // MARK: - UITableView Data Source
 	
 	override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
 		return 1
@@ -64,11 +69,11 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 		cell.tag = indexPath.row
 		return cell
 	}
+    
+    // MARK: RemotePeerManager Delegate
 	
 	func remotePeerAppeared(peer: MCPeerID) {
-		
 		filteredAvailablePeersCache.append(peer, peer.displayName, RemotePeerManager.sharedManager.getPinStatus(peer))
-		// TODO extend NSTableView with indexPathOfLastRowInSection(_: Int)
 		let idxPath = NSIndexPath(forRow: filteredAvailablePeersCache.count-1, inSection: 0)
 		self.tableView.insertRowsAtIndexPaths([idxPath], withRowAnimation: .Fade)
 	}
@@ -82,4 +87,12 @@ class BrowseViewController: UITableViewController, RemotePeerManagerDelegate {
 			}
 		}
 	}
+    
+    func connectionChangedState(nowOnline: Bool) {
+        if nowOnline {
+            networkButton.setTitle(NSLocalizedString("Peering", comment: "Network functionality active"), forState: .Normal)
+        } else {
+            networkButton.setTitle(NSLocalizedString("Offline", comment: "Network functionality inactive"), forState: .Normal)
+        }
+    }
 }

@@ -37,8 +37,8 @@ class PersonDetailViewController: UIViewController {
         navigationItem.title = localPeerInfo.peerName
         
         //TODO localization
-        ageGenderLabel.text = "\(localPeerInfo.age) years old, \(localPeerInfo.hasVagina ? "female" : "male")"
-        stateLabel.text = SerializablePeerInfo.possibleStatuses[localPeerInfo.statusID]
+        ageGenderLabel.text = "\(localPeerInfo.age) years old, \(localPeerInfo.gender.rawValue)"
+        stateLabel.text = UserPeerInfo.instance.relationshipStatus.rawValue
 		if localPeerInfo.hasPicture {
 			if localPeerInfo.isPictureLoading {
 				// TODO show waiting indicator

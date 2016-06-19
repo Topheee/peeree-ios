@@ -19,8 +19,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 	var window: UIWindow?
 	var isActive: Bool = false
 
+    /**
+     *  Registers for notifications, presents onboarding on first launch and applies GUI theme
+     */
 	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-		//Set<UIUserNotificationCategory>?
 		if UIApplication.instancesRespondToSelector(#selector(UIApplication.registerUserNotificationSettings(_:))) {
 			//only ask on iOS 8 or later
             UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
@@ -82,7 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 		
         UINavigationBar.appearance().backgroundColor = theme.globalBackgroundColor.colorWithAlphaComponent(0.3)
         
-        RemotePeerManager.sharedManager.goOnline()
+        RemotePeerManager.sharedManager.peering = true
 		
 		return true
 	}
@@ -108,15 +110,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 		isActive = true
 	}
 
+    /**
+     *  Stops networking and synchronizes preferences
+     */
 	func applicationWillTerminate(application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        
-        RemotePeerManager.sharedManager.goOffline()
+        RemotePeerManager.sharedManager.peering = false
         NSUserDefaults.standardUserDefaults().synchronize()
-	}
-
-	func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
-        print(#function)
 	}
 	
 	func remotePeerAppeared(peer: MCPeerID) {
@@ -132,7 +131,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 				if let oldBadge = topVC.tabBar.items?[0].badgeValue {
 					if let oldBadgeValue = Int(oldBadge) {
 						topVC.tabBar.items?[0].badgeValue = String(oldBadgeValue+1)
-					}
+                    } else {
+                        topVC.tabBar.items?[0].badgeValue = "1"
+                    }
 				} else {
 					topVC.tabBar.items?[0].badgeValue = "1"
 				}
@@ -149,4 +150,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 			}
 		}
 	}
+    
+    func connectionChangedState(nowOnline: Bool) {
+        // ignored
+    }
 }

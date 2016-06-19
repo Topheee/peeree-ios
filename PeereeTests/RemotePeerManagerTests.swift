@@ -37,14 +37,14 @@ class RemotePeerManagerTests: XCTestCase {
 	
 	func testGoOnline() {
 		
-		rpm.goOnline()
+		rpm.peering = true
 		/* without a local peer ID, we cannot go online */
 		XCTAssertNil(rpm.btAdvertiser)
 		XCTAssertNil(rpm.btBrowser)
 		
 		LocalPeerManager.setLocalPeerName("test")
 		
-		rpm.goOnline()
+		rpm.peering = true
 	}
 	
 	/**

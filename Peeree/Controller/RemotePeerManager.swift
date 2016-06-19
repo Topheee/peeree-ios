@@ -9,7 +9,6 @@
 import Foundation
 import MultipeerConnectivity
 
-// TODO make use of discoveryInfo, but update the information provided within it, when the user taps on a peer or at least when he wants to pin someone, since we cannot trust the information provided in discoveryInfo I think
 /*
  *	The RemotePeerManager serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
  */
@@ -35,31 +34,35 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	var pinnedPeers: [LocalPeerInfo] = []
 	
 	var delegate: RemotePeerManagerDelegate?
-	
-	func goOnline() {
-		guard btAdvertiser == nil || btBrowser == nil else { return }
-		
-		let peerID = UserPeerInfo.instance.peerID
-		
-		// TODO maybe provide some information in discoveryInfo
-		btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.kDiscoveryServiceID)
-		btAdvertiser!.delegate = self
-		
-		btAdvertiser?.startAdvertisingPeer()
-		
-		btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
-		btBrowser!.delegate = self
-		
-		btBrowser?.startBrowsingForPeers()
-	}
-	
-	func goOffline() {
-		btAdvertiser?.stopAdvertisingPeer()
-		btBrowser?.stopBrowsingForPeers()
-		btAdvertiser = nil
-		btBrowser = nil
-		// TODO cancel and close all sessions. Seems, that we have to store them somewhere (maybe in the availablePeers tuple)
-	}
+    
+    var peering: Bool {
+        get {
+            return btAdvertiser != nil || btBrowser != nil
+        }
+        set {
+            guard newValue != peering else { return }
+            if newValue {
+                let peerID = UserPeerInfo.instance.peerID
+                
+                btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.kDiscoveryServiceID)
+                btAdvertiser!.delegate = self
+                btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
+                btBrowser!.delegate = self
+                
+                delegate?.connectionChangedState(newValue)
+                
+                btAdvertiser?.startAdvertisingPeer()
+                btBrowser?.startBrowsingForPeers()
+            } else {
+                btAdvertiser?.stopAdvertisingPeer()
+                btBrowser?.stopBrowsingForPeers()
+                btAdvertiser = nil
+                btBrowser = nil
+                delegate?.connectionChangedState(newValue)
+                // TODO cancel and close all sessions. Seems, that we have to store them somewhere (maybe in the availablePeers tuple)
+            }
+        }
+    }
 	
 	func getPinStatus(forPeer: MCPeerID) -> String {
 		var contained = false
@@ -116,7 +119,8 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	// MARK: - MCNearbyServiceAdvertiserDelegate
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer: NSError) {
-		// TODO implement this
+        // here one could log the error and send it via internet, but in a very very future
+		peering = false
 	}
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
@@ -126,7 +130,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		invitationHandler(true, session)
 	}
 	
-	// MARK: - MCSessionDelegate
+	// MARK: MCSessionDelegate
 	
 	@objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
 		// maybe use this, to display in the browser view controller, when we set up a new connection
@@ -169,13 +173,15 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 		}
 	}
 	
-	// MARK: - MCNearbyServiceBrowserDelegate
+	// MARK: MCNearbyServiceBrowserDelegate
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: NSError) {
-		// TODO error handling
+		// here one could log the error and send it via internet, but in a very very future
+        peering = false
 	}
 	
-	@objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
+    @objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
+        // TODO make use of discoveryInfo, but update the information provided within it, when the user taps on a peer or at least when he wants to pin someone, since we cannot trust the information provided in discoveryInfo I think
 		guard !availablePeers.contains(peerID) else { return }
 		
 		availablePeers.insert(peerID)
@@ -197,7 +203,10 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	}
 }
 
+// MARK: - RemotePeerManagerDelegate
+
 protocol RemotePeerManagerDelegate {
 	func remotePeerAppeared(peer: MCPeerID)
 	func remotePeerDisappeared(peer: MCPeerID)
+    func connectionChangedState(nowOnline: Bool)
 }

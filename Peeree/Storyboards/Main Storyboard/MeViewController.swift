@@ -14,8 +14,6 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 	@IBOutlet private var statusButton: UIButton!
 	@IBOutlet private var portraitImageButton: UIButton!
     @IBOutlet private var genderControl: UISegmentedControl!
-    
-    private var isIdentityChanging = false
 	
 	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
 		private let container: MeViewController
@@ -41,15 +39,15 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-            return SerializablePeerInfo.possibleStatuses.count
+            return SerializablePeerInfo.RelationshipStatus.values.count
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-			return SerializablePeerInfo.possibleStatuses[row]
+			return SerializablePeerInfo.RelationshipStatus.values[row].rawValue
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-			UserPeerInfo.instance.statusID = row
+			UserPeerInfo.instance.relationshipStatus = SerializablePeerInfo.RelationshipStatus.values[row]
 		}
 	}
 	
@@ -84,7 +82,7 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 	}
 	
 	@IBAction func changeGender(sender: UISegmentedControl) {
-		UserPeerInfo.instance.hasVagina = sender.selectedSegmentIndex == 1
+		UserPeerInfo.instance.gender = SerializablePeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
     @IBAction func changePicture(sender: AnyObject) {
         showPicturePicker(NSLocalizedString("Delete portrait", comment: "Removing the own portrait image")) { (action) in
@@ -120,14 +118,14 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 	override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
 		nameTextField.text = UserPeerInfo.instance.peerName
-        statusButton.setTitle(SerializablePeerInfo.possibleStatuses[UserPeerInfo.instance.statusID], forState: .Normal)
+        statusButton.setTitle(UserPeerInfo.instance.relationshipStatus.rawValue, forState: .Normal)
         let dateFormatter = NSDateFormatter()
         dateFormatter.timeStyle = .NoStyle
         dateFormatter.dateStyle = .LongStyle
         if let birthday = UserPeerInfo.instance.dateOfBirth {
             birthdayButton.setTitle(dateFormatter.stringFromDate(birthday), forState: .Normal)
         }
-		genderControl.selectedSegmentIndex = UserPeerInfo.instance.hasVagina ? 1 : 0
+		genderControl.selectedSegmentIndex = MeViewController.genderControlValues.indexOf(UserPeerInfo.instance.gender) ?? 0
         portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "Sample Profile Pick")
         portraitImageButton.imageView?.maskView = CircleMaskView(forView: portraitImageButton)
         
@@ -154,27 +152,23 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 		textField.resignFirstResponder()
 		return true
 	}
+    
+    func textFieldDidEndEditing(textField: UITextField) {
+        guard let newValue = textField.text else { return }
+        UserPeerInfo.instance.peerName = newValue
+    }
 	
-	func textFieldShouldEndEditing(textField: UITextField) -> Bool {
-		textField.resignFirstResponder()
-		guard let newValue = textField.text else {
-            return true
-        }
-        
-        switch textField {
-        case nameTextField:
-            if newValue != UserPeerInfo.instance.peerName {
-                isIdentityChanging = true
-                UserPeerInfo.instance.peerName = newValue
-            }
-        default:
-            break
-        }
-		return true
-	}
+//	func textFieldShouldEndEditing(textField: UITextField) -> Bool {
+//		guard let newValue = textField.text else {
+//            return true
+//        }
+//        
+//        UserPeerInfo.instance.peerName = newValue
+//		return true
+//	}
 	
 	func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-		return !(isIdentityChanging || nameTextField.isFirstResponder())
+		return true
     }
     
     override func pickedImage(image: UIImage) {
@@ -184,12 +178,11 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
     
 	
 	func userCancelledIDChange() {
-		isIdentityChanging = false
 		nameTextField.text = UserPeerInfo.instance.peerName
 	}
 	
 	func userConfirmedIDChange() {
-		isIdentityChanging = false
+		// nothing
 	}
 	
 	func idChangeDialogPresented() {

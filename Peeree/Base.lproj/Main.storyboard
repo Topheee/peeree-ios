@@ -133,22 +133,27 @@
                     <navigationItem key="navigationItem" id="sgW-Kv-UY4">
                         <nil key="title"/>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="EJE-It-Ehg">
-                            <rect key="frame" x="180" y="7" width="240" height="30"/>
+                            <rect key="frame" x="277" y="7" width="46" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <state key="normal" title="Invisible browsing">
-                                <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                            </state>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title="Offline"/>
                             <connections>
-                                <segue destination="9pv-A4-QxB" kind="popoverPresentation" popoverAnchorView="EJE-It-Ehg" id="AnA-tS-YMe">
-                                    <popoverArrowDirection key="popoverArrowDirection" up="YES" down="YES" left="YES" right="YES"/>
-                                </segue>
+                                <action selector="toggleNetwork:" destination="44q-aX-Sii" eventType="touchUpInside" id="aoH-DV-rIT"/>
                             </connections>
                         </button>
+                        <barButtonItem key="rightBarButtonItem" title="Filter" id="BU1-Y3-X1B">
+                            <connections>
+                                <segue destination="9jE-aB-wME" kind="show" id="igj-kr-ftn"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="networkButton" destination="EJE-It-Ehg" id="83q-Gv-m7e"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xco-ft-52g" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2111" y="-40"/>
+            <point key="canvasLocation" x="1393" y="-40"/>
         </scene>
         <!--Browse Settings-->
         <scene sceneID="hNz-n2-bh7">
@@ -354,13 +359,6 @@
                                             <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="0qx-Lg-ytW"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EFW-qN-bZg">
-                                        <rect key="frame" x="252" y="415" width="97" height="30"/>
-                                        <state key="normal" title="Unpin | Ignore">
-                                            <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
                                         <rect key="frame" x="244" y="365" width="111" height="30"/>
                                         <state key="normal" title="Character Traits"/>
@@ -373,10 +371,9 @@
                                     </label>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="EFW-qN-bZg" firstAttribute="top" secondItem="Y5H-8y-Wvq" secondAttribute="bottom" constant="20" id="12h-Ro-H6W"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="4oa-gE-ebq"/>
-                                    <constraint firstAttribute="bottomMargin" secondItem="EFW-qN-bZg" secondAttribute="bottom" constant="20" id="6Wh-b2-TdJ"/>
                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="top" secondItem="59x-ms-KVN" secondAttribute="bottom" constant="20" id="8bF-L4-du0"/>
+                                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="20" id="Ey1-zm-n3R"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="PA6-eV-Bm8" secondAttribute="topMargin" constant="20" id="Geh-az-oh7"/>
                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="HDP-xF-zT3"/>
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="IgV-sn-6lv"/>
@@ -389,10 +386,10 @@
                                     <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="195" placeholder="YES" id="gKU-uE-GKb"/>
                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="h1e-kV-WZo"/>
                                     <constraint firstItem="DzA-oj-0UJ" firstAttribute="top" secondItem="jRR-HL-OFn" secondAttribute="bottom" constant="8" id="hmd-sZ-nyh"/>
-                                    <constraint firstItem="EFW-qN-bZg" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="inb-xI-Qtu"/>
+                                    <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="PA6-eV-Bm8" secondAttribute="leadingMargin" constant="20" id="kJx-Gr-XRR"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="Y5H-8y-Wvq" secondAttribute="bottom" id="l5k-0K-bod"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="PA6-eV-Bm8" secondAttribute="leading" constant="195" placeholder="YES" id="m4f-v6-SBC"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="20" id="pPS-c1-kcC"/>
-                                    <constraint firstItem="EFW-qN-bZg" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="whw-NF-irh"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="x7o-Ri-Zrx"/>
                                 </constraints>
                                 <variation key="default">
@@ -402,7 +399,6 @@
                                         <exclude reference="ehp-h6-9AI"/>
                                         <exclude reference="hmd-sZ-nyh"/>
                                         <exclude reference="Twd-gQ-3Ox"/>
-                                        <exclude reference="inb-xI-Qtu"/>
                                     </mask>
                                 </variation>
                             </scrollView>
@@ -511,7 +507,7 @@
                                             <constraint firstAttribute="width" constant="150" id="1XD-t6-aes"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                         <variation key="default">
                                             <mask key="constraints">
                                                 <exclude reference="1XD-t6-aes"/>
@@ -534,7 +530,6 @@
                                         <rect key="frame" x="275" y="350" width="50" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Status">
-                                            <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <connections>
@@ -545,7 +540,6 @@
                                         <rect key="frame" x="267" y="391" width="65" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Birthday">
-                                            <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <connections>
@@ -553,10 +547,11 @@
                                         </connections>
                                     </button>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jMl-1T-kkd">
-                                        <rect key="frame" x="241" y="432" width="117" height="29"/>
+                                        <rect key="frame" x="212" y="432" width="176" height="29"/>
                                         <segments>
                                             <segment title="Male"/>
                                             <segment title="Female"/>
+                                            <segment title="Queer"/>
                                         </segments>
                                         <connections>
                                             <action selector="changeGender:" destination="8rJ-Kc-sve" eventType="valueChanged" id="Qiy-Eh-mAc"/>
@@ -565,7 +560,6 @@
                                     <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8E-hE-Mnd">
                                         <rect key="frame" x="195" y="70" width="210" height="210"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="200" id="5pg-BM-ZNF"/>
                                             <constraint firstAttribute="width" constant="200" id="Asg-nQ-ByB"/>
                                             <constraint firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="height" multiplier="1:1" id="I0q-WC-qhu"/>
                                             <constraint firstAttribute="height" constant="200" id="Zxs-SC-l2T"/>
@@ -573,7 +567,6 @@
                                         <state key="normal" image="Sample Profile Pick"/>
                                         <variation key="default">
                                             <mask key="constraints">
-                                                <exclude reference="5pg-BM-ZNF"/>
                                                 <exclude reference="Asg-nQ-ByB"/>
                                                 <exclude reference="Zxs-SC-l2T"/>
                                             </mask>
@@ -585,6 +578,8 @@
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="knP-PF-STB" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="1WX-iR-JdG"/>
+                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hwZ-ru-5l0" secondAttribute="leadingMargin" constant="20" id="9Lj-wd-lgP"/>
+                                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="b8E-hE-Mnd" secondAttribute="trailing" constant="20" id="HWF-vr-sUc"/>
                                     <constraint firstItem="knP-PF-STB" firstAttribute="top" secondItem="dmI-ob-olJ" secondAttribute="bottom" constant="8" id="IYJ-KU-0dI"/>
                                     <constraint firstItem="dmI-ob-olJ" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="NxL-kX-TM2"/>
                                     <constraint firstItem="7DY-yh-Oap" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="R36-Fo-ZM4"/>
@@ -695,11 +690,12 @@
                                 </connections>
                             </slider>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="2" translatesAutoresizingMaskIntoConstraints="NO" id="z2h-P1-vSX">
-                                <rect key="frame" x="209" y="219" width="197" height="29"/>
+                                <rect key="frame" x="176" y="219" width="263" height="29"/>
                                 <segments>
-                                    <segment title="Both"/>
+                                    <segment title="All"/>
                                     <segment title="Females"/>
                                     <segment title="Males"/>
+                                    <segment title="Queer"/>
                                 </segments>
                                 <connections>
                                     <action selector="changeFilter:" destination="9jE-aB-wME" eventType="valueChanged" id="Ctw-wI-UTc"/>
@@ -744,13 +740,7 @@
                             <constraint firstItem="8cw-zJ-KCO" firstAttribute="leading" secondItem="fuC-xf-gTH" secondAttribute="leadingMargin" id="v0p-IA-MKY"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Filter" id="Yqd-bj-h1g">
-                        <barButtonItem key="rightBarButtonItem" title="Radar" id="Yas-Pb-ItK">
-                            <connections>
-                                <segue destination="44q-aX-Sii" kind="show" id="8rF-ch-sIf"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Filter" id="Yqd-bj-h1g"/>
                     <connections>
                         <outlet property="ageMaxLabel" destination="cQd-b8-RTg" id="UoT-82-l9Y"/>
                         <outlet property="ageMaxSlider" destination="MVU-IV-dx6" id="hwQ-fw-hEG"/>
@@ -761,7 +751,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qgF-PA-1bI" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1393" y="-40"/>
+            <point key="canvasLocation" x="2111" y="-40"/>
         </scene>
         <!--Shop-->
         <scene sceneID="B6L-CR-kOQ">
@@ -1010,7 +1000,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
-                        <segue destination="9jE-aB-wME" kind="relationship" relationship="rootViewController" id="qLd-oU-oJE"/>
+                        <segue destination="44q-aX-Sii" kind="relationship" relationship="rootViewController" id="rY8-xb-ojw"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="p06-GG-d1O" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1201,8 +1191,8 @@
         <image name="Sample Profile Pick" width="210" height="210"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="7Nf-9B-BLi"/>
-        <segue reference="Lgq-xA-Oyd"/>
+        <segue reference="NbJ-vu-9Fg"/>
         <segue reference="7cs-Lk-9Ig"/>
+        <segue reference="GK2-iA-YLH"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -13,7 +13,7 @@ class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private var infoButton: UIButton!
 	@IBOutlet private var launchAppButton: UIButton!
 	@IBOutlet private var nameTextField: UITextField!
-	@IBOutlet private var genderPicker: UISegmentedControl!
+    @IBOutlet private var genderPicker: UISegmentedControl!
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
         guard let chosenName = nameTextField.text else { return }
@@ -22,7 +22,7 @@ class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
         NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
         
         UserPeerInfo.instance.peerName = chosenName
-        UserPeerInfo.instance.hasVagina = genderPicker.selectedSegmentIndex == 1
+        UserPeerInfo.instance.gender = SerializablePeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
 	}
 	

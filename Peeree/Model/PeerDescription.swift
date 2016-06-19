@@ -58,51 +58,23 @@ class UserPeerInfo: LocalPeerInfo {
     override var peerName: String {
         get { return super.peerName }
         set {
-            guard peerName != "" && newValue != peerName else { return }
+            guard newValue != "" && newValue != super.peerName else { return }
             
-            warnIdentityChange({ (proceedAction) -> Void in
+            if peerName == "" {
                 super.peerName = newValue
-                self.dirtied()
-                self.delegate?.userConfirmedIDChange()
-                }, cancelHandler: { (cancelAction) -> Void in
-                    self.delegate?.userCancelledIDChange()
-                }, completionHandler: { () -> Void in
-                    self.delegate?.idChangeDialogPresented()
-            })
+            } else {
+                warnIdentityChange({ (proceedAction) -> Void in
+                    super.peerName = newValue
+                    self.dirtied()
+                    self.delegate?.userConfirmedIDChange()
+                    }, cancelHandler: { (cancelAction) -> Void in
+                        self.delegate?.userCancelledIDChange()
+                    }, completionHandler: { () -> Void in
+                        self.delegate?.idChangeDialogPresented()
+                })
+            }
         }
     }
-//    override var givenName: String {
-//        get { return super.givenName }
-//        set {
-//            if newValue != givenName {
-//                warnIdentityChange({ (proceedAction) -> Void in
-//                    super.givenName = newValue
-//                    self.dirtied()
-//                    self.delegate?.userConfirmedIDChange()
-//                    }, cancelHandler: { (cancelAction) -> Void in
-//                        self.delegate?.userCancelledIDChange()
-//                    }, completionHandler: { () -> Void in
-//                        self.delegate?.idChangeDialogPresented()
-//                })
-//            }
-//        }
-//    }
-//	override var familyName: String {
-//		get { return super.familyName }
-//		set {
-//			if newValue != familyName {
-//				warnIdentityChange({ (proceedAction) -> Void in
-//					super.familyName = newValue
-//					self.dirtied()
-//					self.delegate?.userConfirmedIDChange()
-//					}, cancelHandler: { (cancelAction) -> Void in
-//						self.delegate?.userCancelledIDChange()
-//					}, completionHandler: { () -> Void in
-//						self.delegate?.idChangeDialogPresented()
-//				})
-//			}
-//		}
-//	}
 	override var age: Int {
         get {
             return super.age
@@ -111,11 +83,11 @@ class UserPeerInfo: LocalPeerInfo {
 			fatalError("The age of the local user is defined by it's date of birth")
 		}
 	}
-	override var hasVagina: Bool {
-		didSet { if hasVagina != oldValue { dirtied() } }
+	override var gender: Gender {
+		didSet { if gender != oldValue { dirtied() } }
 	}
-	override var statusID: Int {
-		didSet { if statusID != oldValue { dirtied() } }
+	override var relationshipStatus: RelationshipStatus {
+		didSet { if relationshipStatus != oldValue { dirtied() } }
 	}
     override var picture: UIImage? {
         get {
@@ -132,12 +104,6 @@ class UserPeerInfo: LocalPeerInfo {
 		dateOfBirth = NSDate(timeIntervalSinceNow: -3600*24*365*18)
 		super.init()
 	}
-//    init(name: String, birthday: NSDate?, picture: UIImage?) {
-//        super.init(name: name, picture: picture)
-//        peerName = name
-//        dateOfBirth = birthday
-//        archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
-//    }
 
 	@objc required init?(coder aDecoder: NSCoder) {
 		dateOfBirth = aDecoder.decodeObjectOfClass(NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) ?? NSDate(timeIntervalSinceNow: -3600*24*365*18)
@@ -215,11 +181,44 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
     private static let peerNameKey = "peerName"
 	private static let peerIDKey = "peerID"
 	private static let hasPictureKey = "hasPicture"
-	private static let hasVaginaKey = "hasVagina"
+	private static let genderKey = "gender"
 	private static let ageKey = "age"
 	private static let statusKey = "status"
 	private static let traitsKey = "traits"
 	private static let versionKey = "version"
+    
+    enum Gender: String {
+        case Male, Female, Queer
+        
+        static let values = [Male, Female, Queer]
+
+        // TODO write the value into strings file
+        /*
+         *  For genstrings
+         *
+         *  NSLocalizedString("Male", comment: "Male gender")
+         *  NSLocalizedString("Female", comment: "Female gender")
+         *  NSLocalizedString("Queer", comment: "Gender type for everyone who does not fit into the other two genders")
+         */
+    }
+    
+    enum RelationshipStatus: String {
+        case NoComment, Single, Married, Divorced, SoonDivorced, InRelationship
+        
+        static let values = [NoComment, Single, Married, Divorced, SoonDivorced, InRelationship]
+        
+        // TODO write the value into strings file
+        /*
+         * For genstrings
+         *
+         *  NSLocalizedString("NoComment", comment: "The user does not want to expose his relationship status")
+         *  NSLocalizedString("Single", comment: "The user is not in an relationship nor was married")
+         *  NSLocalizedString("Married", comment: "The user is married")
+         *  NSLocalizedString("Divorced", comment: "The user is divorced")
+         *  NSLocalizedString("SoonDivorced", comment: "The user will be divorced")
+         *  NSLocalizedString("InRelationship", comment: "The user is already in some kind of relationship")
+         */
+    }
     
     var peerName: String
     var displayName: String {
@@ -227,9 +226,8 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
             var ret = peerName
             if peerName.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 63 {
                 ret = peerName.substringToIndex(peerName.startIndex.advancedBy(60)) + "..."
-            }
-            if peerName.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) == 0 {
-                //we need a value here for creating valid MCPeerIDs in the peerID getter
+            } else if peerName.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) == 0 {
+                //we need a value here for always creating valid MCPeerIDs
                 ret = "Unknown"
             }
             return ret
@@ -241,21 +239,15 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
 		return _peerID!
 	}
 	var hasPicture = false
-	var hasVagina = false
+	var gender = Gender.Female
 	var age = 18
-	// TODO localization
-	static let possibleStatuses = ["no comment", "married", "divorced", "going to be divorced", "in a relationship", "single"]
-	var statusID = 0
+    var relationshipStatus = RelationshipStatus.NoComment
+    
 	var characterTraits: [CharacterTrait]
 	/*
 	 *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
 	 */
 	var version = "1.0"
-	
-	private func resetPeerID() {
-		_peerID = MCPeerID(displayName: displayName)
-		// TODO maybe inform someone about this?
-	}
 	
 	@objc static func supportsSecureCoding() -> Bool {
 		return true
@@ -265,9 +257,9 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
         aCoder.encodeObject(peerName, forKey: SerializablePeerInfo.peerNameKey)
 		aCoder.encodeObject(_peerID, forKey: SerializablePeerInfo.peerIDKey)
 		aCoder.encodeBool(hasPicture, forKey: SerializablePeerInfo.hasPictureKey)
-		aCoder.encodeBool(hasVagina, forKey: SerializablePeerInfo.hasVaginaKey)
+		aCoder.encodeObject(gender.rawValue, forKey: SerializablePeerInfo.genderKey)
 		aCoder.encodeInteger(age, forKey: SerializablePeerInfo.ageKey)
-		aCoder.encodeInteger(statusID, forKey: SerializablePeerInfo.statusKey)
+		aCoder.encodeObject(relationshipStatus.rawValue, forKey: SerializablePeerInfo.statusKey)
 		aCoder.encodeObject(version, forKey: SerializablePeerInfo.versionKey)
 		aCoder.encodeObject(characterTraits, forKey: SerializablePeerInfo.traitsKey)
 	}
@@ -280,10 +272,18 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
 	@objc required init?(coder aDecoder: NSCoder) {
 		_peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: SerializablePeerInfo.peerIDKey)
 		hasPicture = aDecoder.decodeBoolForKey(SerializablePeerInfo.hasPictureKey)
-		hasVagina = aDecoder.decodeBoolForKey(SerializablePeerInfo.hasVaginaKey)
+        if let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.genderKey) as? String {
+            gender = Gender(rawValue:rawGenderValue) ?? Gender.Female
+        } else {
+            assertionFailure()
+        }
 		age = aDecoder.decodeIntegerForKey(SerializablePeerInfo.ageKey)
-		statusID = aDecoder.decodeIntegerForKey(SerializablePeerInfo.statusKey)
-		version = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.versionKey)! as String
+        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.statusKey) as? String {
+            relationshipStatus = RelationshipStatus(rawValue:rawStatusValue) ?? RelationshipStatus.NoComment
+        } else {
+            assertionFailure()
+        }
+		version = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.versionKey) as! String
 		peerName = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.peerNameKey) as! String
 		characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: SerializablePeerInfo.traitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits()
 	}

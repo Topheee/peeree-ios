@@ -10,26 +10,7 @@ import UIKit
 
 class CharacterTraitViewController: UITableViewController, SingleSelViewControllerDataSource {
 	
-	/* From wikipedia
-	Wärme (z. B. Wohlfühlen in Gesellschaft)
-	logisches Schlussfolgern
-	emotionale Stabilität
-	Dominanz
-	Lebhaftigkeit
-	Regelbewusstsein (z. B. Moral)
-	soziale Kompetenz (z. B. Kontaktfreude)
-	Empfindsamkeit
-	Wachsamkeit (z. B. Misstrauen)
-	Abgehobenheit (z. B. Realitätsnähe)
-	Privatheit
-	Besorgtheit
-	Offenheit für Veränderungen
-	Selbstgenügsamkeit
-	Perfektionismus
-	Anspannung
-	*/
-	// let characterTraits = ["warmness", "emotional stability", "dominance", "vitality", "rule awareness", "social competence", "sensitiveness", "vigilance", "escapism", "privateness", "solicitousness", "openness to change", "frugalilty", "perfectionism", "strain"]
-	internal var characterTraits: Array<CharacterTrait>?
+	var characterTraits: [CharacterTrait]?
 	var selectedTrait: NSIndexPath?
 	
 	static let cellID = "characterTraitCell"
@@ -47,7 +28,7 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
 		let trait = characterTraits![indexPath.row]
 		cell.textLabel!.text = trait.name
-		cell.detailTextLabel!.text = CharacterTrait.ApplyTypeNames[trait.applies.rawValue]
+		cell.detailTextLabel!.text = trait.applies.localizedRawValue()
 		return cell
 	}
 	
@@ -78,15 +59,15 @@ class CharacterTraitViewController: UITableViewController, SingleSelViewControll
 	}
 	
 	func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return CharacterTrait.ApplyTypeNames.count
+        return CharacterTrait.ApplyType.values.count
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return CharacterTrait.ApplyTypeNames[row]
+		return CharacterTrait.ApplyType.values[row].rawValue
 	}
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		characterTraits![selectedTrait!.row].applies = CharacterTrait.ApplyType(rawValue: row)!
+		characterTraits![selectedTrait!.row].applies = CharacterTrait.ApplyType.values[row]
 		self.tableView.reloadRowsAtIndexPaths([selectedTrait!], withRowAnimation: .None)
 	}
 }
