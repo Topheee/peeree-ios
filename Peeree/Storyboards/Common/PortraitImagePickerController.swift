@@ -9,6 +9,7 @@
 import UIKit
 import MobileCoreServices
 
+/// Base class for view controllers providing availablity to change the user's portrait image.
 class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func showPicturePicker(destructiveActionName: String, destructiveAction: ((UIAlertAction) -> Void)) {
         let imagePicker = UIImagePickerController()

@@ -8,9 +8,11 @@
 
 import Foundation
 
-// TODO change to observed things like UserPeerInfo
-class BrowseFilterSettings: NSObject, NSCoding {
-	
+/**
+ *  This class holds encapsulates all values with which the remote peers are filtered before they are presented to the user.
+ *  Except for the Singleton it is NOT thread-safe, and as there is currently only one writing entity there is no need to implement this.ssss
+ */
+final class BrowseFilterSettings: NSObject, NSCoding {
 	private static let PrefKey = "peeree-prefs-browse-filter"
 	
 	private static let AgeMinKey = "ageMin"

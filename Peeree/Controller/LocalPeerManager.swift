@@ -13,7 +13,7 @@ import MultipeerConnectivity
  *	Coordinates the access to the MCPeerID of the local machine and caches it.
  *	This ID is preserved to enable other users to re-identify us more easily.
  */
-class UserPeerManager {
+final class UserPeerManager {
 	
 	static func updatePeerDescription() {
 		if userPeerDescription != nil { archiveObjectInUserDefs(userPeerDescription!, forKey: kPrefPeerDesc) }

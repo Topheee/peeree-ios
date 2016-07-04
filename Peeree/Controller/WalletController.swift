@@ -25,7 +25,7 @@ import Foundation
 *	It also is informed by the in-app purchase server, when a new purchase was done.
 *	And finally, every local action, that reduces the amount of the bought pin points, including transfering them to a remote p2p device with the same Apple ID, has to be requested and granted through this class.
 */
-class WalletController {
+final class WalletController {
 	/* Never change this value after the first app store release! */
 	static let pinCost = 10
 	

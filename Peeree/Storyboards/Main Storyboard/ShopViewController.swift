@@ -9,7 +9,7 @@
 import UIKit
 import StoreKit
 
-class ShopViewController: UITableViewController {
+final class ShopViewController: UITableViewController {
 	var products: SKProductsResponse?
     
     // - MARK: UITableView Data Source

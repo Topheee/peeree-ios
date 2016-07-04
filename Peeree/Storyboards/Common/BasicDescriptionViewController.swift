@@ -8,7 +8,8 @@
 
 import UIKit
 
-class BasicDescriptionViewController: UIViewController {
+/// View controller for simple view with Heading, Subheading and descriptive text. Is embedded in other ViewControllers.
+final class BasicDescriptionViewController: UIViewController {
 	@IBOutlet private var headingLabel: UILabel!
 	@IBOutlet private var subHeadingLabel: UILabel!
 	@IBOutlet private var descriptionTextView: UITextView!
@@ -23,18 +24,6 @@ class BasicDescriptionViewController: UIViewController {
 			descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
 		}
 	}
-	
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 
 protocol BasicDescriptionViewControllerDataSource {

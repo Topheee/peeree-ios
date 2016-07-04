@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
+final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
 	@IBOutlet private var nameTextField: UITextField!
 	@IBOutlet private var birthdayButton: UIButton!
 	@IBOutlet private var statusButton: UIButton!
@@ -71,9 +71,15 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
 		}
 		
 		private func setupPicker(picker: UIDatePicker, inDateSel dateSelViewController: DateSelViewController) {
-			//  TODO create global min age constant from this value
-			picker.maximumDate = NSDate(timeInterval: -60*60*24*365*13, sinceDate: NSDate())
-            picker.date = UserPeerInfo.instance.dateOfBirth ?? picker.maximumDate!
+            let minComponents = NSDateComponents()
+            minComponents.year = -NSCalendar.currentCalendar().component(.Year, fromDate: NSDate()) - SerializablePeerInfo.MaxAge
+            let maxComponents = NSDateComponents()
+            maxComponents.year = -NSCalendar.currentCalendar().component(.Year, fromDate: NSDate()) - SerializablePeerInfo.MinAge
+            
+            picker.minimumDate = NSCalendar.currentCalendar().dateByAddingComponents(minComponents, toDate: NSDate(), options: NSCalendarOptions(rawValue: 0))
+			picker.maximumDate = NSCalendar.currentCalendar().dateByAddingComponents(maxComponents, toDate: NSDate(), options: NSCalendarOptions(rawValue: 0))
+            
+            picker.date = UserPeerInfo.instance.dateOfBirth ?? picker.maximumDate ?? NSDate()
 		}
         
         private func pickerChanged(picker: UIDatePicker) {
@@ -122,11 +128,11 @@ class MeViewController: PortraitImagePickerController, UITextFieldDelegate, User
         let dateFormatter = NSDateFormatter()
         dateFormatter.timeStyle = .NoStyle
         dateFormatter.dateStyle = .LongStyle
-        if let birthday = UserPeerInfo.instance.dateOfBirth {
-            birthdayButton.setTitle(dateFormatter.stringFromDate(birthday), forState: .Normal)
-        }
-		genderControl.selectedSegmentIndex = MeViewController.genderControlValues.indexOf(UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "Sample Profile Pick")
+//        if let birthday = UserPeerInfo.instance.dateOfBirth {
+            birthdayButton.setTitle(dateFormatter.stringFromDate(UserPeerInfo.instance.dateOfBirth), forState: .Normal)
+//        }
+		genderControl.selectedSegmentIndex = SerializablePeerInfo.Gender.values.indexOf(UserPeerInfo.instance.gender) ?? 0
+        portraitImageButton.imageView?.image = UserPeerInfo.instance.picture ?? UIImage(named: "PersonPlaceholder")
         portraitImageButton.imageView?.maskView = CircleMaskView(forView: portraitImageButton)
         
         for control in [birthdayButton, statusButton] {

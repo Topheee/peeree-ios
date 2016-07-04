@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DateSelViewController: UIViewController {
+final class DateSelViewController: UIViewController {
 	@IBOutlet private var datePickerView: UIDatePicker!
 	
 	var dataSource: DateSelViewControllerDataSource?

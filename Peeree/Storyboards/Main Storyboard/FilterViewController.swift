@@ -8,9 +8,7 @@
 
 import UIKit
 
-class FilterViewController: UIViewController {
-	
-	var backend: BrowseFilterSettings!
+final class FilterViewController: UIViewController {
 	
 	@IBOutlet private var ageMaxLabel: UILabel!
 	@IBOutlet private var ageMaxSlider: UISlider!
@@ -19,6 +17,8 @@ class FilterViewController: UIViewController {
 	@IBOutlet private var ageMinSlider: UISlider!
 	
 	@IBOutlet private var genderSeg: UISegmentedControl!
+    
+    private let filterSettings = BrowseFilterSettings.sharedSettings
 	
 	@IBAction func changeFilter(sender: AnyObject) {
 		updatePrefs()
@@ -42,18 +42,24 @@ class FilterViewController: UIViewController {
 	
 	override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-		backend = BrowseFilterSettings.sharedSettings
-		ageMaxSlider.value = backend.ageMax
+        ageMaxSlider.maximumValue = Float(SerializablePeerInfo.MaxAge + 1)
+        ageMaxSlider.minimumValue = Float(SerializablePeerInfo.MinAge)
+        ageMinSlider.maximumValue = Float(SerializablePeerInfo.MaxAge)
+        ageMinSlider.minimumValue = Float(SerializablePeerInfo.MinAge)
+        
+        ageMaxSlider.value = filterSettings.ageMax == 0 ? ageMaxSlider.maximumValue : filterSettings.ageMax
 		updateAgeMaxLabel()
-		ageMinSlider.value = backend.ageMin
+		ageMinSlider.value = filterSettings.ageMin
 		updateAgeMinLabel()
+        genderSeg.selectedSegmentIndex = filterSettings.gender.rawValue
     }
     
     private func updatePrefs() {
-        backend.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
-        backend.ageMin = ageMinSlider.value
-        backend.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
-        backend.writeToDefaults()
+        let filterSettings = BrowseFilterSettings.sharedSettings
+        filterSettings.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
+        filterSettings.ageMin = ageMinSlider.value
+        filterSettings.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
+        filterSettings.writeToDefaults()
     }
     
     private func updateAgeMinLabel() {

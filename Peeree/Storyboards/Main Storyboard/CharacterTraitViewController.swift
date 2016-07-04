@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CharacterTraitViewController: UITableViewController, SingleSelViewControllerDataSource {
+final class CharacterTraitViewController: UITableViewController, SingleSelViewControllerDataSource {
 	
 	var characterTraits: [CharacterTrait]?
 	var selectedTrait: NSIndexPath?

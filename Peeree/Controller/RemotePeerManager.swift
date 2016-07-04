@@ -9,18 +9,24 @@
 import Foundation
 import MultipeerConnectivity
 
-/*
- *	The RemotePeerManager serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
- */
-class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionDelegate, MCNearbyServiceBrowserDelegate {
-	static let sharedManager = RemotePeerManager()
-	static let kDiscoveryServiceID = "peeree-discover"
-	static let kInvitationTimeout: NSTimeInterval = 5.0
+/// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
+final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate, RemotePeerManagerDelegate {
+	static private let kDiscoveryServiceID = "peeree-discover"
+	static private let kInvitationTimeout: NSTimeInterval = 5.0
+    
+    /// Identifies a MCSession as a session which transfers LocalPeerInfo objects.
+    static private let kPeerInfoSessionKey = "PeerInfoSession"
+    /// Session key for transmitting portrait images.
+    static private let kPictureSessionKey = "PictureSession"
+    
+    static let sharedManager = RemotePeerManager()
 	
 	/*
-	 *	Since bluetooth connections are not very reliable, all peers are cached for a reasonable amount of time (at least 30 Minutes).
+	 *	Since bluetooth connections are not very reliable, all peers and their images are cached for a reasonable amount of time (at least 30 Minutes).
+     * TODO maybe use some standardized caching API for this?
 	 */
-	private var cachedPeers: [MCPeerID : LocalPeerInfo] = [:]
+    private var cachedPeers: [MCPeerID : LocalPeerInfo] = [:]
+    private var loadingPictures: Set<MCPeerID> = Set()
 	/*
 	 *	All the Bluetooth stuff.
 	 *	Should be private, but then, we cannot mock them.
@@ -30,14 +36,26 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	/*
 	 *	All remote peers the app is currently connected to. This property is immediatly updated when a new connection is set up or an existing is cut off.
 	 */
-	var availablePeers = Set<MCPeerID>()
-	var pinnedPeers: [LocalPeerInfo] = []
+	private var _availablePeers = Set<MCPeerID>() // TODO convert into NSOrderedSet to not always confuse the order of the browse view
+	private var pinnedPeers: [LocalPeerInfo] = []
+    
+    var availablePeers: Set<MCPeerID> {
+        return _availablePeers
+    }
+    
 	
-	var delegate: RemotePeerManagerDelegate?
+    /// If you set this property to nil, it is automatically re-set to the shared delegate.
+    var delegate: RemotePeerManagerDelegate! = AppDelegate.sharedDelegate {
+        didSet {
+            if delegate == nil {
+                delegate = AppDelegate.sharedDelegate
+            }
+        }
+    }
     
     var peering: Bool {
         get {
-            return btAdvertiser != nil || btBrowser != nil
+            return btAdvertiser != nil && btBrowser != nil
         }
         set {
             guard newValue != peering else { return }
@@ -49,7 +67,7 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
                 btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.kDiscoveryServiceID)
                 btBrowser!.delegate = self
                 
-                delegate?.connectionChangedState(newValue)
+                self.connectionChangedState(newValue)
                 
                 btAdvertiser?.startAdvertisingPeer()
                 btBrowser?.startBrowsingForPeers()
@@ -58,62 +76,31 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
                 btBrowser?.stopBrowsingForPeers()
                 btAdvertiser = nil
                 btBrowser = nil
-                delegate?.connectionChangedState(newValue)
+                self.connectionChangedState(newValue)
                 // TODO cancel and close all sessions. Seems, that we have to store them somewhere (maybe in the availablePeers tuple)
             }
         }
     }
+    
+    func loadPicture(forPeer: SerializablePeerInfo, callback: (SerializablePeerInfo) -> Void) {
+        if forPeer.hasPicture && forPeer.picture == nil && !isPictureLoading(forPeer.peerID) {
+            loadingPictures.insert(forPeer.peerID)
+            let _ = PictureDownloadSessionHandler(peerID: forPeer.peerID, callback: callback)
+        }
+    }
+    
+    func isPictureLoading(ofPeer: MCPeerID) -> Bool {
+        return !loadingPictures.contains(ofPeer)
+    }
 	
-	func getPinStatus(forPeer: MCPeerID) -> String {
-		var contained = false
-		var pinnedMe = false
-		contained = pinnedPeers.contains { (lpd) -> Bool in
-			if lpd.peerID == forPeer {
-				pinnedMe = lpd.pinnedMe
-				return true
-			}
-			return false
-		}
-		
-		var displayString: String
-		if contained {
-			if pinnedMe {
-				displayString = NSLocalizedString("Pin Match!", comment: "Two peers have pinned each other")
-			} else {
-				displayString = NSLocalizedString("Pinned.", comment: "The user marked someone as interesting")
-			}
-		} else {
-			displayString = NSLocalizedString("Not yet pinned.", comment: "The user did not yet marked someone as interesting")
-		}
-		
-		return displayString
-	}
-	
-	func filteredPeers(forFilterSettings: BrowseFilterSettings) -> [(MCPeerID, String, String)] {
-		var ret: [(MCPeerID, String, String)] = []
-		for elem in availablePeers.enumerate() {
-			if let description = cachedPeers[elem.element] {
-				if forFilterSettings.checkPeer(description) {
-					ret.append((elem.element, elem.element.displayName, getPinStatus(elem.element)))
-				}
-			} else {
-				ret.append((elem.element, elem.element.displayName, getPinStatus(elem.element)))
-			}
-		}
-		return ret
-	}
-	
-	func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> LocalPeerInfo? {
+	func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> SerializablePeerInfo? {
 		if let ret = cachedPeers[peerID] {
 			return ret
 		} else if download {
-            beginPeerDescriptionDownloading(peerID)
+            // TODO figure out whether this thing is remaining alive
+            let _ = PeerInfoDownloadSessionHandler(forPeer: peerID)
         }
 		return nil
-	}
-	
-	private func beginPeerDescriptionDownloading(forPeer: MCPeerID) {
-		btBrowser?.invitePeer(forPeer, toSession: MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: .Required), withContext: nil, timeout: RemotePeerManager.kInvitationTimeout)
 	}
 	
 	// MARK: - MCNearbyServiceAdvertiserDelegate
@@ -124,53 +111,17 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	}
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
-		// TODO The nearby peer should treat any data it receives as potentially untrusted. To learn more about working with untrusted data, read Secure Coding Guide.
-		let session = MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: MCEncryptionPreference.Required)
-		session.delegate = self
-		invitationHandler(true, session)
-	}
-	
-	// MARK: MCSessionDelegate
-	
-	@objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
-		// maybe use this, to display in the browser view controller, when we set up a new connection
-	}
-	
-	@objc func session(session: MCSession, didReceiveCertificate certificate: [AnyObject]?, fromPeer peerID: MCPeerID, certificateHandler: (Bool) -> Void) {
-		// TODO security implementation
-	}
-	
-	@objc func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-		cachedPeers[peerID] = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? LocalPeerInfo
-	}
-	
-	@objc func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-		// I think, we do not need this
-	}
-	
-	@objc func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {
-		// maybe use this, to display in the browser view controller, when we set up a new connection
-	}
-	
-	@objc func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-		switch state {
-		case .Connected:
-			// TODO inform browse view controller, so that it can switch to the person detailed view
-			// TODO test, whether the casts works as expected (thats, only encode the LocalPeerInfo subset)
-			let data = NSKeyedArchiver.archivedDataWithRootObject(UserPeerInfo.instance as LocalPeerInfo)
-            do {
-                try session.sendData(data, toPeers: [peerID], withMode: MCSessionSendDataMode.Reliable)
-            } catch let error as NSError {
-                // TODO handle send fails
-            }
-			
-			break
-		case .Connecting:
-			break
-		case .NotConnected:
-			// TODO inform browse view controller
-			break
-		}
+        guard let sessionKeyData = context else { return }
+        guard let sessionKey = String(data: sessionKeyData, encoding: NSASCIIStringEncoding) else { return }
+        
+        switch sessionKey {
+        case RemotePeerManager.kPeerInfoSessionKey:
+            PeerInfoUploadSessionManager.sharedManager.handleInvitation(fromPeer: peerID, invitationHandler: invitationHandler)
+        case RemotePeerManager.kPictureSessionKey:
+            PictureUploadSessionManager.sharedManager.handleInvitation(fromPeer: peerID, invitationHandler: invitationHandler)
+        default:
+            invitationHandler(false, MCSession())
+        }
 	}
 	
 	// MARK: MCNearbyServiceBrowserDelegate
@@ -182,31 +133,204 @@ class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCSessionD
 	
     @objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         // TODO make use of discoveryInfo, but update the information provided within it, when the user taps on a peer or at least when he wants to pin someone, since we cannot trust the information provided in discoveryInfo I think
-		guard !availablePeers.contains(peerID) else { return }
+		guard !_availablePeers.contains(peerID) else { return }
 		
-		availablePeers.insert(peerID)
+		_availablePeers.insert(peerID)
 		
-		let d = delegate ?? AppDelegate.sharedDelegate
-		d.remotePeerAppeared(peerID)
+		self.remotePeerAppeared(peerID)
 		
 		if cachedPeers[peerID] == nil {
 			// immediatly begin to retrieve downloading information
 			// TODO if this needs too much energy, disable this feature or make it optional. Note, that in this case filtering is not possible (except, we use the discovery info dict)
-			beginPeerDescriptionDownloading(peerID)
+			let _ = PeerInfoDownloadSessionHandler(forPeer: peerID)
 		}
 	}
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-		availablePeers.remove(peerID)
-		let d = delegate ?? AppDelegate.sharedDelegate
-		d.remotePeerDisappeared(peerID)
-	}
+		_availablePeers.remove(peerID)
+		self.remotePeerDisappeared(peerID)
+    }
+    
+    // MARK: RemotePeerManagerDelegate
+    
+    func remotePeerAppeared(peer: MCPeerID) {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.delegate.remotePeerAppeared(peer)
+        }
+    }
+    
+    func remotePeerDisappeared(peer: MCPeerID) {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.delegate.remotePeerDisappeared(peer)
+        }
+    }
+    
+    func connectionChangedState(nowOnline: Bool) {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.delegate.connectionChangedState(nowOnline)
+        }
+    }
+    
+    func peerInfoLoaded(peerInfo: SerializablePeerInfo) {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.delegate.peerInfoLoaded(peerInfo)
+        }
+    }
+    
+    // MARK: - Private classes
+    
+    private class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
+        
+        lazy var session = MCSession(peer: UserPeerInfo.instance.peerID, securityIdentity: nil, encryptionPreference: .Required)
+        
+        // ignored
+        @objc func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {}
+        @objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {}
+        @objc func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
+        @objc func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {}
+        
+        @objc func session(session: MCSession, didReceiveCertificate certificate: [AnyObject]?, fromPeer peerID: MCPeerID, certificateHandler: (Bool) -> Void) {
+            // TODO security implementation
+        }
+        
+        @objc func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {}
+    }
+    
+    /// If we are unknown to the remote peer, it invites us into it's download session which we associate with our upload session.
+    private final class PeerInfoUploadSessionManager: MCSessionDelegateAdapter {
+        
+        static let sharedManager = PeerInfoUploadSessionManager()
+        
+        func handleInvitation(fromPeer peerID: MCPeerID, invitationHandler: (Bool, MCSession) -> Void) {
+            session.delegate = self
+            invitationHandler(true, session)
+        }
+        
+        // MARK: MCSessionDelegate
+        
+        @objc override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+            switch state {
+            case .Connected:
+                // TODO test, whether the casts works as expected (thats, only encode the SerializablePeerInfo subset)
+                let data = NSKeyedArchiver.archivedDataWithRootObject(UserPeerInfo.instance as SerializablePeerInfo)
+                do {
+                    try session.sendData(data, toPeers: [peerID], withMode: .Reliable)
+                } catch let error as NSError {
+                    // TODO handle send fails
+                    print("Info sending failed: \(error)")
+                } catch let error as NSErrorPointer {
+                    // TODO handle send fails
+                    print("Info sending failed: \(error.memory)")
+                }
+            case .Connecting:
+                break
+            case .NotConnected:
+                print("Peer \(peerID.displayName) closed info session")
+                break
+            }
+        }
+    }
+    
+    /// If the remote peer is unknown, it invited into the download session of the local peer.
+    private final class PeerInfoDownloadSessionHandler: MCSessionDelegateAdapter {
+        
+        init(forPeer: MCPeerID) {
+            super.init()
+            assert(RemotePeerManager.sharedManager.btBrowser != nil, "The PeerInfoSessionManager should only be instantiated with an active service browser.")
+            
+            session.delegate = self
+            RemotePeerManager.sharedManager.btBrowser?.invitePeer(forPeer, toSession: session, withContext: RemotePeerManager.kPeerInfoSessionKey.dataUsingEncoding(NSASCIIStringEncoding)!, timeout: RemotePeerManager.kInvitationTimeout)
+        }
+        
+        // MARK: MCSessionDelegate
+        
+        /**
+         * Stores new LocalPeerInfo data and ignores all other data. Stays in session until the LocalPeerInfo is received.
+         */
+        @objc override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
+            guard let info = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? LocalPeerInfo else { return }
+            
+            RemotePeerManager.sharedManager.cachedPeers[peerID] = info
+            RemotePeerManager.sharedManager.peerInfoLoaded(info)
+            
+            session.disconnect()
+        }
+    }
+    
+    /// If the remote peer is unknown, it invited into the download session of the local peer.
+    private final class PictureDownloadSessionHandler: MCSessionDelegateAdapter {
+        
+        private let callback: (SerializablePeerInfo) -> Void
+        
+        init(peerID: MCPeerID, callback: (SerializablePeerInfo) -> Void) {
+            self.callback = callback
+            super.init()
+            assert(RemotePeerManager.sharedManager.btBrowser != nil, "The PeerInfoSessionManager should only be instantiated with an active service browser.")
+            
+            session.delegate = self
+            RemotePeerManager.sharedManager.btBrowser?.invitePeer(peerID, toSession: session, withContext: RemotePeerManager.kPictureSessionKey.dataUsingEncoding(NSASCIIStringEncoding)!, timeout: RemotePeerManager.kInvitationTimeout)
+        }
+        
+        // MARK: MCSessionDelegate
+        
+        @objc override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
+            guard let peerInfo = RemotePeerManager.sharedManager.cachedPeers[peerID] else {
+                session.disconnect()
+                return
+            }
+            guard let image = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? UIImage else { return }
+            
+            peerInfo.picture = image
+            dispatch_async(dispatch_get_main_queue()) {
+                self.callback(peerInfo)
+            }
+            
+            session.disconnect()
+        }
+    }
+    
+    private final class PictureUploadSessionManager: MCSessionDelegateAdapter {
+        
+        static let sharedManager = PictureUploadSessionManager()
+        
+        func handleInvitation(fromPeer peerID: MCPeerID, invitationHandler: (Bool, MCSession) -> Void) {
+            session.delegate = self
+            invitationHandler(true, session)
+        }
+        
+        // MARK: MCSessionDelegate
+        
+        @objc override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+            switch state {
+            case .Connected:
+                // TODO test, whether the casts works as expected (thats, only encode the LocalPeerInfo subset)
+                let data = NSKeyedArchiver.archivedDataWithRootObject(UserPeerInfo.instance.picture!)
+                do {
+                    try session.sendData(data, toPeers: [peerID], withMode: .Reliable)
+                } catch let error as NSError {
+                    // TODO handle send fails
+                    print("Picture sending failed: \(error)")
+                } catch let error as NSErrorPointer {
+                    // TODO handle send fails
+                    print("Picture sending failed: \(error.memory)")
+                }
+                
+                break
+            case .Connecting:
+                break
+            case .NotConnected:
+                print("Peer \(peerID.displayName) closed picture session")
+                break
+            }
+        }
+    }
 }
 
 // MARK: - RemotePeerManagerDelegate
 
 protocol RemotePeerManagerDelegate {
-	func remotePeerAppeared(peer: MCPeerID)
-	func remotePeerDisappeared(peer: MCPeerID)
+	func remotePeerAppeared(peerID: MCPeerID)
+	func remotePeerDisappeared(peerID: MCPeerID)
     func connectionChangedState(nowOnline: Bool)
+    func peerInfoLoaded(peer: SerializablePeerInfo)
 }

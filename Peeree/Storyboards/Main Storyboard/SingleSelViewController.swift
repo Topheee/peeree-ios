@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SingleSelViewController: UIViewController {
+final class SingleSelViewController: UIViewController {
 	@IBOutlet private var selectionPickerView: UIPickerView!
 	
 	var dataSource: SingleSelViewControllerDataSource? {

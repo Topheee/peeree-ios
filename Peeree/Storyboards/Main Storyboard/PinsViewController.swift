@@ -8,6 +8,6 @@
 
 import UIKit
 
-class PinsViewController: UITableViewController {
+final class PinsViewController: UITableViewController {
 	
 }

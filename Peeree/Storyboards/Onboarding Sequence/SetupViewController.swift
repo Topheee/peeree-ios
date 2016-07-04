@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
+final class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private var picButton: UIButton!
 	@IBOutlet private var infoButton: UIButton!
 	@IBOutlet private var launchAppButton: UIButton!
@@ -61,6 +61,21 @@ class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
             return nameTextField.text != nil && nameTextField.text! != ""
         }
         return super.shouldPerformSegueWithIdentifier(identifier, sender: sender)
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        guard let rootTabBarController = segue.destinationViewController as? UITabBarController else { return }
+        
+        switch UserPeerInfo.instance.gender {
+        case .Female:
+            BrowseFilterSettings.sharedSettings.gender = .Male
+        case .Male:
+            BrowseFilterSettings.sharedSettings.gender = .Female
+        default:
+            BrowseFilterSettings.sharedSettings.gender = .Unspecified
+        }
+        
+        rootTabBarController.selectedIndex = 1
     }
     
     func keyboardWillShow(notification: NSNotification) {

@@ -118,6 +118,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
         NSUserDefaults.standardUserDefaults().synchronize()
 	}
 	
+    // MARK: - RemotePeerManager Delegate
+    
 	func remotePeerAppeared(peer: MCPeerID) {
 		if !isActive {
 			let note = UILocalNotification()
@@ -152,6 +154,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 	}
     
     func connectionChangedState(nowOnline: Bool) {
+        // ignored
+    }
+    
+    func peerInfoLoaded(peerInfo: SerializablePeerInfo) {
         // ignored
     }
 }
