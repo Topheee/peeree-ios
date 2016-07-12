@@ -13,10 +13,16 @@ import UIKit.UIImage
 /**
  Class used only for unit testing.
  */
-class TestPeerInfo: LocalPeerInfo {
-    init(id: MCPeerID) {
-        super.init()
-        _peerID = id
+class TestPeerInfo: NetworkPeerInfo {
+    init(peerID: MCPeerID) {
+        let rand = arc4random()
+        let age = PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge))
+        let relationshipStatus = PeerInfo.RelationshipStatus.Divorced
+        let characterTraits = CharacterTrait.standardTraits()
+        let pinned = rand % 2 == 0
+        let pinnedMe = rand % 1000 > 500
+        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.Female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", lastChanged: NSDate(), _hasPicture: rand % 5000 > 2500, _picture: nil, pinnedMe: pinnedMe, pinned: pinned)
+        super.init(peer: peer)
     }
     
     @objc required init?(coder aDecoder: NSCoder) {
@@ -30,7 +36,7 @@ protocol UserPeerInfoDelegate {
 	func idChangeDialogPresented()
 }
 
-class UserPeerInfo: LocalPeerInfo {
+final class UserPeerInfo: LocalPeerInfo {
 	private static let PrefKey = "UserPeerInfo"
 	private static let DateOfBirthKey = "dateOfBirth"
 	static var instance: UserPeerInfo {
@@ -46,26 +52,33 @@ class UserPeerInfo: LocalPeerInfo {
 	}
 	
 	var delegate: UserPeerInfoDelegate?
+    
+    override var peer: PeerInfo {
+        didSet {
+            assert(peer == oldValue)
+        }
+    }
 	
 	var dateOfBirth: NSDate {
 		didSet {
 			if dateOfBirth != oldValue {
-                super.age = NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: dateOfBirth, toDate: NSDate(), options: NSCalendarOptions.init(rawValue: 0)).year
+                peer.age = NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: dateOfBirth, toDate: NSDate(), options: NSCalendarOptions.init(rawValue: 0)).year
 				dirtied()
 			}
 		}
     }
     
-    override var peerName: String {
-        get { return super.peerName }
+    var peerName: String {
+        get { return peer.peerName }
         set {
-            guard newValue != "" && newValue != super.peerName else { return }
+            guard newValue != "" && newValue != peer.peerName else { return }
             
             if peerName == "Unknown" {
-                super._peerID = MCPeerID(displayName: newValue)
+                super.peer = peer.copyToNewID(MCPeerID(displayName: newValue))
+                self.dirtied()
             } else {
                 warnIdentityChange({ (proceedAction) -> Void in
-                    super._peerID = MCPeerID(displayName: newValue)
+                    self.peer = self.peer.copyToNewID(MCPeerID(displayName: newValue))
                     self.dirtied()
                     self.delegate?.userConfirmedIDChange()
                     }, cancelHandler: { (cancelAction) -> Void in
@@ -76,25 +89,30 @@ class UserPeerInfo: LocalPeerInfo {
             }
         }
     }
-	override var age: Int {
+	var age: Int {
         get {
-            return super.age
+            return peer.age
         }
 		set {
 			fatalError("The age of the local user is defined by it's date of birth")
 		}
 	}
-	override var gender: Gender {
-		didSet { if gender != oldValue { dirtied() } }
-	}
-	override var relationshipStatus: RelationshipStatus {
-		didSet { if relationshipStatus != oldValue { dirtied() } }
-	}
+	var gender: PeerInfo.Gender {
+        get { return peer.gender }
+        set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
+    }
+    var relationshipStatus: PeerInfo.RelationshipStatus {
+        get { return peer.relationshipStatus }
+        set { if newValue != peer.relationshipStatus { peer.relationshipStatus = newValue; dirtied() } }
+    }
+    override var picture: UIImage? {
+        didSet { if oldValue != peer.picture { dirtied() } }
+    }
 	// TODO figure out what to do with characterTraits (maybe restrict the direct access and provide proxy methods) and version stuff
 	
 	private override init() {
 		dateOfBirth = NSDate(timeIntervalSinceNow: -3600*24*365*18)
-		super.init()
+        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: 18, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits(), version: "1.0", lastChanged: NSDate(), _hasPicture: false, _picture: nil, pinnedMe: false, pinned: false))
 	}
 
 	@objc required init?(coder aDecoder: NSCoder) {
@@ -122,66 +140,126 @@ class UserPeerInfo: LocalPeerInfo {
 	}
 }
 
-///	This class is used to store remote peers locally.
-class LocalPeerInfo: SerializablePeerInfo {
-    // TODO somehow update this on the local storage when one of the properties changes, either like in UserPeerInfo or directly in the RemotePeerManager
+class LocalPeerInfo: NSObject, NSSecureCoding {
+    var peer: PeerInfo
     
-    /// The setter for the picture is provided here to enable lazy loading of the picture from the remote peer.
-    override var picture: UIImage? {
-        get {
-            return super.picture
-        }
-        set {
-            _picture = newValue
-            _hasPicture = newValue != nil
-        }
+    @objc static func supportsSecureCoding() -> Bool {
+        return true
     }
     
-    override var pinnedMe: Bool {
-        get {
-            return super.pinnedMe
-        }
-        set {
-            _pinnedMe = newValue
-        }
+    private override init() {
+        fatalError()
     }
     
-    override var pinned: Bool {
-        get {
-            return super.pinned
-        }
-        set {
-            _pinned = newValue
-        }
+    init(peer: PeerInfo) {
+        self.peer = peer
     }
-	
-	@objc override func encodeWithCoder(aCoder: NSCoder) {
-		super.encodeWithCoder(aCoder)
-		if picture != nil {
-			aCoder.encodeObject(picture, forKey: LocalPeerInfo.PictureKey)
-        }
-        aCoder.encodeBool(pinnedMe, forKey: LocalPeerInfo.PinnedMeKey)
-        aCoder.encodeBool(pinned, forKey: LocalPeerInfo.PinnedKey)
-	}
-
-	private override init() {
-	    super.init()
-	}
     
     @objc required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+        guard let peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: PeerInfo.peerIDKey) else { return nil }
+        guard let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.genderKey) as? String else { return nil }
+        guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
+        guard aDecoder.containsValueForKey(PeerInfo.PinnedMeKey) else { return nil }
+        guard aDecoder.containsValueForKey(PeerInfo.PinnedKey) else { return nil }
+        
+        let pinnedMe = aDecoder.decodeBoolForKey(PeerInfo.PinnedMeKey)
+        let lastChanged = aDecoder.decodeObjectOfClass(NSDate.self, forKey: PeerInfo.LastChangedKey) ?? NSDate()
+        let version = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.versionKey) as? String ?? "1.0"
+        // TODO figure out whether version can stay optional here
+        let characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.traitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits()
+        let picture = aDecoder.decodeObjectOfClass(UIImage.self, forKey: PeerInfo.PictureKey)
+        let age = aDecoder.decodeIntegerForKey(PeerInfo.ageKey)
+        let pinned = aDecoder.decodeBoolForKey(PeerInfo.PinnedKey)
+        
+        var relationshipStatus: PeerInfo.RelationshipStatus
+        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.statusKey) as? String {
+            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
+        } else {
+            relationshipStatus = PeerInfo.RelationshipStatus.NoComment
+        }
+        
+        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, lastChanged: lastChanged, _hasPicture: picture != nil, _picture: picture, pinnedMe: pinnedMe, pinned: pinned)
+    }
+    
+    var picture: UIImage? {
+        get { return peer.picture }
+        set { if newValue != peer.picture { peer._picture = newValue } }
+    }
+    
+    @objc func encodeWithCoder(aCoder: NSCoder) {
+        aCoder.encodeObject(peer.peerID, forKey: PeerInfo.peerIDKey)
+        aCoder.encodeObject(peer.picture, forKey: PeerInfo.PictureKey)
+        aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.genderKey)
+        aCoder.encodeInteger(peer.age, forKey: PeerInfo.ageKey)
+        aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.statusKey)
+        aCoder.encodeObject(peer.version, forKey: PeerInfo.versionKey)
+        aCoder.encodeObject(peer.characterTraits, forKey: PeerInfo.traitsKey)
+        aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+        aCoder.encodeBool(peer.pinnedMe, forKey: PeerInfo.PinnedMeKey)
+        aCoder.encodeBool(peer.pinned, forKey: PeerInfo.PinnedKey)
     }
 }
 
-/// This class encapsulates all data a peer has specified, except of his or her picture. It is transmitted to other peers when the peers connect, to allow filtering. In result, the primary goal is to keep the binary representation of this class as small as possible.
-class SerializablePeerInfo: NSObject, NSSecureCoding {
+/* final */ class NetworkPeerInfo: NSObject, NSSecureCoding {
+    let peer: PeerInfo
+    
+    @objc static func supportsSecureCoding() -> Bool {
+        return true
+    }
+    
+    private override init() {
+        fatalError()
+    }
+    
+    init(peer: PeerInfo) {
+        self.peer = peer
+    }
+    
+    @objc required init?(coder aDecoder: NSCoder) {
+        guard let peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: PeerInfo.peerIDKey) else { return nil }
+        guard let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.genderKey) as? String else { return nil }
+        guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
+        guard aDecoder.containsValueForKey(PeerInfo.PinnedMeKey) else { return nil }
+        
+        let pinnedMe = aDecoder.decodeBoolForKey(PeerInfo.PinnedMeKey)
+        let lastChanged = aDecoder.decodeObjectOfClass(NSDate.self, forKey: PeerInfo.LastChangedKey) ?? NSDate()
+        let version = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.versionKey) as? String ?? "1.0"
+        // TODO figure out whether version can stay optional here
+        let characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.traitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits()
+        let hasPicture = aDecoder.decodeBoolForKey(PeerInfo.hasPictureKey)
+        let age = aDecoder.decodeIntegerForKey(PeerInfo.ageKey)
+
+        var relationshipStatus: PeerInfo.RelationshipStatus
+        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.statusKey) as? String {
+            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
+        } else {
+            relationshipStatus = PeerInfo.RelationshipStatus.NoComment
+        }
+        
+        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, lastChanged: lastChanged, _hasPicture: hasPicture, _picture: nil, pinnedMe: pinnedMe, pinned: false)
+    }
+    
+    @objc func encodeWithCoder(aCoder: NSCoder) {
+        aCoder.encodeObject(peer.peerID, forKey: PeerInfo.peerIDKey)
+        aCoder.encodeBool(peer.hasPicture, forKey: PeerInfo.hasPictureKey)
+        aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.genderKey)
+        aCoder.encodeInteger(peer.age, forKey: PeerInfo.ageKey)
+        aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.statusKey)
+        aCoder.encodeObject(peer.version, forKey: PeerInfo.versionKey)
+        aCoder.encodeObject(peer.characterTraits, forKey: PeerInfo.traitsKey)
+        aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+        aCoder.encodeBool(peer.pinned, forKey: PeerInfo.PinnedMeKey)
+    }
+}
+
+struct PeerInfo: Equatable {
     private static let peerNameKey = "peerName"
-	private static let peerIDKey = "peerID"
-	private static let hasPictureKey = "hasPicture"
-	private static let genderKey = "gender"
-	private static let ageKey = "age"
-	private static let statusKey = "status"
-	private static let traitsKey = "traits"
+    private static let peerIDKey = "peerID"
+    private static let hasPictureKey = "hasPicture"
+    private static let genderKey = "gender"
+    private static let ageKey = "age"
+    private static let statusKey = "status"
+    private static let traitsKey = "traits"
     private static let versionKey = "version"
     private static let PictureKey = "picture"
     private static let PinnedMeKey = "pinnedMe"
@@ -195,7 +273,7 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
         case Male, Female, Queer
         
         static let values = [Male, Female, Queer]
-
+        
         // TODO write the value into strings file
         /*
          *  For genstrings
@@ -224,31 +302,28 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
          */
     }
     
+    let peerID: MCPeerID
+    
     var peerName: String {
-        return _peerID.displayName
+        return peerID.displayName
     }
     
-	private var _peerID: MCPeerID
-	var peerID: MCPeerID {
-		return _peerID
-	}
-    
-	private var _hasPicture = false
-    var hasPicture: Bool {
-        return _hasPicture
-     }
-    
-	var gender = Gender.Female
-	var age = 18
+    var gender = Gender.Female
+    var age = 18
     var relationshipStatus = RelationshipStatus.NoComment
     
-	var characterTraits: [CharacterTrait]
-	/*
-	 *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
-	 */
+    var characterTraits: [CharacterTrait]
+    /*
+     *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
+     */
     var version = "1.0"
     
     var lastChanged = NSDate()
+    
+    private var _hasPicture: Bool = false
+    var hasPicture: Bool {
+        return _hasPicture
+    }
     
     /// Only stored in the LocalPeerInfo subclass. In this class it is not written to the encoder in encodeWithCoder.
     private var _picture: UIImage? = nil
@@ -257,14 +332,8 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
     }
     
     /// Only stored in the LocalPeerInfo subclass. In this class it is not written to the encoder in encodeWithCoder.
-    private var _pinnedMe = false
-    private var _pinned = false
-    var pinnedMe: Bool {
-        return _pinnedMe
-    }
-    var pinned: Bool {
-        return _pinnedMe
-    }
+    var pinnedMe = false
+    var pinned = false
     
     var pinStatus: String {
         if pinned {
@@ -277,65 +346,13 @@ class SerializablePeerInfo: NSObject, NSSecureCoding {
             return NSLocalizedString("Not yet pinned.", comment: "The user did not yet marked someone as interesting")
         }
     }
-	
-	@objc static func supportsSecureCoding() -> Bool {
-		return true
-	}
-	
-	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeObject(_peerID, forKey: SerializablePeerInfo.peerIDKey)
-		aCoder.encodeBool(hasPicture, forKey: SerializablePeerInfo.hasPictureKey)
-		aCoder.encodeObject(gender.rawValue, forKey: SerializablePeerInfo.genderKey)
-		aCoder.encodeInteger(age, forKey: SerializablePeerInfo.ageKey)
-		aCoder.encodeObject(relationshipStatus.rawValue, forKey: SerializablePeerInfo.statusKey)
-        aCoder.encodeObject(version, forKey: SerializablePeerInfo.versionKey)
-        aCoder.encodeObject(characterTraits, forKey: SerializablePeerInfo.traitsKey)
-        aCoder.encodeObject(lastChanged, forKey: SerializablePeerInfo.LastChangedKey)
-	}
-	
-	private override init() {
-		characterTraits = CharacterTrait.standardTraits()
-        _peerID = MCPeerID(displayName: "Unknown")
-    }
     
-	@objc required init?(coder aDecoder: NSCoder) {
-        if let peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: SerializablePeerInfo.peerIDKey) {
-            _peerID = peerID
-        } else {
-            return nil
-        }
-        if let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.genderKey) as? String {
-            if let optionalGender = Gender(rawValue:rawGenderValue) {
-                gender = optionalGender
-            } else {
-                return nil
-            }
-        } else {
-            return nil
-        }
-        if aDecoder.containsValueForKey(LocalPeerInfo.PinnedMeKey) {
-            _pinnedMe = aDecoder.decodeBoolForKey(LocalPeerInfo.PinnedMeKey)
-        } else {
-            return nil
-        }
-        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.statusKey) as? String {
-            relationshipStatus = RelationshipStatus(rawValue:rawStatusValue) ?? RelationshipStatus.NoComment
-        } else {
-            RelationshipStatus.NoComment
-        }
-        if let lastChangedValue = aDecoder.decodeObjectOfClass(NSDate.self, forKey: SerializablePeerInfo.LastChangedKey) {
-            lastChanged = lastChangedValue
-        }
-        // TODO figure out whether version can stay optional here
-        version = aDecoder.decodeObjectOfClass(NSString.self, forKey: SerializablePeerInfo.versionKey) as? String ?? "1.0"
-        characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: SerializablePeerInfo.traitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits()
-        _hasPicture = aDecoder.decodeBoolForKey(SerializablePeerInfo.hasPictureKey)
-        _picture = aDecoder.decodeObjectOfClass(UIImage.self, forKey: LocalPeerInfo.PictureKey)
-        age = aDecoder.decodeIntegerForKey(SerializablePeerInfo.ageKey)
-        _pinned = aDecoder.decodeBoolForKey(LocalPeerInfo.PinnedKey)
-	}
+    func copyToNewID(peerID: MCPeerID) -> PeerInfo {
+        return PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, lastChanged: lastChanged, _hasPicture:
+            _hasPicture, _picture: _picture, pinnedMe: pinnedMe, pinned: pinned)
+    }
 }
 
-func ==(lhs: SerializablePeerInfo, rhs: SerializablePeerInfo) -> Bool {
-    return lhs._peerID == rhs.peerID
+func ==(lhs: PeerInfo, rhs: PeerInfo) -> Bool {
+    return lhs.peerID == rhs.peerID
 }

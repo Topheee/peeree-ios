@@ -157,7 +157,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
         // ignored
     }
     
-    func peerInfoLoaded(peerInfo: SerializablePeerInfo) {
+    func peerInfoLoaded(peerInfo: PeerInfo) {
         // ignored
     }
 }

@@ -22,7 +22,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
         
         UserPeerInfo.instance.peerName = chosenName
-        UserPeerInfo.instance.gender = SerializablePeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
+        UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
 	}
 	
@@ -43,10 +43,14 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] {
             view.alpha = 0.0
         }
-        picButton.maskView = CircleMaskView(forView: picButton)
 		
 		nameTextField.keyboardType = UIKeyboardType.NamePhonePad
 	}
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        picButton.maskView = CircleMaskView(forView: picButton)
+    }
 	
 	override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)

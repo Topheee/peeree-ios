@@ -32,25 +32,23 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
         
         switch contextString {
         case MCNearbyServiceBrowserMock.kPeerInfoSessionKey:
-            let rand = arc4random()
-            let peerDescription = TestPeerInfo(id: peerID)
-            peerDescription.age = SerializablePeerInfo.MinAge + (Int(rand) % (SerializablePeerInfo.MaxAge - SerializablePeerInfo.MinAge))
-            peerDescription.pinned = rand % 2 == 0
-            peerDescription.pinnedMe = (rand % 1000) > 500
-            peerDescription.picture = UIImage(named: "Portrait_\(rand % 3)")
+            let data = NSKeyedArchiver.archivedDataWithRootObject(TestPeerInfo(peerID: peerID))
             
             session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-            let data = NSMutableData()
-            let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
-            (peerDescription as SerializablePeerInfo).encodeWithCoder(archiver)
-            let test = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? TestPeerInfo
+//            let data = NSMutableData()
+//            let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
+//            (peerDescription as NetworkPeerInfo).encodeWithCoder(archiver)
+//            archiver.finishEncoding()
+//            let data = NSKeyedArchiver.archivedDataWithRootObject(peerDescription as NetworkPeerInfo)
+//            let test = NSKeyedUnarchiver.unarchiveObjectWithData(data) //as? NetworkPeerInfo
             session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
             
             NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(arc4random() % 60), target: self, selector: #selector(MCNearbyServiceBrowserMock.removePeer(_:)), userInfo: peerID, repeats: false)
         case MCNearbyServiceBrowserMock.kPictureSessionKey:
-            let picture = UIImage(named: "Sample Profile Pic")!
+            let rand = arc4random()
+            let image = UIImage(named: "Portrait_\(rand % 2)")!
             session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-            let data = NSKeyedArchiver.archivedDataWithRootObject(picture)
+            let data = NSKeyedArchiver.archivedDataWithRootObject(image)
             session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
         default:
             assertionFailure()

@@ -42,10 +42,10 @@ final class FilterViewController: UIViewController {
 	
 	override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        ageMaxSlider.maximumValue = Float(SerializablePeerInfo.MaxAge + 1)
-        ageMaxSlider.minimumValue = Float(SerializablePeerInfo.MinAge)
-        ageMinSlider.maximumValue = Float(SerializablePeerInfo.MaxAge)
-        ageMinSlider.minimumValue = Float(SerializablePeerInfo.MinAge)
+        ageMaxSlider.maximumValue = Float(PeerInfo.MaxAge + 1)
+        ageMaxSlider.minimumValue = Float(PeerInfo.MinAge)
+        ageMinSlider.maximumValue = Float(PeerInfo.MaxAge)
+        ageMinSlider.minimumValue = Float(PeerInfo.MinAge)
         
         ageMaxSlider.value = filterSettings.ageMax == 0 ? ageMaxSlider.maximumValue : filterSettings.ageMax
 		updateAgeMaxLabel()

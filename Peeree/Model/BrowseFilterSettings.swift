@@ -62,7 +62,7 @@ final class BrowseFilterSettings: NSObject, NSCoding {
 		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
 	}
 	
-	func checkPeer(peer: SerializablePeerInfo) -> Bool {
+	func checkPeer(peer: PeerInfo) -> Bool {
 		let matchingGender = gender == .Unspecified || (gender == .Female && peer.gender == .Female) || (gender == .Male && peer.gender == .Male)
 		let matchingAge = ageMin <= Float(peer.age) && (ageMax == 0.0 || ageMax >= Float(peer.age))
 		
