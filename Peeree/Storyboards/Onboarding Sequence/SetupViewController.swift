@@ -14,25 +14,29 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	@IBOutlet private var launchAppButton: UIButton!
 	@IBOutlet private var nameTextField: UITextField!
     @IBOutlet private var genderPicker: UISegmentedControl!
+    
+    var nameTextFieldFrame: CGRect?
 	
 	@IBAction func finishIntroduction(sender: AnyObject) {
         guard let chosenName = nameTextField.text else { return }
         guard chosenName != "" else { return }
         
-        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.kPrefSkipOnboarding)
-        
         UserPeerInfo.instance.peerName = chosenName
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
+        
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.PrefSkipOnboarding)
 	}
 	
 	@IBAction func takePic(sender: UIButton) {
-        showPicturePicker(NSLocalizedString("Omit portrait", comment: "Don't set a profile picture in onboarding")) { (action) in
-            self.omitPicture()
+        guard !nameTextField.isFirstResponder() else { return }
+        
+        showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding.")) { (action) in
+            self.pickedImage(UIImage(named: "PersonPlaceholder")!)
         }
 	}
 	@IBAction func filledFirstname(sender: UITextField) {
-		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
+		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
 		UIView.animateWithDuration(1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
 			}, completion: nil)
@@ -43,18 +47,16 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] {
             view.alpha = 0.0
         }
-		
-		nameTextField.keyboardType = UIKeyboardType.NamePhonePad
-	}
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        picButton.maskView = CircleMaskView(forView: picButton)
+        picButton.imageView?.maskView = CircleMaskView(forView: picButton)
     }
 	
 	override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        guard picButton.imageForState(.Normal) == nil else { return }
+        guard nameTextField.alpha == 0.0 else { return }
         
         self.view.flyInSubviews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
         self.view.flyInSubviews([picButton], duration: 1.0, delay: 1.0, damping: 1.0, velocity: 1.0)
@@ -62,7 +64,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
         if identifier == "finishOnboardingSegue" {
-            return nameTextField.text != nil && nameTextField.text! != ""
+            return nameTextField.text != nil && nameTextField.text != ""
         }
         return super.shouldPerformSegueWithIdentifier(identifier, sender: sender)
     }
@@ -87,14 +89,15 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         
         let keyboardFrameRect = keyboardFrame.CGRectValue()
         
-        var oldFrame = nameTextField.frame
+        nameTextFieldFrame = nameTextField.frame
+        var newFrame = nameTextFieldFrame!
         let textFieldsBottom = nameTextField.frame.origin.y + nameTextField.frame.height
         let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
         if textFieldsBottom > keyboardTop {
             dispatch_async(dispatch_get_main_queue(), {
                 UIView.animateWithDuration(1.2, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.55, options: UIViewAnimationOptions.CurveEaseOut, animations: {
-                    oldFrame.origin.y += keyboardTop - textFieldsBottom
-                    self.nameTextField.frame = oldFrame
+                    newFrame.origin.y += keyboardTop - textFieldsBottom
+                    self.nameTextField.frame = newFrame
                 }, completion: nil)
             })
         }
@@ -102,7 +105,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     func keyboardWillHide(notification: NSNotification) {
         NSNotificationCenter.defaultCenter().removeObserver(self)
-        nameTextField.setNeedsLayout()
     }
     
     // MARK - UITextFieldDelegate
@@ -114,24 +116,17 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     }
     
 	func textFieldShouldReturn(textField: UITextField) -> Bool {
-		textField.resignFirstResponder()
+        textField.resignFirstResponder()
 		return true
 	}
     
     override func imagePickerControllerDidCancel(picker: UIImagePickerController) {
         super.imagePickerControllerDidCancel(picker)
-        omitPicture()
+        pickedImage(UIImage(named: "PersonPlaceholder")!)
     }
     
     override func pickedImage(image: UIImage) {
-        picButton.setTitle("", forState: .Normal)
         picButton.setImage(image, forState: .Normal)
-        dispatch_async(dispatch_get_main_queue()) {
-            self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-        }
-    }
-    
-    private func omitPicture() {
         dispatch_async(dispatch_get_main_queue()) {
             self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
         }

@@ -12,7 +12,7 @@ import Foundation
  *  This class holds encapsulates all values with which the remote peers are filtered before they are presented to the user.
  *  Except for the Singleton it is NOT thread-safe, and as there is currently only one writing entity there is no need to implement this.ssss
  */
-final class BrowseFilterSettings: NSObject, NSCoding {
+final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	private static let PrefKey = "peeree-prefs-browse-filter"
 	
 	private static let AgeMinKey = "ageMin"
@@ -30,6 +30,10 @@ final class BrowseFilterSettings: NSObject, NSCoding {
         
 		return Singleton.sharedInstance
 	}
+    
+    static func supportsSecureCoding() -> Bool {
+        return true
+    }
 	
 	enum GenderType: Int {
 		case Unspecified = 0, Male, Female, Queer

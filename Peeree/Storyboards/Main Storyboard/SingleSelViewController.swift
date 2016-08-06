@@ -34,7 +34,17 @@ final class SingleSelViewController: UIViewController {
 		selectionPickerView.dataSource = dataSource
 		selectionPickerView.delegate = dataSource
 	}
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let selection = dataSource?.initialPickerSelection(selectionPickerView) else { return }
+        
+        selectionPickerView.selectRow(selection.row, inComponent: selection.inComponent, animated: false)
+        selectionPickerView.userInteractionEnabled = dataSource?.selectionEditable(selectionPickerView) ?? false
+    }
 }
 
 protocol SingleSelViewControllerDataSource: BasicDescriptionViewControllerDataSource, UIPickerViewDataSource, UIPickerViewDelegate {
+    func initialPickerSelection(pickerView: UIPickerView) -> (row: Int, inComponent: Int)
+    func selectionEditable(pickerView: UIPickerView) -> Bool
 }

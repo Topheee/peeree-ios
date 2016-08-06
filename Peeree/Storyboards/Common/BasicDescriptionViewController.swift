@@ -16,14 +16,30 @@ final class BasicDescriptionViewController: UIViewController {
 	
 	var dataSource: BasicDescriptionViewControllerDataSource?
 	
-	override func didMoveToParentViewController(parent: UIViewController?) {
-		super.didMoveToParentViewController(parent)
-		if let dataSource = dataSource {
-			headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
-			subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
-			descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
-		}
-	}
+//	override func didMoveToParentViewController(parent: UIViewController?) {
+//		super.didMoveToParentViewController(parent)
+//		if let dataSource = dataSource {
+//			headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
+//			subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
+//			descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
+//            // I do not know why we have to set it here again
+//            descriptionTextView.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
+//		}
+//	}
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let dataSource = dataSource else { return }
+        
+        headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
+        subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
+        descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        descriptionTextView.flashScrollIndicators()
+    }
 }
 
 protocol BasicDescriptionViewControllerDataSource {

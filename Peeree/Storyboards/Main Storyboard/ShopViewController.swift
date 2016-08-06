@@ -12,6 +12,11 @@ import StoreKit
 final class ShopViewController: UITableViewController {
 	var products: SKProductsResponse?
     
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
+    
     // - MARK: UITableView Data Source
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -37,7 +42,9 @@ final class ShopViewController: UITableViewController {
 	}
 	
 	override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		switch section {
+        switch section {
+        case 0:
+            return NSLocalizedString("Wallet", comment: "Heading for the table view section which contains information about the user's account")
 		case 1:
 			return NSLocalizedString("Pin Point Offerings", comment: "Heading for the offerings of the in-app currency")
 		default:
@@ -54,12 +61,12 @@ final class ShopViewController: UITableViewController {
         switch indexPath.row {
         case 0:
             ret.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency")
-            ret.detailTextLabel?.text = String(WalletController.getAvailablePinPoints())
+            ret.detailTextLabel?.text = String(WalletController.availablePinPoints)
             break
         case 1:
             ret.textLabel?.text = NSLocalizedString("Account", comment: "")
             // TODO make this mutual or remove it
-            ret.detailTextLabel?.text = String("christopher@merlin.de")
+            ret.detailTextLabel?.text = "christopher@merlin.de"
             break
         default:
             break
@@ -70,8 +77,6 @@ final class ShopViewController: UITableViewController {
     private func createPinPointOfferingCell(tableView: UITableView, indexPath: NSIndexPath) -> UITableViewCell {
         let ret = tableView.dequeueReusableCellWithIdentifier("pinPointOfferingCell", forIndexPath: indexPath)
         let numberFormatter = NSNumberFormatter()
-        // TODO I think we don't need this
-        //numberFormatter.formatterBehavior = NSNumberFormatterBehavior10_4
         numberFormatter.numberStyle = .CurrencyStyle
         numberFormatter.locale = products?.products[indexPath.row].priceLocale
         ret.textLabel?.text = products?.products[indexPath.row].localizedTitle

@@ -16,7 +16,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
     private var secondViewController: UIViewController!
 	
 	@IBAction func unwindToOnboardingViewController(segue: UIStoryboardSegue) {
-		NSLog("%@", "unwind")
+		
 	}
 	
 	var pageViewController: UIPageViewController!

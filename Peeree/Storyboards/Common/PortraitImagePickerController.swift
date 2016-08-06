@@ -11,7 +11,7 @@ import MobileCoreServices
 
 /// Base class for view controllers providing availablity to change the user's portrait image.
 class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func showPicturePicker(destructiveActionName: String, destructiveAction: ((UIAlertAction) -> Void)) {
+    func showPicturePicker(allowCancel: Bool = false, destructiveActionName: String, destructiveAction: ((UIAlertAction) -> Void)) {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
@@ -31,12 +31,15 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         
         let alertController = UIAlertController()
         if UIImagePickerController.isSourceTypeAvailable(.Camera) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device"), style: .Default, handler: cameraHandler))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .Default, handler: cameraHandler))
         } else if UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device"), style: .Default, handler: photoLibraryHandler))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .Default, handler: photoLibraryHandler))
         }
         alertController.addAction(UIAlertAction(title: destructiveActionName, style: .Destructive, handler: destructiveAction))
-        presentViewController(alertController, animated: true, completion: nil)
+        if allowCancel {
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil))
+        }
+        alertController.present(nil)
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {

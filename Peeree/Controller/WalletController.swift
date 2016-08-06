@@ -6,7 +6,8 @@
 //  Copyright © 2015 Kobusch. All rights reserved.
 //
 
-import Foundation
+import UIKit
+import StoreKit
 
 /*
 0. WalletController registers itself as observer for app store notifications
@@ -29,21 +30,40 @@ final class WalletController {
 	/* Never change this value after the first app store release! */
 	static let pinCost = 10
 	
-	private static var availablePinPoints = 0
-	
-	static func getAvailablePinPoints() -> Int {
-		return availablePinPoints
+	private static var _availablePinPoints = 200
+    static var availablePinPoints: Int {
+		return _availablePinPoints
 	}
 	
-	static func requestPin() -> Bool {
-		if availablePinPoints > pinCost {
-			availablePinPoints -= pinCost
-			return true
-		}
-		return false
+    static func requestPin(successfullCallback: () -> Void) {
+        let title = NSLocalizedString("Spend pin points", comment: "Title of the alert which pops up when the user is about to spend in-app currency.")
+        var message: String
+        var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil)]
+        
+		if _availablePinPoints > pinCost {
+            message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
+            message = String(format: message, WalletController._availablePinPoints)
+            let title = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), WalletController.pinCost)
+            actions.append(UIAlertAction(title: title, style: .Default) { action in
+                _availablePinPoints -= pinCost
+                successfullCallback()
+            })
+        } else {
+            message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket.")
+        }
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .ActionSheet)
+        for action in actions {
+            alertController.addAction(action)
+        }
+        alertController.present(nil)
 	}
 	
 	static func increasePinPoints(by: Int) {
-		availablePinPoints += by
+		_availablePinPoints += by
 	}
+    
+    static func getCurrentOfferings() -> (points: Int, price: NSDecimalNumber) {
+        return (10, NSDecimalNumber(integer: 1))
+    }
 }

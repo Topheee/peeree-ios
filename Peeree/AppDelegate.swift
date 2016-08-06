@@ -9,14 +9,45 @@
 import UIKit
 import MultipeerConnectivity
 
+struct Theme {
+    let globalTintRed: CGFloat
+    let globalTintGreen: CGFloat
+    let globalTintBlue: CGFloat
+    let globalTintColor: UIColor
+    let globalBackgroundRed: CGFloat
+    let globalBackgroundGreen: CGFloat
+    let globalBackgroundBlue: CGFloat
+    let globalBackgroundColor: UIColor
+    let barBackgroundColor : UIColor
+    let barTintColor : UIColor
+    
+    init(globalTint: (r:CGFloat, g:CGFloat, b:CGFloat), barTint: (r:CGFloat, g:CGFloat, b:CGFloat), globalBackground: (r:CGFloat, g:CGFloat, b:CGFloat), barBackground: (r:CGFloat, g:CGFloat, b:CGFloat)) {
+        self.globalTintRed = globalTint.r
+        self.globalTintGreen = globalTint.g
+        self.globalTintBlue = globalTint.b
+        self.globalTintColor = UIColor(red: self.globalTintRed, green: self.globalTintGreen, blue: self.globalTintBlue, alpha: 1.0)
+        self.globalBackgroundRed = globalBackground.r
+        self.globalBackgroundGreen = globalBackground.g
+        self.globalBackgroundBlue = globalBackground.b
+        self.globalBackgroundColor = UIColor(red: globalBackgroundRed, green: globalBackgroundGreen, blue: globalBackgroundBlue, alpha: 1.0)
+        self.barBackgroundColor = UIColor(red: barBackground.r, green: barBackground.g, blue: barBackground.b, alpha: 0.3)
+        barTintColor = UIColor(red: barTint.r, green: barTint.g, blue: barTint.b, alpha: 1.0)
+    }
+}
+
+let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (248/255, 255/255, 248/255), barBackground: (98/255, 255/255, 139/255)) //white with green
+
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
 	
-	static let kPrefSkipOnboarding = "peeree-prefs-skip-onboarding"
+    static let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
+    static let PeerIDKey = "PeerIDKey"
 	
 	static var sharedDelegate: AppDelegate { return UIApplication.sharedApplication().delegate as! AppDelegate }
 
-	var window: UIWindow?
+    /// This is somehow set by the environment...
+    var window: UIWindow?
+    
 	var isActive: Bool = false
 
     /**
@@ -28,63 +59,64 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
             UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
 		}
 		
-		if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.kPrefSkipOnboarding) {
-//        if UserPeerInfo.instance.peerName == "" {
-			//this is the first launch of the app, so we show the first launch UI
-			self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
-			
-			let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
-			
-			self.window!.rootViewController = (storyboard.instantiateInitialViewController()!)
-			self.window!.makeKeyAndVisible()
-		}
-		
-		struct Theme {
-			let globalTintRed: CGFloat
-			let globalTintGreen: CGFloat
-			let globalTintBlue: CGFloat
-			let globalTintColor: UIColor
-			let globalBackgroundRed: CGFloat
-			let globalBackgroundGreen: CGFloat
-			let globalBackgroundBlue: CGFloat
-			let globalBackgroundColor: UIColor
-			let barBackgroundColor : UIColor
-			
-			init(globalTintRed: CGFloat, globalTintGreen: CGFloat, globalTintBlue: CGFloat, globalBackgroundRed: CGFloat, globalBackgroundGreen: CGFloat, globalBackgroundBlue: CGFloat) {
-				self.globalTintRed = globalTintRed
-				self.globalTintGreen = globalTintGreen
-				self.globalTintBlue = globalTintBlue
-				self.globalTintColor = UIColor(red: self.globalTintRed, green: self.globalTintGreen, blue: self.globalTintBlue, alpha: 1.0)
-				self.globalBackgroundRed = globalBackgroundRed
-				self.globalBackgroundGreen = globalBackgroundGreen
-				self.globalBackgroundBlue = globalBackgroundBlue
-				self.globalBackgroundColor = UIColor(red: globalBackgroundRed, green: globalBackgroundGreen, blue: globalBackgroundBlue, alpha: 1.0)
-				self.barBackgroundColor = UIColor(red: globalBackgroundRed*0.5, green: globalBackgroundGreen*0.5, blue: globalBackgroundBlue*0.5, alpha: 1.0)
-			}
-		}
-		
 		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
-		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
+//		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
 		//let theme = Theme(globalTintRed: 255/255, globalTintGreen: 128/255, globalTintBlue: 0/255, globalBackgroundRed: 204/255 /*213/255*/, globalBackgroundGreen: 1.0 /*250/255*/, globalBackgroundBlue: 127/255 /*128/255*/) //sugar melon
-		//let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
-		RootView.appearance().tintColor = theme.globalTintColor
+        //let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
+//        let theme = Theme(globalTint: (0/255, 72/255, 185/255), barTint: (0/255, 146/255, 0/255), globalBackground: (160/255, 255/255, 180/255)) //bright green (98/255, 255/255, 139/255)
+        
+//		RootView.appearance().tintColor = theme.globalTintColor
 		RootView.appearance().backgroundColor = theme.globalBackgroundColor
 		
-		UINavigationBar.appearance().tintColor = theme.globalTintColor
-		UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
+//        UINavigationBar.appearance().tintColor = theme.barTintColor
+        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
 		
-		UITabBar.appearance().tintColor = theme.globalTintColor
+        UITabBar.appearance().tintColor = theme.barTintColor
 		UITabBar.appearance().backgroundColor = theme.barBackgroundColor
 		
 		UITableView.appearance().backgroundColor = theme.globalBackgroundColor
 		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+//        UITableView.appearance().tintColor = theme.globalTintColor
 		
 		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-		
-        UINavigationBar.appearance().backgroundColor = theme.globalBackgroundColor.colorWithAlphaComponent(0.3)
         
-        RemotePeerManager.sharedManager.peering = true
+        UIActivityIndicatorView.appearance().color = theme.globalTintColor
+        
+        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.colorWithAlphaComponent(0.65)
+//        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
+        
+        UIWindow.appearance().tintColor = theme.globalTintColor
+        
+        NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerAppearedNotification) { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+                self.remotePeerAppeared(peerID)
+            }
+        }
+        
+        NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerDisappearedNotification) { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+                self.remotePeerDisappeared(peerID)
+            }
+        }
+        
+        NSNotificationCenter.addObserverOnMain(RemotePeerManager.PinMatchNotification) { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+                self.pinMatchOccured(RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)!)
+            }
+        }
+        
+        NSNotificationCenter.addObserverOnMain(RemotePeerManager.ConnectionChangedStateNotification) { notification in
+            guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
+            guard let browseItem = topVC.tabBar.items?.first else { return }
+            
+            browseItem.image = UIImage(named: RemotePeerManager.sharedManager.peering ? "RadarTemplateFilled" : "RadarTemplate")
+            browseItem.selectedImage = browseItem.image
+        }
+        
+        if NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.PrefSkipOnboarding) {
+            RemotePeerManager.sharedManager.peering = true
+        }
 		
 		return true
 	}
@@ -97,7 +129,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 	func applicationDidEnterBackground(application: UIApplication) {
 		// Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
 		// If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-		RemotePeerManager.sharedManager.delegate = self // TODO restore old delegate
 		isActive = false
 	}
 
@@ -107,8 +138,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
 
 	func applicationDidBecomeActive(application: UIApplication) {
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-		isActive = true
-	}
+        isActive = true
+        
+        if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.PrefSkipOnboarding) {
+            // this is the first launch of the app, so we show the first launch UI
+            let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
+            
+            self.window!.rootViewController?.presentViewController(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
+        }
+    }
 
     /**
      *  Stops networking and synchronizes preferences
@@ -117,47 +155,53 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RemotePeerManagerDelegate
         RemotePeerManager.sharedManager.peering = false
         NSUserDefaults.standardUserDefaults().synchronize()
 	}
-	
-    // MARK: - RemotePeerManager Delegate
     
-	func remotePeerAppeared(peer: MCPeerID) {
-		if !isActive {
-			let note = UILocalNotification()
-			// TODO localization
-			note.alertBody = "Found " + peer.displayName
-			note.fireDate = NSDate().dateByAddingTimeInterval(1)
-            note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
-			UIApplication.sharedApplication().scheduleLocalNotification(note)
-		} else {
-			if let topVC = window?.rootViewController as? UITabBarController {
-				if let oldBadge = topVC.tabBar.items?[0].badgeValue {
-					if let oldBadgeValue = Int(oldBadge) {
-						topVC.tabBar.items?[0].badgeValue = String(oldBadgeValue+1)
-                    } else {
-                        topVC.tabBar.items?[0].badgeValue = "1"
-                    }
-				} else {
-					topVC.tabBar.items?[0].badgeValue = "1"
-				}
-			}
-		}
-	}
-	
-	func remotePeerDisappeared(peer: MCPeerID) {
-		if let topVC = window?.rootViewController as? UITabBarController {
-			if let oldBadge = topVC.tabBar.items?[0].badgeValue {
-				if let oldBadgeValue = Int(oldBadge) {
-					topVC.tabBar.items?[0].badgeValue = oldBadgeValue == 1 ? nil : String(oldBadgeValue-1)
-				}
-			}
-		}
-	}
-    
-    func connectionChangedState(nowOnline: Bool) {
-        // ignored
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        guard application.applicationState == .Inactive else { return }
+        guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? NSData else { return }
+        guard let peerID = NSKeyedUnarchiver.unarchiveObjectWithData(peerIDData) as? MCPeerID else { return }
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
+        
+        rootTabBarController.selectedIndex = 0
+        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
     
-    func peerInfoLoaded(peerInfo: PeerInfo) {
-        // ignored
+	private func remotePeerAppeared(peerID: MCPeerID) {
+		if !isActive {
+            guard RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) == nil else { return }
+            
+			let note = UILocalNotification()
+            let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
+			note.alertBody = String(format: alertBodyFormat, peerID.displayName)
+            note.fireDate = NSDate().dateByAddingTimeInterval(0)
+            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peerID)]
+			UIApplication.sharedApplication().scheduleLocalNotification(note)
+        } else if BrowseViewController.instance == nil {
+            updateNewPeerBadge()
+		}
+	}
+	
+	private func remotePeerDisappeared(peerID: MCPeerID) {
+        updateNewPeerBadge()
+	}
+    
+    private func pinMatchOccured(peer: PeerInfo) {
+        let note = UILocalNotification()
+        let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
+        note.alertBody = String(format: alertBodyFormat, peer.peerID.displayName)
+        note.fireDate = NSDate().dateByAddingTimeInterval(0)
+        note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
+        note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
+        UIApplication.sharedApplication().scheduleLocalNotification(note)
+    }
+    
+    private func updateNewPeerBadge() {
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        
+        let pm = RemotePeerManager.sharedManager
+        let newPeerCount = pm.availablePeers.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
+        rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
     }
 }

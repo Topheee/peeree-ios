@@ -13,18 +13,10 @@ final class WelcomeViewController: UIViewController {
 	
 	override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+        infoButton.tintColor = theme.globalTintColor // for whatever reason we have to do that here...
 		if !animated {
 			//at the very first showing, the view appears unanimated, so only here we want to show the animation
 			self.view.flyInSubviews([infoButton], duration: 2.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-//			let endPos = infoButton.frame
-//			
-//			infoButton.frame.origin.y = self.view.frame.height
-//			infoButton.alpha = 0.0
-//			
-//			UIView.animateWithDuration(2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
-//				self.infoButton.frame = endPos
-//				self.infoButton.alpha = 1.0
-//				}, completion: nil)
 		}
 	}
 }

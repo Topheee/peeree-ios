@@ -12,10 +12,8 @@ class CircleMaskView: UIView {
 	override func drawRect(rect: CGRect) {
 		let circle = UIBezierPath(ovalInRect: rect)
 		let context = UIGraphicsGetCurrentContext()
-		//				CGContextSetShadow(context, CGSize(width: 5.0, height: 5.0), 0.7)
 		CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0)
 		circle.fill()
-		//circle.strokeWithBlendMode(.SourceAtop, alpha: 0.5)
 	}
 	
 	init(forView: UIView) {
@@ -24,6 +22,6 @@ class CircleMaskView: UIView {
 	}
 	
 	required init?(coder aDecoder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
+		super.init(coder: aDecoder)
 	}
 }

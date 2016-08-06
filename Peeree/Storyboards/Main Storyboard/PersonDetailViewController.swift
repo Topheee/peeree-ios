@@ -9,65 +9,95 @@
 import UIKit
 import MultipeerConnectivity
 
-final class PersonDetailViewController: UIViewController, RemotePeerManagerDelegate {
+final class PersonDetailViewController: UIViewController {
 	@IBOutlet private var portraitImageView: UIImageView!
 	@IBOutlet private var ageGenderLabel: UILabel!
 	@IBOutlet private var stateLabel: UILabel!
     @IBOutlet private weak var downloadIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var pinButton: UIButton!
     @IBOutlet private weak var pictureDownloadIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var traitsButton: UIButton!
+    @IBOutlet private weak var gradientView: UIImageView!
     
-    private var superConnectionDelegate: RemotePeerManagerDelegate?
+    private var notificationObservers: [AnyObject] = []
     
-    var displayedPeer: MCPeerID?
+    private var displayedPeerInfo: PeerInfo?
     
-    var displayedPeerInfo: PeerInfo? {
-        if UserPeerInfo.instance.peer.peerID == displayedPeer {
-            return UserPeerInfo.instance.peer
-        } else if let peerID = displayedPeer {
-            return RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: true)
-        }
-        return nil
-    }
-	
+    var displayedPeerID: MCPeerID?
+    
 	@IBAction func pinPeer(sender: UIButton) {
-		// TODO pin this peer
-	}
+        guard let peer = displayedPeerInfo else { return }
+        guard !peer.pinned else { return }
+        
+        RemotePeerManager.sharedManager.pinPeer(peer.peerID) {
+            self.pinButton.selected = true
+        }
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if let charTraitVC = segue.destinationViewController as?
+            CharacterTraitViewController {
+            charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        pinButton.setImage(UIImage(named: "PinTemplatePressed"), forState: [.Disabled, .Selected])
+    }
     
 	override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        guard displayedPeer != nil else { assertionFailure(); return }
+        guard displayedPeerID != nil else { assertionFailure(); return }
         
-        superConnectionDelegate = RemotePeerManager.sharedManager.delegate
-//        RemotePeerManager.sharedManager.delegate = self
+        navigationItem.title = displayedPeerID!.displayName
         
-        navigationItem.title = displayedPeer?.displayName
-        
-        NSNotificationCenter.defaultCenter().addObserverForName(RemotePeerManager.RemotePeerAppearedNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification) in
+        notificationObservers.append(NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerAppearedNotification) { (notification) in
             if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
                 self.remotePeerAppeared(peerID)
             }
-        }
+        })
         
-        NSNotificationCenter.defaultCenter().addObserverForName(RemotePeerManager.RemotePeerDisappearedNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification) in
+        notificationObservers.append(NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerDisappearedNotification) { (notification) in
             if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
                 self.remotePeerDisappeared(peerID)
             }
+            })
+        
+        notificationObservers.append(NSNotificationCenter.addObserverOnMain(RemotePeerManager.PeerInfoLoadedNotification) { (notification) in
+            guard let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID else { return }
+            guard self.displayedPeerID != nil && self.displayedPeerID! == peerID else { return }
+            
+            self.displayedPeerInfo = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)
+            self.displayPeerInfo()
+            self.displayPeerInfoDownloadState()
+        })
+        
+        notificationObservers.append(NSNotificationCenter.addObserverOnMain(RemotePeerManager.PictureLoadedNotification) { (notification) in
+            guard let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID else { return }
+            guard self.displayedPeerID != nil && self.displayedPeerID! == peerID else { return }
+            
+            self.displayedPeerInfo = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)
+            self.displayImageState()
+        })
+        
+        notificationObservers.append(NSNotificationCenter.addObserverOnMain(RemotePeerManager.PinMatchNotification) { (notification) in
+            // TODO animate this in an super epic way, maybe scale the image up and down for a few seconds in a heartbeat manner or something like that
+            self.gradientView.hidden = self.displayedPeerInfo?.pinMatched ?? true
+        })
+        
+        if displayedPeerID! != UserPeerInfo.instance.peer.peerID {
+            displayedPeerInfo = RemotePeerManager.sharedManager.getPeerInfo(forPeer: displayedPeerID!, download: true)
+        } else {
+            displayedPeerInfo = UserPeerInfo.instance.peer
         }
-        
-        NSNotificationCenter.defaultCenter().addObserverForName(RemotePeerManager.ConnectionChangedStateNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification) in
-            self.connectionChangedState(RemotePeerManager.sharedManager.peering)
-        }
-        
-        NSNotificationCenter.defaultCenter().addObserverForName(RemotePeerManager.PeerInfoLoadedNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification) in
-            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
-                self.peerInfoLoaded(RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)!)
-            }
-        }
-        
-        guard displayedPeerInfo != nil else { return }
-        
-        displayPeerInfo(displayedPeerInfo!)
+        setupTitle()
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        displayPeerInfoDownloadState()
+        displayPeerInfo()
     }
     
     override func viewDidLayoutSubviews() {
@@ -75,71 +105,83 @@ final class PersonDetailViewController: UIViewController, RemotePeerManagerDeleg
         portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
     }
     
-    override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated)
-        displayPeerInfoDownloadState(displayedPeerInfo != nil)
-    }
-    
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        // unfortunately the test whether someone else changed the RemotePeerManager's delegate does not work because somehow you cannot compare protocol variables
-//        if let actualDelegate = RemotePeerManager.sharedManager.delegate {
-//            if actualDelegate == self as RemotePeerManagerDelegate {
-//                RemotePeerManager.sharedManager.delegate = superConnectionDelegate
-//            }
-//        }
-    }
-    
-    // MARK: RemotePeerManager Delegate
-    
-    func remotePeerAppeared(peer: MCPeerID) {
-        if displayedPeer != nil && displayedPeer! == peer {
-            displayPeerInfoDownloadState(true)
-        }
-        superConnectionDelegate?.remotePeerAppeared(peer)
-    }
-    
-    func remotePeerDisappeared(peer: MCPeerID) {
-        // disable pin button to show connection loss
-        // Peeree 2.0: enable lazy pinning, see classification sheet
-        if displayedPeer != nil && displayedPeer! == peer {
-            displayPeerInfoDownloadState(false)
-        }
-        superConnectionDelegate?.remotePeerDisappeared(peer)
-    }
-    
-    func connectionChangedState(nowOnline: Bool) {
-        // don't handle this, should probably never happen anyway
-        superConnectionDelegate?.connectionChangedState(nowOnline)
-    }
-    
-    func peerInfoLoaded(peerInfo: PeerInfo) {
-        if displayedPeer != nil && displayedPeer! == peerInfo.peerID {
-            displayPeerInfo(peerInfo)
-            superConnectionDelegate?.peerInfoLoaded(peerInfo)
+        for observer in notificationObservers {
+            NSNotificationCenter.defaultCenter().removeObserver(observer)
         }
     }
     
     // MARK: Private methods
     
-    private func displayPeerInfo(peerInfo: PeerInfo) {
-        //TODO localization
-        ageGenderLabel.text = "\(peerInfo.age) years old, \(peerInfo.gender.localizedRawValue())"
-        stateLabel.text = UserPeerInfo.instance.relationshipStatus.localizedRawValue()
-        displayNewImageState(peerInfo)
-        RemotePeerManager.sharedManager.loadPicture(peerInfo) { (peerInfo) in
-            self.displayNewImageState(peerInfo)
+    private func remotePeerAppeared(peer: MCPeerID) {
+        if displayedPeerID != nil && displayedPeerID! == peer {
+            setupTitle()
+            enablePinButton()
         }
-        pinButton.enabled = peerInfo != UserPeerInfo.instance.peer
     }
     
-    private func displayPeerInfoDownloadState(downloaded: Bool) {
-        pinButton.hidden = !downloaded
-        downloadIndicator.hidden = downloaded
+    private func remotePeerDisappeared(peer: MCPeerID) {
+        if displayedPeerID != nil && displayedPeerID! == peer {
+            setupTitle()
+            enablePinButton()
+        }
     }
     
-    private func displayNewImageState(peerInfo: PeerInfo) {
+    private func pictureLoaded(peerInfo: PeerInfo) {
+        if displayedPeerID != nil && displayedPeerID! == peerInfo.peerID {
+            displayedPeerInfo = peerInfo
+            displayPeerInfo()
+            displayPeerInfoDownloadState()
+        }
+    }
+    
+    private func displayPeerInfo() {
+        guard let peerInfo = displayedPeerInfo else { return }
+        
+        let ageGenderFormat = NSLocalizedString("%d years old, %@", comment: "Text describing the peers age and gender.")
+        ageGenderLabel.text = String(format: ageGenderFormat, peerInfo.age, peerInfo.gender.localizedRawValue())
+        stateLabel.text = peerInfo.relationshipStatus.localizedRawValue()
+        RemotePeerManager.sharedManager.loadPicture(peerInfo)
+        displayImageState()
+        enablePinButton()
+        pinButton.selected = peerInfo.pinned
+        gradientView.hidden = !(peerInfo.pinMatched || displayedPeerID! == UserPeerInfo.instance.peer.peerID)
+        UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 2.0, initialSpringVelocity: 1.0, options: [.Repeat, .Autoreverse], animations: {
+            self.gradientView.alpha = 0.0
+        }, completion: nil)
+    }
+    
+    private func displayPeerInfoDownloadState() {
+        pinButton.hidden = displayedPeerInfo == nil
+        ageGenderLabel.hidden = displayedPeerInfo == nil
+//        stateLabel.hidden = displayedPeerInfo == nil
+        traitsButton.hidden = displayedPeerInfo == nil
+        downloadIndicator.hidden = displayedPeerInfo != nil
+    }
+    
+    private func displayImageState() {
+        guard let peerInfo = displayedPeerInfo else { return }
+        
+        pictureDownloadIndicator.hidden = !RemotePeerManager.sharedManager.isPictureLoading(peerInfo.peerID)
+        portraitImageView.alpha = peerInfo.hasPicture ? 1.0 : 0.5
         portraitImageView.image = peerInfo.picture ?? UIImage(named: "PersonPlaceholder")
-        pictureDownloadIndicator.hidden = RemotePeerManager.sharedManager.isPictureLoading(peerInfo.peerID)
+    }
+    
+    private func enablePinButton() {
+        pinButton.enabled = displayedPeerID! != UserPeerInfo.instance.peer.peerID && RemotePeerManager.sharedManager.availablePeers.contains(displayedPeerID!)
+    }
+    
+    private func setupTitle() {
+        if displayedPeerID == UserPeerInfo.instance.peer.peerID || RemotePeerManager.sharedManager.availablePeers.contains(displayedPeerID!) {
+            navigationItem.titleView = nil
+        } else {
+            let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
+            titleLable.text = displayedPeerID!.displayName
+            titleLable.textColor = UIColor(white: 0.5, alpha: 1.0)
+            titleLable.textAlignment = .Center
+            titleLable.lineBreakMode = .ByTruncatingTail
+            navigationItem.titleView = titleLable
+        }
     }
 }

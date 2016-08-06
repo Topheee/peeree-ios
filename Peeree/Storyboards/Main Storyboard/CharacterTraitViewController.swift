@@ -22,6 +22,14 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 		}
 	}
     
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+        guard characterTraits != nil && characterTraits! == UserPeerInfo.instance.peer.characterTraits else { return }
+        
+        // trigger NSUserDefaults archiving
+        UserPeerInfo.instance.peer.characterTraits = characterTraits!
+    }
+    
     // - MARK: UITableView Data Source
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -41,6 +49,14 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
     
     // - MARK: SingleSelViewController Data Source
+    
+    func selectionEditable(pickerView: UIPickerView) -> Bool {
+        return characterTraits != nil && characterTraits! == UserPeerInfo.instance.peer.characterTraits
+    }
+    
+    func initialPickerSelection(pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
+        return (CharacterTrait.ApplyType.values.indexOf(characterTraits![selectedTrait!.row].applies)!, 0)
+    }
 	
 	func headingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 		return NSLocalizedString("How about...", comment: "Heading of character trait view")
@@ -51,7 +67,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
 	
 	func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-        return characterTraits?[selectedTrait!.row].description ?? ""
+        return characterTraits?[selectedTrait!.row].traitDescription ?? ""
 	}
 	
 	func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
@@ -63,7 +79,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return CharacterTrait.ApplyType.values[row].rawValue
+		return CharacterTrait.ApplyType.values[row].localizedRawValue()
 	}
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
