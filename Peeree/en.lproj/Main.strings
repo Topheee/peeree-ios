@@ -5,11 +5,35 @@
 /* Class = "UILabel"; text = "Turn it off"; ObjectID = "0nb-dK-lna"; */
 "0nb-dK-lna.text" = "Turn it off";
 
+/* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[0] = "All"; ObjectID = "17w-pX-qWh"; */
+"17w-pX-qWh.segmentTitles[0]" = "All";
+
+/* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[1] = "Males"; ObjectID = "17w-pX-qWh"; */
+"17w-pX-qWh.segmentTitles[1]" = "Males";
+
+/* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[2] = "Females"; ObjectID = "17w-pX-qWh"; */
+"17w-pX-qWh.segmentTitles[2]" = "Females";
+
+/* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[3] = "Queer"; ObjectID = "17w-pX-qWh"; */
+"17w-pX-qWh.segmentTitles[3]" = "Queer";
+
+/* Class = "UILabel"; text = "21 years old"; ObjectID = "3S4-V7-78m"; */
+"3S4-V7-78m.text" = "21 years old";
+
 /* Class = "UILabel"; text = "don't let someone know, that you are there!"; ObjectID = "3kw-BG-Q1l"; */
 "3kw-BG-Q1l.text" = "don't let someone know, that you are there!";
 
+/* Class = "UILabel"; text = "Min"; ObjectID = "3tz-pY-BU1"; */
+"3tz-pY-BU1.text" = "Min";
+
 /* Class = "UITableViewController"; title = "Browsing"; ObjectID = "44q-aX-Sii"; */
 "44q-aX-Sii.title" = "Browsing";
+
+/* Class = "UITableViewSection"; headerTitle = "Interested in"; ObjectID = "4EX-zV-kWJ"; */
+"4EX-zV-kWJ.headerTitle" = "Interested in";
+
+/* Class = "UILabel"; text = "100"; ObjectID = "4uV-1R-Ho8"; */
+"4uV-1R-Ho8.text" = "100";
 
 /* Class = "UILabel"; text = "Value"; ObjectID = "57R-R9-5LU"; */
 "57R-R9-5LU.text" = "Value";
@@ -53,6 +77,9 @@
 /* Class = "UIButton"; normalTitle = "Offline"; ObjectID = "EJE-It-Ehg"; */
 "EJE-It-Ehg.normalTitle" = "Offline";
 
+/* Class = "UILabel"; text = "Christopher Kobusch"; ObjectID = "IIG-Cy-x5B"; */
+"IIG-Cy-x5B.text" = "Christopher Kobusch";
+
 /* Class = "UINavigationItem"; title = "Shop"; ObjectID = "Irg-ps-XZo"; */
 "Irg-ps-XZo.title" = "Shop";
 
@@ -80,11 +107,17 @@
 /* Class = "UILabel"; text = "Subtitle"; ObjectID = "Twj-bi-dSH"; */
 "Twj-bi-dSH.text" = "Subtitle";
 
+/* Class = "UITableViewSection"; headerTitle = "Picture"; ObjectID = "VhZ-Ja-vhb"; */
+"VhZ-Ja-vhb.headerTitle" = "Picture";
+
 /* Class = "UILabel"; text = "Invisible Mode"; ObjectID = "VkH-1S-w7s"; */
 "VkH-1S-w7s.text" = "Invisible Mode";
 
 /* Class = "UIButton"; normalTitle = "Character Traits"; ObjectID = "Y5H-8y-Wvq"; */
 "Y5H-8y-Wvq.normalTitle" = "Character Traits";
+
+/* Class = "UILabel"; text = "Only with picture available"; ObjectID = "Ydg-QF-ecu"; */
+"Ydg-QF-ecu.text" = "Only with picture available";
 
 /* Class = "UINavigationItem"; title = "Filter"; ObjectID = "Yqd-bj-h1g"; */
 "Yqd-bj-h1g.title" = "Filter";
@@ -107,11 +140,20 @@
 /* Class = "UILabel"; text = "Account:"; ObjectID = "ciX-Ly-y18"; */
 "ciX-Ly-y18.text" = "Account:";
 
+/* Class = "UITableViewSection"; headerTitle = "Age"; ObjectID = "dfr-MX-xyY"; */
+"dfr-MX-xyY.headerTitle" = "Age";
+
 /* Class = "UIButton"; normalTitle = "Status"; ObjectID = "dmI-ob-olJ"; */
 "dmI-ob-olJ.normalTitle" = "Status";
 
+/* Class = "UITableViewSection"; headerTitle = "Gender"; ObjectID = "eYi-0r-Sc8"; */
+"eYi-0r-Sc8.headerTitle" = "Gender";
+
 /* Class = "UILabel"; text = "Detail"; ObjectID = "fh0-UT-55a"; */
 "fh0-UT-55a.text" = "Detail";
+
+/* Class = "UILabel"; text = "Max"; ObjectID = "ghM-Pd-S02"; */
+"ghM-Pd-S02.text" = "Max";
 
 /* Class = "UILabel"; text = "1000 Points"; ObjectID = "hO0-UM-cUl"; */
 "hO0-UM-cUl.text" = "1000 Points";
@@ -145,6 +187,9 @@
 
 /* Class = "UILabel"; text = "Networking"; ObjectID = "mJO-Tj-QxJ"; */
 "mJO-Tj-QxJ.text" = "Networking";
+
+/* Class = "UILabel"; text = "∞"; ObjectID = "nxn-9p-M99"; */
+"nxn-9p-M99.text" = "∞";
 
 /* Class = "UILabel"; text = "10€"; ObjectID = "oGU-uX-Yfb"; */
 "oGU-uX-Yfb.text" = "10€";
@@ -187,6 +232,9 @@
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "xU9-1k-IEU"; */
 "xU9-1k-IEU.text" = "Title";
+
+/* Class = "UILabel"; text = "Huhu was geht?"; ObjectID = "y9O-DI-I0i"; */
+"y9O-DI-I0i.text" = "Huhu was geht?";
 
 /* Class = "UISegmentedControl"; z2h-P1-vSX.segmentTitles[0] = "All"; ObjectID = "z2h-P1-vSX"; */
 "z2h-P1-vSX.segmentTitles[0]" = "All";

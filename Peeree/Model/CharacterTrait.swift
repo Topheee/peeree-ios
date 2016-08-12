@@ -14,14 +14,13 @@ class CharacterTrait: NSObject, NSSecureCoding {
         
         static let values = [Yes, No, MoreOrLess, DontKnow]
         
-            // TODO write the value into strings file
         /*
          *  For genstrings
          *
-         *  yes: NSLocalizedString("Applies", comment: "The character trait describes the user well")
-         *  no: NSLocalizedString("AppliesNot", comment: "The character trait is not representative for the user")
-         *  more or less: NSLocalizedString("AppliesMoreOrLess", comment: "The character trait describes the user partially")
-         *  don't know: NSLocalizedString("DontKnow", comment: "The user is not sure whether the character trait describes him or her")
+         *  NSLocalizedString("Yes", comment: "The character trait describes the user well")
+         *  NSLocalizedString("No", comment: "The character trait is not representative for the user")
+         *  NSLocalizedString("MoreOrLess", comment: "The character trait describes the user partially")
+         *  NSLocalizedString("DontKnow", comment: "The user is not sure whether the character trait describes him or her")
         */
 	}
 	
@@ -85,7 +84,7 @@ class CharacterTrait: NSObject, NSSecureCoding {
         CharacterTrait(name: NSLocalizedString("Logical Conclusion", comment: "Trait"),
             description: NSLocalizedString("Are you always acting rational?", comment: "Logical Conclusion")),
         CharacterTrait(name: NSLocalizedString("Emotional Stability", comment: "Trait"),
-            description: NSLocalizedString("How much can you stand emotional hard feelings?", comment: "Emotional Stability")),
+            description: NSLocalizedString("How much can you stand emotionally strong feelings?", comment: "Emotional Stability")),
         CharacterTrait(name: NSLocalizedString("Dominance", comment: "Trait"),
             description: NSLocalizedString("Do others follow your instructions?", comment: "Dominance")),
         CharacterTrait(name: NSLocalizedString("Vitality", comment: "Trait"),

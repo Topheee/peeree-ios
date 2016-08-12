@@ -18,6 +18,7 @@
 		9D2E7F2F1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
 		9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */; };
+		9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D41E11D1D5E903A0042FB63 /* Localizable.strings */; };
 		9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
@@ -96,6 +97,10 @@
 		9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PortraitImagePickerController.swift; path = Peeree/Storyboards/Common/PortraitImagePickerController.swift; sourceTree = "<group>"; };
 		9D33E8F11D418839001CECAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/FirstLaunch.storyboard; sourceTree = "<group>"; };
 		9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SampleAssets.xcassets; sourceTree = "<group>"; };
+		9D41E11D1D5E903A0042FB63 /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		9D482D8F1D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
+		9D482D901D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		9D482D911D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
 		9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateSelViewController.swift; path = "Storyboards/Main Storyboard/DateSelViewController.swift"; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
@@ -167,6 +172,7 @@
 		9D29231E1B91AB7A00B5B622 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9DA039831C1B257C003D1624 /* WalletController.swift */,
 				9DA93EE41D5D501100607D9B /* SessionHandlers.swift */,
@@ -192,6 +198,16 @@
 			);
 			name = "Main Storyboard";
 			path = Peeree;
+			sourceTree = "<group>";
+		};
+		9D482D921D5E938000B5022A /* Ressources */ = {
+			isa = PBXGroup;
+			children = (
+				9D41E11D1D5E903A0042FB63 /* Localizable.strings */,
+				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
+				9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */,
+			);
+			name = Ressources;
 			sourceTree = "<group>";
 		};
 		9D6F7B901BC82A70007CD234 /* View */ = {
@@ -264,9 +280,7 @@
 				9D29231E1B91AB7A00B5B622 /* Controller */,
 				9DEAE8C81B63ED3700D4F6BF /* Model */,
 				9D6F7B901BC82A70007CD234 /* View */,
-				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
-				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
-				9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */,
+				9D482D921D5E938000B5022A /* Ressources */,
 				9DA0F7C51B5C3AB800F3BA87 /* LaunchScreen.xib */,
 				9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */,
 			);
@@ -412,6 +426,7 @@
 				9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */,
 				9D8A59371B92F18200164C9F /* LaunchScreen.xib in Resources */,
 				9D8A59361B92F17E00164C9F /* Main.storyboard in Resources */,
+				9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */,
 				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
@@ -519,6 +534,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9D33E8F11D418839001CECAB /* Base */,
+				9D482D8F1D5E925C00B5022A /* en */,
 			);
 			name = FirstLaunch.storyboard;
 			path = "Peeree/Storyboards/Onboarding Sequence";
@@ -528,6 +544,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9DA0F7C11B5C3AB800F3BA87 /* Base */,
+				9D482D901D5E925C00B5022A /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -536,6 +553,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9DA0F7C61B5C3AB800F3BA87 /* Base */,
+				9D482D911D5E925C00B5022A /* en */,
 			);
 			name = LaunchScreen.xib;
 			sourceTree = "<group>";

@@ -1,0 +1,78 @@
+
+/* Class = "UITextView"; text = "Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms do."; ObjectID = "1pm-ik-jEH"; */
+"1pm-ik-jEH.text" = "Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms do.";
+
+/* Class = "UILabel"; text = "We don`t want to do anything with your data"; ObjectID = "72V-9S-Gur"; */
+"72V-9S-Gur.text" = "We don`t want to do anything with your data";
+
+/* Class = "UILabel"; text = "This data is only presented to people around you"; ObjectID = "7Xq-JK-AvQ"; */
+"7Xq-JK-AvQ.text" = "This data is only presented to people around you";
+
+/* Class = "UIViewController"; title = "First"; ObjectID = "9TP-2c-bIB"; */
+"9TP-2c-bIB.title" = "First";
+
+/* Class = "UILabel"; text = "What's p2p?"; ObjectID = "9yU-Fl-2qt"; */
+"9yU-Fl-2qt.text" = "What's p2p?";
+
+/* Class = "UIViewController"; title = "Second"; ObjectID = "BiV-OX-JbO"; */
+"BiV-OX-JbO.title" = "Second";
+
+/* Class = "UILabel"; text = "Setup basic data"; ObjectID = "JLo-5M-7YM"; */
+"JLo-5M-7YM.text" = "Setup basic data";
+
+/* Class = "UITextView"; text = "Peer to Peer (or, shortly, p2p) is a networking approach, where all participants are connected together, without any server invited."; ObjectID = "MGM-oO-Qvr"; */
+"MGM-oO-Qvr.text" = "Peer to Peer (or, shortly, p2p) is a networking approach, where all participants are connected together, without any server invited.";
+
+/* Class = "UILabel"; text = "Social p2p?"; ObjectID = "N0T-2N-CeX"; */
+"N0T-2N-CeX.text" = "Social p2p?";
+
+/* Class = "UIButton"; normalTitle = "Get started >"; ObjectID = "WkH-8i-IuH"; */
+"WkH-8i-IuH.normalTitle" = "Get started >";
+
+/* Class = "UIButton"; normalTitle = "What does that mean?"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.normalTitle" = "What does that mean?";
+
+/* Class = "UIViewController"; title = "Second Info"; ObjectID = "ZHr-Cu-27s"; */
+"ZHr-Cu-27s.title" = "Second Info";
+
+/* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
+"b8Y-IF-X4f.normalTitle" = "Sounds great!";
+
+/* Class = "UIButton"; normalTitle = "Take Picture"; ObjectID = "bd8-Ey-isT"; */
+"bd8-Ey-isT.normalTitle" = "Take Picture";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[0] = "Male"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[0]" = "Male";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[1] = "Female"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[1]" = "Female";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[2] = "Queer"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[2]" = "Queer";
+
+/* Class = "UITextView"; text = "Nothing of the information you provide in this app will be sent through the internet, not even to us."; ObjectID = "ibO-UX-4Wp"; */
+"ibO-UX-4Wp.text" = "Nothing of the information you provide in this app will be sent through the internet, not even to us.";
+
+/* Class = "UILabel"; text = "What are the benefits?"; ObjectID = "iru-Do-AIT"; */
+"iru-Do-AIT.text" = "What are the benefits?";
+
+/* Class = "UITextField"; placeholder = "Name"; ObjectID = "maF-ir-g9C"; */
+"maF-ir-g9C.placeholder" = "Name";
+
+/* Class = "UITextView"; text = "So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?"; ObjectID = "puP-SH-wIK"; */
+"puP-SH-wIK.text" = "So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?";
+
+/* Class = "UILabel"; text = "Hello and welcome to Peeree, the best social p2p app!"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "Hello and welcome to Peeree, the best social p2p app!";
+
+/* Class = "UIViewController"; title = "First Info"; ObjectID = "u4v-7y-Tsp"; */
+"u4v-7y-Tsp.title" = "First Info";
+
+/* Class = "UITextView"; text = "Using this technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no internet (except for purchasing), no ads, no observation and no spies involved."; ObjectID = "yKG-bc-RCP"; */
+"yKG-bc-RCP.text" = "Using this technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no internet (except for purchasing), no ads, no observation and no spies involved.";
+
+/* Class = "UIButton"; normalTitle = "What do you want with my data?"; ObjectID = "yag-kE-4K4"; */
+"yag-kE-4K4.normalTitle" = "What do you want with my data?";
+
+/* Class = "UIButton"; normalTitle = "Back"; ObjectID = "zeZ-rx-b1e"; */
+"zeZ-rx-b1e.normalTitle" = "Back";
