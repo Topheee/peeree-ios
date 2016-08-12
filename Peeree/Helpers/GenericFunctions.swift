@@ -20,8 +20,8 @@ func unarchiveObjectFromUserDefs<T: NSSecureCoding>(forKey: String) -> T? {
 }
 
 extension RawRepresentable where Self.RawValue == String {
-    func localizedRawValue() -> String {
-        return NSBundle.mainBundle().localizedStringForKey(self.rawValue, value: nil, table: nil)
+    var localizedRawValue: String {
+        return NSBundle.mainBundle().localizedStringForKey(rawValue, value: nil, table: nil)
     }
 }
 

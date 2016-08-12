@@ -36,7 +36,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
 		let trait = characterTraits![indexPath.row]
 		cell.textLabel!.text = trait.name
-		cell.detailTextLabel!.text = trait.applies.localizedRawValue()
+		cell.detailTextLabel!.text = trait.applies.localizedRawValue
 		return cell
 	}
 	
@@ -79,7 +79,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
 	
 	func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return CharacterTrait.ApplyType.values[row].localizedRawValue()
+		return CharacterTrait.ApplyType.values[row].localizedRawValue
 	}
 	
 	func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {

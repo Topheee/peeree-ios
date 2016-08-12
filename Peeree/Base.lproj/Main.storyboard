@@ -323,6 +323,9 @@
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PA6-eV-Bm8">
                                 <rect key="frame" x="0.0" y="64" width="600" height="487"/>
                                 <subviews>
+                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="SWx-xP-Cde">
+                                        <rect key="frame" x="281" y="225" width="37" height="37"/>
+                                    </activityIndicatorView>
                                     <imageView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="Gradient" translatesAutoresizingMaskIntoConstraints="NO" id="cfo-s9-6Tf">
                                         <rect key="frame" x="180" y="13" width="240" height="240"/>
                                     </imageView>
@@ -332,6 +335,9 @@
                                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
+                                        <rect key="frame" x="282" y="264" width="37" height="37"/>
+                                    </activityIndicatorView>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
                                         <rect key="frame" x="275" y="258" width="50" height="50"/>
                                         <constraints>
@@ -369,12 +375,6 @@
                                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="PeX-F3-clV">
-                                        <rect key="frame" x="281" y="114" width="37" height="37"/>
-                                    </activityIndicatorView>
-                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="SWx-xP-Cde">
-                                        <rect key="frame" x="281" y="264" width="37" height="37"/>
-                                    </activityIndicatorView>
                                     <imageView opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PersonPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO">
                                         <rect key="frame" x="195" y="28" width="210" height="210"/>
                                         <constraints>
@@ -389,6 +389,9 @@
                                             </mask>
                                         </variation>
                                     </imageView>
+                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="PeX-F3-clV">
+                                        <rect key="frame" x="281" y="114" width="37" height="37"/>
+                                    </activityIndicatorView>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="width" secondItem="cfo-s9-6Tf" secondAttribute="height" multiplier="1:1" id="0FR-YD-5rR"/>
@@ -399,12 +402,14 @@
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="PA6-eV-Bm8" secondAttribute="topMargin" constant="20" id="Geh-az-oh7"/>
                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="HDP-xF-zT3"/>
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="IgV-sn-6lv"/>
+                                    <constraint firstItem="sY1-cI-JZt" firstAttribute="centerY" secondItem="59x-ms-KVN" secondAttribute="centerY" id="Ksb-W4-9c5"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="Lpy-uO-HBP"/>
                                     <constraint firstItem="PeX-F3-clV" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="OWw-p0-W32"/>
                                     <constraint firstItem="DzA-oj-0UJ" firstAttribute="top" secondItem="jRR-HL-OFn" secondAttribute="bottom" constant="8" id="Oef-XL-sQf"/>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="Qt7-O0-cmm"/>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="height" secondItem="S6f-fD-kvO" secondAttribute="height" constant="30" id="R1r-Nx-Vxy"/>
                                     <constraint firstItem="PeX-F3-clV" firstAttribute="centerY" secondItem="S6f-fD-kvO" secondAttribute="centerY" id="RRA-mr-7zc"/>
+                                    <constraint firstItem="SWx-xP-Cde" firstAttribute="centerY" secondItem="PA6-eV-Bm8" secondAttribute="centerY" id="RZD-hs-tk6"/>
                                     <constraint firstItem="SWx-xP-Cde" firstAttribute="centerY" secondItem="59x-ms-KVN" secondAttribute="centerY" id="TRd-og-r2p"/>
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="Twd-gQ-3Ox"/>
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="top" secondItem="DzA-oj-0UJ" secondAttribute="bottom" constant="8" id="arB-kE-HNq"/>
@@ -419,10 +424,14 @@
                                     <constraint firstAttribute="bottomMargin" secondItem="Y5H-8y-Wvq" secondAttribute="bottom" id="l5k-0K-bod"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="PA6-eV-Bm8" secondAttribute="leading" constant="195" placeholder="YES" id="m4f-v6-SBC"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="20" id="pPS-c1-kcC"/>
+                                    <constraint firstItem="SWx-xP-Cde" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="ujq-ad-ZpY"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="x7o-Ri-Zrx"/>
+                                    <constraint firstItem="sY1-cI-JZt" firstAttribute="centerX" secondItem="59x-ms-KVN" secondAttribute="centerX" id="xxd-zf-DKw"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
+                                        <exclude reference="0fi-V2-vIY"/>
+                                        <exclude reference="TRd-og-r2p"/>
                                         <exclude reference="4oa-gE-ebq"/>
                                         <exclude reference="h1e-kV-WZo"/>
                                         <exclude reference="ehp-h6-9AI"/>
@@ -463,12 +472,15 @@
                         <outlet property="gradientView" destination="cfo-s9-6Tf" id="Wgd-4M-edT"/>
                         <outlet property="pictureDownloadIndicator" destination="PeX-F3-clV" id="Eay-Aw-xEz"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
+                        <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
                         <outlet property="stateLabel" destination="DzA-oj-0UJ" id="rPU-pJ-GMN"/>
                         <outlet property="traitsButton" destination="Y5H-8y-Wvq" id="18k-Kv-kaq"/>
+                        <segue destination="HBT-0P-XDL" kind="unwind" identifier="unwindToBrowseViewController" unwindAction="unwindToBrowseViewController:" id="pHU-MH-iZf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Hb0-Jb-BzS" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="HBT-0P-XDL" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="2111" y="704"/>
         </scene>
@@ -1555,9 +1567,9 @@
         <image name="RadarTemplate" width="40" height="40"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="D5d-oe-2jg"/>
         <segue reference="Lgq-xA-Oyd"/>
         <segue reference="7Nf-9B-BLi"/>
+        <segue reference="r7K-aS-PK5"/>
         <segue reference="hUm-g1-znD"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.0" green="0.49458033379999999" blue="0.0079442504549999994" alpha="1" colorSpace="calibratedRGB"/>

@@ -17,44 +17,54 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     static private let PinnedPeersKey = "PinnedPeers"
     static private let PinnedByPeersKey = "PinnedByPeers"
     
-    /// Identifies a MCSession as a session which transfers LocalPeerInfo objects.
-    static private let PeerInfoSessionKey = "PeerInfoSession"
-    /// Session key for transmitting portrait images.
-    static private let PictureSessionKey = "PictureSession"
-    /// Session key for populating pin status.
-    static private let PinSessionKey = "PinSession"
+    /// Identifies a MCSession. Is sent via the context info.
+    private enum SessionKey: String {
+        /// Session which transfers LocalPeerInfo objects.
+        case PeerInfo
+        /// Session key for transmitting portrait images.
+        case Picture
+        /// Session key for populating pin status.
+        case Pin
+    }
     
-    static let RemotePeerAppearedNotification = "RemotePeerAppeared"
-    static let RemotePeerDisappearedNotification = "RemotePeerDisappeared"
-    static let ConnectionChangedStateNotification = "ConnectionChangedState"
-    static let PeerInfoLoadedNotification = "PeerInfoLoaded"
-    static let PictureLoadedNotification = "PictureLoaded"
-    static let PinMatchNotification = "Pinned"
+    enum NetworkNotification: String {
+        case ConnectionChangedState
+        case RemotePeerAppeared, RemotePeerDisappeared
+        case PeerInfoLoaded, PeerInfoLoadFailed
+        case PictureLoaded, PictureLoadFailed
+        case Pinned, PinFailed
+        case PinMatch
+        
+        func addObserver(usingBlock block: (NSNotification) -> Void) -> NSObjectProtocol {
+            return NSNotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
+        }
+        
+        func post(peerID: MCPeerID?) {
+            NSNotificationCenter.defaultCenter().postNotificationName(self.rawValue, object: RemotePeerManager.sharedManager, userInfo: peerID != nil ? [NetworkNotificationKey.PeerID.rawValue : peerID!] : nil)
+        }
+    }
     
-    static let PeerIDKey = "PeerID"
+    enum NetworkNotificationKey: String {
+        case PeerID
+    }
     
     static let sharedManager = RemotePeerManager()
 	
-	/*
-	 *	Since bluetooth connections are not very reliable, all peers and their images are cached for a reasonable amount of time (at least 30 Minutes).
-	 */
+	///	Since bluetooth connections are not very reliable, all peers and their images are cached.
     private var cachedPeers: [MCPeerID : LocalPeerInfo] = [:]
     private var loadingPictures: Set<MCPeerID> = Set()
     
-	/*
-	 *	All the Bluetooth stuff.
-	 *	Should be private, but then, we cannot mock them.
-	 */
-	/* private */ var btAdvertiser: MCNearbyServiceAdvertiser?
-	/* private */ var btBrowser: MCNearbyServiceBrowserMock?
+	/// Bluetooth network handlers.
+    private var btAdvertiser: MCNearbyServiceAdvertiser?
+    private var btBrowser: MCNearbyServiceBrowser?
     
 	/*
 	 *	All remote peers the app is currently connected to. This property is immediatly updated when a new connection is set up or an existing is cut off.
 	 */
 	private var _availablePeers = Set<MCPeerID>() // TODO convert into NSOrderedSet to not always confuse the order of the browse view
     
-    /// stores pinned peers and whether the pin was acknowledged by them
-    private var pinnedPeers: [MCPeerID : Bool]
+    /// stores acknowledged pinned peers
+    private var pinnedPeers: Set<MCPeerID>
     // maybe encrypt these on disk so no one can read out their display names
     private var pinnedByPeers: Set<MCPeerID>
     
@@ -73,7 +83,12 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
                 
                 btAdvertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: nil, serviceType: RemotePeerManager.DiscoveryServiceID)
                 btAdvertiser!.delegate = self
-                btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.DiscoveryServiceID)
+                #if OFFLINE
+                    btBrowser = MCNearbyServiceBrowserMock(peer: peerID, serviceType: RemotePeerManager.DiscoveryServiceID)
+                #else
+                    btBrowser = MCNearbyServiceBrowser(peer: peerID, serviceType: RemotePeerManager.DiscoveryServiceID)
+                #endif
+                
                 btBrowser!.delegate = self
                 
                 self.connectionChangedState()
@@ -94,7 +109,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     func isPeerPinned(peerID: MCPeerID) -> Bool {
-        return pinnedPeers.indexForKey(peerID) != nil
+        return pinnedPeers.contains(peerID)
     }
     
     func hasPinMatch(peerID: MCPeerID) -> Bool {
@@ -117,25 +132,17 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         if let ret = cachedPeers[peerID]?.peer {
             return ret
         } else if download && peering {
-            let handler = PeerInfoDownloadSessionHandler(forPeer: peerID)
+            let handler = PeerInfoDownloadSessionHandler(peerID: peerID)
             assert(handler != nil)
         }
         return nil
     }
     
-    func pinPeer(peerID: MCPeerID, successfullCallback: () -> Void) {
-        guard pinnedPeers.indexForKey(peerID) == nil || pinnedPeers[peerID] == false else { return }
+    func pinPeer(peerID: MCPeerID) {
+        guard !pinnedPeers.contains(peerID) else { return }
         
-        WalletController.requestPin { 
-            if self.pinnedPeers.indexForKey(peerID) == nil && self.pinnedByPeers.contains(peerID) {
-                self.pinMatchOccured(peerID)
-            }
-            
-            self.pinnedPeers[peerID] = false
-            archiveObjectInUserDefs(self.pinnedPeers as NSDictionary, forKey: RemotePeerManager.PinnedPeersKey)
-            let handler = PinSessionHandler(peerID: peerID)
-            assert(handler != nil)
-            successfullCallback()
+        WalletController.requestPin { (confirmation) in
+            _ = PinSessionHandler(peerID: peerID, confirmation: confirmation)
         }
     }
 	
@@ -147,18 +154,17 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
 	}
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
-        guard let sessionKeyData = context else { return }
-        guard let sessionKey = String(data: sessionKeyData, encoding: NSASCIIStringEncoding) else { return }
+        guard let sessionKeyData = context else { invitationHandler(false, MCSession()); return }
+        guard let sessionKeyString = String(data: sessionKeyData, encoding: NSASCIIStringEncoding) else { invitationHandler(false, MCSession()); return }
+        guard let sessionKey = SessionKey(rawValue: sessionKeyString) else { invitationHandler(false, MCSession()); return }
         
         switch sessionKey {
-        case RemotePeerManager.PeerInfoSessionKey:
-            let _ = PeerInfoUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
-        case RemotePeerManager.PictureSessionKey:
-            let _ = PictureUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
-        case RemotePeerManager.PinSessionKey:
-            let _ = PinnedSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
-        default:
-            invitationHandler(false, MCSession())
+        case .PeerInfo:
+            _ = PeerInfoUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
+        case .Picture:
+            _ = PictureUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
+        case .Pin:
+            _ = PinnedSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
         }
 	}
 	
@@ -174,10 +180,6 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         
         _availablePeers.insert(peerID)
         self.remotePeerAppeared(peerID)
-        
-        if pinnedPeers.keys.contains(peerID) && pinnedPeers[peerID] == false {
-            let _ = PinSessionHandler(peerID: peerID)
-        }
 	}
 	
 	@objc func browser(browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
@@ -188,26 +190,26 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     // MARK: Private Methods
     
     private override init() {
-        let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(RemotePeerManager.PinnedPeersKey)
-        pinnedPeers = nsPinned as? [MCPeerID : Bool] ?? [:]
+        let nsPinned: NSSet? = unarchiveObjectFromUserDefs(RemotePeerManager.PinnedPeersKey)
+        pinnedPeers = nsPinned as? Set<MCPeerID> ?? Set()
         let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(RemotePeerManager.PinnedByPeersKey)
         pinnedByPeers = nsPinnedBy as? Set<MCPeerID> ?? Set()
     }
     
     private func remotePeerAppeared(peerID: MCPeerID) {
-        NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.RemotePeerAppearedNotification, object: self, userInfo: [RemotePeerManager.PeerIDKey : peerID])
+        NetworkNotification.RemotePeerAppeared.post(peerID)
     }
     
     private func remotePeerDisappeared(peerID: MCPeerID) {
-        NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.RemotePeerDisappearedNotification, object: self, userInfo: [RemotePeerManager.PeerIDKey : peerID])
+        NetworkNotification.RemotePeerDisappeared.post(peerID)
     }
     
     private func connectionChangedState() {
-        NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.ConnectionChangedStateNotification, object: self, userInfo: nil)
+        NetworkNotification.ConnectionChangedState.post(nil)
     }
     
     private func pinMatchOccured(peerID: MCPeerID) {
-        NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.PinMatchNotification, object: RemotePeerManager.sharedManager, userInfo: [RemotePeerManager.PeerIDKey : peerID])
+        NetworkNotification.PinMatch.post(peerID)
     }
     
     // MARK: - Private classes
@@ -259,6 +261,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         
         @objc func session(session: MCSession, didReceiveCertificate certificate: [AnyObject]?, fromPeer peerID: MCPeerID, certificateHandler: (Bool) -> Void) {
             // TODO security implementation
+            certificateHandler(true)
         }
         
         @objc func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
@@ -266,8 +269,61 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
                 // this should be the last reference to self so it should destroy it
                 session.delegate = nil
                 activeSessions.remove(self)
-                print("Peer \(peerID.displayName) closed info session")
             }
+        }
+    }
+    
+    /// Base class for all session handlers which retrieve information from an remote peers
+    private class DownloadSessionDelegate: MCSessionDelegateAdapter {
+        private static let MaxAttempts = 3
+        private let failNotification: NetworkNotification
+        private let peerID: MCPeerID
+        private let sessionKeyData: NSData
+        private var attempt = 0
+        
+        var willReconnect: Bool {
+            get {
+                return attempt < DownloadSessionDelegate.MaxAttempts && RemotePeerManager.sharedManager.peering && RemotePeerManager.sharedManager._availablePeers.contains(peerID)
+            }
+            set {
+                attempt = DownloadSessionDelegate.MaxAttempts
+                session.disconnect()
+            }
+        }
+        
+        init(peerID: MCPeerID, sessionKey: SessionKey, failNotification: NetworkNotification) {
+            self.peerID = peerID
+            self.failNotification = failNotification
+            sessionKeyData = sessionKey.rawValue.dataUsingEncoding(NSASCIIStringEncoding)!
+            super.init()
+        }
+        
+        private func connect() {
+            guard let browser = RemotePeerManager.sharedManager.btBrowser else {
+                failNotification.post(peerID)
+                return
+            }
+            guard willReconnect else {
+                failNotification.post(peerID)
+                return
+            }
+            
+            attempt += 1
+            browser.invitePeer(peerID, toSession: session, withContext: sessionKeyData, timeout: RemotePeerManager.InvitationTimeout)
+        }
+        
+        private override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+            switch state {
+            case .Connected, .Connecting:
+                super.session(session, peer: peerID, didChangeState: state)
+            case .NotConnected:
+                if willReconnect {
+                    connect()
+                } else {
+                    super.session(session, peer: peerID, didChangeState: state)
+                }
+            }
+            
         }
     }
     
@@ -278,8 +334,6 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             super.init()
             invitationHandler(true, session)
         }
-        
-        // MARK: MCSessionDelegate
         
         override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
             super.session(session, peer: peerID, didChangeState: state)
@@ -296,43 +350,33 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     /// If the remote peer is unknown, it invited into the download session of the local peer.
-    private final class PeerInfoDownloadSessionHandler: MCSessionDelegateAdapter {
+    private final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
         
-        init?(forPeer: MCPeerID) {
-            guard let browser = RemotePeerManager.sharedManager.btBrowser else { return nil }
-            super.init()
-            
-            browser.invitePeer(forPeer, toSession: session, withContext: RemotePeerManager.PeerInfoSessionKey.dataUsingEncoding(NSASCIIStringEncoding)!, timeout: RemotePeerManager.InvitationTimeout)
+        init?(peerID: MCPeerID) {
+            super.init(peerID: peerID, sessionKey: .PeerInfo, failNotification: .PeerInfoLoadFailed)
         }
-        
-        // MARK: MCSessionDelegate
         
         /// Stores new LocalPeerInfo data and ignores all other data. Stays in session until the LocalPeerInfo is received.
         override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
             guard let info = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? NetworkPeerInfo else { return }
             
             RemotePeerManager.sharedManager.cachedPeers[peerID] = LocalPeerInfo(peer: info.peer)
-            NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.PeerInfoLoadedNotification, object: self, userInfo: [RemotePeerManager.PeerIDKey : info.peer.peerID])
+            NetworkNotification.PeerInfoLoaded.post(peerID)
             
-            session.disconnect()
+            willReconnect = false
         }
     }
     
     /// If the remote peer is unknown, it invited into the download session of the local peer.
-    private final class PictureDownloadSessionHandler: MCSessionDelegateAdapter {
+    private final class PictureDownloadSessionHandler: DownloadSessionDelegate {
         
         init?(peerID: MCPeerID) {
-            guard let browser = RemotePeerManager.sharedManager.btBrowser else { return nil }
-            super.init()
-            
-            browser.invitePeer(peerID, toSession: session, withContext: RemotePeerManager.PictureSessionKey.dataUsingEncoding(NSASCIIStringEncoding)!, timeout: RemotePeerManager.InvitationTimeout)
+            super.init(peerID: peerID, sessionKey: .Picture, failNotification: .PictureLoadFailed)
         }
-        
-        // MARK: MCSessionDelegate
         
         override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
             guard let peerInfo = RemotePeerManager.sharedManager.cachedPeers[peerID] else {
-                session.disconnect()
+                willReconnect = false
                 return
             }
             guard let image = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? UIImage else { return }
@@ -340,10 +384,17 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             peerInfo.picture = image
             dispatch_async(dispatch_get_main_queue()) {
                 RemotePeerManager.sharedManager.loadingPictures.remove(peerID)
-                NSNotificationCenter.defaultCenter().postNotificationName(RemotePeerManager.PictureLoadedNotification, object: self, userInfo: [RemotePeerManager.PeerIDKey : peerID])
+                NetworkNotification.PictureLoaded.post(peerID)
             }
             
-            session.disconnect()
+            willReconnect = false
+        }
+        
+        private override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+            if state == .NotConnected && !willReconnect {
+                RemotePeerManager.sharedManager.loadingPictures.remove(peerID)
+            }
+            super.session(session, peer: peerID, didChangeState: state)
         }
     }
     
@@ -353,8 +404,6 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             super.init()
             invitationHandler(true, session)
         }
-        
-        // MARK: MCSessionDelegate
         
         override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
             super.session(session, peer: peerID, didChangeState: state)
@@ -371,37 +420,43 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     /// If the remote peer is unknown, it invited into the download session of the local peer.
-    private final class PinSessionHandler: MCSessionDelegateAdapter {
+    private final class PinSessionHandler: DownloadSessionDelegate {
+        let confirmation: WalletController.PinConfirmation
         
-        init?(peerID: MCPeerID) {
-            guard let browser = RemotePeerManager.sharedManager.btBrowser else { return nil }
-            super.init()
-            
-            browser.invitePeer(peerID, toSession: session, withContext: RemotePeerManager.PinSessionKey.dataUsingEncoding(NSASCIIStringEncoding)!, timeout: RemotePeerManager.InvitationTimeout)
+        init?(peerID: MCPeerID, confirmation: WalletController.PinConfirmation) {
+            self.confirmation = confirmation
+            super.init(peerID: peerID, sessionKey: .Pin, failNotification: .PinFailed)
         }
         
-        // MARK: MCSessionDelegate
-        
         override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-            super.session(session, peer: peerID, didChangeState: state)
             switch state {
             case .Connected:
-                let data = NSKeyedArchiver.archivedDataWithRootObject(RemotePeerManager.PinSessionKey)
+                let data = NSKeyedArchiver.archivedDataWithRootObject(SessionKey.Pin.rawValue)
                 sendData(data, toPeers: [peerID])
             case .Connecting:
                 break
             case .NotConnected:
                 break
             }
+            super.session(session, peer: peerID, didChangeState: state)
         }
         
         override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-            guard RemotePeerManager.sharedManager.pinnedPeers.indexForKey(peerID) != nil else { return }
             guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == "ack" else { return }
+            guard !confirmation.redeemed else {
+                willReconnect = false
+                return
+            }
             
-            RemotePeerManager.sharedManager.pinnedPeers[peerID] = true
-            archiveObjectInUserDefs(RemotePeerManager.sharedManager.pinnedPeers as NSDictionary, forKey: RemotePeerManager.PinnedPeersKey)
-            session.disconnect()
+            WalletController.redeem(confirmation)
+            RemotePeerManager.sharedManager.pinnedPeers.insert(peerID)
+            archiveObjectInUserDefs(RemotePeerManager.sharedManager.pinnedPeers as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
+            if !RemotePeerManager.sharedManager.pinnedPeers.contains(peerID) && RemotePeerManager.sharedManager.pinnedByPeers.contains(peerID) {
+                RemotePeerManager.sharedManager.pinMatchOccured(peerID)
+            }
+            
+            NetworkNotification.Pinned.post(peerID)
+            willReconnect = false
         }
     }
     
@@ -412,10 +467,8 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             invitationHandler(true, session)
         }
         
-        // MARK: MCSessionDelegate
-        
         override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-            guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == RemotePeerManager.PinSessionKey else { return }
+            guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == SessionKey.Pin.rawValue else { return }
             
             let ackData = NSKeyedArchiver.archivedDataWithRootObject("ack")
             sendData(ackData, toPeers: [peerID])
@@ -423,7 +476,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             dispatch_async(dispatch_get_main_queue()) {
                 RemotePeerManager.sharedManager.pinnedByPeers.insert(peerID)
                 archiveObjectInUserDefs(RemotePeerManager.sharedManager.pinnedByPeers as NSSet, forKey: RemotePeerManager.PinnedByPeersKey)
-                if RemotePeerManager.sharedManager.pinnedPeers.indexForKey(peerID) != nil {
+                if RemotePeerManager.sharedManager.pinnedPeers.contains(peerID) {
                     RemotePeerManager.sharedManager.pinMatchOccured(peerID)
                 }
             }

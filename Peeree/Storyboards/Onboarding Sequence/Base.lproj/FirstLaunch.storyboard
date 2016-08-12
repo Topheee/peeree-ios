@@ -272,8 +272,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleAspectFill" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="137.5" y="146" width="325" height="325"/>
+                            <button opaque="NO" contentMode="scaleAspectFill" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
+                                <rect key="frame" x="137" y="146" width="325" height="325"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
@@ -295,7 +295,7 @@
                                     <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="mfu-BX-zgR"/>
                                 </connections>
                             </button>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
                                 <rect key="frame" x="212" y="522" width="176" height="29"/>
                                 <segments>
                                     <segment title="Male"/>
@@ -327,7 +327,7 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
                                 <rect key="frame" x="212" y="479" width="176" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
@@ -341,7 +341,7 @@
                         <constraints>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
                             <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="15" id="89h-zP-vHQ"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="15" id="89h-zP-vHQ"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
                             <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" id="94p-Kz-qxS"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>

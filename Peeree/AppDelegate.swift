@@ -88,25 +88,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         UIWindow.appearance().tintColor = theme.globalTintColor
         
-        NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerAppearedNotification) { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+        RemotePeerManager.NetworkNotification.RemotePeerAppeared.addObserver { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
                 self.remotePeerAppeared(peerID)
             }
         }
         
-        NSNotificationCenter.addObserverOnMain(RemotePeerManager.RemotePeerDisappearedNotification) { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+        RemotePeerManager.NetworkNotification.RemotePeerDisappeared.addObserver { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
                 self.remotePeerDisappeared(peerID)
             }
         }
         
-        NSNotificationCenter.addObserverOnMain(RemotePeerManager.PinMatchNotification) { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.PeerIDKey] as? MCPeerID {
+        RemotePeerManager.NetworkNotification.PinMatch.addObserver { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
                 self.pinMatchOccured(RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)!)
             }
         }
         
-        NSNotificationCenter.addObserverOnMain(RemotePeerManager.ConnectionChangedStateNotification) { notification in
+        RemotePeerManager.NetworkNotification.ConnectionChangedState.addObserver { notification in
             guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
             guard let browseItem = topVC.tabBar.items?.first else { return }
             

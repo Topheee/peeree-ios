@@ -30,12 +30,30 @@ final class WalletController {
 	/* Never change this value after the first app store release! */
 	static let pinCost = 10
 	
+    private static let pinPointQueueLabel = "Pin Point Queue"
+    private static let pinPointQueue = dispatch_queue_create(pinPointQueueLabel, DISPATCH_QUEUE_SERIAL)
 	private static var _availablePinPoints = 200
     static var availablePinPoints: Int {
-		return _availablePinPoints
+        var result: Int = 0
+        dispatch_sync(pinPointQueue) {
+            result = _availablePinPoints
+        }
+        return result
 	}
+    
+    private static func decreasePinPoints(by: Int) {
+        dispatch_async(pinPointQueue) {
+            _availablePinPoints -= by
+        }
+    }
+    
+    static func increasePinPoints(by: Int) {
+        dispatch_async(pinPointQueue) {
+            _availablePinPoints += by
+        }
+    }
 	
-    static func requestPin(successfullCallback: () -> Void) {
+    static func requestPin(confirmCallback: (PinConfirmation) -> Void) {
         let title = NSLocalizedString("Spend pin points", comment: "Title of the alert which pops up when the user is about to spend in-app currency.")
         var message: String
         var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil)]
@@ -45,8 +63,7 @@ final class WalletController {
             message = String(format: message, WalletController._availablePinPoints)
             let title = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), WalletController.pinCost)
             actions.append(UIAlertAction(title: title, style: .Default) { action in
-                _availablePinPoints -= pinCost
-                successfullCallback()
+                confirmCallback(PinConfirmation())
             })
         } else {
             message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket.")
@@ -58,12 +75,21 @@ final class WalletController {
         }
         alertController.present(nil)
 	}
-	
-	static func increasePinPoints(by: Int) {
-		_availablePinPoints += by
-	}
     
     static func getCurrentOfferings() -> (points: Int, price: NSDecimalNumber) {
         return (10, NSDecimalNumber(integer: 1))
+    }
+    
+    static func redeem(confirmation: PinConfirmation) {
+        dispatch_once(&confirmation.token, { () -> Void in
+            decreasePinPoints(pinCost)
+        })
+    }
+    
+    class PinConfirmation {
+        private var token: dispatch_once_t = 0
+        var redeemed: Bool { return token != 0 }
+        
+        private init() {}
     }
 }

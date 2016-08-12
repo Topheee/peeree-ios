@@ -51,7 +51,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-			return PeerInfo.RelationshipStatus.values[row].localizedRawValue()
+			return PeerInfo.RelationshipStatus.values[row].localizedRawValue
 		}
 		
 		@objc func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
