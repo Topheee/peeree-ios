@@ -201,7 +201,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         
         let pm = RemotePeerManager.sharedManager
-        let newPeerCount = pm.availablePeers.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
+        var newPeerCount: Int!
+        dispatch_sync(pm.availablePeers.accessQueue) {
+            // we can access the set variable safely here since we are on the queue
+            newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
+        }
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
     }
 }

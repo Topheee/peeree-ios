@@ -43,6 +43,8 @@
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */; };
+		9DA93EE51D5D501100607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
+		9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
@@ -122,6 +124,7 @@
 		9DA0F7CC1B5C3AB900F3BA87 /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7D11B5C3AB900F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
+		9DA93EE41D5D501100607D9B /* SessionHandlers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SessionHandlers.swift; path = Controller/SessionHandlers.swift; sourceTree = "<group>"; };
 		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
 		9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManagerTests.swift; sourceTree = "<group>"; };
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CircleMaskView.swift; path = View/CircleMaskView.swift; sourceTree = "<group>"; };
@@ -166,6 +169,7 @@
 			children = (
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9DA039831C1B257C003D1624 /* WalletController.swift */,
+				9DA93EE41D5D501100607D9B /* SessionHandlers.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -433,6 +437,7 @@
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
 				9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */,
+				9DA93EE51D5D501100607D9B /* SessionHandlers.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
@@ -475,6 +480,7 @@
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */,
+				9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */,
 				9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
 				9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
@@ -634,7 +640,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "";
+				OTHER_SWIFT_FLAGS = "-D OFFLINE";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -657,7 +663,7 @@
 				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "-D OFFLINE";
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

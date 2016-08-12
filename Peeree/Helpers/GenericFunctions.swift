@@ -72,6 +72,110 @@ extension UIViewController {
     }
 }
 
+// we could implement CollectionType, SequenceType here, but nope
+public struct SynchronizedArray<T> {
+    /* private */ var array: [T] = []
+    /* private */ let accessQueue = dispatch_queue_create("SynchronizedArrayQueue", DISPATCH_QUEUE_SERIAL)
+    
+    init() { }
+    
+    init(array: [T]) {
+        self.array = array
+    }
+    
+    public mutating func append(newElement: T) {
+        dispatch_async(accessQueue) {
+            self.array.append(newElement)
+        }
+    }
+    
+    public subscript(index: Int) -> T {
+        set {
+            dispatch_async(accessQueue) {
+                self.array[index] = newValue
+            }
+        }
+        get {
+            var element: T!
+            
+            dispatch_sync(accessQueue) {
+                element = self.array[index]
+            }
+            
+            return element
+        }
+    }
+}
+
+// we could implement CollectionType, SequenceType here, but nope
+public struct SynchronizedDictionary<S: Hashable, T> {
+    /* private */ var dictionary: [S : T] = [:]
+    /* private */ let accessQueue = dispatch_queue_create("SynchronizedDictionaryQueue", DISPATCH_QUEUE_SERIAL)
+    
+    init() { }
+    
+    init(dictionary: [S : T]) {
+        self.dictionary = dictionary
+    }
+    
+    public subscript(index: S) -> T? {
+        set {
+            dispatch_async(accessQueue) {
+                self.dictionary[index] = newValue
+            }
+        }
+        get {
+            var element: T?
+            
+            dispatch_sync(accessQueue) {
+                element = self.dictionary[index]
+            }
+            
+            return element
+        }
+    }
+}
+
+// we could implement CollectionType, SequenceType here, but nope
+public struct SynchronizedSet<T: Hashable> {
+    /* private */ var set = Set<T>()
+    /* private */ let accessQueue = dispatch_queue_create("SynchronizedSetQueue", DISPATCH_QUEUE_SERIAL)
+    
+    init() { }
+    
+    init(set: Set<T>) {
+        self.set = set
+    }
+    
+    public func contains(member: T) -> Bool {
+        var contains: Bool!
+        
+        dispatch_sync(accessQueue) {
+            contains = self.set.contains(member)
+        }
+        
+        return contains
+    }
+    
+    public mutating func insert(member: T) {
+        dispatch_async(accessQueue) {
+            self.set.insert(member)
+        }
+    }
+    
+    public mutating func remove(member: T) {
+        dispatch_async(accessQueue) {
+            self.set.remove(member)
+        }
+    }
+    
+    public mutating func removeAll() {
+        dispatch_async(accessQueue) {
+            self.set.removeAll()
+        }
+    }
+}
+
 //import MultipeerConnectivity
 //
 //extension MCPeerID {

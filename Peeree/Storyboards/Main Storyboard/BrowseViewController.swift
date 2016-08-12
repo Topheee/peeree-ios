@@ -69,9 +69,13 @@ final class BrowseViewController: UITableViewController {
 		super.viewDidAppear(animated)
         BrowseViewController.instance = self
         tableView.tableFooterView = UIView(frame: CGRectZero)
-        for peerID in RemotePeerManager.sharedManager.availablePeers {
-            addPeerIDToView(peerID, updateTable: false)
+        dispatch_sync(RemotePeerManager.sharedManager.availablePeers.accessQueue) {
+            // we can access the set variable safely here since we are on the queue
+            for peerID in RemotePeerManager.sharedManager.availablePeers.set {
+                self.addPeerIDToView(peerID, updateTable: false)
+            }
         }
+        
 		tableView.reloadData()
         connectionChangedState(RemotePeerManager.sharedManager.peering)
 		
