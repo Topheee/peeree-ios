@@ -32,7 +32,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         guard !nameTextField.isFirstResponder() else { return }
         
         showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding.")) { (action) in
-            self.pickedImage(UIImage(named: "PersonPlaceholder")!)
+            self.pickedImage(UIImage(named: "PortraitUnavailable")!)
         }
 	}
 	@IBAction func filledFirstname(sender: UITextField) {
@@ -122,7 +122,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     override func imagePickerControllerDidCancel(picker: UIImagePickerController) {
         super.imagePickerControllerDidCancel(picker)
-        pickedImage(UIImage(named: "PersonPlaceholder")!)
+        pickedImage(UIImage(named: "PortraitUnavailable")!)
     }
     
     override func pickedImage(image: UIImage) {

@@ -19,6 +19,10 @@
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
 		9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */; };
 		9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D41E11D1D5E903A0042FB63 /* Localizable.strings */; };
+		9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
+		9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
+		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
+		9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
@@ -99,9 +103,11 @@
 		9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SampleAssets.xcassets; sourceTree = "<group>"; };
 		9D41E11D1D5E903A0042FB63 /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		9D482D8F1D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
-		9D482D901D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9D482D911D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		9D482D941D5ED2ED00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
+		9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InAppPurchaseController.swift; path = Controller/InAppPurchaseController.swift; sourceTree = "<group>"; };
+		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
 		9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateSelViewController.swift; path = "Storyboards/Main Storyboard/DateSelViewController.swift"; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCSessionMock.swift; path = Helpers/Mocks/MCSessionMock.swift; sourceTree = "<group>"; };
@@ -175,6 +181,7 @@
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9DA039831C1B257C003D1624 /* WalletController.swift */,
+				9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */,
 				9DA93EE41D5D501100607D9B /* SessionHandlers.swift */,
 			);
 			name = Controller;
@@ -203,9 +210,11 @@
 		9D482D921D5E938000B5022A /* Ressources */ = {
 			isa = PBXGroup;
 			children = (
+				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D41E11D1D5E903A0042FB63 /* Localizable.strings */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
 				9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */,
+				9D6431141D5FB5E400D81CB7 /* product_ids.plist */,
 			);
 			name = Ressources;
 			sourceTree = "<group>";
@@ -256,7 +265,6 @@
 		9DA0F7AC1B5C3AB800F3BA87 = {
 			isa = PBXGroup;
 			children = (
-				9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */,
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
 				9DA0F7CF1B5C3AB900F3BA87 /* PeereeTests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
@@ -321,6 +329,14 @@
 			);
 			name = Mocks;
 			path = Peeree;
+			sourceTree = "<group>";
+		};
+		9DE965D91D69FC4200D5155B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		9DEAE8C81B63ED3700D4F6BF /* Model */ = {
@@ -406,6 +422,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				en,
 			);
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
@@ -426,6 +443,7 @@
 				9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */,
 				9D8A59371B92F18200164C9F /* LaunchScreen.xib in Resources */,
 				9D8A59361B92F17E00164C9F /* Main.storyboard in Resources */,
+				9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */,
 				9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */,
 				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
@@ -437,6 +455,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +493,7 @@
 				9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */,
 				9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
+				9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
 				9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
@@ -488,6 +508,7 @@
 			files = (
 				9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9DDD0D461C24BBA9009A518F /* BrowseFilterSettings.swift in Sources */,
+				9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
 				9DDD0D421C24BBA9009A518F /* PeerDescription.swift in Sources */,
 				9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */,
 				9DDD0D361C24BBA1009A518F /* MultipleSelViewController.swift in Sources */,
@@ -544,7 +565,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9DA0F7C11B5C3AB800F3BA87 /* Base */,
-				9D482D901D5E925C00B5022A /* en */,
+				9D482D941D5ED2ED00B5022A /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

@@ -72,41 +72,63 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
 class DownloadSessionDelegate: MCSessionDelegateAdapter {
     private static let MaxAttempts = 3
     private let failNotification: RemotePeerManager.NetworkNotification
-    private let peerID: MCPeerID
-    private let sessionKeyData: NSData
+    private let sessionID: DownloadSessionID
     private weak var btBrowser: MCNearbyServiceBrowser?
     private var attempt = 0
-    
-    var willReconnect: Bool {
-        get {
-            return attempt < DownloadSessionDelegate.MaxAttempts && RemotePeerManager.sharedManager.peering && RemotePeerManager.sharedManager.availablePeers.contains(peerID)
-        }
-        set {
+    var successful = false {
+        didSet {
             attempt = DownloadSessionDelegate.MaxAttempts
             session.disconnect()
         }
     }
     
+    private struct DownloadSessionID: Hashable {
+        let peerID: MCPeerID
+        let sessionKey: RemotePeerManager.SessionKey
+        
+        let hashValue: Int
+        
+        init(peerID: MCPeerID, sessionKey: RemotePeerManager.SessionKey) {
+            self.peerID = peerID
+            self.sessionKey = sessionKey
+            hashValue = peerID.hashValue + sessionKey.hashValue
+        }
+    }
+    
+    private static var downloadSessions = SynchronizedSet<DownloadSessionID>()
+    
+    var willReconnect: Bool {
+        return attempt < DownloadSessionDelegate.MaxAttempts && RemotePeerManager.sharedManager.peering && RemotePeerManager.sharedManager.availablePeers.contains(sessionID.peerID)
+    }
+    
     init(peerID: MCPeerID, sessionKey: RemotePeerManager.SessionKey, failNotification: RemotePeerManager.NetworkNotification, btBrowser: MCNearbyServiceBrowser?) {
-        self.peerID = peerID
+        sessionID = DownloadSessionID(peerID: peerID, sessionKey: sessionKey)
         self.failNotification = failNotification
         self.btBrowser = btBrowser
-        sessionKeyData = sessionKey.rawValue.dataUsingEncoding(NSASCIIStringEncoding)!
         super.init()
+        
+        if !DownloadSessionDelegate.downloadSessions.contains(sessionID) {
+            DownloadSessionDelegate.downloadSessions.insert(sessionID)
+            connect()
+        }
     }
     
     private func connect() {
         guard let browser = btBrowser else {
-            failNotification.post(peerID)
+            session.disconnect()
             return
         }
         guard willReconnect else {
-            failNotification.post(peerID)
+            session.disconnect()
+            return
+        }
+        guard let sessionKeyData = sessionID.sessionKey.rawValue.dataUsingEncoding(NSASCIIStringEncoding) else {
+            session.disconnect()
             return
         }
         
         attempt += 1
-        browser.invitePeer(peerID, toSession: session, withContext: sessionKeyData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
+        browser.invitePeer(sessionID.peerID, toSession: session, withContext: sessionKeyData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
     }
     
     override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
@@ -118,6 +140,10 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
                 connect()
             } else {
                 super.session(session, peer: peerID, didChangeState: state)
+                DownloadSessionDelegate.downloadSessions.remove(sessionID)
+                if !successful {
+                    failNotification.post(sessionID.peerID)
+                }
             }
         }
         
@@ -149,6 +175,10 @@ final class PeerInfoUploadSessionManager: MCSessionDelegateAdapter {
 /// If the remote peer is unknown, it invited into the download session of the local peer.
 final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
     
+    static func isPeerInfoLoading(ofPeerID peerID: MCPeerID) -> Bool {
+        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .PeerInfo))
+    }
+    
     init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?) {
         super.init(peerID: peerID, sessionKey: .PeerInfo, failNotification: .PeerInfoLoadFailed, btBrowser: btBrowser)
     }
@@ -159,17 +189,15 @@ final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
         
         RemotePeerManager.sharedManager.sessionHandlerDidLoad(info)
         
-        willReconnect = false
+        successful = true
     }
 }
 
 /// If the remote peer is unknown, it invited into the download session of the local peer.
 final class PictureDownloadSessionHandler: DownloadSessionDelegate {
     
-    private static var loadingPictures = SynchronizedSet<MCPeerID>()
-    
-    static func isPictureLoading(ofPeer: MCPeerID) -> Bool {
-        return loadingPictures.contains(ofPeer)
+    static func isPictureLoading(ofPeer peerID: MCPeerID) -> Bool {
+        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .Picture))
     }
     
     init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?) {
@@ -181,14 +209,7 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
         
         RemotePeerManager.sharedManager.sessionHandlerDidLoad(image, ofPeer: peerID)
         
-        willReconnect = false
-    }
-    
-    override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-        if state == .NotConnected && !willReconnect {
-            PictureDownloadSessionHandler.loadingPictures.remove(peerID)
-        }
-        super.session(session, peer: peerID, didChangeState: state)
+        successful = true
     }
 }
 
@@ -217,6 +238,10 @@ final class PictureUploadSessionManager: MCSessionDelegateAdapter {
 final class PinSessionHandler: DownloadSessionDelegate {
     let confirmation: WalletController.PinConfirmation
     
+    static func isPinning(peerID: MCPeerID) -> Bool {
+        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .Pin))
+    }
+    
     init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?, confirmation: WalletController.PinConfirmation) {
         self.confirmation = confirmation
         super.init(peerID: peerID, sessionKey: .Pin, failNotification: .PinFailed, btBrowser: btBrowser)
@@ -238,13 +263,13 @@ final class PinSessionHandler: DownloadSessionDelegate {
     override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
         guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == "ack" else { return }
         guard !confirmation.redeemed else {
-            willReconnect = false
+            successful = false
             return
         }
         
         WalletController.redeem(confirmation)
         RemotePeerManager.sharedManager.sessionHandlerDidPin(peerID)
-        willReconnect = false
+        successful = true
     }
 }
 
@@ -263,4 +288,8 @@ final class PinnedSessionManager: MCSessionDelegateAdapter {
         
         RemotePeerManager.sharedManager.sessionHandlerReceivedPin(from: peerID)
     }
+}
+
+private func ==(lhs: DownloadSessionDelegate.DownloadSessionID, rhs: DownloadSessionDelegate.DownloadSessionID) -> Bool {
+    return lhs.hashValue == rhs.hashValue
 }

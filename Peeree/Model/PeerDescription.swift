@@ -17,7 +17,7 @@ class TestPeerInfo: NetworkPeerInfo {
     init(peerID: MCPeerID) {
         var rand = arc4random()
         let age = PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge))
-        let relationshipStatus = PeerInfo.RelationshipStatus.Divorced
+        let relationshipStatus = PeerInfo.RelationshipStatus.InRelationship
         let characterTraits = CharacterTrait.standardTraits
         for trait in characterTraits {
             trait.applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
@@ -275,7 +275,7 @@ struct PeerInfo: Equatable {
 //    }
     
     enum RelationshipStatus: String {
-        case NoComment, Single, Married, Divorced, InRelationship
+        case NoComment, Single, Married, InRelationship
         
         static let values = [NoComment, Single, Married, InRelationship]
         
@@ -320,6 +320,10 @@ struct PeerInfo: Equatable {
     }
     var picture: UIImage? {
         return _picture
+    }
+    
+    var isPictureLoading: Bool {
+        return PictureDownloadSessionHandler.isPictureLoading(ofPeer: peerID)
     }
     
     var pinMatched: Bool {

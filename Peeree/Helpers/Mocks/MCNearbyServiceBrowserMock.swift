@@ -13,12 +13,6 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
 
     // all taken from RemotePeerManager:
     static private let DiscoveryServiceID = "peeree-discover"
-    /// Identifies a MCSession as a session which transfers TestPeerInfo objects.
-    static private let PeerInfoSessionKey = "PeerInfoSession"
-    /// Session key for transmitting portrait images.
-    static private let PictureSessionKey = "PictureSession"
-    /// Session key for transmitting portrait images.
-    static private let PinSessionKey = "PinSession"
 	
 	override func startBrowsingForPeers() {
         guard addTimer == nil else { return }
@@ -33,32 +27,31 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
     }
 	
 	override func invitePeer(peerID: MCPeerID, toSession session: MCSession, withContext context: NSData?, timeout: NSTimeInterval) {
-        guard let contextString = String(data: context!, encoding: NSASCIIStringEncoding) else { return }
+        guard let contextString = String(data: context!, encoding: NSASCIIStringEncoding) else { assertionFailure(); return }
+        guard let sessionKey = RemotePeerManager.SessionKey(rawValue: contextString) else { assertionFailure(); return }
         
         assert(session.delegate != nil)
         
         let triggerTime = (Int64(NSEC_PER_SEC) * Int64(arc4random() % 3))
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, triggerTime), dispatch_get_main_queue(), { () -> Void in
-            switch contextString {
-            case MCNearbyServiceBrowserMock.PeerInfoSessionKey:
+            switch sessionKey {
+            case .PeerInfo:
                 let data = NSKeyedArchiver.archivedDataWithRootObject(TestPeerInfo(peerID: peerID))
                 
                 assert(session.delegate != nil)
                 
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
-            case MCNearbyServiceBrowserMock.PictureSessionKey:
+            case .Picture:
                 let rand = arc4random()
                 let image = UIImage(named: "Portrait_\(rand % 2)")!
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
                 let data = NSKeyedArchiver.archivedDataWithRootObject(image)
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
-            case MCNearbyServiceBrowserMock.PinSessionKey:
+            case .Pin:
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
                 let data = NSKeyedArchiver.archivedDataWithRootObject("no-ack")
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
-            default:
-                assertionFailure()
             }
         })
         //            let data = NSMutableData()
@@ -93,7 +86,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
             guard invite else { return }
             
             session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-            let data = NSKeyedArchiver.archivedDataWithRootObject(MCNearbyServiceBrowserMock.PinSessionKey)
+            let data = NSKeyedArchiver.archivedDataWithRootObject(RemotePeerManager.SessionKey.Pin.rawValue)
             session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
             // TODO receive ack and close
         }

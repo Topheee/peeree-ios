@@ -53,6 +53,9 @@
 /* Class = "UIViewController"; title = "Me"; ObjectID = "8rJ-Kc-sve"; */
 "8rJ-Kc-sve.title" = "Me";
 
+/* Class = "UILabel"; text = "You are invisible – and blind."; ObjectID = "9An-iq-LoL"; */
+"9An-iq-LoL.text" = "You are invisible – and blind.";
+
 /* Class = "UIViewController"; title = "Filter"; ObjectID = "9jE-aB-wME"; */
 "9jE-aB-wME.title" = "Filter";
 
@@ -95,6 +98,9 @@
 /* Class = "UIBarButtonItem"; title = "Preview"; ObjectID = "OHO-ma-96H"; */
 "OHO-ma-96H.title" = "Preview";
 
+/* Class = "UILabel"; text = "Visit a crowded place and go online to find new people!"; ObjectID = "Oar-8r-xH3"; */
+"Oar-8r-xH3.text" = "Visit a crowded place and go online to find new people!";
+
 /* Class = "UINavigationItem"; title = "Remote Peer Name"; ObjectID = "OwH-Gc-YBz"; */
 "OwH-Gc-YBz.title" = "Remote Peer Name";
 
@@ -125,6 +131,9 @@
 /* Class = "UILabel"; text = "Browse peers"; ObjectID = "ZSW-SY-CZJ"; */
 "ZSW-SY-CZJ.text" = "Browse peers";
 
+/* Class = "UIButton"; normalTitle = "Reset"; ObjectID = "ade-wE-1XG"; */
+"ade-wE-1XG.normalTitle" = "Reset";
+
 /* Class = "UIViewController"; title = "Person Detail"; ObjectID = "bgg-zV-1WC"; */
 "bgg-zV-1WC.title" = "Person Detail";
 
@@ -151,6 +160,9 @@
 
 /* Class = "UILabel"; text = "Detail"; ObjectID = "fh0-UT-55a"; */
 "fh0-UT-55a.text" = "Detail";
+
+/* Class = "UILabel"; text = "Offline Mode"; ObjectID = "geS-Ue-hzN"; */
+"geS-Ue-hzN.text" = "Offline Mode";
 
 /* Class = "UILabel"; text = "Max"; ObjectID = "ghM-Pd-S02"; */
 "ghM-Pd-S02.text" = "Max";
@@ -233,6 +245,9 @@
 /* Class = "UILabel"; text = "Title"; ObjectID = "xU9-1k-IEU"; */
 "xU9-1k-IEU.text" = "Title";
 
+/* Class = "UILabel"; text = "Peers Met"; ObjectID = "xdp-HW-ags"; */
+"xdp-HW-ags.text" = "Peers Met";
+
 /* Class = "UILabel"; text = "Huhu was geht?"; ObjectID = "y9O-DI-I0i"; */
 "y9O-DI-I0i.text" = "Huhu was geht?";
 
@@ -247,6 +262,9 @@
 
 /* Class = "UISegmentedControl"; z2h-P1-vSX.segmentTitles[3] = "Queer"; ObjectID = "z2h-P1-vSX"; */
 "z2h-P1-vSX.segmentTitles[3]" = "Queer";
+
+/* Class = "UILabel"; text = "0"; ObjectID = "zK8-SI-A6d"; */
+"zK8-SI-A6d.text" = "0";
 
 /* Class = "UILabel"; text = "Gender"; ObjectID = "zdK-gg-sQw"; */
 "zdK-gg-sQw.text" = "Gender";

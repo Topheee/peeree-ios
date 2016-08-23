@@ -35,7 +35,7 @@ struct Theme {
     }
 }
 
-let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (248/255, 255/255, 248/255), barBackground: (98/255, 255/255, 139/255)) //white with green
+let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (98/255, 255/255, 139/255)) //white with green
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -146,6 +146,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             self.window!.rootViewController?.presentViewController(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
         }
+        
+        UIApplication.sharedApplication().cancelAllLocalNotifications()
     }
 
     /**
@@ -160,13 +162,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard application.applicationState == .Inactive else { return }
         guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? NSData else { return }
         guard let peerID = NSKeyedUnarchiver.unarchiveObjectWithData(peerIDData) as? MCPeerID else { return }
-        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
-        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
-        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
         
-        rootTabBarController.selectedIndex = 0
-        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
+        showPeer(peerID)
     }
+    
+    func applicationDidReceiveMemoryWarning(application: UIApplication) {
+        // TODO figure out whether this also disconnects all open sessions
+        RemotePeerManager.sharedManager.peering = false
+        RemotePeerManager.sharedManager.clearCache()
+        InAppPurchaseController.sharedController.clearCache()
+    }
+    
+    // MARK: Private Methods
     
 	private func remotePeerAppeared(peerID: MCPeerID) {
 		if !isActive {
@@ -175,9 +182,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 			let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 			note.alertBody = String(format: alertBodyFormat, peerID.displayName)
-            note.fireDate = NSDate().dateByAddingTimeInterval(0)
             note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peerID)]
-			UIApplication.sharedApplication().scheduleLocalNotification(note)
+			UIApplication.sharedApplication().presentLocalNotificationNow(note)
         } else if BrowseViewController.instance == nil {
             updateNewPeerBadge()
 		}
@@ -188,13 +194,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	}
     
     private func pinMatchOccured(peer: PeerInfo) {
-        let note = UILocalNotification()
-        let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
-        note.alertBody = String(format: alertBodyFormat, peer.peerID.displayName)
-        note.fireDate = NSDate().dateByAddingTimeInterval(0)
-        note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
-        note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
-        UIApplication.sharedApplication().scheduleLocalNotification(note)
+        if isActive {
+            let message = String(format: NSLocalizedString("%@ pinned you! Would you like to visit his profile?", comment: "Description of 'Pin Match' alert"), peer.peerName)
+            let alertController = UIAlertController(title: NSLocalizedString("Pin Match", comment: "Title message of alerting the user that a pin match occured."), message: message, preferredStyle: .Alert)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Yes, sure", comment: "Button text for visiting the pin matched peer."), style: .Default, handler: { (action) in
+                self.showPeer(peer.peerID)
+            }))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Later", comment: "Button text for not visiting the pin matched peer."), style: .Cancel, handler: nil))
+            alertController.present(nil)
+        } else {
+            let note = UILocalNotification()
+            let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
+            note.alertBody = String(format: alertBodyFormat, peer.peerID.displayName)
+            note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
+            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
+            UIApplication.sharedApplication().presentLocalNotificationNow(note)
+        }
     }
     
     private func updateNewPeerBadge() {
@@ -207,5 +222,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
         }
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
+    }
+    
+    private func showPeer(peerID: MCPeerID) {
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
+        
+        rootTabBarController.selectedIndex = 0
+        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
 }

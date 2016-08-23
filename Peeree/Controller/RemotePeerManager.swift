@@ -15,6 +15,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     
     static private let PinnedPeersKey = "PinnedPeers"
     static private let PinnedByPeersKey = "PinnedByPeers"
+    static private let PeersMetKey = "PeersMet"
     
     /// Identifies a MCSession. Is sent via the context info.
     enum SessionKey: String {
@@ -75,6 +76,8 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
             return btAdvertiser != nil && btBrowser != nil
         }
         set {
+            // writing peersMet here is a good choice, since we will stop peering before the app is quit and also this method won't get called often and the peers met are not that critical
+            NSUserDefaults.standardUserDefaults().setInteger(peersMet, forKey:RemotePeerManager.PeersMetKey)
             guard newValue != peering else { return }
             if newValue {
                 let peerID = UserPeerInfo.instance.peer.peerID
@@ -104,6 +107,8 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         }
     }
     
+    lazy var peersMet = NSUserDefaults.standardUserDefaults().integerForKey(RemotePeerManager.PeersMetKey)
+    
     func isPeerPinned(peerID: MCPeerID) -> Bool {
         return pinnedPeers.contains(peerID)
     }
@@ -112,21 +117,29 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         return isPeerPinned(peerID) && pinnedByPeers.contains(peerID)
     }
     
-    func loadPicture(forPeer: PeerInfo) {
-        if forPeer.hasPicture && forPeer.picture == nil && !isPictureLoading(forPeer.peerID) {
-            let handler = PictureDownloadSessionHandler(peerID: forPeer.peerID, btBrowser: btBrowser)
+    func loadPicture(forPeer peer: PeerInfo) {
+        if peer.hasPicture && peer.picture == nil && !isPictureLoading(ofPeer: peer.peerID) {
+            let handler = PictureDownloadSessionHandler(peerID: peer.peerID, btBrowser: btBrowser)
             assert(handler != nil)
         }
     }
     
-    func isPictureLoading(ofPeer: MCPeerID) -> Bool {
-        return PictureDownloadSessionHandler.isPictureLoading(ofPeer)
+    func isPictureLoading(ofPeer peerID: MCPeerID) -> Bool {
+        return PictureDownloadSessionHandler.isPictureLoading(ofPeer: peerID)
+    }
+    
+    func isPeerInfoLoading(ofPeerID peerID: MCPeerID) -> Bool {
+        return PeerInfoDownloadSessionHandler.isPeerInfoLoading(ofPeerID: peerID)
+    }
+    
+    func isPinning(peerID: MCPeerID) -> Bool {
+        return PinSessionHandler.isPinning(peerID)
     }
     
     func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> PeerInfo? {
         if let ret = cachedPeers[peerID]?.peer {
             return ret
-        } else if download && peering {
+        } else if download && peering && !PeerInfoDownloadSessionHandler.isPeerInfoLoading(ofPeerID: peerID) {
             let handler = PeerInfoDownloadSessionHandler(peerID: peerID, btBrowser: btBrowser)
             assert(handler != nil)
         }
@@ -139,6 +152,10 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         WalletController.requestPin { (confirmation) in
             _ = PinSessionHandler(peerID: peerID, btBrowser: self.btBrowser, confirmation: confirmation)
         }
+    }
+    
+    func clearCache() {
+        cachedPeers.removeAll()
     }
     
     func sessionHandlerDidLoad(peerInfo: NetworkPeerInfo) {
@@ -203,6 +220,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     @objc func browser(browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         guard !_availablePeers.contains(peerID) else { return }
         
+        peersMet = peersMet + 1
         _availablePeers.insert(peerID)
         self.remotePeerAppeared(peerID)
 	}

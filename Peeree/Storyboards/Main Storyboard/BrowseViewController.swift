@@ -13,6 +13,7 @@ final class BrowseViewController: UITableViewController {
     @IBOutlet weak var networkButton: UIButton!
 	
     private static let PeerDisplayCellID = "peerDisplayCell"
+    private static let OfflineModeCellID = "offlineModeCell"
     private static let AddAnimation = UITableViewRowAnimation.Automatic
     private static let DelAnimation = UITableViewRowAnimation.Automatic
     
@@ -141,25 +142,39 @@ final class BrowseViewController: UITableViewController {
     // MARK: UITableView Data Source
 	
 	override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-		return 4
+        return RemotePeerManager.sharedManager.peering ? 4 : 1
 	}
 	
 	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case BrowseViewController.MatchedPeersSection:
-            return matchedPeers.count
-        case BrowseViewController.NewPeersSection:
-            return newPeers.count
-        case BrowseViewController.InFilterPeersSection:
-            return inFilterPeers.count
-        case BrowseViewController.OutFilterPeersSection:
-            return outFilterPeers.count
-        default:
-            return 0
+        if RemotePeerManager.sharedManager.peering {
+            switch section {
+            case BrowseViewController.MatchedPeersSection:
+                return matchedPeers.count
+            case BrowseViewController.NewPeersSection:
+                return newPeers.count
+            case BrowseViewController.InFilterPeersSection:
+                return inFilterPeers.count
+            case BrowseViewController.OutFilterPeersSection:
+                return outFilterPeers.count
+            default:
+                return 0
+            }
+        } else {
+            return 1
         }
 	}
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        guard RemotePeerManager.sharedManager.peering else {
+            guard let cell = tableView.dequeueReusableCellWithIdentifier(BrowseViewController.OfflineModeCellID) as? OfflineTableViewCell else {
+                assertionFailure()
+                return UITableViewCell()
+            }
+            
+            cell.peersMetLabel.text = String(RemotePeerManager.sharedManager.peersMet)
+            return cell
+        }
+        
 		let cell = tableView.dequeueReusableCellWithIdentifier(BrowseViewController.PeerDisplayCellID)!
         
         switch indexPath.section {
@@ -191,6 +206,10 @@ final class BrowseViewController: UITableViewController {
 	}
     
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard RemotePeerManager.sharedManager.peering else {
+            return nil
+        }
+        
         switch section {
         case BrowseViewController.MatchedPeersSection:
             return matchedPeers.count > 0 ? NSLocalizedString("Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
@@ -203,6 +222,10 @@ final class BrowseViewController: UITableViewController {
         default:
             return super.tableView(tableView, titleForHeaderInSection: section)
         }
+    }
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return RemotePeerManager.sharedManager.peering ? super.tableView(tableView, heightForRowAtIndexPath: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.sharedApplication().statusBarFrame.height
     }
     
     // MARK: Private Methods
@@ -266,7 +289,11 @@ final class BrowseViewController: UITableViewController {
 	private func remotePeerDisappeared(peerID: MCPeerID) {
         if let idx = (matchedPeers.indexOf { $0.peerID == peerID }) {
             matchedPeers.removeAtIndex(idx)
-            removeRow(idx, section: BrowseViewController.MatchedPeersSection)
+            if matchedPeers.count == 0 {
+                tableView.reloadSections(NSIndexSet(index: BrowseViewController.MatchedPeersSection), withRowAnimation: .Automatic)
+            } else {
+                removeRow(idx, section: BrowseViewController.MatchedPeersSection)
+            }
         } else if let idx = (newPeers.indexOf { $0 == peerID }) {
             newPeers.removeAtIndex(idx)
             removeRow(idx, section: BrowseViewController.NewPeersSection)
@@ -280,13 +307,15 @@ final class BrowseViewController: UITableViewController {
 	}
     
     private func connectionChangedState(nowOnline: Bool) {
+        tableView.reloadData()
         if nowOnline {
-            networkButton.setTitle(NSLocalizedString("Peering", comment: "Network functionality active"), forState: .Normal)
+            networkButton.setTitle(NSLocalizedString("Go Offline", comment: "Toggle to offline mode. Also title in browse view."), forState: .Normal)
         } else {
-            networkButton.setTitle(NSLocalizedString("Offline", comment: "Network functionality inactive"), forState: .Normal)
+            networkButton.setTitle(NSLocalizedString("Go Online", comment: "Toggle to online mode. Also title in browse view."), forState: .Normal)
             clearCache()
         }
         networkButton.frame = CGRect(origin: CGPointZero, size: networkButton.intrinsicContentSize())
+        tableView.scrollEnabled = nowOnline
     }
     
     private func peerInfoLoaded(peer: PeerInfo) {
@@ -327,10 +356,15 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func clearCache() {
+        tableView.reloadData()
         matchedPeers.removeAll()
         newPeers.removeAll()
         inFilterPeers.removeAll()
         outFilterPeers.removeAll()
         tableView.reloadData()
     }
+}
+
+final class OfflineTableViewCell: UITableViewCell {
+    @IBOutlet weak var peersMetLabel: UILabel!
 }

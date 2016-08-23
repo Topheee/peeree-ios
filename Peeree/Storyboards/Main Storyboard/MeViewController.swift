@@ -101,7 +101,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     @IBAction func changePicture(sender: AnyObject) {
         showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Removing the own portrait image.")) { (action) in
             UserPeerInfo.instance.picture = nil
-            self.portraitImageButton.setImage(UIImage(named: "PersonPlaceholder")!, forState: .Normal)
+            self.portraitImageButton.setImage(UIImage(named: "PortraitUnavailable")!, forState: .Normal)
         }
     }
 	
@@ -139,7 +139,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         dateFormatter.dateStyle = .LongStyle
         birthdayButton.setTitle(dateFormatter.stringFromDate(UserPeerInfo.instance.dateOfBirth), forState: .Normal)
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.indexOf(UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PersonPlaceholder")!, forState: .Normal)
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")!, forState: .Normal)
         
         for control in [birthdayButton, statusButton] {
             control.setNeedsLayout()

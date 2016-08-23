@@ -73,9 +73,10 @@ extension UIViewController {
 }
 
 // we could implement CollectionType, SequenceType here, but nope
-public struct SynchronizedArray<T> {
+// we could use struct, but it does not work and as long as class is working out, nope
+public class SynchronizedArray<T> {
     /* private */ var array: [T] = []
-    /* private */ let accessQueue = dispatch_queue_create("SynchronizedArrayQueue", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_arr_q", DISPATCH_QUEUE_SERIAL)
     
     init() { }
     
@@ -83,7 +84,7 @@ public struct SynchronizedArray<T> {
         self.array = array
     }
     
-    public mutating func append(newElement: T) {
+    public func append(newElement: T) {
         dispatch_async(accessQueue) {
             self.array.append(newElement)
         }
@@ -108,9 +109,10 @@ public struct SynchronizedArray<T> {
 }
 
 // we could implement CollectionType, SequenceType here, but nope
-public struct SynchronizedDictionary<S: Hashable, T> {
+// we could use struct, but it does not work and as long as class is working out, nope
+public class SynchronizedDictionary<S: Hashable, T> {
     /* private */ var dictionary: [S : T] = [:]
-    /* private */ let accessQueue = dispatch_queue_create("SynchronizedDictionaryQueue", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_dic_q", DISPATCH_QUEUE_SERIAL)
     
     init() { }
     
@@ -134,12 +136,19 @@ public struct SynchronizedDictionary<S: Hashable, T> {
             return element
         }
     }
+    
+    public func removeAll() {
+        dispatch_async(accessQueue) { 
+            self.dictionary.removeAll()
+        }
+    }
 }
 
 // we could implement CollectionType, SequenceType here, but nope
-public struct SynchronizedSet<T: Hashable> {
+// we could use struct, but it does not work and as long as class is working out, nope
+public class SynchronizedSet<T : Hashable> {
     /* private */ var set = Set<T>()
-    /* private */ let accessQueue = dispatch_queue_create("SynchronizedSetQueue", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_set_q", DISPATCH_QUEUE_SERIAL)
     
     init() { }
     
@@ -157,19 +166,19 @@ public struct SynchronizedSet<T: Hashable> {
         return contains
     }
     
-    public mutating func insert(member: T) {
+    public func insert(member: T) {
         dispatch_async(accessQueue) {
             self.set.insert(member)
         }
     }
     
-    public mutating func remove(member: T) {
+    public func remove(member: T) {
         dispatch_async(accessQueue) {
             self.set.remove(member)
         }
     }
     
-    public mutating func removeAll() {
+    public func removeAll() {
         dispatch_async(accessQueue) {
             self.set.removeAll()
         }
