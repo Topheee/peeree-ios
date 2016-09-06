@@ -40,6 +40,10 @@ final class BasicDescriptionViewController: UIViewController {
         super.viewDidAppear(animated)
         descriptionTextView.flashScrollIndicators()
     }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
+    }
 }
 
 protocol BasicDescriptionViewControllerDataSource {

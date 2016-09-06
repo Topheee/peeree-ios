@@ -8,6 +8,7 @@
 
 import UIKit
 import MultipeerConnectivity
+import CoreBluetooth
 
 struct Theme {
     let globalTintRed: CGFloat
@@ -38,9 +39,9 @@ struct Theme {
 let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (98/255, 255/255, 139/255)) //white with green
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelegate {
 	
-    static let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
+    static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
 	static var sharedDelegate: AppDelegate { return UIApplication.sharedApplication().delegate as! AppDelegate }
@@ -58,6 +59,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 			//only ask on iOS 8 or later
             UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
 		}
+        
+        NSUserDefaults.standardUserDefaults().registerDefaults([WalletController.PinPointPrefKey : WalletController.initialPinPoints])
 		
 		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
 //		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
@@ -173,6 +176,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         InAppPurchaseController.sharedController.clearCache()
     }
     
+    func finishIntroduction() {
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.PrefSkipOnboarding)
+        // TODO test whether this one keeps alive long enough to send us the didUpdateState and whether we need to call startAdvertising
+        _ = CBPeripheralManager(delegate: self, queue: nil)
+    }
+    
+    // MARK: CBPeripheralManagerDelegate
+    
+    func peripheralManagerDidUpdateState(peripheral: CBPeripheralManager) {
+        switch peripheral.state {
+        case .Unknown, .Resetting:
+            // just wait
+            break
+        case .Unsupported:
+            UserPeerInfo.instance.iBeaconUUID = nil
+            peripheral.stopAdvertising()
+            peripheral.delegate = nil
+        default:
+            UserPeerInfo.instance.iBeaconUUID = NSUUID()
+            peripheral.stopAdvertising()
+            peripheral.delegate = nil
+        }
+    }
+    
     // MARK: Private Methods
     
 	private func remotePeerAppeared(peerID: MCPeerID) {
@@ -195,9 +222,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func pinMatchOccured(peer: PeerInfo) {
         if isActive {
-            let message = String(format: NSLocalizedString("%@ pinned you! Would you like to visit his profile?", comment: "Description of 'Pin Match' alert"), peer.peerName)
+            let message = String(format: NSLocalizedString("You have a pin match with %@! Go ahead and meet each other.", comment: "Description of 'Pin Match' alert"), peer.peerName)
             let alertController = UIAlertController(title: NSLocalizedString("Pin Match", comment: "Title message of alerting the user that a pin match occured."), message: message, preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Yes, sure", comment: "Button text for visiting the pin matched peer."), style: .Default, handler: { (action) in
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Open Profile", comment: "Button text for opening the person view of the matched peer."), style: .Default, handler: { (action) in
                 self.showPeer(peer.peerID)
             }))
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Later", comment: "Button text for not visiting the pin matched peer."), style: .Cancel, handler: nil))
@@ -205,7 +232,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
-            note.alertBody = String(format: alertBodyFormat, peer.peerID.displayName)
+            note.alertBody = String(format: alertBodyFormat, peer.peerName)
             note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
             note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
             UIApplication.sharedApplication().presentLocalNotificationNow(note)

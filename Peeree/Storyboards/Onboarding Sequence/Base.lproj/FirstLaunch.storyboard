@@ -55,16 +55,16 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yKG-bc-RCP">
-                                        <rect key="frame" x="20" y="303" width="560" height="79"/>
+                                        <rect key="frame" x="20" y="303" width="560" height="121"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <string key="text">Using this technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no internet (except for purchasing), no ads, no observation and no spies involved.</string>
+                                        <string key="text">Using p2p technology, you get rid of lots of annoying stuff. In this app, there are no servers, no cloud, no Internet (except for purchasing), no ads, no observation and no spying eyes involved. Also, if you decide to use Location Services to better find each other, your location is only determined temporary and relative to your opposite.</string>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1pm-ik-jEH">
                                         <rect key="frame" x="20" y="155" width="560" height="100"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <string key="text">Yep, your heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a 'man in the middle', like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms do.</string>
+                                        <string key="text">Yep, you heard right: p2p is social. It is actual the foundation of social interaction. If you want to get to know someone, you won't only talk with a someone between you, like 'Tell him, that...', 'Tell her, that....', do you? But that's exactly what traditional social platforms technically do.</string>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
@@ -325,15 +325,16 @@
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hJw-62-GdX">
                                 <rect key="frame" x="0.0" y="20" width="600" height="542"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This data is only presented to people around you" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ggD-7R-HUW">
-                                        <rect key="frame" x="20" y="127" width="560" height="26"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your information is only presented to people around you" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ggD-7R-HUW">
+                                        <rect key="frame" x="20" y="148" width="560" height="26"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Nothing of the information you provide in this app will be sent through the internet, not even to us." translatesAutoresizingMaskIntoConstraints="NO" id="ikY-39-j8j">
-                                        <rect key="frame" x="20" y="49" width="560" height="58"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ikY-39-j8j">
+                                        <rect key="frame" x="20" y="49" width="560" height="79"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <string key="text">Nothing of the information you provide in this app will be sent through the internet, not even to us. Also, all your purchasements are completely anonymous to us.</string>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
@@ -343,27 +344,45 @@
                                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XxO-gi-dyR">
-                                        <rect key="frame" x="20" y="156" width="560" height="79"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Your portrait, name and gender is sent to others around you and be aware that they can also filter based on these values." translatesAutoresizingMaskIntoConstraints="NO" id="XxO-gi-dyR">
+                                        <rect key="frame" x="20" y="177" width="560" height="58"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <string key="text">So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?</string>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="All information is temporary" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kto-X5-xbd">
+                                        <rect key="frame" x="20" y="255" width="560" height="26"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMb-Zu-LE8">
+                                        <rect key="frame" x="20" y="281" width="560" height="100"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <string key="text">When you meet a person, you might remember him or her – or not. However, this app will not remember anyone, except whether you find him interesting or not. In consequence, neither you won't be able to review people's profiles in the future, nor they can review your's.</string>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="ggD-7R-HUW" firstAttribute="leading" secondItem="egT-C6-XeE" secondAttribute="leading" id="3Iz-mV-HzU"/>
+                                    <constraint firstItem="LMb-Zu-LE8" firstAttribute="leading" secondItem="egT-C6-XeE" secondAttribute="leading" id="4Ud-i7-Q2w"/>
                                     <constraint firstItem="XxO-gi-dyR" firstAttribute="leading" secondItem="egT-C6-XeE" secondAttribute="leading" id="5hY-QT-Ln7"/>
                                     <constraint firstItem="ggD-7R-HUW" firstAttribute="top" secondItem="ikY-39-j8j" secondAttribute="bottom" constant="20" id="5jz-uo-QLt"/>
                                     <constraint firstAttribute="trailingMargin" secondItem="XxO-gi-dyR" secondAttribute="trailing" constant="12" id="AyZ-he-LaH"/>
                                     <constraint firstItem="ikY-39-j8j" firstAttribute="top" secondItem="egT-C6-XeE" secondAttribute="bottom" constant="3" id="HOJ-wr-7Iq"/>
                                     <constraint firstAttribute="trailing" secondItem="egT-C6-XeE" secondAttribute="trailing" constant="20" id="I9a-ec-Owe"/>
                                     <constraint firstItem="ikY-39-j8j" firstAttribute="leading" secondItem="egT-C6-XeE" secondAttribute="leading" id="QfV-2b-b26"/>
+                                    <constraint firstItem="kto-X5-xbd" firstAttribute="leading" secondItem="ggD-7R-HUW" secondAttribute="leading" id="TCT-te-oGa"/>
                                     <constraint firstAttribute="trailingMargin" secondItem="ikY-39-j8j" secondAttribute="trailing" constant="12" id="TMI-Mh-PGg"/>
                                     <constraint firstAttribute="trailing" secondItem="ggD-7R-HUW" secondAttribute="trailing" constant="20" id="UjY-Rq-JPP"/>
                                     <constraint firstItem="egT-C6-XeE" firstAttribute="top" secondItem="hJw-62-GdX" secondAttribute="top" constant="20" id="cyM-HP-5Pk"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="LMb-Zu-LE8" secondAttribute="trailing" constant="12" id="ewL-Bu-tXG"/>
+                                    <constraint firstAttribute="trailing" secondItem="kto-X5-xbd" secondAttribute="trailing" constant="20" id="iqO-0W-PLv"/>
+                                    <constraint firstItem="kto-X5-xbd" firstAttribute="top" secondItem="XxO-gi-dyR" secondAttribute="bottom" constant="20" id="nkk-5L-7sj"/>
                                     <constraint firstItem="egT-C6-XeE" firstAttribute="leading" secondItem="hJw-62-GdX" secondAttribute="leading" constant="20" id="oZJ-Gt-LoO"/>
                                     <constraint firstAttribute="bottomMargin" secondItem="XxO-gi-dyR" secondAttribute="bottom" constant="12" id="v9M-6v-9Sz"/>
+                                    <constraint firstItem="LMb-Zu-LE8" firstAttribute="top" secondItem="kto-X5-xbd" secondAttribute="bottom" id="vdK-vK-VW9"/>
                                     <constraint firstItem="XxO-gi-dyR" firstAttribute="top" secondItem="ggD-7R-HUW" secondAttribute="bottom" constant="3" id="vq1-xv-sCW"/>
                                 </constraints>
                             </scrollView>

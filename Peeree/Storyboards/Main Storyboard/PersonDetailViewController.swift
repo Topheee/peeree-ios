@@ -21,6 +21,7 @@ final class PersonDetailViewController: UIViewController {
     @IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
     
     private static let unwindSegueID = "unwindToBrowseViewController"
+    static let beaconSegueID = "beaconSegue"
     
     private var notificationObservers: [AnyObject] = []
     
@@ -188,7 +189,7 @@ final class PersonDetailViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        portraitImageView.maskView = CircleMaskView(forView: portraitImageView)
+        portraitImageView.maskView = CircleMaskView(frame: portraitImageView.bounds)
     }
     
     override func viewWillDisappear(animated: Bool) {

@@ -25,7 +25,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
         
-        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.PrefSkipOnboarding)
+        AppDelegate.sharedDelegate.finishIntroduction()
 	}
 	
 	@IBAction func takePic(sender: UIButton) {
@@ -51,7 +51,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        picButton.imageView?.maskView = CircleMaskView(forView: picButton)
+        picButton.imageView?.maskView = CircleMaskView(frame: picButton.bounds)
     }
 	
 	override func viewDidAppear(animated: Bool) {
@@ -82,6 +82,10 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
         
         rootTabBarController.selectedIndex = 1
+    }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
     }
     
     func keyboardWillShow(notification: NSNotification) {

@@ -27,8 +27,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
     }
 	
 	override func invitePeer(peerID: MCPeerID, toSession session: MCSession, withContext context: NSData?, timeout: NSTimeInterval) {
-        guard let contextString = String(data: context!, encoding: NSASCIIStringEncoding) else { assertionFailure(); return }
-        guard let sessionKey = RemotePeerManager.SessionKey(rawValue: contextString) else { assertionFailure(); return }
+        guard let sessionKey = RemotePeerManager.SessionKey(rawData: context!) else { assertionFailure(); return }
         
         assert(session.delegate != nil)
         
@@ -50,16 +49,10 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
             case .Pin:
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-                let data = NSKeyedArchiver.archivedDataWithRootObject("no-ack")
+                let data = NSKeyedArchiver.archivedDataWithRootObject("ack")
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
             }
         })
-        //            let data = NSMutableData()
-        //            let archiver = NSKeyedArchiver(forWritingWithMutableData: data)
-        //            (peerDescription as NetworkPeerInfo).encodeWithCoder(archiver)
-        //            archiver.finishEncoding()
-        //            let data = NSKeyedArchiver.archivedDataWithRootObject(peerDescription as NetworkPeerInfo)
-        //            let test = NSKeyedUnarchiver.unarchiveObjectWithData(data) //as? NetworkPeerInfo
 	}
 	
 	func removePeer(timer: NSTimer) {
@@ -72,10 +65,10 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
         
         let rand = arc4random()
         if rand % 2 == 0 {
-            NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: #selector(MCNearbyServiceBrowserMock.pinPeer(_:)), userInfo: nil, repeats: false)
+            NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: #selector(MCNearbyServiceBrowserMock.pinPeer(_:)), userInfo: peerID, repeats: false)
         }
         
-        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(arc4random() % 30), target: self, selector: #selector(MCNearbyServiceBrowserMock.removePeer(_:)), userInfo: peerID, repeats: false)
+        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(arc4random() % 45), target: self, selector: #selector(MCNearbyServiceBrowserMock.removePeer(_:)), userInfo: peerID, repeats: false)
     }
     
     func pinPeer(timer: NSTimer) {
@@ -86,11 +79,10 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
             guard invite else { return }
             
             session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-            let data = NSKeyedArchiver.archivedDataWithRootObject(RemotePeerManager.SessionKey.Pin.rawValue)
-            session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
+            session.delegate?.session(session, didReceiveData: RemotePeerManager.SessionKey.Pin.rawData, fromPeer: peerID)
             // TODO receive ack and close
         }
         
-        RemotePeerManager.sharedManager.advertiser(adv, didReceiveInvitationFromPeer: peerID, withContext: nil, invitationHandler: inv)
+        RemotePeerManager.sharedManager.advertiser(adv, didReceiveInvitationFromPeer: peerID, withContext: RemotePeerManager.SessionKey.Pin.rawData, invitationHandler: inv)
     }
 }

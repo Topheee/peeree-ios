@@ -244,7 +244,7 @@ final class BrowseViewController: UITableViewController {
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        cell.imageView?.maskView = CircleMaskView(forView: imageView)
+        cell.imageView?.maskView = CircleMaskView(frame: imageRect)
     }
     
     private func addPeerToView(peer: PeerInfo) -> Int {

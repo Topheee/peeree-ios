@@ -25,6 +25,13 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         case Picture
         /// Session key for populating pin status.
         case Pin
+        
+        init?(rawData: NSData) {
+            guard let rawString = String(data: rawData, encoding: NSASCIIStringEncoding) else { return nil }
+            self.init(rawValue: rawString)
+        }
+        
+        var rawData: NSData { return rawValue.dataUsingEncoding(NSASCIIStringEncoding)! }
     }
     
     enum NetworkNotification: String {
@@ -196,9 +203,16 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
 	}
 	
 	@objc func advertiser(advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: NSData?, invitationHandler: (Bool, MCSession) -> Void) {
-        guard let sessionKeyData = context else { invitationHandler(false, MCSession()); return }
-        guard let sessionKeyString = String(data: sessionKeyData, encoding: NSASCIIStringEncoding) else { invitationHandler(false, MCSession()); return }
-        guard let sessionKey = SessionKey(rawValue: sessionKeyString) else { invitationHandler(false, MCSession()); return }
+        guard let sessionKeyData = context else {
+            invitationHandler(false, MCSession(peer: UserPeerInfo.instance.peer.peerID))
+            assertionFailure()
+            return
+        }
+        guard let sessionKey = SessionKey(rawData: sessionKeyData) else {
+            invitationHandler(false, MCSession(peer: UserPeerInfo.instance.peer.peerID))
+            assertionFailure()
+            return
+        }
         
         switch sessionKey {
         case .PeerInfo:

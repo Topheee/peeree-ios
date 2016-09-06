@@ -160,7 +160,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        portraitImageButton.imageView?.maskView = CircleMaskView(forView: portraitImageButton)
+        portraitImageButton.imageView?.maskView = CircleMaskView(frame: portraitImageButton.bounds)
     }
 	
 	// MARK: - UITextField Delegate

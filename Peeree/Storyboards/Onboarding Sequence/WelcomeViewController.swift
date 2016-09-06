@@ -18,5 +18,9 @@ final class WelcomeViewController: UIViewController {
 			//at the very first showing, the view appears unanimated, so only here we want to show the animation
 			self.view.flyInSubviews([infoButton], duration: 2.0, delay: 0.5, damping: 1.0, velocity: 1.0)
 		}
-	}
+    }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
+    }
 }

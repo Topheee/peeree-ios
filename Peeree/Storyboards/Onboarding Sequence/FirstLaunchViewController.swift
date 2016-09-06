@@ -49,7 +49,11 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		
 		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
-	}
+    }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
+    }
 	
 	// MARK: - UIPageViewController delegate methods
 	

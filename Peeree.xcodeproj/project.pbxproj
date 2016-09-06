@@ -39,7 +39,6 @@
 		9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */; };
 		9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59401B92FABE00164C9F /* FilterViewController.swift */; };
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
-		9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594A1B93043000164C9F /* PinsViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
@@ -55,12 +54,15 @@
 		9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
 		9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
+		9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
+		9DDA3A521D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
+		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
+		9DDBD4C91D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
 		9DDD0D311C24BBA1009A518F /* BrowseSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */; };
 		9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */; };
 		9DDD0D331C24BBA1009A518F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
 		9DDD0D341C24BBA1009A518F /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59401B92FABE00164C9F /* FilterViewController.swift */; };
 		9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
-		9DDD0D361C24BBA1009A518F /* MultipleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */; };
 		9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594A1B93043000164C9F /* PinsViewController.swift */; };
 		9DDD0D391C24BBA1009A518F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
@@ -119,7 +121,6 @@
 		9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseSettingsViewController.swift; path = "Storyboards/Main Storyboard/BrowseSettingsViewController.swift"; sourceTree = "<group>"; };
 		9D8A59401B92FABE00164C9F /* FilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FilterViewController.swift; path = "Storyboards/Main Storyboard/FilterViewController.swift"; sourceTree = "<group>"; };
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
-		9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultipleSelViewController.swift; path = "Storyboards/Main Storyboard/MultipleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
 		9D8A594A1B93043000164C9F /* PinsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinsViewController.swift; path = "Storyboards/Main Storyboard/PinsViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
@@ -140,6 +141,8 @@
 		9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManagerTests.swift; sourceTree = "<group>"; };
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CircleMaskView.swift; path = View/CircleMaskView.swift; sourceTree = "<group>"; };
 		9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCNearbyServiceBrowserMock.swift; path = Helpers/Mocks/MCNearbyServiceBrowserMock.swift; sourceTree = "<group>"; };
+		9DDA3A501D77B6EA00C2ADC8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BeaconViewController.swift; path = "Storyboards/Main Storyboard/BeaconViewController.swift"; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
@@ -196,27 +199,15 @@
 				9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */,
 				9D8A59401B92FABE00164C9F /* FilterViewController.swift */,
 				9D8A592F1B92EC4500164C9F /* MeViewController.swift */,
-				9D8A59441B92FE8700164C9F /* MultipleSelViewController.swift */,
 				9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */,
 				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
 				9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */,
+				9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
-			sourceTree = "<group>";
-		};
-		9D482D921D5E938000B5022A /* Ressources */ = {
-			isa = PBXGroup;
-			children = (
-				9DE965D91D69FC4200D5155B /* Frameworks */,
-				9D41E11D1D5E903A0042FB63 /* Localizable.strings */,
-				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
-				9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */,
-				9D6431141D5FB5E400D81CB7 /* product_ids.plist */,
-			);
-			name = Ressources;
 			sourceTree = "<group>";
 		};
 		9D6F7B901BC82A70007CD234 /* View */ = {
@@ -225,6 +216,7 @@
 				9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */,
 				9D6F7B931BC82AD5007CD234 /* RootView.swift */,
 				9DD049441C5FC80800A91C71 /* CircleMaskView.swift */,
+				9DA0F7C51B5C3AB800F3BA87 /* LaunchScreen.xib */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -288,8 +280,6 @@
 				9D29231E1B91AB7A00B5B622 /* Controller */,
 				9DEAE8C81B63ED3700D4F6BF /* Model */,
 				9D6F7B901BC82A70007CD234 /* View */,
-				9D482D921D5E938000B5022A /* Ressources */,
-				9DA0F7C51B5C3AB800F3BA87 /* LaunchScreen.xib */,
 				9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */,
 			);
 			path = Peeree;
@@ -298,7 +288,12 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				9DA0F7B91B5C3AB800F3BA87 /* Info.plist */,
+				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
+				9DE965D91D69FC4200D5155B /* Frameworks */,
+				9D41E11D1D5E903A0042FB63 /* Localizable.strings */,
+				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
+				9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */,
+				9D6431141D5FB5E400D81CB7 /* product_ids.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -329,6 +324,15 @@
 			);
 			name = Mocks;
 			path = Peeree;
+			sourceTree = "<group>";
+		};
+		9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */ = {
+			isa = PBXGroup;
+			children = (
+				9DA0F7B91B5C3AB800F3BA87 /* Info.plist */,
+				9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */,
+			);
+			name = InfoPlist;
 			sourceTree = "<group>";
 		};
 		9DE965D91D69FC4200D5155B /* Frameworks */ = {
@@ -447,6 +451,7 @@
 				9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */,
 				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
+				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -456,6 +461,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */,
+				9DDA3A521D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +482,7 @@
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9D8A594B1B93043000164C9F /* PinsViewController.swift in Sources */,
+				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
 				9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
@@ -485,7 +492,6 @@
 				9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
-				9D8A59451B92FE8700164C9F /* MultipleSelViewController.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
 				9DA039841C1B257C003D1624 /* WalletController.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
@@ -506,12 +512,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DDBD4C91D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9DDD0D461C24BBA9009A518F /* BrowseFilterSettings.swift in Sources */,
 				9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
 				9DDD0D421C24BBA9009A518F /* PeerDescription.swift in Sources */,
 				9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */,
-				9DDD0D361C24BBA1009A518F /* MultipleSelViewController.swift in Sources */,
 				9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
@@ -577,6 +583,14 @@
 				9D482D911D5E925C00B5022A /* en */,
 			);
 			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9DDA3A501D77B6EA00C2ADC8 /* en */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

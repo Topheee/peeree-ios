@@ -29,8 +29,9 @@ import UIKit
 final class WalletController {
 	/* Never change this value after the first App Store release! */
 	static let pinCost = 10
+    static let initialPinPoints = 200
 	
-    private static let PinPointPrefKey = "PinPointPrefKey"
+    static let PinPointPrefKey = "PinPointPrefKey"
     private static let PinPointQueueLabel = "Pin Point Queue"
     private static let pinPointQueue = dispatch_queue_create(PinPointQueueLabel, DISPATCH_QUEUE_SERIAL)
     

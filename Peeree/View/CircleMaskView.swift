@@ -23,9 +23,9 @@ class CircleMaskView: UIView {
         self.bounds = superBounds
     }
     
-    init(forView: UIView) {
-        super.init(frame: forView.bounds)
-        self.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.0)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.backgroundColor = UIColor(white: 1.0, alpha: 0.0)
     }
     
     required init?(coder aDecoder: NSCoder) {

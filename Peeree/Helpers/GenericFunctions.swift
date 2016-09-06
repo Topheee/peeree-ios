@@ -8,6 +8,8 @@
 
 import UIKit
 
+// MARK: - Functions
+
 func archiveObjectInUserDefs<T: NSSecureCoding>(object: T, forKey: String) {
 	NSUserDefaults.standardUserDefaults().setObject(NSKeyedArchiver.archivedDataWithRootObject(object), forKey: forKey)
 }
@@ -19,18 +21,66 @@ func unarchiveObjectFromUserDefs<T: NSSecureCoding>(forKey: String) -> T? {
     return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
 }
 
-extension RawRepresentable where Self.RawValue == String {
-    var localizedRawValue: String {
-        return NSBundle.mainBundle().localizedStringForKey(rawValue, value: nil, table: nil)
-    }
-}
-
 func CGRectMakeSquare(edgeLength: CGFloat) -> CGRect {
     return CGRectMake(0.0, 0.0, edgeLength, edgeLength)
 }
 
 func CGSizeMakeSquare(edgeLength: CGFloat) -> CGSize {
     return CGSizeMake(edgeLength, edgeLength)
+}
+
+func getIdentity(fromResource resource: String, password : String?) -> (SecIdentityRef, SecTrustRef)? {
+    // Load certificate file
+    guard let path = NSBundle.mainBundle().pathForResource(resource, ofType : "p12") else { return nil }
+    guard let p12KeyFileContent = NSData(contentsOfFile: path) else { return nil }
+    
+    // Setting options for the identity
+    let options = [String(kSecImportExportPassphrase):password ?? ""]
+    var citems: CFArray? = nil
+    let resultPKCS12Import = withUnsafeMutablePointer(&citems) { citemsPtr in
+        SecPKCS12Import(p12KeyFileContent, options, citemsPtr)
+    }
+    
+    guard resultPKCS12Import == errSecSuccess else { return nil }
+    
+    // Recover the identity
+    let items = citems! as NSArray
+    let identityAndTrust = items.objectAtIndex(0) as! NSDictionary
+    let identity = identityAndTrust[String(kSecImportItemIdentity)] as! SecIdentity
+    let trust = identityAndTrust[String(kSecImportItemTrust)] as! SecTrust
+    
+    return (identity as SecIdentityRef, trust as SecTrustRef)
+}
+
+//func getSecIdentitySummaryString(identity: SecIdentityRef) -> String? {
+//    // Get the certificate from the identity.
+//    var certificatePtr: SecCertificate? = nil
+//    let status: OSStatus = withUnsafeMutablePointer(&certificatePtr) { ptr in
+//        SecIdentityCopyCertificate(identity, ptr);  // Extracts the certificate from the identity.
+//    }
+//    
+//    guard (status == errSecSuccess) else { return nil }
+//    guard let returnedCertificate = certificatePtr else { return nil }
+//    
+//    return SecCertificateCopySubjectSummary(returnedCertificate) as? String // Gets summary information from the certificate.
+//}
+//
+//func persistentRefForIdentity(identity: SecIdentityRef) -> CFData? {
+//    var persistent_ref: CFTypeRef? = nil
+//    let dict: [String:AnyObject] = [kSecReturnPersistentRef as String : kCFBooleanTrue, kSecValueRef as String : identity]
+//    let status = SecItemAdd(dict, &persistent_ref);
+//    
+//    guard (status == errSecSuccess) else { return nil }
+//    
+//    return (persistent_ref as! CFDataRef)
+//}
+
+// MARK: - Extensions
+
+extension RawRepresentable where Self.RawValue == String {
+    var localizedRawValue: String {
+        return NSBundle.mainBundle().localizedStringForKey(rawValue, value: nil, table: nil)
+    }
 }
 
 extension UIView {
@@ -71,6 +121,8 @@ extension UIViewController {
         vc.presentViewController(self, animated: animated, completion: completion)
     }
 }
+
+// MARK: - Synchronized Collections
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope

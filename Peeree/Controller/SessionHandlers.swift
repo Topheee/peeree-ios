@@ -122,13 +122,9 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
             session.disconnect()
             return
         }
-        guard let sessionKeyData = sessionID.sessionKey.rawValue.dataUsingEncoding(NSASCIIStringEncoding) else {
-            session.disconnect()
-            return
-        }
         
         attempt += 1
-        browser.invitePeer(sessionID.peerID, toSession: session, withContext: sessionKeyData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
+        browser.invitePeer(sessionID.peerID, toSession: session, withContext: sessionID.sessionKey.rawData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
     }
     
     override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
@@ -250,8 +246,7 @@ final class PinSessionHandler: DownloadSessionDelegate {
     override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
         switch state {
         case .Connected:
-            let data = NSKeyedArchiver.archivedDataWithRootObject(RemotePeerManager.SessionKey.Pin.rawValue)
-            sendData(data, toPeers: [peerID])
+            sendData(RemotePeerManager.SessionKey.Pin.rawData, toPeers: [peerID])
         case .Connecting:
             break
         case .NotConnected:
