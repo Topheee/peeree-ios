@@ -62,8 +62,8 @@
 /* Class = "UITextView"; text = "So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?"; ObjectID = "puP-SH-wIK"; */
 "puP-SH-wIK.text" = "So, to get in touch with someone, it should be better to tell him or her your real name instead of your online multiplayer shooter nickname - or do you want to be called xXx.Killer3000.xXx?";
 
-/* Class = "UILabel"; text = "Hello and welcome to Peeree, the best social p2p app!"; ObjectID = "rNF-0l-DWJ"; */
-"rNF-0l-DWJ.text" = "Hello and welcome to Peeree, the best social p2p app!";
+/* Class = "UILabel"; text = "Hello and welcome to Peeree, the best social P2P app!"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "Hello and welcome to Peeree, the best social P2P app!";
 
 /* Class = "UIViewController"; title = "First Info"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "First Info";

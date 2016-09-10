@@ -121,6 +121,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     }
     
     func locationManager(manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], inRegion region: CLBeaconRegion) {
+        // CoreLocation will call this delegate method at 1 Hz with updated range information.
         updateDistance(beacons.first!.proximity)
     }
     

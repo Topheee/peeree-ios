@@ -37,10 +37,14 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	}
 	@IBAction func filledFirstname(sender: UITextField) {
 		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-		UIView.animateWithDuration(1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
+		UIView.animateWithDuration(1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
-			}, completion: nil)
-	}
+        }, completion: { finished in
+            UIView.animateWithDuration(0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.Repeat, .Autoreverse, .AllowUserInteraction], animations: { () -> Void in
+                self.launchAppButton.transform = CGAffineTransformScale(self.launchAppButton.transform, 0.97, 0.97)
+            }, completion: nil)
+        })
+    }
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,7 +74,12 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        guard let rootTabBarController = segue.destinationViewController as? UITabBarController else { return }
+        guard let rootTabBarController = segue.destinationViewController as? UITabBarController else {
+            guard let vc = segue.destinationViewController as? OnboardingDescriptionViewController else { return }
+            
+            vc.infoType = .Data
+            return
+        }
         
         switch UserPeerInfo.instance.gender {
         case .Female:

@@ -68,7 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         //let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
 //        let theme = Theme(globalTint: (0/255, 72/255, 185/255), barTint: (0/255, 146/255, 0/255), globalBackground: (160/255, 255/255, 180/255)) //bright green (98/255, 255/255, 139/255)
         
-//		RootView.appearance().tintColor = theme.globalTintColor
+		RootView.appearance().tintColor = theme.globalTintColor
 		RootView.appearance().backgroundColor = theme.globalBackgroundColor
 		
 //        UINavigationBar.appearance().tintColor = theme.barTintColor
@@ -85,9 +85,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
 		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
         
         UIActivityIndicatorView.appearance().color = theme.globalTintColor
+        UIStackView.appearance().tintColor = theme.globalTintColor
         
         UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.colorWithAlphaComponent(0.65)
-//        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
+        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
         
         UIWindow.appearance().tintColor = theme.globalTintColor
         

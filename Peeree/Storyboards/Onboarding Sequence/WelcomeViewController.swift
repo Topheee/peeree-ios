@@ -10,6 +10,12 @@ import UIKit
 
 final class WelcomeViewController: UIViewController {
 	@IBOutlet private var infoButton: UIButton!
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        guard let vc = segue.destinationViewController as? OnboardingDescriptionViewController else { return }
+        
+        vc.infoType = .General
+    }
 	
 	override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)

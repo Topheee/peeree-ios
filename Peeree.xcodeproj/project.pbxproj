@@ -50,6 +50,8 @@
 		9DA93EE51D5D501100607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
 		9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
+		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
+		9DCB2F3B1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
@@ -138,6 +140,7 @@
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
 		9DA93EE41D5D501100607D9B /* SessionHandlers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SessionHandlers.swift; path = Controller/SessionHandlers.swift; sourceTree = "<group>"; };
 		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
+		9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OnboardingDescriptionViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/OnboardingDescriptionViewController.swift"; sourceTree = "<group>"; };
 		9DCFFD881C1DC3D4004687FB /* RemotePeerManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManagerTests.swift; sourceTree = "<group>"; };
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CircleMaskView.swift; path = View/CircleMaskView.swift; sourceTree = "<group>"; };
 		9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCNearbyServiceBrowserMock.swift; path = Helpers/Mocks/MCNearbyServiceBrowserMock.swift; sourceTree = "<group>"; };
@@ -250,6 +253,7 @@
 				9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */,
 				9D2923261B91E50B00B5B622 /* SetupViewController.swift */,
 				9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */,
+				9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */,
 			);
 			name = "Onboarding Sequence";
 			sourceTree = "<group>";
@@ -473,6 +477,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D883A4A1C26B5A200702F9A /* GenericFunctions.swift in Sources */,
+				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
@@ -535,6 +540,7 @@
 				9DDD0D411C24BBA5009A518F /* WalletController.swift in Sources */,
 				9DDD0D441C24BBA9009A518F /* CharacterTrait.swift in Sources */,
 				9DDD0D451C24BBA9009A518F /* HideableProperty.swift in Sources */,
+				9DCB2F3B1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9DDD0D311C24BBA1009A518F /* BrowseSettingsViewController.swift in Sources */,
 				9DDD0D331C24BBA1009A518F /* CharacterTraitViewController.swift in Sources */,
 				9DDD0D391C24BBA1009A518F /* SingleSelViewController.swift in Sources */,
