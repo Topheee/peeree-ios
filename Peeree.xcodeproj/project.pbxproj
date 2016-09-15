@@ -23,8 +23,6 @@
 		9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
 		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
-		9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
-		9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
 		9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
@@ -112,7 +110,6 @@
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
 		9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InAppPurchaseController.swift; path = Controller/InAppPurchaseController.swift; sourceTree = "<group>"; };
 		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
-		9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateSelViewController.swift; path = "Storyboards/Main Storyboard/DateSelViewController.swift"; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCSessionMock.swift; path = Helpers/Mocks/MCSessionMock.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
@@ -206,7 +203,6 @@
 				9D8A594A1B93043000164C9F /* PinsViewController.swift */,
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
-				9D680DC01C3ACD8A009D34D9 /* DateSelViewController.swift */,
 				9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */,
 			);
 			name = "Main Storyboard";
@@ -492,7 +488,6 @@
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
 				9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
-				9D680DC11C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
 				9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
@@ -528,7 +523,6 @@
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */,
 				9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */,
-				9D680DC21C3ACD8A009D34D9 /* DateSelViewController.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
 				9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9DDD0D4A1C24BBAF009A518F /* AppDelegate.swift in Sources */,
@@ -734,16 +728,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
@@ -754,12 +745,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";

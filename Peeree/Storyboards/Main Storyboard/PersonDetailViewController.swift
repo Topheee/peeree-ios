@@ -204,8 +204,7 @@ final class PersonDetailViewController: UIViewController {
     private func displayPeerInfo() {
         guard let peerInfo = displayedPeerInfo else { return }
         
-        let ageGenderFormat = NSLocalizedString("%d years old, %@", comment: "Text describing the peers age and gender.")
-        ageGenderLabel.text = String(format: ageGenderFormat, peerInfo.age, peerInfo.gender.localizedRawValue)
+        ageGenderLabel.text = peerInfo.summary
         stateLabel.text = peerInfo.relationshipStatus.localizedRawValue
     }
 }

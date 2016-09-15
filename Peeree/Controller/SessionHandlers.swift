@@ -276,7 +276,7 @@ final class PinnedSessionManager: MCSessionDelegateAdapter {
     }
     
     override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-        guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == RemotePeerManager.SessionKey.Pin.rawValue else { return }
+        guard RemotePeerManager.SessionKey(rawData: data) == RemotePeerManager.SessionKey.Pin else { return }
         
         let ackData = NSKeyedArchiver.archivedDataWithRootObject("ack")
         sendData(ackData, toPeers: [peerID])

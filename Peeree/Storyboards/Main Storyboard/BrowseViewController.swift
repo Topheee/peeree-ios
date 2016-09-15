@@ -181,7 +181,7 @@ final class BrowseViewController: UITableViewController {
         case BrowseViewController.MatchedPeersSection:
             let peer = matchedPeers[indexPath.row]
             cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = "\(peer.gender.localizedRawValue), \(peer.age), \(peer.relationshipStatus.localizedRawValue)"
+            cell.detailTextLabel!.text = peer.summary
             addPictureToCell(cell, peer: peer)
         case BrowseViewController.NewPeersSection:
             let peerID = newPeers[indexPath.row]
@@ -191,12 +191,12 @@ final class BrowseViewController: UITableViewController {
         case BrowseViewController.InFilterPeersSection:
             let peer = inFilterPeers[indexPath.row]
             cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = "\(peer.gender.localizedRawValue), \(peer.age), \(peer.relationshipStatus.localizedRawValue)"
+            cell.detailTextLabel!.text = peer.summary
             addPictureToCell(cell, peer: peer)
         case BrowseViewController.OutFilterPeersSection:
             let peer = outFilterPeers[indexPath.row]
             cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = "\(peer.gender.localizedRawValue), \(peer.age), \(peer.relationshipStatus.localizedRawValue)"
+            cell.detailTextLabel!.text = peer.summary
             addPictureToCell(cell, peer: peer)
         default:
             break

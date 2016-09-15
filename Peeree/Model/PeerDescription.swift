@@ -16,7 +16,7 @@ import UIKit.UIImage
 class TestPeerInfo: NetworkPeerInfo {
     init(peerID: MCPeerID) {
         var rand = arc4random()
-        let age = PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge))
+        let age: Int? = rand % 2 == 0 ? PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge)) : nil
         let relationshipStatus = PeerInfo.RelationshipStatus.InRelationship
         let characterTraits = CharacterTrait.standardTraits
         for trait in characterTraits {
@@ -62,10 +62,15 @@ final class UserPeerInfo: LocalPeerInfo {
         }
     }
 	
-	var dateOfBirth: NSDate {
+	var dateOfBirth: NSDate? {
 		didSet {
 			if dateOfBirth != oldValue {
-                peer.age = NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: dateOfBirth, toDate: NSDate(), options: []).year
+                if let birth = dateOfBirth {
+                    peer.age = NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: birth, toDate: NSDate(), options: []).year
+                } else {
+                    peer.age = nil
+                }
+                
 				dirtied()
 			}
 		}
@@ -92,14 +97,7 @@ final class UserPeerInfo: LocalPeerInfo {
             }
         }
     }
-	var age: Int {
-        get {
-            return peer.age
-        }
-		set {
-			fatalError("The age of the local user is defined by it's date of birth")
-		}
-	}
+	var age: Int? { return peer.age }
 	var gender: PeerInfo.Gender {
         get { return peer.gender }
         set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
@@ -118,7 +116,7 @@ final class UserPeerInfo: LocalPeerInfo {
 	
 	private override init() {
 		dateOfBirth = NSDate(timeIntervalSinceNow: -3600*24*365*18)
-        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: 18, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: NSDate(), _hasPicture: false, _picture: nil))
+        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: nil, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: NSDate(), _hasPicture: false, _picture: nil))
 	}
 
 	@objc required init?(coder aDecoder: NSCoder) {
@@ -170,7 +168,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         let uuid = aDecoder.decodeObjectOfClass(NSUUID.self, forKey: PeerInfo.BeaconUUIDKey)
         let characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.TraitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits
         let picture = aDecoder.decodeObjectOfClass(UIImage.self, forKey: PeerInfo.PictureKey)
-        let age = aDecoder.decodeIntegerForKey(PeerInfo.AgeKey)
+        let age: Int? = aDecoder.containsValueForKey(PeerInfo.AgeKey) ? aDecoder.decodeIntegerForKey(PeerInfo.AgeKey) : nil
         
         var relationshipStatus: PeerInfo.RelationshipStatus
         if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.StatusKey) as? String {
@@ -191,11 +189,13 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         aCoder.encodeObject(peer.peerID, forKey: PeerInfo.PeerIDKey)
         aCoder.encodeObject(peer.picture, forKey: PeerInfo.PictureKey)
         aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.GenderKey)
-        aCoder.encodeInteger(peer.age, forKey: PeerInfo.AgeKey)
         aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.StatusKey)
         aCoder.encodeObject(peer.version, forKey: PeerInfo.VersionKey)
         aCoder.encodeObject(peer.characterTraits, forKey: PeerInfo.TraitsKey)
         aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+        if let age = peer.age {
+            aCoder.encodeInteger(age, forKey: PeerInfo.AgeKey)
+        }
     }
 }
 
@@ -224,7 +224,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         let uuid = aDecoder.decodeObjectOfClass(NSUUID.self, forKey: PeerInfo.BeaconUUIDKey)
         let characterTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.TraitsKey) as? [CharacterTrait] ?? CharacterTrait.standardTraits
         let hasPicture = aDecoder.decodeBoolForKey(PeerInfo.HasPictureKey)
-        let age = aDecoder.decodeIntegerForKey(PeerInfo.AgeKey)
+        let age: Int? = aDecoder.containsValueForKey(PeerInfo.AgeKey) ? aDecoder.decodeIntegerForKey(PeerInfo.AgeKey) : nil
 
         var relationshipStatus: PeerInfo.RelationshipStatus
         if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.StatusKey) as? String {
@@ -240,11 +240,13 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         aCoder.encodeObject(peer.peerID, forKey: PeerInfo.PeerIDKey)
         aCoder.encodeBool(peer.hasPicture, forKey: PeerInfo.HasPictureKey)
         aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.GenderKey)
-        aCoder.encodeInteger(peer.age, forKey: PeerInfo.AgeKey)
         aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.StatusKey)
         aCoder.encodeObject(peer.version, forKey: PeerInfo.VersionKey)
         aCoder.encodeObject(peer.characterTraits, forKey: PeerInfo.TraitsKey)
         aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+        if let age = peer.age {
+            aCoder.encodeInteger(age, forKey: PeerInfo.AgeKey)
+        }
     }
 }
 
@@ -303,7 +305,7 @@ struct PeerInfo: Equatable {
     }
     
     var gender = Gender.Female
-    var age = 18
+    var age: Int?
     var relationshipStatus = RelationshipStatus.NoComment
     
     var characterTraits: [CharacterTrait]
@@ -354,6 +356,16 @@ struct PeerInfo: Equatable {
             return NSLocalizedString("Not yet pinned.", comment: "The user did not yet marked someone as interesting")
         }
     }
+    
+    var summary: String {
+        if let age = age {
+            let ageGenderFormat = NSLocalizedString("%d years old, %@", comment: "Text describing the peers age and gender.")
+            return String(format: ageGenderFormat, age, gender.localizedRawValue)
+        } else {
+            return gender.localizedRawValue
+        }
+    }
+    
     
     func copyToNewID(peerID: MCPeerID) -> PeerInfo {
         return PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: iBeaconUUID, lastChanged: lastChanged, _hasPicture:

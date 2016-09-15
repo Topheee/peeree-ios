@@ -84,6 +84,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
 		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
 		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
         
+        UIToolbar.appearance().tintColor = theme.globalTintColor
+        
         UIActivityIndicatorView.appearance().color = theme.globalTintColor
         UIStackView.appearance().tintColor = theme.globalTintColor
         
@@ -93,21 +95,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         UIWindow.appearance().tintColor = theme.globalTintColor
         
         RemotePeerManager.NetworkNotification.RemotePeerAppeared.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
-                self.remotePeerAppeared(peerID)
-            }
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+
+            self.remotePeerAppeared(peerID)
         }
         
         RemotePeerManager.NetworkNotification.RemotePeerDisappeared.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
-                self.remotePeerDisappeared(peerID)
-            }
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+            
+            self.remotePeerDisappeared(peerID)
         }
         
         RemotePeerManager.NetworkNotification.PinMatch.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID {
-                self.pinMatchOccured(RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID)!)
-            }
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+            guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) else { return }
+            
+            self.pinMatchOccured(peer)
         }
         
         RemotePeerManager.NetworkNotification.ConnectionChangedState.addObserver { notification in

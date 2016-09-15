@@ -39,9 +39,9 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		case Unspecified = 0, Male, Female, Queer
 	}
 	
-	//range from 10..100
+	/// range from 10..100
 	var ageMin: Float = 10.0
-	//range from 10..100 or 0, where 0 means ∞
+	/// range from 10..100 or 0, where 0 means ∞
 	var ageMax: Float = 0.0
 	
 	var gender: GenderType = .Unspecified
@@ -68,7 +68,12 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	
 	func checkPeer(peer: PeerInfo) -> Bool {
 		let matchingGender = gender == .Unspecified || (gender == .Female && peer.gender == .Female) || (gender == .Male && peer.gender == .Male)
-		let matchingAge = ageMin <= Float(peer.age) && (ageMax == 0.0 || ageMax >= Float(peer.age))
+        var matchingAge: Bool
+        if let peerAge = peer.age {
+            matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))
+        } else {
+            matchingAge = true
+        }
 		
 		return matchingAge && matchingGender
 	}
