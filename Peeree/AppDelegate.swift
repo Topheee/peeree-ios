@@ -77,7 +77,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         UITabBar.appearance().tintColor = theme.barTintColor
 		UITabBar.appearance().backgroundColor = theme.barBackgroundColor
 		
-		UITableView.appearance().backgroundColor = theme.globalBackgroundColor
+		UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
 		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
 //        UITableView.appearance().tintColor = theme.globalTintColor
 		
@@ -186,6 +186,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         _ = CBPeripheralManager(delegate: self, queue: nil)
     }
     
+    func showPeer(peerID: MCPeerID) {
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
+        
+        rootTabBarController.selectedIndex = 0
+        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
+    }
+    
+    func findPeer(peerID: MCPeerID) {
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
+        
+        rootTabBarController.selectedIndex = 0
+        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
+        let test = browseNavVC.viewControllers[0] as? PersonDetailViewController
+        print(test)
+    }
+    
     // MARK: CBPeripheralManagerDelegate
     
     func peripheralManagerDidUpdateState(peripheral: CBPeripheralManager) {
@@ -226,13 +246,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     private func pinMatchOccured(peer: PeerInfo) {
         if isActive {
-            let message = String(format: NSLocalizedString("You have a pin match with %@! Go ahead and meet each other.", comment: "Description of 'Pin Match' alert"), peer.peerName)
-            let alertController = UIAlertController(title: NSLocalizedString("Pin Match", comment: "Title message of alerting the user that a pin match occured."), message: message, preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Open Profile", comment: "Button text for opening the person view of the matched peer."), style: .Default, handler: { (action) in
-                self.showPeer(peer.peerID)
-            }))
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Later", comment: "Button text for not visiting the pin matched peer."), style: .Cancel, handler: nil))
-            alertController.present(nil)
+            setPinMatchBadge()
+            // TODO PinMatchVC nur zeigen, wenn man nicht in der BrowseView, der PersonView des Peers oder einer FindView ist
+            let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier(PinMatchViewController.StoryboardID) as! PinMatchViewController
+            pinMatchVC.displayedPeer = peer
+            window?.rootViewController?.presentViewController(pinMatchVC, animated: true, completion: nil)
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
@@ -241,6 +259,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
             UIApplication.sharedApplication().presentLocalNotificationNow(note)
         }
+    }
+    
+    private func setPinMatchBadge() {
+        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
+        
+        rootTabBarController.tabBar.items?[0].badgeValue = NSLocalizedString("Pin Match", comment: "The name of the event when two peers pinned each other.")
     }
     
     private func updateNewPeerBadge() {
@@ -253,14 +277,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
         }
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
-    }
-    
-    private func showPeer(peerID: MCPeerID) {
-        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
-        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
-        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
-        
-        rootTabBarController.selectedIndex = 0
-        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
 }

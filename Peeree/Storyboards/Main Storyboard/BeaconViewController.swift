@@ -19,10 +19,8 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     @IBOutlet weak var portraitDistanceConstraint: NSLayoutConstraint!
     @IBOutlet weak var userPortrait: UIImageView!
     @IBOutlet weak var portraitWidthConstraint: NSLayoutConstraint!
-    @IBOutlet weak var retryButton: UIButton!
-    @IBOutlet weak var errorLabel: UILabel!
-    
-    var searchedPeer: PeerInfo?
+    @IBOutlet weak var retryButton: UIBarButtonItem!
+    @IBOutlet weak var errorItem: UIBarButtonItem!
     
     private let locationManager = CLLocationManager()
     private var ownRegion: CLBeaconRegion! {
@@ -31,6 +29,47 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     }
     private var peerRegion: CLBeaconRegion?
     private var beaconManager: CBPeripheralManager?
+    
+    enum ErrorReason: String {
+        case RemoteInsufficient, LocationServicesUnavailable, DeviceUnsupported, LocationNetworkError, MonitoringDelayed
+        
+        /*
+         *  For genstrings
+         *
+         *  NSLocalizedString("DeviceInsufficient", comment: "Error: Remote peer has no iBeacon technology available.")
+         *  NSLocalizedString("LocationServicesDisabled", comment: "Error: Location Services are disabled.")
+         *  NSLocalizedString("DeviceUnsupported", comment: "Error: Device is lacking location features.")
+         *  NSLocalizedString("LocationNetworkError", comment: "Error: Networking issues with Location Services.")
+         *  NSLocalizedString("MonitoringDelayed", comment: "Error: Location Services delayed updates.")
+         */
+    }
+    enum State {
+        case Idle, Advertising, Monitoring, Ranging
+        case Error(reason: ErrorReason, recoverable: Bool)
+    }
+    private var state: State = .Idle {
+        didSet {
+            switch state {
+            case .Idle:
+                retryButton.enabled = false
+                errorItem.title = NSLocalizedString("Idle.", comment: "Status of the beacon view when it is not monitoring.")
+            case .Monitoring, .Advertising:
+                retryButton.enabled = false
+                errorItem.title = NSLocalizedString("Peer unavailable.", comment: "Status of the beacon view when it is active, but the peer is not in range.")
+            case .Ranging:
+                retryButton.enabled = false
+                errorItem.title = nil
+            case .Error(let reason, let recoverable):
+                removeDistanceViewAnimations()
+                retryButton.enabled = recoverable
+                errorItem.title = reason.localizedRawValue
+                updateDistance(.Unknown)
+                showPeerUnavailable()
+            }
+        }
+    }
+    
+    var searchedPeer: PeerInfo?
     
     @IBAction func retry(sender: AnyObject) {
         stopBeacon()
@@ -42,14 +81,15 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         
         userPortrait.image = UserPeerInfo.instance.picture
         remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
-        showNoError()
+        state = .Idle
         updateDistance(.Unknown)
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+        
         guard searchedPeer?.iBeaconUUID != nil else {
-            showError(NSLocalizedString("Remote cannot be searched.", comment: "Error description that remote peer has no iBeacon technology available."), recoverable: false)
+            state = .Error(reason: .RemoteInsufficient, recoverable: false)
             return
         }
         guard ownRegion != nil else {
@@ -62,6 +102,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        
         userPortrait.maskView = CircleMaskView(frame: userPortrait.bounds)
         remotePortrait.maskView = CircleMaskView(frame: remotePortrait.bounds)
     }
@@ -102,7 +143,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     
     func locationManager(manager: CLLocationManager, didStartMonitoringForRegion region: CLRegion) {
         addDistanceViewAnimations()
-        showNoError()
+        state = .Monitoring
     }
     
     func locationManager(manager: CLLocationManager, didFinishDeferredUpdatesWithError error: NSError?) {
@@ -140,7 +181,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         case .PoweredOff:
             handleLocationError(NSError(domain: kCLErrorDomain, code: CLError.RangingUnavailable.rawValue, userInfo: nil))
         case .PoweredOn:
-            showNoError()
+            state = .Advertising
             
             let beaconPeripheralData = ownRegion.peripheralDataWithMeasuredPower(nil) as NSDictionary
             assert(beaconPeripheralData as? [String : AnyObject] != nil)
@@ -172,7 +213,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     // MARK: Private Methods
 
     private func updateDistance(proximity: CLProximity) {
-        let multipliers: [CLProximity : CGFloat] = [.Immediate : 0.0, .Near : 0.3, .Far : 0.7, .Unknown : 1.0]
+        let multipliers: [CLProximity : CGFloat] = [.Immediate : 0.0, .Near : 0.3, .Far : 0.6, .Unknown : 0.85]
         let multiplier = multipliers[proximity] ?? 1.0
         portraitDistanceConstraint.constant = (distanceView.frame.height - userPortrait.frame.height) * multiplier
         portraitWidthConstraint.constant = -50 * multiplier
@@ -194,32 +235,20 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         }, completion: nil)
     }
     
-    private func showLocationServicesDeniedError() {
-        let alertController = UIAlertController(title: NSLocalizedString("Location Services Disabled", comment: "Title message of alerting the user that Location Services are not authorized."), message: NSLocalizedString("Location Services are used to find matched people. They are only active as long as you stay in \(navigationItem.title) and the app is in the foreground.", comment: "Description of 'Location Services disabled'"), preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Open Settings", comment: "Button text for opening System Settings."), style: .Default, handler: {(action) in
-            UIApplication.sharedApplication().openURL(NSURL(string: UIApplicationOpenSettingsURLString)!)
-        }))
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil))
-        alertController.present(nil)
-        showError(NSLocalizedString("Location Services Disabled.", comment: "Short description that location services are disabled."), recoverable: true)
-    }
-    
     private func showLocationServicesUnavailableError() {
-        let alertController = UIAlertController(title: NSLocalizedString("Location Services Unavailable", comment: "Title message of alerting the user that Location Services are not available."), message: NSLocalizedString("Turn on bluetooth and Location Services.", comment: "Description of 'Location Services Unavailable'"), preferredStyle: .Alert)
+        let alertController = UIAlertController(title: NSLocalizedString("Location Services Unavailable", comment: "Title message of alerting the user that Location Services are not available."), message: NSLocalizedString("Location Services are used to find matched people. They are only active as long as you stay in \(navigationItem.title) and the app is in the foreground.", comment: "Description of 'Location Services disabled'"), preferredStyle: .Alert)
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Open Settings", comment: "Button text for opening System Settings."), style: .Default, handler: {(action) in
             UIApplication.sharedApplication().openURL(NSURL(string: UIApplicationOpenSettingsURLString)!)
         }))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil))
         alertController.present(nil)
-        showError(NSLocalizedString("Location Services are disabled.", comment: "Short description that location services are disabled."), recoverable: true)
+        state = .Error(reason: .LocationServicesUnavailable, recoverable: true)
     }
     
     private func handleLocationServicesUnsupportedError() {
         stopBeacon()
         
-        let alertController = UIAlertController(title: NSLocalizedString("Device not supported", comment: "Title message of alerting the user that the device is incapable of needed location features."), message: NSLocalizedString("This app uses Apple iBeacon technology to measure distance. However, this technology is not available on your device.", comment: "Description of 'Device not supported'"), preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil))
-        alertController.present(nil)
+        state = .Error(reason: .DeviceUnsupported, recoverable: false)
     }
     
     private func handleLocationError(error: NSError) {
@@ -232,30 +261,16 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
             // temporary unable to gather location
             break
         case .Denied, .RegionMonitoringDenied:
-            showLocationServicesDeniedError()
+            showLocationServicesUnavailableError()
         case .Network, .RangingFailure, .RegionMonitoringFailure:
-            showError(NSLocalizedString("Location network error.", comment: "Short description for networking issues with Location Services."), recoverable: true)
+            state = .Error(reason: .LocationNetworkError, recoverable: true)
         case .RangingUnavailable:
             showLocationServicesUnavailableError()
         case .RegionMonitoringSetupDelayed, .RegionMonitoringResponseDelayed:
-            showError(NSLocalizedString("Pending.", comment: "Short description of delay errors."), recoverable: false)
+            state = .Error(reason: .MonitoringDelayed, recoverable: true)
         default:
             assertionFailure("Unexpected location error")
         }
-    }
-    
-    private func showError(message: String, recoverable: Bool) {
-        removeDistanceViewAnimations()
-        retryButton.hidden = !recoverable
-        errorLabel.text = message
-        errorLabel.hidden = false
-        updateDistance(.Unknown)
-        showPeerUnavailable()
-    }
-    
-    private func showNoError() {
-        retryButton.hidden = true
-        errorLabel.hidden = true
     }
     
     private func startBeacon() {
@@ -266,7 +281,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         
         switch CLLocationManager.authorizationStatus() {
         case .Denied, .Restricted:
-            showLocationServicesDeniedError()
+            showLocationServicesUnavailableError()
         case .NotDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .AuthorizedAlways, .AuthorizedWhenInUse:
@@ -292,20 +307,88 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
 }
 
 final class DistanceView: UIView {
-    override func drawRect(rect: CGRect) {
-        UIColor.darkGrayColor().setStroke()
-        var theRect = rect.insetBy(dx: 2.0, dy: 2.0)
-        theRect.size.height = theRect.height*2
-        UIBezierPath(ovalInRect: theRect).stroke()
+    static let ringCount = 3
+    
+    var timer: NSTimer?
+    
+    private class PulseIndex: NSObject {
+        static let StartInterval: NSTimeInterval = 1.0
+        var index: Int = DistanceView.ringCount
+    }
+    
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
         
-        let ringCount = 3
-        let scale: CGFloat = 0.65
-        for _ in 1...ringCount {
-            theRect.origin.y = theRect.origin.y + theRect.height*(1.0-scale)*0.5
-            theRect.origin.x = theRect.origin.x + theRect.width*(1.0-scale)*0.5
-            theRect.size.height = theRect.height*scale
-            theRect.size.width = theRect.width*scale
-            UIBezierPath(ovalInRect: theRect).stroke()
+        timer?.invalidate()
+        timer = nil
+        
+        guard superview != nil else { return }
+        
+        timer = NSTimer.scheduledTimerWithTimeInterval(PulseIndex.StartInterval, target: self, selector: #selector(pulse(_:)), userInfo: PulseIndex(), repeats: true)
+        timer?.tolerance = 0.1
+        
+        addRingLayers()
+    }
+    
+    override func layoutSublayersOfLayer(layer: CALayer) {
+        super.layoutSublayersOfLayer(layer)
+        guard let sublayers = layer.sublayers else { return }
+        
+        var scale: CGFloat = 1.0
+        var theRect = self.bounds.insetBy(dx: 2.0, dy: 2.0)
+        theRect.size.height = theRect.height*2
+        let position = CGPoint(x: theRect.width/2, y: theRect.height/2)
+        
+        for sublayer in sublayers {
+            guard let ringLayer = sublayer as? CAShapeLayer else { continue }
+            ringLayer.bounds = theRect
+            ringLayer.position = position
+            ringLayer.path = CGPathCreateWithEllipseInRect(ringLayer.bounds, nil)
+            ringLayer.shadowPath = ringLayer.path
+            ringLayer.lineWidth = 5.0 / scale
+            ringLayer.transform = CATransform3DMakeScale(scale, scale, 1.0)
+            scale *= 0.65
+        }
+    }
+    
+    func pulse(sender: NSTimer) {
+        guard let pulseIndex = sender.userInfo as? PulseIndex else { sender.invalidate(); return }
+        guard let pulseLayer = layer.sublayers?[pulseIndex.index] else { sender.invalidate(); return }
+        
+        let oldIndex = pulseIndex.index
+        pulseIndex.index = pulseIndex.index < DistanceView.ringCount ? pulseIndex.index + 1 : 0
+        let timeInterval = pulseIndex.index == DistanceView.ringCount - 1 ? PulseIndex.StartInterval : 2.0*NSTimeInterval(pulseIndex.index + 1)
+        sender.fireDate = NSDate(timeInterval: timeInterval, sinceDate: sender.fireDate)
+        //        pulseLayer.opacity = 0.5
+        pulseLayer.shadowOpacity = 0.0
+        
+        let previousLayer = layer.sublayers![oldIndex]
+        //        previousLayer.opacity = 1.0
+        previousLayer.shadowOpacity = 0.5
+    }
+    
+    private func addRingLayers() {
+        
+        var scale: CGFloat = 1.0
+        var theRect = self.bounds.insetBy(dx: 2.0, dy: 2.0)
+        theRect.size.height = theRect.height*2
+        let position = CGPoint(x: theRect.width/2, y: theRect.height/2)
+        
+        for _ in 1...DistanceView.ringCount {
+            let ringLayer = CAShapeLayer()
+            ringLayer.bounds = theRect
+            ringLayer.position = position
+            ringLayer.path = CGPathCreateWithEllipseInRect(ringLayer.bounds, nil)
+            ringLayer.fillColor = nil
+            ringLayer.strokeColor = UIColor.grayColor().CGColor
+            ringLayer.lineWidth = 5.0 / scale
+            ringLayer.shadowPath = ringLayer.path
+            ringLayer.shadowColor = self.tintColor.CGColor
+            ringLayer.shadowRadius = 5.0
+            self.layer.addSublayer(ringLayer)
+            scale *= 0.65
+            theRect.size.width *= scale
+            theRect.size.height *= scale
         }
     }
 }

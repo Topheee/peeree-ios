@@ -19,6 +19,7 @@ final class PersonDetailViewController: UIViewController {
     @IBOutlet private weak var traitsButton: UIButton!
     @IBOutlet private weak var gradientView: UIImageView!
     @IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var findButtonItem: UIBarButtonItem!
     
     private static let unwindSegueID = "unwindToBrowseViewController"
     static let beaconSegueID = "beaconSegue"
@@ -101,6 +102,7 @@ final class PersonDetailViewController: UIViewController {
         traitsButton.hidden = state.peerInfoDownloadState != .Downloaded
         gradientView.hidden = !state.pinMatch || state.isLocalPeer
         pinIndicator.hidden = state.pinState != .Pinning
+        findButtonItem.enabled = state.pinMatch
         
         if state.isLocalPeer || state.isAvailable {
             navigationItem.titleView = nil

@@ -140,7 +140,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         dateFormatter.timeStyle = .NoStyle
         dateFormatter.dateStyle = .LongStyle
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.indexOf(UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")!, forState: .Normal)
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable"), forState: .Normal)
         
         statusButton.setNeedsLayout()
 	}

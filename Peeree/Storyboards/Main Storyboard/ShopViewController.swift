@@ -126,7 +126,15 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     
     @objc
     private func refreshTable(sender: AnyObject?) {
-        inAppPurchaser.requestProducts()
+        guard let reachability = Reachability() else { refreshControl?.endRefreshing(); return }
+        reachability.startNotifier()
+        
+        switch reachability.currentReachabilityStatus() {
+        case .NotReachable:
+            refreshControl?.endRefreshing()
+        case .ReachableViaWiFi, .ReachableViaWWAN:
+            inAppPurchaser.requestProducts()
+        }
     }
     
     private func createWalletInfoCell(tableView: UITableView, indexPath: NSIndexPath) -> UITableViewCell {

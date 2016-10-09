@@ -8,6 +8,21 @@
 
 import UIKit
 
+class ProgressCircleMaskView: CircleMaskView {
+    var progress: CGFloat = 0.0
+    
+    override func drawRect(rect: CGRect) {
+        super.drawRect(rect)
+        let Pi: CGFloat = 3.1412
+        let startAngle: CGFloat = 1.0*Pi
+        let endAngle: CGFloat = startAngle+2*Pi*(1.0-progress)
+        let circle = UIBezierPath(arcCenter: rect.center, radius: rect.width, startAngle: startAngle, endAngle: endAngle, clockwise: true) // TODO localize clockwise
+        let context = UIGraphicsGetCurrentContext()
+        CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 0.0)
+        circle.fill()
+    }
+}
+
 class CircleMaskView: UIView {
     override func drawRect(rect: CGRect) {
         let circle = UIBezierPath(ovalInRect: rect)
@@ -25,36 +40,11 @@ class CircleMaskView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = UIColor(white: 1.0, alpha: 0.0)
+        backgroundColor = UIColor(white: 1.0, alpha: 0.0)
+        autoresizingMask = [.FlexibleLeftMargin, .FlexibleRightMargin, .FlexibleTopMargin, .FlexibleBottomMargin]
     }
     
     required init?(coder aDecoder: NSCoder) {
         return nil
     }
 }
-
-//class CircleMaskView: UIView {
-//    let maskedView: UIView
-//    
-//    override func drawRect(rect: CGRect) {
-//        let circle = UIBezierPath(ovalInRect: rect)
-//        let context = UIGraphicsGetCurrentContext()
-//        CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0)
-//        circle.fill()
-//    }
-//    
-//    override func layoutIfNeeded() {
-//        super.layoutIfNeeded()
-//        
-//    }
-//    
-//    init(forView: UIView) {
-//        maskedView = forView
-//        super.init(frame: forView.bounds)
-//        self.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.0)
-//    }
-//    
-//    required init?(coder aDecoder: NSCoder) {
-//        return nil
-//    }
-//}

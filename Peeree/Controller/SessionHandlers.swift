@@ -14,7 +14,7 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
     /// Only used to keep a reference to the session handlers so the RemotePeerManager does not have to.
     private var activeSessions: Set<MCSessionDelegateAdapter> = Set()
     
-    var session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .Required)
+    let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .Required)
     
     override init() {
         super.init()

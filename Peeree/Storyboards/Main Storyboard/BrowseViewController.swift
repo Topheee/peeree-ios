@@ -238,8 +238,8 @@ final class BrowseViewController: UITableViewController {
         let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
         guard let croppedImage = imageView.image?.croppedImage(CGRectMake((originalImageSize.width - minImageEdgeLength) / 2, (originalImageSize.height - minImageEdgeLength) / 2, minImageEdgeLength, minImageEdgeLength)) else { return }
         
-        UIGraphicsBeginImageContextWithOptions(CGSizeMakeSquare(cell.contentView.marginFrame.height), true, UIScreen.mainScreen().scale)
-        let imageRect = CGRectMakeSquare(cell.contentView.marginFrame.height)
+        UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cell.contentView.marginFrame.height), true, UIScreen.mainScreen().scale)
+        let imageRect = CGRect(squareEdgeLength: cell.contentView.marginFrame.height)
         croppedImage.drawInRect(imageRect)
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()

@@ -21,14 +21,6 @@ func unarchiveObjectFromUserDefs<T: NSSecureCoding>(forKey: String) -> T? {
     return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
 }
 
-func CGRectMakeSquare(edgeLength: CGFloat) -> CGRect {
-    return CGRectMake(0.0, 0.0, edgeLength, edgeLength)
-}
-
-func CGSizeMakeSquare(edgeLength: CGFloat) -> CGSize {
-    return CGSizeMake(edgeLength, edgeLength)
-}
-
 func getIdentity(fromResource resource: String, password : String?) -> (SecIdentityRef, SecTrustRef)? {
     // Load certificate file
     guard let path = NSBundle.mainBundle().pathForResource(resource, ofType : "p12") else { return nil }
@@ -51,6 +43,45 @@ func getIdentity(fromResource resource: String, password : String?) -> (SecIdent
     
     return (identity as SecIdentityRef, trust as SecTrustRef)
 }
+
+/// Objective-C __bridge cast
+func bridge<T : AnyObject>(obj : T) -> UnsafePointer<Void> {
+    return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
+    // return unsafeAddressOf(obj) // ***
+}
+
+/// Objective-C __bridge cast
+func bridge<T : AnyObject>(ptr : UnsafePointer<Void>) -> T {
+    return Unmanaged<T>.fromOpaque(COpaquePointer(ptr)).takeUnretainedValue()
+    // return unsafeBitCast(ptr, T.self) // ***
+}
+
+/// Objective-C __bridge_retained equivalent. Casts the object pointer to a void pointer and retains the object.
+func bridgeRetained<T : AnyObject>(obj : T) -> UnsafePointer<Void> {
+    return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
+}
+
+/// Objective-C __bridge_transfer equivalent. Converts the void pointer back to an object pointer and consumes the retain.
+func bridgeTransfer<T : AnyObject>(ptr : UnsafePointer<Void>) -> T {
+    return Unmanaged<T>.fromOpaque(COpaquePointer(ptr)).takeRetainedValue()
+}
+
+// Swift 3
+//func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
+//    return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
+//}
+//
+//func bridge<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
+//    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+//}
+//
+//func bridgeRetained<T : AnyObject>(obj : T) -> UnsafeRawPointer {
+//    return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
+//}
+//
+//func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
+//    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
+//}
 
 //func getSecIdentitySummaryString(identity: SecIdentityRef) -> String? {
 //    // Get the certificate from the identity.
@@ -76,6 +107,22 @@ func getIdentity(fromResource resource: String, password : String?) -> (SecIdent
 //}
 
 // MARK: - Extensions
+
+extension CGRect {
+    var center: CGPoint {
+        return CGPoint(x: midX, y: midY)
+    }
+    
+    init(squareEdgeLength: CGFloat) {
+        self.init(x: 0.0, y: 0.0, width: squareEdgeLength, height: squareEdgeLength)
+    }
+}
+
+extension CGSize {
+    init(squareEdgeLength: CGFloat) {
+        self.init(width: squareEdgeLength, height: squareEdgeLength)
+    }
+}
 
 extension RawRepresentable where Self.RawValue == String {
     var localizedRawValue: String {
@@ -121,6 +168,164 @@ extension UIViewController {
         vc.presentViewController(self, animated: animated, completion: completion)
     }
 }
+
+// MARK: - Network Reachability
+
+/*
+ Based on the Apple Reachability sample code.
+ */
+
+import SystemConfiguration
+
+class Reachability {
+    static let ReachabilityChangedNotification = "kNetworkReachabilityChangedNotification"
+
+    let reachabilityRef: SCNetworkReachabilityRef
+    
+    enum NetworkStatus: Int {
+        case NotReachable, ReachableViaWiFi, ReachableViaWWAN
+    }
+
+//    static let ShouldPrintReachabilityFlags = true
+//
+//    static func PrintReachabilityFlags(flags: SCNetworkReachabilityFlags, comment: String) {
+//        if ShouldPrintReachabilityFlags {
+//            NSLog("Reachability Flag Status: %c%c %c%c%c%c%c%c%c %s\n",
+//                   (flags & SCNetworkReachabilityFlags.IsWWAN.rawValue)		 ? "W" : "-",
+//                   (flags & SCNetworkReachabilityFlags.Reachable)            ? "R" : "-",
+//                   
+//                   (flags & SCNetworkReachabilityFlags.TransientConnection)  ? "t" : "-",
+//                   (flags & SCNetworkReachabilityFlags.ConnectionRequired)   ? "c" : "-",
+//                   (flags & SCNetworkReachabilityFlags.ConnectionOnTraffic)  ? "C" : "-",
+//                   (flags & SCNetworkReachabilityFlags.InterventionRequired) ? "i" : "-",
+//                   (flags & SCNetworkReachabilityFlags.ConnectionOnDemand)   ? "D" : "-",
+//                   (flags & SCNetworkReachabilityFlags.IsLocalAddress)       ? "l" : "-",
+//                   (flags & SCNetworkReachabilityFlags.IsDirect)             ? "d" : "-",
+//                   comment
+//            );
+//        }
+//    }
+    
+    init?(hostName: String) {
+        guard let tmp = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, hostName) else { return nil } //hostName.UTF8String
+        reachabilityRef = tmp
+    }
+    
+    init?(hostAddress: sockaddr) {
+        var mutableAddress = hostAddress
+        guard let tmp = (withUnsafePointer(&mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
+            return SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, unsafePointer)
+        }) else { return nil }
+        reachabilityRef = tmp
+    }
+    
+    init?() {
+        var zeroAddress = sockaddr_in()
+        bzero(&zeroAddress, sizeof(sockaddr_in))
+        zeroAddress.sin_len = UInt8(sizeof(sockaddr_in))
+        zeroAddress.sin_family = UInt8(AF_INET)
+        var mutableAddress = zeroAddress
+        guard let tmp = (withUnsafePointer(&mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
+            return SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, UnsafePointer(unsafePointer))
+        }) else { return nil }
+        reachabilityRef = tmp
+    }
+
+    func startNotifier() -> Bool {
+        var returnValue = false
+        var selfptr = bridge(self)
+        var context = withUnsafeMutablePointer(&selfptr) { (unsafePointer) -> SCNetworkReachabilityContext in
+            return SCNetworkReachabilityContext(version: 0, info: unsafePointer, retain: nil, release: nil, copyDescription: nil)
+        }
+        
+        if (SCNetworkReachabilitySetCallback(reachabilityRef, ({(target: SCNetworkReachabilityRef, flags: SCNetworkReachabilityFlags, info: UnsafeMutablePointer<Void>) in
+            assert(info != nil, "info was NULL in ReachabilityCallback")
+            let noteObject: Reachability = bridge(info)
+            
+            // Post a notification to notify the client that the network reachability changed.
+            NSNotificationCenter.defaultCenter().postNotificationName(Reachability.ReachabilityChangedNotification, object: noteObject)
+        }), &context)) {
+            if (SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
+                returnValue = true
+            }
+        }
+        
+        return returnValue
+    }
+        
+        
+    func stopNotifier() {
+        SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
+    }
+            
+    deinit {
+        stopNotifier()
+//        CFRelease(reachabilityRef)
+    }
+
+    func networkStatusForFlags(flags: SCNetworkReachabilityFlags) -> NetworkStatus {
+//        Reachability.PrintReachabilityFlags(flags, "networkStatusForFlags")
+        if !flags.contains(SCNetworkReachabilityFlags.Reachable) {
+            // The target host is not reachable.
+            return .NotReachable
+        }
+        
+        var returnValue = NetworkStatus.NotReachable
+        
+        if !flags.contains(SCNetworkReachabilityFlags.ConnectionRequired) {
+            /*
+             If the target host is reachable and no connection is required then we'll assume (for now) that you're on Wi-Fi...
+             */
+            returnValue = .ReachableViaWiFi
+        }
+        
+        if flags.contains(SCNetworkReachabilityFlags.ConnectionOnDemand) || flags.contains(SCNetworkReachabilityFlags.ConnectionOnTraffic) {
+            /*
+             ... and the connection is on-demand (or on-traffic) if the calling application is using the CFSocketStream or higher APIs...
+             */
+            
+            if !flags.contains(SCNetworkReachabilityFlags.InterventionRequired) {
+                /*
+                 ... and no [user] intervention is needed...
+                 */
+                returnValue = .ReachableViaWiFi
+            }
+        }
+        
+        if flags.contains(SCNetworkReachabilityFlags.IsWWAN) {
+            /*
+             ... but WWAN connections are OK if the calling application is using the CFNetwork APIs.
+             */
+            returnValue = .ReachableViaWWAN
+        }
+        
+        return returnValue
+    }
+        
+        
+    func connectionRequired() -> Bool {
+        var flags: SCNetworkReachabilityFlags = []
+        
+        if (SCNetworkReachabilityGetFlags(reachabilityRef, &flags)) {
+            return flags.contains(SCNetworkReachabilityFlags.ConnectionRequired)
+        }
+        
+        return false
+    }
+    
+            
+    func currentReachabilityStatus() -> NetworkStatus {
+        var returnValue = NetworkStatus.NotReachable
+        var flags: SCNetworkReachabilityFlags = []
+        
+        if (SCNetworkReachabilityGetFlags(reachabilityRef, &flags)) {
+            returnValue = networkStatusForFlags(flags)
+        }
+        
+        return returnValue
+    }
+}
+
 
 // MARK: - Synchronized Collections
 

@@ -81,7 +81,7 @@ final class WalletController {
         var message: String
         var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil)]
         
-		if _availablePinPoints > pinCost {
+		if _availablePinPoints >= pinCost {
             message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
             message = String(format: message, WalletController._availablePinPoints)
             let actionTitle = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), WalletController.pinCost)

@@ -270,8 +270,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleAspectFill" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="171.5" y="146" width="256" height="256"/>
+                            <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
+                                <rect key="frame" x="146" y="147" width="308" height="308"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
@@ -294,7 +294,7 @@
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
-                                <rect key="frame" x="212" y="453" width="176" height="29"/>
+                                <rect key="frame" x="212" y="514" width="176" height="29"/>
                                 <segments>
                                     <segment title="Male"/>
                                     <segment title="Female"/>
@@ -302,7 +302,7 @@
                                 </segments>
                             </segmentedControl>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
-                                <rect key="frame" x="256" y="570" width="92" height="30"/>
+                                <rect key="frame" x="256" y="562" width="92" height="30"/>
                                 <state key="normal" title="Get started &gt;">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -320,7 +320,7 @@
                                 </connections>
                             </button>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
-                                <rect key="frame" x="212" y="410" width="176" height="30"/>
+                                <rect key="frame" x="212" y="471" width="176" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
@@ -339,15 +339,15 @@
                         <constraints>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
                             <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="15" id="89h-zP-vHQ"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
                             <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" id="94p-Kz-qxS"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
-                            <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" id="OFo-82-Vic"/>
+                            <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
                             <constraint firstAttribute="centerX" secondItem="JLo-5M-7YM" secondAttribute="centerX" id="PC3-oH-0Lt"/>
-                            <constraint firstItem="maF-ir-g9C" firstAttribute="top" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="8" id="RE1-yz-tPI"/>
+                            <constraint firstItem="maF-ir-g9C" firstAttribute="top" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="RE1-yz-tPI"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="trailing" id="RwY-PN-x7Y"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="TZh-su-XOJ"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="g3H-jE-mTR" secondAttribute="width" id="ZNU-Qu-aPB"/>
@@ -383,13 +383,13 @@
         </scene>
     </scenes>
     <resources>
-        <image name="PortraitPlaceholder" width="256" height="256"/>
+        <image name="PortraitPlaceholder" width="512" height="512"/>
         <image name="ReadIconBenefits" width="30" height="30"/>
         <image name="ReadIconP2P" width="30" height="30"/>
         <image name="ReadIconSocial" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2du-D3-2eY"/>
+        <segue reference="zJZ-DL-UQZ"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="calibratedRGB"/>
 </document>

@@ -19,6 +19,8 @@
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
 		9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */; };
 		9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D41E11D1D5E903A0042FB63 /* Localizable.strings */; };
+		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
+		9D5E80701D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
 		9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
 		9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
 		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
@@ -34,7 +36,6 @@
 		9D8A59371B92F18200164C9F /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C51B5C3AB800F3BA87 /* LaunchScreen.xib */; };
 		9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593A1B92F2B600164C9F /* PeerDescription.swift */; };
 		9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */; };
-		9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */; };
 		9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59401B92FABE00164C9F /* FilterViewController.swift */; };
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
@@ -58,7 +59,6 @@
 		9DDA3A521D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
 		9DDBD4C91D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
-		9DDD0D311C24BBA1009A518F /* BrowseSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */; };
 		9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */; };
 		9DDD0D331C24BBA1009A518F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
 		9DDD0D341C24BBA1009A518F /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59401B92FABE00164C9F /* FilterViewController.swift */; };
@@ -108,6 +108,7 @@
 		9D482D911D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		9D482D941D5ED2ED00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
+		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
 		9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InAppPurchaseController.swift; path = Controller/InAppPurchaseController.swift; sourceTree = "<group>"; };
 		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
@@ -117,7 +118,6 @@
 		9D8A592F1B92EC4500164C9F /* MeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MeViewController.swift; path = "Storyboards/Main Storyboard/MeViewController.swift"; sourceTree = "<group>"; };
 		9D8A593A1B92F2B600164C9F /* PeerDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeerDescription.swift; path = Model/PeerDescription.swift; sourceTree = "<group>"; };
 		9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseViewController.swift; path = "Storyboards/Main Storyboard/BrowseViewController.swift"; sourceTree = "<group>"; };
-		9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseSettingsViewController.swift; path = "Storyboards/Main Storyboard/BrowseSettingsViewController.swift"; sourceTree = "<group>"; };
 		9D8A59401B92FABE00164C9F /* FilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FilterViewController.swift; path = "Storyboards/Main Storyboard/FilterViewController.swift"; sourceTree = "<group>"; };
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
@@ -194,7 +194,6 @@
 			isa = PBXGroup;
 			children = (
 				9DA0F7C01B5C3AB800F3BA87 /* Main.storyboard */,
-				9D8A593E1B92FA4900164C9F /* BrowseSettingsViewController.swift */,
 				9D8A593C1B92F96E00164C9F /* BrowseViewController.swift */,
 				9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */,
 				9D8A59401B92FABE00164C9F /* FilterViewController.swift */,
@@ -204,6 +203,7 @@
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
 				9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */,
+				9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
@@ -500,10 +500,10 @@
 				9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
 				9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
-				9D8A593F1B92FA4900164C9F /* BrowseSettingsViewController.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9DEAE8CE1B6415EF00D4F6BF /* HideableProperty.swift in Sources */,
+				9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
 				9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -522,6 +522,7 @@
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9DDD0D381C24BBA1009A518F /* PinsViewController.swift in Sources */,
+				9D5E80701D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
 				9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
 				9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
@@ -535,7 +536,6 @@
 				9DDD0D441C24BBA9009A518F /* CharacterTrait.swift in Sources */,
 				9DDD0D451C24BBA9009A518F /* HideableProperty.swift in Sources */,
 				9DCB2F3B1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
-				9DDD0D311C24BBA1009A518F /* BrowseSettingsViewController.swift in Sources */,
 				9DDD0D331C24BBA1009A518F /* CharacterTraitViewController.swift in Sources */,
 				9DDD0D391C24BBA1009A518F /* SingleSelViewController.swift in Sources */,
 				9D0CDD4E1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,

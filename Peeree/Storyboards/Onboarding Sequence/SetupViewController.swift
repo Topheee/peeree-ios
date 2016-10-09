@@ -31,6 +31,8 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	@IBAction func takePic(sender: UIButton) {
         guard !nameTextField.isFirstResponder() else { return }
         
+        picButton.layer.removeAllAnimations()
+        picButton.alpha = 1.0
         showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding.")) { (action) in
             self.pickedImage(UIImage(named: "PortraitUnavailable")!)
         }
@@ -64,6 +66,9 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         
         self.view.flyInSubviews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
         self.view.flyInSubviews([picButton], duration: 1.0, delay: 1.0, damping: 1.0, velocity: 1.0)
+        UIView.animateWithDuration(1.0, delay: 7.0, options: [.Repeat, .Autoreverse, .AllowUserInteraction], animations: {
+            self.picButton.alpha = 0.6
+        }, completion: nil)
 	}
     
     override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
