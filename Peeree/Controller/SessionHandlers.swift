@@ -71,6 +71,22 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
 /// Base class for all session handlers which retrieve information from an remote peers
 class DownloadSessionDelegate: MCSessionDelegateAdapter {
     private static let MaxAttempts = 3
+    
+    private static var downloadSessions = SynchronizedDictionary<DownloadSessionID, DownloadSessionDelegate>()
+    
+    private struct DownloadSessionID: Hashable {
+        let peerID: MCPeerID
+        let sessionKey: RemotePeerManager.SessionKey
+        
+        var hashValue: Int
+        
+        init(peerID: MCPeerID, sessionKey: RemotePeerManager.SessionKey) {
+            self.peerID = peerID
+            self.sessionKey = sessionKey
+            hashValue = peerID.hashValue + sessionKey.hashValue
+        }
+    }
+    
     private let failNotification: RemotePeerManager.NetworkNotification
     private let sessionID: DownloadSessionID
     private weak var btBrowser: MCNearbyServiceBrowser?
@@ -82,21 +98,6 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
         }
     }
     
-    private struct DownloadSessionID: Hashable {
-        let peerID: MCPeerID
-        let sessionKey: RemotePeerManager.SessionKey
-        
-        let hashValue: Int
-        
-        init(peerID: MCPeerID, sessionKey: RemotePeerManager.SessionKey) {
-            self.peerID = peerID
-            self.sessionKey = sessionKey
-            hashValue = peerID.hashValue + sessionKey.hashValue
-        }
-    }
-    
-    private static var downloadSessions = SynchronizedSet<DownloadSessionID>()
-    
     var willReconnect: Bool {
         return attempt < DownloadSessionDelegate.MaxAttempts && RemotePeerManager.sharedManager.peering && RemotePeerManager.sharedManager.availablePeers.contains(sessionID.peerID)
     }
@@ -107,8 +108,8 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
         self.btBrowser = btBrowser
         super.init()
         
-        if !DownloadSessionDelegate.downloadSessions.contains(sessionID) {
-            DownloadSessionDelegate.downloadSessions.insert(sessionID)
+        if DownloadSessionDelegate.downloadSessions[sessionID] == nil {
+            DownloadSessionDelegate.downloadSessions[sessionID] = self
             connect()
         }
     }
@@ -136,7 +137,7 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
                 connect()
             } else {
                 super.session(session, peer: peerID, didChangeState: state)
-                DownloadSessionDelegate.downloadSessions.remove(sessionID)
+                DownloadSessionDelegate.downloadSessions.removeValueForKey(sessionID)
                 if !successful {
                     failNotification.post(sessionID.peerID)
                 }
@@ -146,7 +147,6 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
     }
 }
 
-/// If we are unknown to the remote peer, it invites us into it's download session which we associate with our upload session.
 final class PeerInfoUploadSessionManager: MCSessionDelegateAdapter {
     
     init(fromPeer peerID: MCPeerID, invitationHandler: (Bool, MCSession) -> Void) {
@@ -168,11 +168,10 @@ final class PeerInfoUploadSessionManager: MCSessionDelegateAdapter {
     }
 }
 
-/// If the remote peer is unknown, it invited into the download session of the local peer.
 final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
     
     static func isPeerInfoLoading(ofPeerID peerID: MCPeerID) -> Bool {
-        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .PeerInfo))
+        return DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .PeerInfo)] != nil
     }
     
     init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?) {
@@ -189,24 +188,86 @@ final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
     }
 }
 
-/// If the remote peer is unknown, it invited into the download session of the local peer.
 final class PictureDownloadSessionHandler: DownloadSessionDelegate {
     
+    // KVO path strings for observing changes to properties of NSProgress
+    static let ProgressCancelledKeyPath          = "cancelled"
+    static let ProgressCompletedUnitCountKeyPath = "completedUnitCount"
+    
+    private var _progress: NSProgress? = nil
+    var progress: NSProgress? { return _progress }
+    
+    weak var delegate: PotraitLoadingDelegate?
+    
+    static func getPictureLoadFraction(ofPeer peerID: MCPeerID) -> Double {
+        return (DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .Picture)] as? PictureDownloadSessionHandler)?._progress?.fractionCompleted ?? 0.0
+    }
+    
     static func isPictureLoading(ofPeer peerID: MCPeerID) -> Bool {
-        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .Picture))
+        return DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .Picture)] != nil
     }
     
-    init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?) {
+    static func setPictureLoadingDelegate(ofPeer peerID: MCPeerID, delegate: PotraitLoadingDelegate) {
+        guard let picLoadSession = DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .Picture)] as? PictureDownloadSessionHandler else { return }
+        
+        picLoadSession.delegate = delegate
+    }
+    
+    init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?, delegate: PotraitLoadingDelegate?) {
         super.init(peerID: peerID, sessionKey: .Picture, failNotification: .PictureLoadFailed, btBrowser: btBrowser)
+        self.delegate = delegate
     }
     
-    override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-        guard let image = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? UIImage else { return }
+    override func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {
         
-        RemotePeerManager.sharedManager.sessionHandlerDidLoad(image, ofPeer: peerID)
-        
-        successful = true
+        _progress = progress
+        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCancelledKeyPath, options: [.New], context: nil)
+        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath, options: [.New], context: nil)
     }
+    
+    override func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
+        // stop KVO
+        progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCancelledKeyPath)
+        progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath)
+        _progress = nil
+        
+        if let nsError = error {
+            NSLog("Error receiving potrait picture: \(nsError)")
+            delegate?.portraitLoadFailed(withError: nsError)
+            
+            successful = false
+        } else {
+            guard let data = NSData(contentsOfURL: localURL) else { return }
+            guard let image = UIImage(data: data) else { return }
+            
+            delegate?.portraitLoadFinished()
+            RemotePeerManager.sharedManager.sessionHandlerDidLoad(image, ofPeer: peerID)
+            
+            successful = true
+        }
+    }
+    
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+//        super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context) this throws an exception!
+        guard let progress = object as? NSProgress else { return }
+        guard delegate != nil && keyPath != nil else { return }
+        
+        switch keyPath! {
+        case PictureDownloadSessionHandler.ProgressCancelledKeyPath:
+            delegate!.portraitLoadCancelled()
+        case PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath:
+            delegate!.portraitLoadChanged(progress.fractionCompleted)
+        default:
+            break
+        }
+    }
+}
+
+protocol PotraitLoadingDelegate: class {
+    func portraitLoadCancelled()
+    func portraitLoadChanged(fractionCompleted: Double)
+    func portraitLoadFinished()
+    func portraitLoadFailed(withError error: NSError)
 }
 
 final class PictureUploadSessionManager: MCSessionDelegateAdapter {
@@ -220,8 +281,11 @@ final class PictureUploadSessionManager: MCSessionDelegateAdapter {
         super.session(session, peer: peerID, didChangeState: state)
         switch state {
         case .Connected:
-            let data = NSKeyedArchiver.archivedDataWithRootObject(UserPeerInfo.instance.picture!)
-            sendData(data, toPeers: [peerID])
+            session.sendResourceAtURL(UserPeerInfo.instance.pictureResourceURL, withName: "Bild", toPeer: peerID, withCompletionHandler: { (error) in
+                guard let nsError = error else { return }
+                
+                NSLog("Error sending potrait picture: \(nsError)")
+            })
         case .Connecting:
             break
         case .NotConnected:
@@ -235,7 +299,7 @@ final class PinSessionHandler: DownloadSessionDelegate {
     let confirmation: WalletController.PinConfirmation
     
     static func isPinning(peerID: MCPeerID) -> Bool {
-        return DownloadSessionDelegate.downloadSessions.contains(DownloadSessionID(peerID: peerID, sessionKey: .Pin))
+        return DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .Pin)] != nil
     }
     
     init?(peerID: MCPeerID, btBrowser: MCNearbyServiceBrowser?, confirmation: WalletController.PinConfirmation) {

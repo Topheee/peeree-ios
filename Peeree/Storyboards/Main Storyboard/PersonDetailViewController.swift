@@ -9,13 +9,12 @@
 import UIKit
 import MultipeerConnectivity
 
-final class PersonDetailViewController: UIViewController {
+final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate {
 	@IBOutlet private weak var portraitImageView: UIImageView!
 	@IBOutlet private weak var ageGenderLabel: UILabel!
 	@IBOutlet private weak var stateLabel: UILabel!
     @IBOutlet private weak var downloadIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var pinButton: UIButton!
-    @IBOutlet private weak var pictureDownloadIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var traitsButton: UIButton!
     @IBOutlet private weak var gradientView: UIImageView!
     @IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
@@ -25,6 +24,7 @@ final class PersonDetailViewController: UIViewController {
     static let beaconSegueID = "beaconSegue"
     
     private var notificationObservers: [AnyObject] = []
+    private var circleLayer: CAShapeLayer!
     
     private var displayedPeerInfo: PeerInfo? {
         if displayedPeerID! != UserPeerInfo.instance.peer.peerID {
@@ -59,7 +59,7 @@ final class PersonDetailViewController: UIViewController {
         var isAvailable: Bool { return RemotePeerManager.sharedManager.availablePeers.contains(peerID) }
         
         var peerInfoDownloadState: DownloadState {
-            guard RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) == nil else { return .Downloaded }
+            guard !isLocalPeer && RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) == nil else { return .Downloaded }
             return RemotePeerManager.sharedManager.isPeerInfoLoading(ofPeerID: peerID) ? .Downloading : .NotDownloaded
         }
         
@@ -70,6 +70,10 @@ final class PersonDetailViewController: UIViewController {
             } else {
                 return .Downloaded
             }
+        }
+        
+        var pictureDownloadProgress: Double {
+            return RemotePeerManager.sharedManager.getPictureLoadFraction(ofPeer: peerID)
         }
         
         var pinState: PinState {
@@ -87,6 +91,11 @@ final class PersonDetailViewController: UIViewController {
         }
     }
     
+    private func removePictureLoadLayer() {
+        portraitImageView.layer.sublayers?.last?.removeFromSuperlayer()
+        circleLayer = nil
+    }
+    
     private func updateState() {
         guard let peerID = displayedPeerID else { return }
         let state = PeerState(peerID: peerID)
@@ -98,11 +107,32 @@ final class PersonDetailViewController: UIViewController {
         pinButton.hidden = state.peerInfoDownloadState != .Downloaded
         pinButton.enabled = state.isAvailable && !state.isLocalPeer
         pinButton.selected = state.pinState == .Pinned
-        pictureDownloadIndicator.hidden = state.pictureDownloadState != .Downloading
         traitsButton.hidden = state.peerInfoDownloadState != .Downloaded
         gradientView.hidden = !state.pinMatch || state.isLocalPeer
         pinIndicator.hidden = state.pinState != .Pinning
         findButtonItem.enabled = state.pinMatch
+        
+        if state.pictureDownloadState == .Downloading {
+            
+            if circleLayer == nil {
+                // Use UIBezierPath as an easy way to create the CGPath for the layer.
+                // The path should be the entire circle.
+                let size = portraitImageView.frame.size
+                let circlePath = UIBezierPath(arcCenter: CGPoint(x: size.width / 2.0, y: size.height / 2.0), radius: (size.width - 30)/2, startAngle: CGFloat(M_PI * 0.5), endAngle: CGFloat(M_PI * 2.5), clockwise: true)
+                
+                // Setup the CAShapeLayer with the path, colors, and line width
+                circleLayer = CAShapeLayer()
+                circleLayer.path = circlePath.CGPath
+                circleLayer.fillColor = UIColor.clearColor().CGColor
+                circleLayer.strokeColor = theme.globalTintColor.CGColor
+                circleLayer.lineWidth = 15.0;
+                
+                // Add the circleLayer to the view's layer's sublayers
+                portraitImageView.layer.addSublayer(circleLayer)
+            }
+            
+            circleLayer?.strokeEnd = CGFloat(state.pictureDownloadProgress)
+        }
         
         if state.isLocalPeer || state.isAvailable {
             navigationItem.titleView = nil
@@ -133,15 +163,16 @@ final class PersonDetailViewController: UIViewController {
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let charTraitVC = segue.destinationViewController as?
-            CharacterTraitViewController {
+        if let charTraitVC = segue.destinationViewController as? CharacterTraitViewController {
             charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
+            charTraitVC.userTraits = false
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         pinButton.setImage(UIImage(named: "PinTemplatePressed"), forState: [.Disabled, .Selected])
+        
         UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 2.0, initialSpringVelocity: 1.0, options: [.Repeat, .Autoreverse], animations: {
             self.gradientView.alpha = 0.0
             }, completion: nil)
@@ -155,7 +186,7 @@ final class PersonDetailViewController: UIViewController {
         navigationItem.title = displayedPeerID!.displayName
         
         if let peerInfo = displayedPeerInfo {
-            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo)
+            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo, delegate: self)
         }
         
         updateState()
@@ -176,7 +207,7 @@ final class PersonDetailViewController: UIViewController {
             guard self.displayedPeerID == peerID else { return }
             guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
             
-            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo)
+            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo, delegate: self)
             self.displayPeerInfo()
             self.updateState()
         })
@@ -192,12 +223,50 @@ final class PersonDetailViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         portraitImageView.maskView = CircleMaskView(frame: portraitImageView.bounds)
+        
+        // as our layout changed the frame of the portrait view, we have to recalculate the circleLayer
+        removePictureLoadLayer()
+        updateState()
     }
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         for observer in notificationObservers {
             NSNotificationCenter.defaultCenter().removeObserver(observer)
+        }
+    }
+    
+    // MARK: PotraitLoadingDelegate
+    
+    func portraitLoadFailed(withError error: NSError) {
+        // TODO handle error, e.g. same cancel animation as to be inserted in portraitLoadCancelled()
+        dispatch_async(dispatch_get_main_queue()) {
+            self.removePictureLoadLayer()
+            UIView.animateWithDuration(1.0, delay: 0.0, options: [.Autoreverse], animations: {
+                self.portraitImageView.backgroundColor = UIColor.redColor()
+            }, completion: nil)
+        }
+    }
+    
+    func portraitLoadFinished() {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.removePictureLoadLayer()
+            self.updateState()
+        }
+    }
+    
+    func portraitLoadCancelled() {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.removePictureLoadLayer()
+            UIView.animateWithDuration(1.0, delay: 0.0, options: [.Autoreverse], animations: {
+                self.portraitImageView.backgroundColor = UIColor.redColor()
+            }, completion: nil)
+        }
+    }
+    
+    func portraitLoadChanged(fractionCompleted: Double) {
+        dispatch_async(dispatch_get_main_queue()) {
+            self.circleLayer.strokeEnd = CGFloat(fractionCompleted)
         }
     }
     

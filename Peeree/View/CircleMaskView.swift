@@ -13,9 +13,8 @@ class ProgressCircleMaskView: CircleMaskView {
     
     override func drawRect(rect: CGRect) {
         super.drawRect(rect)
-        let Pi: CGFloat = 3.1412
-        let startAngle: CGFloat = 1.0*Pi
-        let endAngle: CGFloat = startAngle+2*Pi*(1.0-progress)
+        let startAngle = CGFloat(M_PI)
+        let endAngle: CGFloat = startAngle+2*CGFloat(M_PI)*(1.0-progress)
         let circle = UIBezierPath(arcCenter: rect.center, radius: rect.width, startAngle: startAngle, endAngle: endAngle, clockwise: true) // TODO localize clockwise
         let context = UIGraphicsGetCurrentContext()
         CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 0.0)

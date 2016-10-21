@@ -309,11 +309,13 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
 final class DistanceView: UIView {
     static let ringCount = 3
     
-    var timer: NSTimer?
+    private var timer: NSTimer?
+    /// number of previously "installed" layers
+    private var layerOffset: Int = 0
     
     private class PulseIndex: NSObject {
-        static let StartInterval: NSTimeInterval = 1.0
-        var index: Int = DistanceView.ringCount
+        static let StartInterval: NSTimeInterval = 0.75
+        var index: Int = DistanceView.ringCount - 1
     }
     
     override func didMoveToSuperview() {
@@ -325,7 +327,7 @@ final class DistanceView: UIView {
         guard superview != nil else { return }
         
         timer = NSTimer.scheduledTimerWithTimeInterval(PulseIndex.StartInterval, target: self, selector: #selector(pulse(_:)), userInfo: PulseIndex(), repeats: true)
-        timer?.tolerance = 0.1
+        timer?.tolerance = 0.09
         
         addRingLayers()
     }
@@ -344,8 +346,8 @@ final class DistanceView: UIView {
             ringLayer.bounds = theRect
             ringLayer.position = position
             ringLayer.path = CGPathCreateWithEllipseInRect(ringLayer.bounds, nil)
-            ringLayer.shadowPath = ringLayer.path
-            ringLayer.lineWidth = 5.0 / scale
+//            ringLayer.shadowPath = ringLayer.path
+            ringLayer.lineWidth = 1.0 / scale
             ringLayer.transform = CATransform3DMakeScale(scale, scale, 1.0)
             scale *= 0.65
         }
@@ -353,26 +355,23 @@ final class DistanceView: UIView {
     
     func pulse(sender: NSTimer) {
         guard let pulseIndex = sender.userInfo as? PulseIndex else { sender.invalidate(); return }
-        guard let pulseLayer = layer.sublayers?[pulseIndex.index] else { sender.invalidate(); return }
+        guard let previousLayer = layer.sublayers?[pulseIndex.index+layerOffset] else { sender.invalidate(); return }
         
-        let oldIndex = pulseIndex.index
-        pulseIndex.index = pulseIndex.index < DistanceView.ringCount ? pulseIndex.index + 1 : 0
-        let timeInterval = pulseIndex.index == DistanceView.ringCount - 1 ? PulseIndex.StartInterval : 2.0*NSTimeInterval(pulseIndex.index + 1)
-        sender.fireDate = NSDate(timeInterval: timeInterval, sinceDate: sender.fireDate)
-        //        pulseLayer.opacity = 0.5
-        pulseLayer.shadowOpacity = 0.0
+        pulseIndex.index = pulseIndex.index > 0 ? pulseIndex.index - 1 : DistanceView.ringCount - 1
+//        let timeInterval = pulseIndex.index == DistanceView.ringCount - 1 ? PulseIndex.StartInterval : 1.5*NSTimeInterval(pulseIndex.index + 1)
+//        sender.fireDate = NSDate(timeInterval: timeInterval, sinceDate: sender.fireDate)
+        previousLayer.shadowOpacity = 0.0
         
-        let previousLayer = layer.sublayers![oldIndex]
-        //        previousLayer.opacity = 1.0
-        previousLayer.shadowOpacity = 0.5
+        let pulseLayer = layer.sublayers![pulseIndex.index+layerOffset]
+        pulseLayer.shadowOpacity = 0.5
     }
     
     private func addRingLayers() {
-        
         var scale: CGFloat = 1.0
         var theRect = self.bounds.insetBy(dx: 2.0, dy: 2.0)
         theRect.size.height = theRect.height*2
         let position = CGPoint(x: theRect.width/2, y: theRect.height/2)
+        layerOffset = layer.sublayers?.count ?? 0
         
         for _ in 1...DistanceView.ringCount {
             let ringLayer = CAShapeLayer()
@@ -381,10 +380,10 @@ final class DistanceView: UIView {
             ringLayer.path = CGPathCreateWithEllipseInRect(ringLayer.bounds, nil)
             ringLayer.fillColor = nil
             ringLayer.strokeColor = UIColor.grayColor().CGColor
-            ringLayer.lineWidth = 5.0 / scale
-            ringLayer.shadowPath = ringLayer.path
+            ringLayer.lineWidth = 1.0 / scale
+//            ringLayer.shadowPath = ringLayer.path
             ringLayer.shadowColor = self.tintColor.CGColor
-            ringLayer.shadowRadius = 5.0
+            ringLayer.shadowRadius = 15.0
             self.layer.addSublayer(ringLayer)
             scale *= 0.65
             theRect.size.width *= scale

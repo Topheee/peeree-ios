@@ -9,9 +9,9 @@
 import UIKit
 
 final class CharacterTraitViewController: UITableViewController, SingleSelViewControllerDataSource {
-	
 	var characterTraits: [CharacterTrait]?
 	var selectedTrait: NSIndexPath?
+    var userTraits = false
 	
 	static let cellID = "characterTraitCell"
 	
@@ -24,19 +24,20 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     
     override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated)
-        guard characterTraits != nil && characterTraits! == UserPeerInfo.instance.peer.characterTraits else { return }
+        guard userTraits else { return }
+        guard let traits = characterTraits else { return }
         
         // trigger NSUserDefaults archiving
-        UserPeerInfo.instance.peer.characterTraits = characterTraits!
+        UserPeerInfo.instance.characterTraits = traits
     }
     
     // - MARK: UITableView Data Source
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCellWithIdentifier(CharacterTraitViewController.cellID)!
-		let trait = characterTraits![indexPath.row]
-		cell.textLabel!.text = trait.name
-		cell.detailTextLabel!.text = trait.applies.localizedRawValue
+		let characterTrait = characterTraits![indexPath.row]
+		cell.textLabel!.text = characterTrait.kind.localizedRawValue
+		cell.detailTextLabel!.text = characterTrait.applies.localizedRawValue
 		return cell
 	}
 	
@@ -51,7 +52,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     // - MARK: SingleSelViewController Data Source
     
     func selectionEditable(pickerView: UIPickerView) -> Bool {
-        return characterTraits != nil && characterTraits! == UserPeerInfo.instance.peer.characterTraits
+        return characterTraits != nil && userTraits
     }
     
     func initialPickerSelection(pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
@@ -63,11 +64,11 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
 	
 	func subHeadingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-        return characterTraits?[selectedTrait!.row].name ?? ""
+        return characterTraits?[selectedTrait!.row].kind.localizedRawValue ?? ""
 	}
 	
 	func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-        return characterTraits?[selectedTrait!.row].traitDescription ?? ""
+        return characterTraits?[selectedTrait!.row].kind.kindDescription ?? ""
 	}
 	
 	func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {

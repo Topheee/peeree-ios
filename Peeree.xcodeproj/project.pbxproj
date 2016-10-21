@@ -14,6 +14,7 @@
 		9D0CDD4E1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */; };
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
+		9D2E0C921DB916C7006F6355 /* IchAlbert.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */; };
 		9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D2E7F2F1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
@@ -100,6 +101,7 @@
 		9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensions.swift; path = Peeree/Helpers/PeereeExtensions.swift; sourceTree = "<group>"; };
 		9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FirstLaunchViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/FirstLaunchViewController.swift"; sourceTree = "<group>"; };
 		9D2923261B91E50B00B5B622 /* SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupViewController.swift"; sourceTree = "<group>"; };
+		9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = IchAlbert.jpg; path = ../../../../../../../../Pictures/Spielereien/IchAlbert.jpg; sourceTree = "<group>"; };
 		9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PortraitImagePickerController.swift; path = Peeree/Storyboards/Common/PortraitImagePickerController.swift; sourceTree = "<group>"; };
 		9D33E8F11D418839001CECAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/FirstLaunch.storyboard; sourceTree = "<group>"; };
 		9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SampleAssets.xcassets; sourceTree = "<group>"; };
@@ -288,6 +290,7 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */,
 				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D41E11D1D5E903A0042FB63 /* Localizable.strings */,
@@ -444,6 +447,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D2E0C921DB916C7006F6355 /* IchAlbert.jpg in Resources */,
 				9D3839581D2B122C00028DC2 /* SampleAssets.xcassets in Resources */,
 				9D8A59371B92F18200164C9F /* LaunchScreen.xib in Resources */,
 				9D8A59361B92F17E00164C9F /* Main.storyboard in Resources */,

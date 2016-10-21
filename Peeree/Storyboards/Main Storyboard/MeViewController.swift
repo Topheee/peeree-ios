@@ -95,6 +95,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             singleSelVC.dataSource = StatusSelViewControllerDataSource(container: self)
         } else if let charTraitVC = segue.destinationViewController as? CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerInfo.instance.peer.characterTraits
+            charTraitVC.userTraits = true
 		}
 	}
 	

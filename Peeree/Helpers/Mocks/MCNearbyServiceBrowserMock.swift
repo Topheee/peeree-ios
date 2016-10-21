@@ -43,10 +43,17 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
                 session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
             case .Picture:
                 let rand = arc4random()
-                let image = UIImage(named: "Portrait_\(rand % 2)")!
+                let progress = NSProgress(totalUnitCount: Int64(rand % 99999))
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
-                let data = NSKeyedArchiver.archivedDataWithRootObject(image)
-                session.delegate?.session(session, didReceiveData: data, fromPeer: peerID)
+                session.delegate?.session(session, didStartReceivingResourceWithName: "name", fromPeer: peerID, withProgress: progress)
+                dispatch_async(dispatch_get_global_queue(0, 0), {
+                    let url = NSBundle.mainBundle().URLForResource("IchAlbert", withExtension: ".jpg")!
+                    for step in 0..<progress.totalUnitCount {
+                        progress.completedUnitCount = step
+                    }
+                    let error: NSError? = (rand % 4 == 0) ? nil : NSError(domain: "test", code: 404, userInfo: nil)
+                    session.delegate?.session(session, didFinishReceivingResourceWithName: "name", fromPeer: peerID, atURL: url, withError: error)
+                })
             case .Pin:
                 session.delegate?.session(session, peer: peerID, didChangeState: .Connected)
                 let data = NSKeyedArchiver.archivedDataWithRootObject("ack")

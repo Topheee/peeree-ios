@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15G1004" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="la9-Lf-5c4">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="la9-Lf-5c4">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
@@ -246,6 +246,7 @@
                                     </label>
                                     <imageView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO">
                                         <rect key="frame" x="195" y="28" width="210" height="210"/>
+                                        <color key="backgroundColor" red="0.38431372549999998" green="1" blue="0.5450980392" alpha="1" colorSpace="calibratedRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="180" id="2lg-Lc-g6Y"/>
                                             <constraint firstAttribute="width" constant="180" id="UdG-bK-oo3"/>
@@ -258,9 +259,6 @@
                                             </mask>
                                         </variation>
                                     </imageView>
-                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="PeX-F3-clV">
-                                        <rect key="frame" x="281" y="114" width="37" height="37"/>
-                                    </activityIndicatorView>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="width" secondItem="cfo-s9-6Tf" secondAttribute="height" multiplier="1:1" id="0FR-YD-5rR"/>
@@ -273,11 +271,9 @@
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="IgV-sn-6lv"/>
                                     <constraint firstItem="sY1-cI-JZt" firstAttribute="centerY" secondItem="59x-ms-KVN" secondAttribute="centerY" id="Ksb-W4-9c5"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="Lpy-uO-HBP"/>
-                                    <constraint firstItem="PeX-F3-clV" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="OWw-p0-W32"/>
                                     <constraint firstItem="DzA-oj-0UJ" firstAttribute="top" secondItem="jRR-HL-OFn" secondAttribute="bottom" constant="8" id="Oef-XL-sQf"/>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="Qt7-O0-cmm"/>
                                     <constraint firstItem="cfo-s9-6Tf" firstAttribute="height" secondItem="S6f-fD-kvO" secondAttribute="height" constant="30" id="R1r-Nx-Vxy"/>
-                                    <constraint firstItem="PeX-F3-clV" firstAttribute="centerY" secondItem="S6f-fD-kvO" secondAttribute="centerY" id="RRA-mr-7zc"/>
                                     <constraint firstItem="SWx-xP-Cde" firstAttribute="centerY" secondItem="PA6-eV-Bm8" secondAttribute="centerY" id="RZD-hs-tk6"/>
                                     <constraint firstItem="SWx-xP-Cde" firstAttribute="centerY" secondItem="59x-ms-KVN" secondAttribute="centerY" id="TRd-og-r2p"/>
                                     <constraint firstItem="Y5H-8y-Wvq" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="Twd-gQ-3Ox"/>
@@ -290,7 +286,7 @@
                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="centerX" secondItem="S6f-fD-kvO" secondAttribute="centerX" id="h1e-kV-WZo"/>
                                     <constraint firstItem="DzA-oj-0UJ" firstAttribute="top" secondItem="jRR-HL-OFn" secondAttribute="bottom" constant="8" id="hmd-sZ-nyh"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="PA6-eV-Bm8" secondAttribute="leadingMargin" constant="20" id="kJx-Gr-XRR"/>
-                                    <constraint firstAttribute="bottomMargin" secondItem="Y5H-8y-Wvq" secondAttribute="bottom" id="l5k-0K-bod"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="Y5H-8y-Wvq" secondAttribute="bottom" constant="8" id="l5k-0K-bod"/>
                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="PA6-eV-Bm8" secondAttribute="leading" constant="195" placeholder="YES" id="m4f-v6-SBC"/>
                                     <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="20" id="pPS-c1-kcC"/>
                                     <constraint firstItem="SWx-xP-Cde" firstAttribute="centerX" secondItem="PA6-eV-Bm8" secondAttribute="centerX" id="ujq-ad-ZpY"/>
@@ -346,7 +342,6 @@
                         <outlet property="downloadIndicator" destination="SWx-xP-Cde" id="C0R-jh-qa0"/>
                         <outlet property="findButtonItem" destination="sCY-WJ-efU" id="Eki-oU-oPU"/>
                         <outlet property="gradientView" destination="cfo-s9-6Tf" id="Wgd-4M-edT"/>
-                        <outlet property="pictureDownloadIndicator" destination="PeX-F3-clV" id="Eay-Aw-xEz"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
@@ -1469,9 +1464,9 @@ To enable In-App Purchase for this app, go to settings of this iPhone and remove
         <image name="RadarTemplate" width="40" height="40"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="D5d-oe-2jg"/>
-        <segue reference="GK2-iA-YLH"/>
         <segue reference="EzW-Ik-xrC"/>
+        <segue reference="r7K-aS-PK5"/>
+        <segue reference="GK2-iA-YLH"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.0" green="0.49458033379999999" blue="0.0079442504549999994" alpha="1" colorSpace="calibratedRGB"/>
 </document>

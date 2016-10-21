@@ -124,10 +124,15 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         return isPeerPinned(peerID) && pinnedByPeers.contains(peerID)
     }
     
-    func loadPicture(forPeer peer: PeerInfo) {
-        if peer.hasPicture && peer.picture == nil && !isPictureLoading(ofPeer: peer.peerID) {
-            let handler = PictureDownloadSessionHandler(peerID: peer.peerID, btBrowser: btBrowser)
-            assert(handler != nil)
+    func loadPicture(forPeer peer: PeerInfo, delegate: PotraitLoadingDelegate?) {
+        if peer.hasPicture && peer.picture == nil && peer != UserPeerInfo.instance.peer {
+            if isPictureLoading(ofPeer: peer.peerID) {
+                guard let d = delegate else { return }
+                PictureDownloadSessionHandler.setPictureLoadingDelegate(ofPeer: peer.peerID, delegate: d)
+            } else {
+                let handler = PictureDownloadSessionHandler(peerID: peer.peerID, btBrowser: btBrowser, delegate: delegate)
+                assert(handler != nil)
+            }
         }
     }
     
@@ -135,8 +140,16 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         return PictureDownloadSessionHandler.isPictureLoading(ofPeer: peerID)
     }
     
+    func getPictureLoadFraction(ofPeer peerID: MCPeerID) -> Double {
+        return PictureDownloadSessionHandler.getPictureLoadFraction(ofPeer: peerID)
+    }
+    
     func isPeerInfoLoading(ofPeerID peerID: MCPeerID) -> Bool {
         return PeerInfoDownloadSessionHandler.isPeerInfoLoading(ofPeerID: peerID)
+    }
+    
+    func setPictureLoadingDelegate(ofPeer peerID: MCPeerID, delegate: PotraitLoadingDelegate) {
+        return PictureDownloadSessionHandler.setPictureLoadingDelegate(ofPeer: peerID, delegate: delegate)
     }
     
     func isPinning(peerID: MCPeerID) -> Bool {

@@ -367,24 +367,24 @@ public class SynchronizedArray<T> {
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
-public class SynchronizedDictionary<S: Hashable, T> {
-    /* private */ var dictionary: [S : T] = [:]
+public class SynchronizedDictionary<Key: Hashable, Value> {
+    /* private */ var dictionary: [Key : Value] = [:]
     /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_dic_q", DISPATCH_QUEUE_SERIAL)
     
     init() { }
     
-    init(dictionary: [S : T]) {
+    init(dictionary: [Key : Value]) {
         self.dictionary = dictionary
     }
     
-    public subscript(index: S) -> T? {
+    public subscript(index: Key) -> Value? {
         set {
             dispatch_async(accessQueue) {
                 self.dictionary[index] = newValue
             }
         }
         get {
-            var element: T?
+            var element: Value?
             
             dispatch_sync(accessQueue) {
                 element = self.dictionary[index]
@@ -392,6 +392,31 @@ public class SynchronizedDictionary<S: Hashable, T> {
             
             return element
         }
+    }
+    
+    // @warn_unused_result public @rethrows func contains(@noescape predicate: (Self.Generator.Element) throws -> Bool) rethrows -> Bool {
+    @warn_unused_result public func contains(predicate: ((Key, Value)) throws -> Bool) throws -> Bool {
+        var ret = false
+        var throwError: ErrorType?
+        dispatch_sync(accessQueue) {
+            do {
+                try ret = self.dictionary.contains(predicate)
+            } catch let error {
+                throwError = error
+            }
+        }
+        if let error = throwError {
+            throw error
+        }
+        return ret
+    }
+    
+    public func removeValueForKey(key: Key) -> Value? {
+        var ret: Value? = nil
+        dispatch_sync(accessQueue) {
+            ret = self.dictionary.removeValueForKey(key)
+        }
+        return ret
     }
     
     public func removeAll() {
