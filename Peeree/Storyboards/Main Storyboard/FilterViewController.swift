@@ -8,15 +8,19 @@
 
 import UIKit
 
-final class FilterViewController: UIViewController {
+final class FilterViewController: UITableViewController {
 	
-	@IBOutlet private var ageMaxLabel: UILabel!
-	@IBOutlet private var ageMaxSlider: UISlider!
+	@IBOutlet private weak var ageMaxLabel: UILabel!
+	@IBOutlet private weak var ageMaxSlider: UISlider!
 	
-	@IBOutlet private var ageMinLabel: UILabel!
-	@IBOutlet private var ageMinSlider: UISlider!
+	@IBOutlet private weak var ageMinLabel: UILabel!
+	@IBOutlet private weak var ageMinSlider: UISlider!
 	
-	@IBOutlet private var genderSeg: UISegmentedControl!
+	@IBOutlet private weak var genderSeg: UISegmentedControl!
+    
+    // TODO implement age- and pictureSwitch
+    @IBOutlet private weak var pictureSwitch: UISwitch!
+    @IBOutlet private weak var ageSwitch: UISwitch!
     
     private let filterSettings = BrowseFilterSettings.sharedSettings
 	
@@ -39,19 +43,28 @@ final class FilterViewController: UIViewController {
 		}
 		updateAgeMaxLabel()
 	}
-	
-	override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        ageMaxLabel.widthAnchor.constraintEqualToAnchor(ageMinLabel.widthAnchor, multiplier: 1.0)
         ageMaxSlider.maximumValue = Float(PeerInfo.MaxAge + 1)
         ageMaxSlider.minimumValue = Float(PeerInfo.MinAge)
         ageMinSlider.maximumValue = Float(PeerInfo.MaxAge)
         ageMinSlider.minimumValue = Float(PeerInfo.MinAge)
+    }
+	
+	override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
         
         ageMaxSlider.value = filterSettings.ageMax == 0 ? ageMaxSlider.maximumValue : filterSettings.ageMax
 		updateAgeMaxLabel()
 		ageMinSlider.value = filterSettings.ageMin
 		updateAgeMinLabel()
         genderSeg.selectedSegmentIndex = filterSettings.gender.rawValue
+        ageSwitch.on = filterSettings.onlyWithAge
+        pictureSwitch.on = filterSettings.onlyWithPicture
+        // why? i don't know
+        self.tableView.backgroundColor = theme.globalBackgroundColor
     }
     
     private func updatePrefs() {
@@ -59,6 +72,8 @@ final class FilterViewController: UIViewController {
         filterSettings.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
         filterSettings.ageMin = ageMinSlider.value
         filterSettings.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
+        filterSettings.onlyWithAge = ageSwitch.on
+        filterSettings.onlyWithPicture = pictureSwitch.on
         filterSettings.writeToDefaults()
     }
     

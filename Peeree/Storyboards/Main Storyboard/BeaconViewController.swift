@@ -290,6 +290,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
                 return
             }
             
+            distanceView.pulsing = true
             // set up own beacon
             beaconManager = CBPeripheralManager(delegate: self, queue: nil)
         }
@@ -298,6 +299,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     private func stopBeacon() {
         beaconManager?.stopAdvertising()
         beaconManager = nil
+        distanceView.pulsing = false
         
         guard peerRegion != nil else { return }
         locationManager.stopRangingBeaconsInRegion(peerRegion!)
@@ -307,27 +309,38 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
 }
 
 final class DistanceView: UIView {
+    private class PulseIndex: NSObject {
+        static let StartInterval: NSTimeInterval = 0.75
+        var index: Int = DistanceView.ringCount - 1
+    }
+    
     static let ringCount = 3
     
     private var timer: NSTimer?
     /// number of previously "installed" layers
     private var layerOffset: Int = 0
     
-    private class PulseIndex: NSObject {
-        static let StartInterval: NSTimeInterval = 0.75
-        var index: Int = DistanceView.ringCount - 1
+    var pulsing: Bool {
+        get { return timer != nil }
+        set {
+            guard newValue != pulsing else { return }
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                // as we have to invalidate the timer on the same THREAD as we created it we have to use the main queue, since it is always associated with the main thread
+                if newValue {
+                    self.timer = NSTimer.scheduledTimerWithTimeInterval(PulseIndex.StartInterval, target: self, selector: #selector(self.pulse(_:)), userInfo: PulseIndex(), repeats: true)
+                    self.timer!.tolerance = 0.09
+                } else {
+                    self.timer!.invalidate()
+                    self.timer = nil
+                }
+            }
+        }
     }
     
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        
-        timer?.invalidate()
-        timer = nil
-        
         guard superview != nil else { return }
-        
-        timer = NSTimer.scheduledTimerWithTimeInterval(PulseIndex.StartInterval, target: self, selector: #selector(pulse(_:)), userInfo: PulseIndex(), repeats: true)
-        timer?.tolerance = 0.09
         
         addRingLayers()
     }
@@ -363,7 +376,7 @@ final class DistanceView: UIView {
         previousLayer.shadowOpacity = 0.0
         
         let pulseLayer = layer.sublayers![pulseIndex.index+layerOffset]
-        pulseLayer.shadowOpacity = 0.5
+        pulseLayer.shadowOpacity = 1.0
     }
     
     private func addRingLayers() {

@@ -78,7 +78,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
 		UITabBar.appearance().backgroundColor = theme.barBackgroundColor
 		
 		UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
-		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+        UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+        UITableView.appearance().backgroundColor = theme.globalBackgroundColor
 //        UITableView.appearance().tintColor = theme.globalTintColor
 		
 		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)

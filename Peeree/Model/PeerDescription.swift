@@ -405,11 +405,12 @@ struct PeerInfo: Equatable {
     }
     
     var summary: String {
-        if let age = age {
-            let ageGenderFormat = NSLocalizedString("%d years old, %@ - %@", comment: "Text describing the peers age and gender.")
-            return String(format: ageGenderFormat, age, gender.localizedRawValue, pinStatus)
+        if age != nil {
+            let format = NSLocalizedString("%d years old, %@ - %@", comment: "Text describing the peers age, gender and pin status.")
+            return String(format: format, age!, gender.localizedRawValue, pinStatus)
         } else {
-            return gender.localizedRawValue
+            let format = NSLocalizedString("%@ - %@", comment: "Text describing the peers gender and pin status.")
+            return String(format: format, gender.localizedRawValue, pinStatus)
         }
     }
     

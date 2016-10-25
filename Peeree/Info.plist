@@ -2,16 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Your photo library is used to let you choose a picture of you to display it to other users.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>The accelerator sensor is used to improve location calculations.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to compare it to the location of other users, but only if both users pinned each other.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth networking is used to connect to other $(EXECUTABLE_NAME) apps around you.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Your camera is used to create a picture of you to display it to other users.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -32,6 +22,16 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<false/>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth networking is used to connect to other $(EXECUTABLE_NAME) apps around you.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Your camera is used to create a picture of you to display it to other users.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to compare it to the location of other users, but only if both users pinned each other.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>The accelerator sensor is used to improve location calculations.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Your photo library is used to let you choose a picture of you to display it to other users.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

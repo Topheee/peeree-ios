@@ -169,12 +169,16 @@ extension UIViewController {
     }
 }
 
+//protocol NotificationPoster {
+//    associatedtype NotificationType: RawRepresentable //where NotificationType.RawValue == String
+//    
+//    static let PostedNotifications: NotificationType
+//    func test() where NotificationType.RawValue == String
+//}
+
 // MARK: - Network Reachability
 
-/*
- Based on the Apple Reachability sample code.
- */
-
+/* Based on the Apple Reachability sample code. */
 import SystemConfiguration
 
 class Reachability {
@@ -205,6 +209,12 @@ class Reachability {
 //            );
 //        }
 //    }
+    
+    static func getNetworkStatus() -> NetworkStatus {
+        guard let instance = Reachability() else { return .NotReachable }
+        
+        return instance.currentReachabilityStatus()
+    }
     
     init?(hostName: String) {
         guard let tmp = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, hostName) else { return nil } //hostName.UTF8String

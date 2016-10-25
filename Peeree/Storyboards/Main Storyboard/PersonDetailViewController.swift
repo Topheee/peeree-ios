@@ -244,7 +244,9 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
             self.removePictureLoadLayer()
             UIView.animateWithDuration(1.0, delay: 0.0, options: [.Autoreverse], animations: {
                 self.portraitImageView.backgroundColor = UIColor.redColor()
-            }, completion: nil)
+            }) { (completed) in
+                self.portraitImageView.backgroundColor = nil
+            }
         }
     }
     
@@ -260,7 +262,9 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
             self.removePictureLoadLayer()
             UIView.animateWithDuration(1.0, delay: 0.0, options: [.Autoreverse], animations: {
                 self.portraitImageView.backgroundColor = UIColor.redColor()
-            }, completion: nil)
+            }) { (completed) in
+                    self.portraitImageView.backgroundColor = nil
+            }
         }
     }
     
