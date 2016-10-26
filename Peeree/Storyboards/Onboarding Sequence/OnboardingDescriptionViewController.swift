@@ -24,12 +24,12 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
          (NSLocalizedString("Information Locality", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Information Locality content", comment: "Content of onboarding description paragraph."), UIImage(named: "ReadIconLocalInfo")),
          (NSLocalizedString("Temporary", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Temporary content", comment: "Content of onboarding description paragraph."), UIImage(named: "ReadIconTemporary"))]
     
-    enum InfoType { case General, Data }
+    enum InfoType { case general, data }
     
-    var infoType = InfoType.General
+    var infoType = InfoType.general
     
     private var headingsAndContent: [(String, String, UIImage?)] {
-        return infoType == .General ? OnboardingDescriptionViewController.GeneralInfoContent : OnboardingDescriptionViewController.DataInfoContent
+        return infoType == .general ? OnboardingDescriptionViewController.GeneralInfoContent : OnboardingDescriptionViewController.DataInfoContent
     }
 
     override func viewDidLoad() {
@@ -39,7 +39,7 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
         tableView.estimatedRowHeight = 240
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // this assumes that all our InfoTypes have 3 entries! This optimizes a lot, but if this condition gets invalid in the future we have to adjust this loop
@@ -55,29 +55,29 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
         tableView.reloadData()
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        UIView.animateWithDuration(2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.AllowUserInteraction, animations: { () -> Void in
+        UIView.animate(withDuration: 2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.allowUserInteraction, animations: { () -> Void in
             self.backButton.alpha = 1.0
         }, completion: nil)
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 
     // MARK: - Table view data source
 
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return headingsAndContent.count
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         return createDescriptionParagraphCell(tableView, indexPath: indexPath)
     }
     
@@ -89,23 +89,23 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
 //        }
 //    }
     
-    func scrollViewDidScroll(scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //        let cellBottom = cell.frame.origin.y + cell.frame.height
         //        let tableBottom = tableView.frame.origin.y + tableView.frame.height
         //        if cellBottom <= tableBottom {
         for cell in tableView.visibleCells {
-            guard let indexPath = tableView.indexPathForCell(cell) else { continue }
+            guard let indexPath = tableView.indexPath(for: cell) else { continue }
             
             if headerView.arrangedSubviews[indexPath.row].alpha != 1.0 {
-                UIView.animateWithDuration(1.0, delay: 0.5, options: [], animations: {
+                UIView.animate(withDuration: 1.0, delay: 0.5, options: [], animations: {
                     self.headerView.arrangedSubviews[indexPath.row].alpha = 1.0
                     }, completion: nil)
             }
         }
     }
     
-    private func createDescriptionParagraphCell(tableView: UITableView, indexPath: NSIndexPath) -> DescriptionParagraphCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(OnboardingDescriptionViewController.DescriptionParagraphCellID) as! DescriptionParagraphCell
+    private func createDescriptionParagraphCell(_ tableView: UITableView, indexPath: IndexPath) -> DescriptionParagraphCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: OnboardingDescriptionViewController.DescriptionParagraphCellID) as! DescriptionParagraphCell
         cell.heading = headingsAndContent[indexPath.row].0
         cell.content = headingsAndContent[indexPath.row].1
         cell.accessoryImage = headingsAndContent[indexPath.row].2

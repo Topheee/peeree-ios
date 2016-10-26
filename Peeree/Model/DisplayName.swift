@@ -16,40 +16,40 @@ class DisplayName: NSObject, NSCoding {
 	private var shortenLastname: Bool = false //think about these two. Do we need them? Is it a good idea to shorten it or should be ask the user what to do?
 	private var shortenFirstname: Bool = false //maybe like "your name exceeds 63 characters in length. It won't be fully visible to peers"
 	
-	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeBool(lastname.hidden, forKey: "lastname" + ".hidden")
+	@objc func encode(with aCoder: NSCoder) {
+		aCoder.encode(lastname.hidden, forKey: "lastname" + ".hidden")
 		if !lastname.hidden {
-			aCoder.encodeObject(lastname.value, forKey: "lastname")
+			aCoder.encode(lastname.value, forKey: "lastname")
 		}
-		aCoder.encodeBool(firstname.hidden, forKey: "firstname" + ".hidden")
+		aCoder.encode(firstname.hidden, forKey: "firstname" + ".hidden")
 		if !firstname.hidden {
-			aCoder.encodeObject(firstname.value, forKey: "firstname")
+			aCoder.encode(firstname.value, forKey: "firstname")
 		}
 		
-		aCoder.encodeBool(shortenFirstname, forKey: "shortenFirstname")
-		aCoder.encodeBool(shortenLastname, forKey: "shortenLastname")
+		aCoder.encode(shortenFirstname, forKey: "shortenFirstname")
+		aCoder.encode(shortenLastname, forKey: "shortenLastname")
 	}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
 		var stringValue: String
 		var hiddenValue: Bool
 		
-		hiddenValue = aDecoder.decodeBoolForKey("lastname" + ".hidden")
+		hiddenValue = aDecoder.decodeBool(forKey: "lastname" + ".hidden")
 		if !hiddenValue {
-			stringValue = aDecoder.decodeObjectForKey("lastname") as! String
+			stringValue = aDecoder.decodeObject(forKey: "lastname") as! String
 		} else {
 			stringValue = ""
 		}
 		lastname = HideableProperty(value: stringValue, hidden: hiddenValue)
-		hiddenValue = aDecoder.decodeBoolForKey("firstname" + ".hidden")
+		hiddenValue = aDecoder.decodeBool(forKey: "firstname" + ".hidden")
 		if !hiddenValue {
-			stringValue = aDecoder.decodeObjectForKey("firstname") as! String
+			stringValue = aDecoder.decodeObject(forKey: "firstname") as! String
 		} else {
 			stringValue = ""
 		}
 		firstname = HideableProperty(value: stringValue, hidden: hiddenValue)
 		
-		shortenFirstname = aDecoder.decodeBoolForKey("shortenFirstname")
-		shortenLastname = aDecoder.decodeBoolForKey("shortenLastname")
+		shortenFirstname = aDecoder.decodeBool(forKey: "shortenFirstname")
+		shortenLastname = aDecoder.decodeBool(forKey: "shortenLastname")
 	}
 }

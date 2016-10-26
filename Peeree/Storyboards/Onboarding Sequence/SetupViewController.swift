@@ -17,19 +17,19 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     var nameTextFieldFrame: CGRect?
 	
-	@IBAction func finishIntroduction(sender: AnyObject) {
+	@IBAction func finishIntroduction(_ sender: AnyObject) {
         guard let chosenName = nameTextField.text else { return }
         guard chosenName != "" else { return }
         
         UserPeerInfo.instance.peerName = chosenName
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
-        UserPeerInfo.instance.picture = picButton.imageForState(.Normal)
+        UserPeerInfo.instance.picture = picButton.image(for: UIControlState())
         
         AppDelegate.sharedDelegate.finishIntroduction()
 	}
 	
-	@IBAction func takePic(sender: UIButton) {
-        guard !nameTextField.isFirstResponder() else { return }
+	@IBAction func takePic(_ sender: UIButton) {
+        guard !nameTextField.isFirstResponder else { return }
         
         picButton.layer.removeAllAnimations()
         picButton.alpha = 1.0
@@ -37,83 +37,83 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
             self.pickedImage(UIImage(named: "PortraitUnavailable")!)
         }
 	}
-	@IBAction func filledFirstname(sender: UITextField) {
+	@IBAction func filledFirstname(_ sender: UITextField) {
 		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-		UIView.animateWithDuration(1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
+		UIView.animate(withDuration: 1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
         }, completion: { finished in
-            UIView.animateWithDuration(0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.Repeat, .Autoreverse, .AllowUserInteraction], animations: { () -> Void in
-                self.launchAppButton.transform = CGAffineTransformScale(self.launchAppButton.transform, 0.97, 0.97)
+            UIView.animate(withDuration: 0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: { () -> Void in
+                self.launchAppButton.transform = self.launchAppButton.transform.scaledBy(x: 0.97, y: 0.97)
             }, completion: nil)
         })
     }
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
-        for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] {
+        for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] as [UIView] {
             view.alpha = 0.0
         }
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        picButton.imageView?.maskView = CircleMaskView(frame: picButton.bounds)
+        _ = CircleMaskView(maskedView: picButton.imageView!)
     }
 	
-	override func viewDidAppear(animated: Bool) {
+	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard nameTextField.alpha == 0.0 else { return }
         
         self.view.flyInSubviews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
         self.view.flyInSubviews([picButton], duration: 1.0, delay: 1.0, damping: 1.0, velocity: 1.0)
-        UIView.animateWithDuration(1.0, delay: 7.0, options: [.Repeat, .Autoreverse, .AllowUserInteraction], animations: {
+        UIView.animate(withDuration: 1.0, delay: 7.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: {
             self.picButton.alpha = 0.6
         }, completion: nil)
 	}
     
-    override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "finishOnboardingSegue" {
             return nameTextField.text != nil && nameTextField.text != ""
         }
-        return super.shouldPerformSegueWithIdentifier(identifier, sender: sender)
+        return super.shouldPerformSegue(withIdentifier: identifier, sender: sender)
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        guard let rootTabBarController = segue.destinationViewController as? UITabBarController else {
-            guard let vc = segue.destinationViewController as? OnboardingDescriptionViewController else { return }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let rootTabBarController = segue.destination as? UITabBarController else {
+            guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
             
-            vc.infoType = .Data
+            vc.infoType = .data
             return
         }
         
         switch UserPeerInfo.instance.gender {
         case .Female:
-            BrowseFilterSettings.sharedSettings.gender = .Male
+            BrowseFilterSettings.sharedSettings.gender = .male
         case .Male:
-            BrowseFilterSettings.sharedSettings.gender = .Female
+            BrowseFilterSettings.sharedSettings.gender = .female
         default:
-            BrowseFilterSettings.sharedSettings.gender = .Unspecified
+            BrowseFilterSettings.sharedSettings.gender = .unspecified
         }
         
         rootTabBarController.selectedIndex = 1
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
     
-    func keyboardWillShow(notification: NSNotification) {
+    func keyboardWillShow(_ notification: Notification) {
         guard let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue else { return }
         
-        let keyboardFrameRect = keyboardFrame.CGRectValue()
+        let keyboardFrameRect = keyboardFrame.cgRectValue
         
         nameTextFieldFrame = nameTextField.frame
         var newFrame = nameTextFieldFrame!
         let textFieldsBottom = nameTextField.frame.origin.y + nameTextField.frame.height
         let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
         if textFieldsBottom > keyboardTop {
-            dispatch_async(dispatch_get_main_queue(), {
-                UIView.animateWithDuration(1.2, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.55, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+            DispatchQueue.main.async(execute: {
+                UIView.animate(withDuration: 1.2, delay: 0.0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.55, options: UIViewAnimationOptions.curveEaseOut, animations: {
                     newFrame.origin.y += keyboardTop - textFieldsBottom
                     self.nameTextField.frame = newFrame
                 }, completion: nil)
@@ -121,31 +121,31 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
     }
     
-    func keyboardWillHide(notification: NSNotification) {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+    func keyboardWillHide(_ notification: Notification) {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK - UITextFieldDelegate
 	
-    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillShow), name: UIKeyboardDidShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(keyboardWillHide), name: UIKeyboardDidHideNotification, object: nil)
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: NSNotification.Name.UIKeyboardDidShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: NSNotification.Name.UIKeyboardDidHide, object: nil)
         return true
     }
     
-	func textFieldShouldReturn(textField: UITextField) -> Bool {
+	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
 		return true
 	}
     
-    override func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    override func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         super.imagePickerControllerDidCancel(picker)
         pickedImage(UIImage(named: "PortraitUnavailable")!)
     }
     
-    override func pickedImage(image: UIImage) {
-        picButton.setImage(image, forState: .Normal)
-        dispatch_async(dispatch_get_main_queue()) {
+    override func pickedImage(_ image: UIImage) {
+        picButton.setImage(image, for: UIControlState())
+        DispatchQueue.main.async {
             self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
         }
     }
@@ -156,7 +156,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
  *	@param views    the views to animate
  */
 extension UIView {
-	func flyInSubviews(views: [UIView], duration: NSTimeInterval, delay: NSTimeInterval, damping: CGFloat, velocity: CGFloat) {
+	func flyInSubviews(_ views: [UIView], duration: TimeInterval, delay: TimeInterval, damping: CGFloat, velocity: CGFloat) {
 		var positions = [CGRect]()
 		for value in views {
 			positions.append(value.frame)
@@ -164,8 +164,8 @@ extension UIView {
 			value.alpha = 0.0
 		}
 		
-		UIView.animateWithDuration(duration, delay: delay, usingSpringWithDamping: damping, initialSpringVelocity: velocity, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
-		for (index, view) in views.enumerate() {
+		UIView.animate(withDuration: duration, delay: delay, usingSpringWithDamping: damping, initialSpringVelocity: velocity, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
+		for (index, view) in views.enumerated() {
 			view.frame = positions[index]
 			view.alpha = 1.0
 		}

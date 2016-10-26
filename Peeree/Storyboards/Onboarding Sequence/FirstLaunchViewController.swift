@@ -15,7 +15,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
     private var firstViewController: UIViewController!
     private var secondViewController: UIViewController!
 	
-	@IBAction func unwindToOnboardingViewController(segue: UIStoryboardSegue) {
+	@IBAction func unwindToOnboardingViewController(_ segue: UIStoryboardSegue) {
 		
 	}
 	
@@ -24,46 +24,46 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 	override func viewDidLoad() {
 		super.viewDidLoad()
         
-        firstViewController = storyboard!.instantiateViewControllerWithIdentifier(FirstLaunchViewController.kFirstViewControllerID)
-        secondViewController = storyboard!.instantiateViewControllerWithIdentifier(FirstLaunchViewController.kSecondViewControllerID)
+        firstViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.kFirstViewControllerID)
+        secondViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.kSecondViewControllerID)
         
 		// Configure the page view controller and add it as a child view controller.
-		pageViewController = UIPageViewController(transitionStyle: .Scroll, navigationOrientation: .Horizontal, options: nil)
+		pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
 		pageViewController.delegate = self
         pageViewController.dataSource = self
-		pageViewController.setViewControllers([firstViewController], direction: .Forward, animated: false, completion: {done in })
+		pageViewController.setViewControllers([firstViewController], direction: .forward, animated: false, completion: {done in })
         
         let pageView = pageViewController.view
         
 		self.addChildViewController(pageViewController)
-		self.view.addSubview(pageView)
+		self.view.addSubview(pageView!)
 		
 		// Set the page view controller's bounds using an inset rect so that self's view is visible around the edges of the pages.
 		var pageViewRect = self.view.bounds
-		if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
-			pageViewRect = CGRectInset(pageViewRect, 40.0, 40.0)
+		if UIDevice.current.userInterfaceIdiom == .pad {
+			pageViewRect = pageViewRect.insetBy(dx: 40.0, dy: 40.0)
 		}
-		pageView.frame = pageViewRect
+		pageView?.frame = pageViewRect
 		
-		pageViewController.didMoveToParentViewController(self)
+		pageViewController.didMove(toParentViewController: self)
 		
 		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 	
 	// MARK: - UIPageViewController delegate methods
 	
-	func pageViewController(pageViewController: UIPageViewController, spineLocationForInterfaceOrientation orientation: UIInterfaceOrientation) -> UIPageViewControllerSpineLocation {
-		return UIPageViewControllerSpineLocation.None
+	func pageViewController(_ pageViewController: UIPageViewController, spineLocationFor orientation: UIInterfaceOrientation) -> UIPageViewControllerSpineLocation {
+		return UIPageViewControllerSpineLocation.none
 	}
 	
 	// MARK: - Page View Controller Data Source
 	
-	func pageViewController(pageViewController: UIPageViewController, viewControllerBeforeViewController viewController: UIViewController) -> UIViewController? {
+	func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
 		var ret: UIViewController?
 		switch viewController {
 		case secondViewController:
@@ -75,7 +75,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		return ret
 	}
 	
-	func pageViewController(pageViewController: UIPageViewController, viewControllerAfterViewController viewController: UIViewController) -> UIViewController? {
+	func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
 		var ret: UIViewController?
 		switch viewController {
 		case firstViewController:
@@ -87,11 +87,11 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		return ret
 	}
 	
-	func presentationCountForPageViewController(pageViewController: UIPageViewController) -> Int {
+	func presentationCount(for pageViewController: UIPageViewController) -> Int {
 		return 2
 	}
 	
-	func presentationIndexForPageViewController(pageViewController: UIPageViewController) -> Int {
+	func presentationIndex(for pageViewController: UIPageViewController) -> Int {
 		return 0
 	}
 

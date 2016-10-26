@@ -11,13 +11,13 @@ import UIKit
 final class WelcomeViewController: UIViewController {
 	@IBOutlet private var infoButton: UIButton!
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        guard let vc = segue.destinationViewController as? OnboardingDescriptionViewController else { return }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
         
-        vc.infoType = .General
+        vc.infoType = .general
     }
 	
-	override func viewDidAppear(animated: Bool) {
+	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         infoButton.tintColor = theme.globalTintColor // for whatever reason we have to do that here...
 		if !animated {
@@ -26,7 +26,7 @@ final class WelcomeViewController: UIViewController {
 		}
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 }

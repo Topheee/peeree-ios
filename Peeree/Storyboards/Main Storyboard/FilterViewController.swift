@@ -24,11 +24,11 @@ final class FilterViewController: UITableViewController {
     
     private let filterSettings = BrowseFilterSettings.sharedSettings
 	
-	@IBAction func changeFilter(sender: AnyObject) {
+	@IBAction func changeFilter(_ sender: AnyObject) {
 		updatePrefs()
 	}
 	
-	@IBAction func changeAgeMin(sender: UISlider) {
+	@IBAction func changeAgeMin(_ sender: UISlider) {
 		if sender.value > ageMaxSlider.value {
 			ageMaxSlider.value = sender.value
 			updateAgeMaxLabel()
@@ -36,7 +36,7 @@ final class FilterViewController: UITableViewController {
 		updateAgeMinLabel()
 	}
 	
-	@IBAction func changeAgeMax(sender: UISlider) {
+	@IBAction func changeAgeMax(_ sender: UISlider) {
 		if sender.value < ageMinSlider.value {
 			ageMinSlider.value = sender.value
 			updateAgeMinLabel()
@@ -46,14 +46,14 @@ final class FilterViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        ageMaxLabel.widthAnchor.constraintEqualToAnchor(ageMinLabel.widthAnchor, multiplier: 1.0)
+        ageMaxLabel.widthAnchor.constraint(equalTo: ageMinLabel.widthAnchor, multiplier: 1.0)
         ageMaxSlider.maximumValue = Float(PeerInfo.MaxAge + 1)
         ageMaxSlider.minimumValue = Float(PeerInfo.MinAge)
         ageMinSlider.maximumValue = Float(PeerInfo.MaxAge)
         ageMinSlider.minimumValue = Float(PeerInfo.MinAge)
     }
 	
-	override func viewWillAppear(animated: Bool) {
+	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         ageMaxSlider.value = filterSettings.ageMax == 0 ? ageMaxSlider.maximumValue : filterSettings.ageMax
@@ -61,8 +61,8 @@ final class FilterViewController: UITableViewController {
 		ageMinSlider.value = filterSettings.ageMin
 		updateAgeMinLabel()
         genderSeg.selectedSegmentIndex = filterSettings.gender.rawValue
-        ageSwitch.on = filterSettings.onlyWithAge
-        pictureSwitch.on = filterSettings.onlyWithPicture
+        ageSwitch.isOn = filterSettings.onlyWithAge
+        pictureSwitch.isOn = filterSettings.onlyWithPicture
         // why? i don't know
         self.tableView.backgroundColor = theme.globalBackgroundColor
     }
@@ -72,8 +72,8 @@ final class FilterViewController: UITableViewController {
         filterSettings.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
         filterSettings.ageMin = ageMinSlider.value
         filterSettings.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!
-        filterSettings.onlyWithAge = ageSwitch.on
-        filterSettings.onlyWithPicture = pictureSwitch.on
+        filterSettings.onlyWithAge = ageSwitch.isOn
+        filterSettings.onlyWithPicture = pictureSwitch.isOn
         filterSettings.writeToDefaults()
     }
     

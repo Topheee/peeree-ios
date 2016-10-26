@@ -24,76 +24,76 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			self.container = container
 		}
         
-        private func initialPickerSelection(pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
-            return (PeerInfo.RelationshipStatus.values.indexOf(UserPeerInfo.instance.relationshipStatus)!, 0)
+        fileprivate func initialPickerSelection(_ pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
+            return (PeerInfo.RelationshipStatus.values.index(of: UserPeerInfo.instance.relationshipStatus)!, 0)
         }
-        private func selectionEditable(pickerView: UIPickerView) -> Bool {
+        fileprivate func selectionEditable(_ pickerView: UIPickerView) -> Bool {
             return true
         }
 		
-		func headingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
+		func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 			return NSLocalizedString("Relationship Status", comment: "Heading of the relation ship status picker view controller.")
 		}
 		
-		func subHeadingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
+		func subHeadingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 			return ""
 		}
 		
-		func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String? {
+		func descriptionOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
 			return NSLocalizedString("Tell others, what's up with your relationship.", comment: "Description of relation ship status picker view controller.")
 		}
 		
-		@objc func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+		@objc func numberOfComponents(in pickerView: UIPickerView) -> Int {
 			return 1
 		}
 		
-		@objc func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+		@objc func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
             return PeerInfo.RelationshipStatus.values.count
 		}
 		
-		@objc func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+		@objc func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 			return PeerInfo.RelationshipStatus.values[row].localizedRawValue
 		}
 		
-		@objc func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+		@objc func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 			UserPeerInfo.instance.relationshipStatus = PeerInfo.RelationshipStatus.values[row]
 		}
 	}
     
-	@IBAction func changeGender(sender: UISegmentedControl) {
+	@IBAction func changeGender(_ sender: UISegmentedControl) {
 		UserPeerInfo.instance.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
     
-    @IBAction func changePicture(sender: AnyObject) {
+    @IBAction func changePicture(_ sender: AnyObject) {
         showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Removing the own portrait image.")) { (action) in
             UserPeerInfo.instance.picture = nil
-            self.portraitImageButton.setImage(UIImage(named: "PortraitUnavailable")!, forState: .Normal)
+            self.portraitImageButton.setImage(UIImage(named: "PortraitUnavailable")!, for: UIControlState())
         }
     }
     
-    func agePickerChanged(sender: UIDatePicker) {
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.timeStyle = .NoStyle
-        dateFormatter.dateStyle = .LongStyle
-        birthdayInput.text = dateFormatter.stringFromDate(sender.date)
+    func agePickerChanged(_ sender: UIDatePicker) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = .none
+        dateFormatter.dateStyle = .long
+        birthdayInput.text = dateFormatter.string(from: sender.date)
     }
     
-    func ageConfirmed(sender: UIBarButtonItem) {
+    func ageConfirmed(_ sender: UIBarButtonItem) {
         birthdayInput.resignFirstResponder()
     }
     
-    func ageOmitted(sender: UIBarButtonItem) {
+    func ageOmitted(_ sender: UIBarButtonItem) {
         birthdayInput.text = nil
         birthdayInput.resignFirstResponder()
     }
 	
-	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
-        if let personDetailVC = segue.destinationViewController as? PersonDetailViewController {
+	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        if let personDetailVC = segue.destination as? PersonDetailViewController {
             personDetailVC.displayedPeerID = UserPeerInfo.instance.peer.peerID
-        } else if let singleSelVC = segue.destinationViewController as? SingleSelViewController {
+        } else if let singleSelVC = segue.destination as? SingleSelViewController {
             singleSelVC.dataSource = StatusSelViewControllerDataSource(container: self)
-        } else if let charTraitVC = segue.destinationViewController as? CharacterTraitViewController {
+        } else if let charTraitVC = segue.destination as? CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerInfo.instance.peer.characterTraits
             charTraitVC.userTraits = true
 		}
@@ -102,56 +102,56 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func viewDidLoad() {
         super.viewDidLoad()
 
-        let today = NSDate()
+        let today = Date()
         let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .Date
-        let minComponents = NSCalendar.currentCalendar().components([.Day, .Month, .Year], fromDate: today)
-        minComponents.year = minComponents.year - PeerInfo.MaxAge
-        let maxComponents = NSCalendar.currentCalendar().components([.Day, .Month, .Year], fromDate: today)
-        maxComponents.year = maxComponents.year - PeerInfo.MinAge
+        datePicker.datePickerMode = .date
+        var minComponents = (Calendar.current as NSCalendar).components([.day, .month, .year], from: today)
+        minComponents.year = minComponents.year! - PeerInfo.MaxAge
+        var maxComponents = (Calendar.current as NSCalendar).components([.day, .month, .year], from: today)
+        maxComponents.year = maxComponents.year! - PeerInfo.MinAge
         
-        datePicker.minimumDate = NSCalendar.currentCalendar().dateFromComponents(minComponents)
-        datePicker.maximumDate = NSCalendar.currentCalendar().dateFromComponents(maxComponents)
+        datePicker.minimumDate = Calendar.current.date(from: minComponents)
+        datePicker.maximumDate = Calendar.current.date(from: maxComponents)
         
-        datePicker.date = UserPeerInfo.instance.dateOfBirth ?? datePicker.maximumDate ?? today
-        datePicker.addTarget(self, action: #selector(agePickerChanged), forControlEvents: .ValueChanged)
+        datePicker.date = UserPeerInfo.instance.dateOfBirth as Date? ?? datePicker.maximumDate ?? today
+        datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
         
         let saveToolBar = UIToolbar()
-        let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .Plain, target: self, action: #selector(ageOmitted))
-        let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .Done, target: self, action: #selector(ageConfirmed))
+        let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .plain, target: self, action: #selector(ageOmitted))
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .done, target: self, action: #selector(ageConfirmed))
 
         spaceButton.title = birthdayInput.placeholder
-        omitButton.tintColor = UIColor.redColor()
-        saveToolBar.translucent = true
+        omitButton.tintColor = UIColor.red
+        saveToolBar.isTranslucent = true
         saveToolBar.sizeToFit()
         saveToolBar.setItems([omitButton,spaceButton,doneButton], animated: false)
-        saveToolBar.userInteractionEnabled = true
+        saveToolBar.isUserInteractionEnabled = true
         
         birthdayInput.inputView = datePicker
         birthdayInput.inputAccessoryView = saveToolBar
         birthdayInput.delegate = self
 	}
 	
-	override func viewWillAppear(animated: Bool) {
+	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 		nameTextField.text = UserPeerInfo.instance.peerName
-        statusButton.setTitle(UserPeerInfo.instance.relationshipStatus.rawValue, forState: .Normal)
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.timeStyle = .NoStyle
-        dateFormatter.dateStyle = .LongStyle
-		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.indexOf(UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable"), forState: .Normal)
+        statusButton.setTitle(UserPeerInfo.instance.relationshipStatus.rawValue, for: UIControlState())
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = .none
+        dateFormatter.dateStyle = .long
+		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.gender) ?? 0
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
         
         statusButton.setNeedsLayout()
 	}
 	
-	override func viewDidAppear(animated: Bool) {
+	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         UserPeerInfo.instance.delegate = self
 	}
 	
-	override func viewDidDisappear(animated: Bool) {
+	override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
 //		if UserPeerInfo.instance.delegate! == self as UserPeerInfoDelegate {
 			UserPeerInfo.instance.delegate = nil
@@ -160,23 +160,23 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        portraitImageButton.imageView?.maskView = CircleMaskView(frame: portraitImageButton.bounds)
+        _ = CircleMaskView(maskedView: portraitImageButton.imageView!)
     }
 	
 	// MARK: UITextFieldDelegate
 	
-	func textFieldShouldReturn(textField: UITextField) -> Bool {
+	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
 		return true
 	}
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         switch textField {
         case nameTextField:
             guard let newValue = textField.text else { return }
             UserPeerInfo.instance.peerName = newValue
         case birthdayInput:
-            scrollView.contentInset = UIEdgeInsetsZero
+            scrollView.contentInset = UIEdgeInsets.zero
             guard textField.text != nil && textField.text != "" else {
                 UserPeerInfo.instance.dateOfBirth = nil
                 return
@@ -189,14 +189,14 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         
     }
 	
-	func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
+	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         guard textField == birthdayInput else { return true }
         
         scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: birthdayInput.inputView?.frame.height ?? 0.0, right: 0.0)
 		return true
     }
     
-    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard textField == nameTextField else { return true }
         
         if (range.length + range.location > textField.text!.characters.count) {
@@ -207,9 +207,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         return newLength <= 63 //MCPeerID.MaxDisplayNameUTF8Length
     }
     
-    override func pickedImage(image: UIImage) {
+    override func pickedImage(_ image: UIImage) {
         UserPeerInfo.instance.picture = image
-        portraitImageButton.setImage(image, forState: .Normal)
+        portraitImageButton.setImage(image, for: UIControlState())
     }
     
     // MARK: UserPeerInfoDelegate

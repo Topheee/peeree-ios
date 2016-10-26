@@ -11,45 +11,45 @@ import MobileCoreServices
 
 /// Base class for view controllers providing availablity to change the user's portrait image.
 class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func showPicturePicker(allowCancel: Bool = false, destructiveActionName: String, destructiveAction: ((UIAlertAction) -> Void)) {
+    func showPicturePicker(_ allowCancel: Bool = false, destructiveActionName: String, destructiveAction: @escaping ((UIAlertAction) -> Void)) {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
         imagePicker.mediaTypes = [kUTTypeImage as String]
         
         let presentPicker = {
-            self.presentViewController(imagePicker, animated: true, completion: nil)
+            self.present(imagePicker, animated: true, completion: nil)
             imagePicker.view.tintColor = theme.globalTintColor
         }
         let cameraHandler = {(alertAction: UIAlertAction) -> Void in
-            imagePicker.sourceType = .Camera
+            imagePicker.sourceType = .camera
             presentPicker()
         }
         let photoLibraryHandler = {(alertAction: UIAlertAction) -> Void in
-            imagePicker.sourceType = .PhotoLibrary
+            imagePicker.sourceType = .photoLibrary
             presentPicker()
         }
         
         let alertController = UIAlertController()
-        if UIImagePickerController.isSourceTypeAvailable(.Camera) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .Default, handler: cameraHandler))
-        } else if UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .Default, handler: photoLibraryHandler))
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .default, handler: cameraHandler))
+        } else if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .default, handler: photoLibraryHandler))
         }
-        alertController.addAction(UIAlertAction(title: destructiveActionName, style: .Destructive, handler: destructiveAction))
+        alertController.addAction(UIAlertAction(title: destructiveActionName, style: .destructive, handler: destructiveAction))
         if allowCancel {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
         }
         alertController.present(nil)
     }
     
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         // picker.parentViewController is nil, but I don't know why
         //        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         var originalImage, editedImage, imageToSave: UIImage?
         
         editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
@@ -63,7 +63,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         
         // Save the new image (original or edited) to the Camera Roll
         if imageToSave != nil {
-            if picker.sourceType == .Camera {
+            if picker.sourceType == .camera {
                 UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
             }
             
@@ -72,10 +72,10 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         
         // picker.parentViewController is nil, but I don't know why
         //        picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
-    func pickedImage(image: UIImage) {
+    func pickedImage(_ image: UIImage) {
         // may be overridden by subclasses
     }
 }

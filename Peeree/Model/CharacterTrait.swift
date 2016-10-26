@@ -36,7 +36,7 @@ struct CharacterTrait {
         static let values = [Warmness, LogicalConclusion, EmotionalStability, Dominance, Vitality, RuleAwareness, SocialCompetence, Sensitiveness, Vigilance, Escapism, Privateness, Solicitousness, OpennessToChange, Frugalilty, Perfectionism, Strain]
         
         var kindDescription: String {
-            return NSBundle.mainBundle().localizedStringForKey(self.rawValue+"Description", value: NSLocalizedString("No description available.", comment: "For whatever reason there is no description available for this Character Trait."), table: nil)
+            return Bundle.main.localizedString(forKey: self.rawValue+"Description", value: NSLocalizedString("No description available.", comment: "For whatever reason there is no description available for this Character Trait."), table: nil)
         }
         
         /*
@@ -112,11 +112,11 @@ class CharacterTraitCoding: NSObject, NSSecureCoding {
 	private static let ApplKey = "applies"
 	private static let KindKey = "trait"
 	
-	@objc static func supportsSecureCoding() -> Bool {
+	@objc static var supportsSecureCoding : Bool {
 		return true
 	}
     
-    static func codingArray(structArray: [CharacterTrait]) -> [CharacterTraitCoding] {
+    static func codingArray(_ structArray: [CharacterTrait]) -> [CharacterTraitCoding] {
 //        var i = 0
 //        return [CharacterTraitCoding](count: structArray.count, repeatedValue: CharacterTraitCoding(characterTrait: structArray[i++]))
         var ret: [CharacterTraitCoding] = []
@@ -126,7 +126,7 @@ class CharacterTraitCoding: NSObject, NSSecureCoding {
         return ret
     }
     
-    static func structArray(codingArray: [CharacterTraitCoding]) -> [CharacterTrait] {
+    static func structArray(_ codingArray: [CharacterTraitCoding]) -> [CharacterTrait] {
 //        var i = 0
 //        return [CharacterTrait](count: codingArray.count, repeatedValue: codingArray[i++].characterTrait)
         var ret: [CharacterTrait] = []
@@ -144,19 +144,19 @@ class CharacterTraitCoding: NSObject, NSSecureCoding {
 	}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
-        guard let rawKindValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: CharacterTraitCoding.KindKey) as? String else { return nil }
+        guard let rawKindValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.KindKey) as? String else { return nil }
         guard let decodedKind = CharacterTrait.Kind(rawValue:rawKindValue) else { return nil }
         
         var applies: CharacterTrait.ApplyType = .DontKnow
-        if let rawAppliesValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: CharacterTraitCoding.ApplKey) as? String {
+        if let rawAppliesValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.ApplKey) as? String {
             applies = CharacterTrait.ApplyType(rawValue:rawAppliesValue) ?? CharacterTrait.ApplyType.DontKnow
         }
         
         characterTrait = CharacterTrait(kind: decodedKind, applies: applies)
 	}
 	
-	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeObject(characterTrait.applies.rawValue, forKey: CharacterTraitCoding.ApplKey)
-		aCoder.encodeObject(characterTrait.kind.rawValue, forKey: CharacterTraitCoding.KindKey)
+	@objc func encode(with aCoder: NSCoder) {
+		aCoder.encode(characterTrait.applies.rawValue, forKey: CharacterTraitCoding.ApplKey)
+		aCoder.encode(characterTrait.kind.rawValue, forKey: CharacterTraitCoding.KindKey)
 	}
 }

@@ -33,87 +33,101 @@ final class WalletController {
 	
     static let PinPointPrefKey = "PinPointPrefKey"
     private static let PinPointQueueLabel = "Pin Point Queue"
-    private static let pinPointQueue = dispatch_queue_create(PinPointQueueLabel, DISPATCH_QUEUE_SERIAL)
+    private static let pinPointQueue = DispatchQueue(label: PinPointQueueLabel, attributes: [])
     
+    private static var __once: () = { () -> Void in
+        if UserDefaults.standard.value(forKey: PinPointPrefKey) == nil {
+            Singleton.points = 200
+        } else {
+            Singleton.points = UserDefaults.standard.integer(forKey: PinPointPrefKey)
+        }
+    }()
     private struct Singleton {
         static var points: Int!
-        static var token: dispatch_once_t = 0
     }
     
     private static var _availablePinPoints: Int {
         get {
-            dispatch_once(&Singleton.token, { () -> Void in
-                Singleton.points = NSUserDefaults.standardUserDefaults().integerForKey(PinPointPrefKey) ?? 200
-            })
+            _ = WalletController.__once
             
             return Singleton.points
         }
         
         set {
             Singleton.points = newValue
-            NSUserDefaults.standardUserDefaults().setInteger(newValue, forKey: PinPointPrefKey)
-            NSUserDefaults.standardUserDefaults().synchronize()
+            UserDefaults.standard.set(newValue, forKey: PinPointPrefKey)
+            UserDefaults.standard.synchronize()
         }
     }
     
     static var availablePinPoints: Int {
         var result: Int = 0
-        dispatch_sync(pinPointQueue) {
+        pinPointQueue.sync {
             result = _availablePinPoints
         }
         return result
 	}
     
-    private static func decreasePinPoints(by: Int) {
-        dispatch_async(pinPointQueue) {
+    private static func decreasePinPoints(_ by: Int) {
+        pinPointQueue.async {
             _availablePinPoints -= by
         }
     }
     
-    static func increasePinPoints(by: Int) {
-        dispatch_async(pinPointQueue) {
+    static func increasePinPoints(_ by: Int) {
+        pinPointQueue.async {
             _availablePinPoints += by
         }
     }
 	
-    static func requestPin(confirmCallback: (PinConfirmation) -> Void) {
+    static func requestPin(_ confirmCallback: @escaping (PinConfirmation) -> Void) {
         let title = NSLocalizedString("Spend Pin Points", comment: "Title of the alert which pops up when the user is about to spend in-app currency.")
         var message: String
-        var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: nil)]
+        var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)]
         
 		if _availablePinPoints >= pinCost {
             message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
             message = String(format: message, WalletController._availablePinPoints)
             let actionTitle = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), WalletController.pinCost)
-            actions.append(UIAlertAction(title: actionTitle, style: .Default) { action in
+            actions.append(UIAlertAction(title: actionTitle, style: .default) { action in
                 confirmCallback(PinConfirmation())
             })
         } else {
             message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket.")
-            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view."), style: .Default) { action in
-                guard let rootTabBarController = UIApplication.sharedApplication().keyWindow?.rootViewController as? UITabBarController else { return }
+            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view."), style: .default) { action in
+                guard let rootTabBarController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController else { return }
                 
                 rootTabBarController.selectedIndex = 2
             })
         }
         
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .ActionSheet)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
         for action in actions {
             alertController.addAction(action)
         }
         alertController.present(nil)
 	}
     
-    static func redeem(confirmation: PinConfirmation) {
-        dispatch_once(&confirmation.token, { () -> Void in
+    static func redeem(_ confirmation: PinConfirmation) {
+        confirmation.redeem {
             decreasePinPoints(pinCost)
-        })
+        }
     }
     
     class PinConfirmation {
-        private var token: dispatch_once_t = 0
-        var redeemed: Bool { return token != 0 }
+        private var queue = DispatchQueue(label: "com.kobusch.peeree.pin_confirmation")
+        private var _redeemed = false
+        var redeemed: Bool { return _redeemed }
         
-        private init() {}
+        fileprivate init() {}
+        
+        fileprivate func redeem(_ block: @escaping () -> Void) {
+            queue.async {
+                if !self._redeemed {
+                    self._redeemed = true
+                    block()
+                }
+            }
+        }
     }
 }

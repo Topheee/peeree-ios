@@ -24,41 +24,41 @@ class PinMatchViewController: UIViewController {
         }
     }
     
-    @IBAction func showProfile(sender: AnyObject) {
+    @IBAction func showProfile(_ sender: AnyObject) {
         guard let peerID = displayedPeer?.peerID else { return }
         
         cancelMatchmaking(sender)
         AppDelegate.sharedDelegate.showPeer(peerID)
     }
     
-    @IBAction func findPeer(sender: AnyObject) {
+    @IBAction func findPeer(_ sender: AnyObject) {
         guard let peerID = displayedPeer?.peerID else { return }
         
         cancelMatchmaking(sender)
         AppDelegate.sharedDelegate.findPeer(peerID)
     }
     
-    @IBAction func cancelMatchmaking(sender: AnyObject) {
-        presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancelMatchmaking(_ sender: AnyObject) {
+        presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        portraitView.maskView = CircleMaskView(frame: portraitView.bounds)
+        _ = CircleMaskView(maskedView: portraitView)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        beaconButton.enabled = UserPeerInfo.instance.peer.iBeaconUUID != nil
+        beaconButton.isEnabled = UserPeerInfo.instance.peer.iBeaconUUID != nil
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let superView = presentingViewController?.view else { return }
         
         UIGraphicsBeginImageContextWithOptions(superView.bounds.size, true, 0.0)
         
-        superView.drawViewHierarchyInRect(superView.bounds, afterScreenUpdates: false)
+        superView.drawHierarchy(in: superView.bounds, afterScreenUpdates: false)
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()

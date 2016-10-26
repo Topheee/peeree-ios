@@ -15,8 +15,8 @@ class BasicInfoViewContoller: UIViewController {
 		backButton.alpha = 0.0
 	}
 	
-	override func viewDidAppear(animated: Bool) {
-		UIView.animateWithDuration(2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.AllowUserInteraction, animations: { () -> Void in
+	override func viewDidAppear(_ animated: Bool) {
+		UIView.animate(withDuration: 2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.allowUserInteraction, animations: { () -> Void in
 			self.backButton.alpha = 1.0
 		}, completion: nil)
 	}

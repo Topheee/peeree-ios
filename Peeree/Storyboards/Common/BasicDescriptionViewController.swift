@@ -27,7 +27,7 @@ final class BasicDescriptionViewController: UIViewController {
 //		}
 //	}
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let dataSource = dataSource else { return }
         
@@ -36,18 +36,18 @@ final class BasicDescriptionViewController: UIViewController {
         descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         descriptionTextView.flashScrollIndicators()
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 }
 
 protocol BasicDescriptionViewControllerDataSource {
-	func headingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String?
-	func subHeadingOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String?
-	func descriptionOfBasicDescriptionViewController(basicDescriptionViewController: BasicDescriptionViewController) -> String?
+	func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String?
+	func subHeadingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String?
+	func descriptionOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String?
 }

@@ -10,78 +10,78 @@ import UIKit
 
 // MARK: - Functions
 
-func archiveObjectInUserDefs<T: NSSecureCoding>(object: T, forKey: String) {
-	NSUserDefaults.standardUserDefaults().setObject(NSKeyedArchiver.archivedDataWithRootObject(object), forKey: forKey)
+func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
+	UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
 }
 
-func unarchiveObjectFromUserDefs<T: NSSecureCoding>(forKey: String) -> T? {
-	guard let data = NSUserDefaults.standardUserDefaults().objectForKey(forKey) as? NSData else {
+func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
+	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else {
 		return nil
 	}
-    return NSKeyedUnarchiver.unarchiveObjectWithData(data) as? T
+    return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
 }
 
-func getIdentity(fromResource resource: String, password : String?) -> (SecIdentityRef, SecTrustRef)? {
+func getIdentity(fromResource resource: String, password : String?) -> (SecIdentity, SecTrust)? {
     // Load certificate file
-    guard let path = NSBundle.mainBundle().pathForResource(resource, ofType : "p12") else { return nil }
-    guard let p12KeyFileContent = NSData(contentsOfFile: path) else { return nil }
+    guard let path = Bundle.main.path(forResource: resource, ofType : "p12") else { return nil }
+    guard let p12KeyFileContent = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return nil }
     
     // Setting options for the identity
     let options = [String(kSecImportExportPassphrase):password ?? ""]
     var citems: CFArray? = nil
-    let resultPKCS12Import = withUnsafeMutablePointer(&citems) { citemsPtr in
-        SecPKCS12Import(p12KeyFileContent, options, citemsPtr)
+    let resultPKCS12Import = withUnsafeMutablePointer(to: &citems) { citemsPtr in
+        SecPKCS12Import(p12KeyFileContent as CFData, options as CFDictionary, citemsPtr)
     }
     
     guard resultPKCS12Import == errSecSuccess else { return nil }
     
     // Recover the identity
     let items = citems! as NSArray
-    let identityAndTrust = items.objectAtIndex(0) as! NSDictionary
+    let identityAndTrust = items.object(at: 0) as! NSDictionary
     let identity = identityAndTrust[String(kSecImportItemIdentity)] as! SecIdentity
     let trust = identityAndTrust[String(kSecImportItemTrust)] as! SecTrust
     
-    return (identity as SecIdentityRef, trust as SecTrustRef)
+    return (identity as SecIdentity, trust as SecTrust)
+}
+
+//Swift 2
+//func bridge<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
+//    return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
+//    // return unsafeAddressOf(obj) // ***
+//}
+//
+//func bridge<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
+//    return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeUnretainedValue()
+//    // return unsafeBitCast(ptr, T.self) // ***
+//}
+//
+//func bridgeRetained<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
+//    return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
+//}
+//
+//func bridgeTransfer<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
+//    return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeRetainedValue()
+//}
+
+/// Objective-C __bridge cast
+func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
+    return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
 }
 
 /// Objective-C __bridge cast
-func bridge<T : AnyObject>(obj : T) -> UnsafePointer<Void> {
-    return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
-    // return unsafeAddressOf(obj) // ***
-}
-
-/// Objective-C __bridge cast
-func bridge<T : AnyObject>(ptr : UnsafePointer<Void>) -> T {
-    return Unmanaged<T>.fromOpaque(COpaquePointer(ptr)).takeUnretainedValue()
-    // return unsafeBitCast(ptr, T.self) // ***
+func bridge<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
+    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
 }
 
 /// Objective-C __bridge_retained equivalent. Casts the object pointer to a void pointer and retains the object.
-func bridgeRetained<T : AnyObject>(obj : T) -> UnsafePointer<Void> {
-    return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
+func bridgeRetained<T : AnyObject>(obj : T) -> UnsafeRawPointer {
+    return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
 }
 
 /// Objective-C __bridge_transfer equivalent. Converts the void pointer back to an object pointer and consumes the retain.
-func bridgeTransfer<T : AnyObject>(ptr : UnsafePointer<Void>) -> T {
-    return Unmanaged<T>.fromOpaque(COpaquePointer(ptr)).takeRetainedValue()
+func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
+    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
-
-// Swift 3
-//func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
-//    return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
-//}
-//
-//func bridge<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
-//    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
-//}
-//
-//func bridgeRetained<T : AnyObject>(obj : T) -> UnsafeRawPointer {
-//    return UnsafeRawPointer(Unmanaged.passRetained(obj).toOpaque())
-//}
-//
-//func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
-//    return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
-//}
 
 //func getSecIdentitySummaryString(identity: SecIdentityRef) -> String? {
 //    // Get the certificate from the identity.
@@ -126,7 +126,7 @@ extension CGSize {
 
 extension RawRepresentable where Self.RawValue == String {
     var localizedRawValue: String {
-        return NSBundle.mainBundle().localizedStringForKey(rawValue, value: nil, table: nil)
+        return Bundle.main.localizedString(forKey: rawValue, value: nil, table: nil)
     }
 }
 
@@ -143,29 +143,29 @@ extension UIView {
 }
 
 extension UIImage {
-    func croppedImage(cropRect: CGRect) -> UIImage {
-        let scaledCropRect = CGRectMake(cropRect.origin.x * scale, cropRect.origin.y * scale, cropRect.size.width * scale, cropRect.size.height * scale)
+    func croppedImage(_ cropRect: CGRect) -> UIImage {
+        let scaledCropRect = CGRect(x: cropRect.origin.x * scale, y: cropRect.origin.y * scale, width: cropRect.size.width * scale, height: cropRect.size.height * scale)
         
-        let imageRef = CGImageCreateWithImageInRect(self.CGImage, scaledCropRect)
-        return UIImage(CGImage: imageRef!, scale: scale, orientation: imageOrientation)
+        let imageRef = self.cgImage?.cropping(to: scaledCropRect)
+        return UIImage(cgImage: imageRef!, scale: scale, orientation: imageOrientation)
     }
 }
 
-extension NSNotificationCenter {
-    class func addObserverOnMain(name: String?, usingBlock block: (NSNotification) -> Void) -> NSObjectProtocol {
-        return NSNotificationCenter.defaultCenter().addObserverForName(name, object: nil, queue: NSOperationQueue.mainQueue(), usingBlock: block)
+extension NotificationCenter {
+    class func addObserverOnMain(_ name: String?, usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
+        return NotificationCenter.default.addObserver(forName: name.map { NSNotification.Name(rawValue: $0) }, object: nil, queue: OperationQueue.main, using: block)
     }
 }
 
 extension UIViewController {
-    func presentInFrontMostViewController(animated: Bool, completion: (() -> Void)?) {
-        guard let rootVC = UIApplication.sharedApplication().keyWindow?.rootViewController else { return }
+    func presentInFrontMostViewController(_ animated: Bool, completion: (() -> Void)?) {
+        guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else { return }
         
         var vc = rootVC
         while vc.presentedViewController != nil {
             vc = vc.presentedViewController!
         }
-        vc.presentViewController(self, animated: animated, completion: completion)
+        vc.present(self, animated: animated, completion: completion)
     }
 }
 
@@ -184,10 +184,10 @@ import SystemConfiguration
 class Reachability {
     static let ReachabilityChangedNotification = "kNetworkReachabilityChangedNotification"
 
-    let reachabilityRef: SCNetworkReachabilityRef
+    let reachabilityRef: SCNetworkReachability
     
     enum NetworkStatus: Int {
-        case NotReachable, ReachableViaWiFi, ReachableViaWWAN
+        case notReachable, reachableViaWiFi, reachableViaWWAN
     }
 
 //    static let ShouldPrintReachabilityFlags = true
@@ -211,7 +211,7 @@ class Reachability {
 //    }
     
     static func getNetworkStatus() -> NetworkStatus {
-        guard let instance = Reachability() else { return .NotReachable }
+        guard let instance = Reachability() else { return .notReachable }
         
         return instance.currentReachabilityStatus()
     }
@@ -223,7 +223,7 @@ class Reachability {
     
     init?(hostAddress: sockaddr) {
         var mutableAddress = hostAddress
-        guard let tmp = (withUnsafePointer(&mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
+        guard let tmp = (withUnsafePointer(to: &mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
             return SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, unsafePointer)
         }) else { return nil }
         reachabilityRef = tmp
@@ -231,31 +231,34 @@ class Reachability {
     
     init?() {
         var zeroAddress = sockaddr_in()
-        bzero(&zeroAddress, sizeof(sockaddr_in))
-        zeroAddress.sin_len = UInt8(sizeof(sockaddr_in))
+        bzero(&zeroAddress, MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
         zeroAddress.sin_family = UInt8(AF_INET)
         var mutableAddress = zeroAddress
-        guard let tmp = (withUnsafePointer(&mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
-            return SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, UnsafePointer(unsafePointer))
+        guard let tmp = (withUnsafePointer(to: &mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
+            return unsafePointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { (unsafeMutablePointer) in
+                SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, unsafeMutablePointer)
+            }
         }) else { return nil }
+        
         reachabilityRef = tmp
     }
 
     func startNotifier() -> Bool {
         var returnValue = false
-        var selfptr = bridge(self)
-        var context = withUnsafeMutablePointer(&selfptr) { (unsafePointer) -> SCNetworkReachabilityContext in
+        var selfptr = bridge(obj: self)
+        var context = withUnsafeMutablePointer(to: &selfptr) { (unsafePointer) -> SCNetworkReachabilityContext in
             return SCNetworkReachabilityContext(version: 0, info: unsafePointer, retain: nil, release: nil, copyDescription: nil)
         }
         
-        if (SCNetworkReachabilitySetCallback(reachabilityRef, ({(target: SCNetworkReachabilityRef, flags: SCNetworkReachabilityFlags, info: UnsafeMutablePointer<Void>) in
+        if (SCNetworkReachabilitySetCallback(reachabilityRef, ({(target: SCNetworkReachability, flags: SCNetworkReachabilityFlags, info: UnsafeMutableRawPointer?) in
             assert(info != nil, "info was NULL in ReachabilityCallback")
-            let noteObject: Reachability = bridge(info)
+            let noteObject: Reachability = bridge(ptr: info!)
             
             // Post a notification to notify the client that the network reachability changed.
-            NSNotificationCenter.defaultCenter().postNotificationName(Reachability.ReachabilityChangedNotification, object: noteObject)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Reachability.ReachabilityChangedNotification), object: noteObject)
         }), &context)) {
-            if (SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
+            if (SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)) {
                 returnValue = true
             }
         }
@@ -265,7 +268,7 @@ class Reachability {
         
         
     func stopNotifier() {
-        SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
+        SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)
     }
             
     deinit {
@@ -273,40 +276,40 @@ class Reachability {
 //        CFRelease(reachabilityRef)
     }
 
-    func networkStatusForFlags(flags: SCNetworkReachabilityFlags) -> NetworkStatus {
+    func networkStatusForFlags(_ flags: SCNetworkReachabilityFlags) -> NetworkStatus {
 //        Reachability.PrintReachabilityFlags(flags, "networkStatusForFlags")
-        if !flags.contains(SCNetworkReachabilityFlags.Reachable) {
+        if !flags.contains(SCNetworkReachabilityFlags.reachable) {
             // The target host is not reachable.
-            return .NotReachable
+            return .notReachable
         }
         
-        var returnValue = NetworkStatus.NotReachable
+        var returnValue = NetworkStatus.notReachable
         
-        if !flags.contains(SCNetworkReachabilityFlags.ConnectionRequired) {
+        if !flags.contains(SCNetworkReachabilityFlags.connectionRequired) {
             /*
              If the target host is reachable and no connection is required then we'll assume (for now) that you're on Wi-Fi...
              */
-            returnValue = .ReachableViaWiFi
+            returnValue = .reachableViaWiFi
         }
         
-        if flags.contains(SCNetworkReachabilityFlags.ConnectionOnDemand) || flags.contains(SCNetworkReachabilityFlags.ConnectionOnTraffic) {
+        if flags.contains(SCNetworkReachabilityFlags.connectionOnDemand) || flags.contains(SCNetworkReachabilityFlags.connectionOnTraffic) {
             /*
              ... and the connection is on-demand (or on-traffic) if the calling application is using the CFSocketStream or higher APIs...
              */
             
-            if !flags.contains(SCNetworkReachabilityFlags.InterventionRequired) {
+            if !flags.contains(SCNetworkReachabilityFlags.interventionRequired) {
                 /*
                  ... and no [user] intervention is needed...
                  */
-                returnValue = .ReachableViaWiFi
+                returnValue = .reachableViaWiFi
             }
         }
         
-        if flags.contains(SCNetworkReachabilityFlags.IsWWAN) {
+        if flags.contains(SCNetworkReachabilityFlags.isWWAN) {
             /*
              ... but WWAN connections are OK if the calling application is using the CFNetwork APIs.
              */
-            returnValue = .ReachableViaWWAN
+            returnValue = .reachableViaWWAN
         }
         
         return returnValue
@@ -317,7 +320,7 @@ class Reachability {
         var flags: SCNetworkReachabilityFlags = []
         
         if (SCNetworkReachabilityGetFlags(reachabilityRef, &flags)) {
-            return flags.contains(SCNetworkReachabilityFlags.ConnectionRequired)
+            return flags.contains(SCNetworkReachabilityFlags.connectionRequired)
         }
         
         return false
@@ -325,7 +328,7 @@ class Reachability {
     
             
     func currentReachabilityStatus() -> NetworkStatus {
-        var returnValue = NetworkStatus.NotReachable
+        var returnValue = NetworkStatus.notReachable
         var flags: SCNetworkReachabilityFlags = []
         
         if (SCNetworkReachabilityGetFlags(reachabilityRef, &flags)) {
@@ -341,9 +344,9 @@ class Reachability {
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
-public class SynchronizedArray<T> {
+open class SynchronizedArray<T> {
     /* private */ var array: [T] = []
-    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_arr_q", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = DispatchQueue(label: "com.peeree.sync_arr_q", attributes: [])
     
     init() { }
     
@@ -351,22 +354,22 @@ public class SynchronizedArray<T> {
         self.array = array
     }
     
-    public func append(newElement: T) {
-        dispatch_async(accessQueue) {
+    open func append(_ newElement: T) {
+        accessQueue.async {
             self.array.append(newElement)
         }
     }
     
-    public subscript(index: Int) -> T {
+    open subscript(index: Int) -> T {
         set {
-            dispatch_async(accessQueue) {
+            accessQueue.async {
                 self.array[index] = newValue
             }
         }
         get {
             var element: T!
             
-            dispatch_sync(accessQueue) {
+            accessQueue.sync {
                 element = self.array[index]
             }
             
@@ -377,9 +380,9 @@ public class SynchronizedArray<T> {
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
-public class SynchronizedDictionary<Key: Hashable, Value> {
+open class SynchronizedDictionary<Key: Hashable, Value> {
     /* private */ var dictionary: [Key : Value] = [:]
-    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_dic_q", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = DispatchQueue(label: "com.peeree.sync_dic_q", attributes: [])
     
     init() { }
     
@@ -387,16 +390,16 @@ public class SynchronizedDictionary<Key: Hashable, Value> {
         self.dictionary = dictionary
     }
     
-    public subscript(index: Key) -> Value? {
+    open subscript(index: Key) -> Value? {
         set {
-            dispatch_async(accessQueue) {
+            accessQueue.async {
                 self.dictionary[index] = newValue
             }
         }
         get {
             var element: Value?
             
-            dispatch_sync(accessQueue) {
+            accessQueue.sync {
                 element = self.dictionary[index]
             }
             
@@ -405,12 +408,12 @@ public class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     // @warn_unused_result public @rethrows func contains(@noescape predicate: (Self.Generator.Element) throws -> Bool) rethrows -> Bool {
-    @warn_unused_result public func contains(predicate: ((Key, Value)) throws -> Bool) throws -> Bool {
+    open func contains(_ predicate: ((Key, Value)) throws -> Bool) throws -> Bool {
         var ret = false
-        var throwError: ErrorType?
-        dispatch_sync(accessQueue) {
+        var throwError: Error?
+        accessQueue.sync {
             do {
-                try ret = self.dictionary.contains(predicate)
+                try ret = self.dictionary.contains(where: predicate)
             } catch let error {
                 throwError = error
             }
@@ -421,16 +424,16 @@ public class SynchronizedDictionary<Key: Hashable, Value> {
         return ret
     }
     
-    public func removeValueForKey(key: Key) -> Value? {
+    open func removeValueForKey(_ key: Key) -> Value? {
         var ret: Value? = nil
-        dispatch_sync(accessQueue) {
-            ret = self.dictionary.removeValueForKey(key)
+        accessQueue.sync {
+            ret = self.dictionary.removeValue(forKey: key)
         }
         return ret
     }
     
-    public func removeAll() {
-        dispatch_async(accessQueue) { 
+    open func removeAll() {
+        accessQueue.async { 
             self.dictionary.removeAll()
         }
     }
@@ -438,9 +441,9 @@ public class SynchronizedDictionary<Key: Hashable, Value> {
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
-public class SynchronizedSet<T : Hashable> {
+open class SynchronizedSet<T : Hashable> {
     /* private */ var set = Set<T>()
-    /* private */ let accessQueue = dispatch_queue_create("com.peeree.sync_set_q", DISPATCH_QUEUE_SERIAL)
+    /* private */ let accessQueue = DispatchQueue(label: "com.peeree.sync_set_q", attributes: [])
     
     init() { }
     
@@ -448,30 +451,30 @@ public class SynchronizedSet<T : Hashable> {
         self.set = set
     }
     
-    public func contains(member: T) -> Bool {
+    open func contains(_ member: T) -> Bool {
         var contains: Bool!
         
-        dispatch_sync(accessQueue) {
+        accessQueue.sync {
             contains = self.set.contains(member)
         }
         
         return contains
     }
     
-    public func insert(member: T) {
-        dispatch_async(accessQueue) {
+    open func insert(_ member: T) {
+        accessQueue.async {
             self.set.insert(member)
         }
     }
     
-    public func remove(member: T) {
-        dispatch_async(accessQueue) {
+    open func remove(_ member: T) {
+        accessQueue.async {
             self.set.remove(member)
         }
     }
     
-    public func removeAll() {
-        dispatch_async(accessQueue) {
+    open func removeAll() {
+        accessQueue.async {
             self.set.removeAll()
         }
     }

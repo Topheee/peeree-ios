@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
-	static var sharedDelegate: AppDelegate { return UIApplication.sharedApplication().delegate as! AppDelegate }
+	static var sharedDelegate: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
     /// This is somehow set by the environment...
     var window: UIWindow?
@@ -54,13 +54,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     /**
      *  Registers for notifications, presents onboarding on first launch and applies GUI theme
      */
-	func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-		if UIApplication.instancesRespondToSelector(#selector(UIApplication.registerUserNotificationSettings(_:))) {
+	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+		if UIApplication.instancesRespond(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
 			//only ask on iOS 8 or later
-            UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil))
+            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
 		}
         
-        NSUserDefaults.standardUserDefaults().registerDefaults([WalletController.PinPointPrefKey : WalletController.initialPinPoints])
+        UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.initialPinPoints])
 		
 		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
 //		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
@@ -90,31 +90,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         UIActivityIndicatorView.appearance().color = theme.globalTintColor
         UIStackView.appearance().tintColor = theme.globalTintColor
         
-        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.colorWithAlphaComponent(0.65)
+        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
         UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
         
         UIWindow.appearance().tintColor = theme.globalTintColor
         
-        RemotePeerManager.NetworkNotification.RemotePeerAppeared.addObserver { notification in
+        _ = RemotePeerManager.NetworkNotification.RemotePeerAppeared.addObserver { notification in
             guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
 
             self.remotePeerAppeared(peerID)
         }
         
-        RemotePeerManager.NetworkNotification.RemotePeerDisappeared.addObserver { notification in
+        _ = RemotePeerManager.NetworkNotification.RemotePeerDisappeared.addObserver { notification in
             guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
             
             self.remotePeerDisappeared(peerID)
         }
         
-        RemotePeerManager.NetworkNotification.PinMatch.addObserver { notification in
+        _ = RemotePeerManager.NetworkNotification.PinMatch.addObserver { notification in
             guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
             guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) else { return }
             
             self.pinMatchOccured(peer)
         }
         
-        RemotePeerManager.NetworkNotification.ConnectionChangedState.addObserver { notification in
+        _ = RemotePeerManager.NetworkNotification.ConnectionChangedState.addObserver { notification in
             guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
             guard let browseItem = topVC.tabBar.items?.first else { return }
             
@@ -122,59 +122,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             browseItem.selectedImage = browseItem.image
         }
         
-        if NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.PrefSkipOnboarding) {
+        if UserDefaults.standard.bool(forKey: AppDelegate.PrefSkipOnboarding) {
             RemotePeerManager.sharedManager.peering = true
         }
 		
 		return true
 	}
 
-	func applicationWillResignActive(application: UIApplication) {
+	func applicationWillResignActive(_ application: UIApplication) {
 		// Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
 		// Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
 	}
 
-	func applicationDidEnterBackground(application: UIApplication) {
+	func applicationDidEnterBackground(_ application: UIApplication) {
 		// Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
 		// If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
 		isActive = false
 	}
 
-	func applicationWillEnterForeground(application: UIApplication) {
+	func applicationWillEnterForeground(_ application: UIApplication) {
 		// Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
 	}
 
-	func applicationDidBecomeActive(application: UIApplication) {
+	func applicationDidBecomeActive(_ application: UIApplication) {
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         isActive = true
         
-        if !NSUserDefaults.standardUserDefaults().boolForKey(AppDelegate.PrefSkipOnboarding) {
+        if !UserDefaults.standard.bool(forKey: AppDelegate.PrefSkipOnboarding) {
             // this is the first launch of the app, so we show the first launch UI
             let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
             
-            self.window!.rootViewController?.presentViewController(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
+            self.window!.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
         }
         
-        UIApplication.sharedApplication().cancelAllLocalNotifications()
+        UIApplication.shared.cancelAllLocalNotifications()
     }
 
     /**
      *  Stops networking and synchronizes preferences
      */
-	func applicationWillTerminate(application: UIApplication) {
+	func applicationWillTerminate(_ application: UIApplication) {
         RemotePeerManager.sharedManager.peering = false
-        NSUserDefaults.standardUserDefaults().synchronize()
+        UserDefaults.standard.synchronize()
 	}
     
-    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
-        guard application.applicationState == .Inactive else { return }
-        guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? NSData else { return }
-        guard let peerID = NSKeyedUnarchiver.unarchiveObjectWithData(peerIDData) as? MCPeerID else { return }
+    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
+        guard application.applicationState == .inactive else { return }
+        guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? Data else { return }
+        guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? MCPeerID else { return }
         
         showPeer(peerID)
     }
     
-    func applicationDidReceiveMemoryWarning(application: UIApplication) {
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         // TODO figure out whether this also disconnects all open sessions
         RemotePeerManager.sharedManager.peering = false
         RemotePeerManager.sharedManager.clearCache()
@@ -182,44 +182,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     }
     
     func finishIntroduction() {
-        NSUserDefaults.standardUserDefaults().setBool(true, forKey: AppDelegate.PrefSkipOnboarding)
+        UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
         // TODO test whether this one keeps alive long enough to send us the didUpdateState and whether we need to call startAdvertising
         _ = CBPeripheralManager(delegate: self, queue: nil)
     }
     
-    func showPeer(peerID: MCPeerID) {
+    func showPeer(_ peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
         
         rootTabBarController.selectedIndex = 0
-        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
+        browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
     
-    func findPeer(peerID: MCPeerID) {
+    func findPeer(_ peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
         
         rootTabBarController.selectedIndex = 0
-        browseVC.performSegueWithIdentifier(BrowseViewController.ViewPeerSegueID, sender: peerID)
+        browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
         let test = browseNavVC.viewControllers[0] as? PersonDetailViewController
         print(test)
     }
     
     // MARK: CBPeripheralManagerDelegate
     
-    func peripheralManagerDidUpdateState(peripheral: CBPeripheralManager) {
+    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         switch peripheral.state {
-        case .Unknown, .Resetting:
+        case .unknown, .resetting:
             // just wait
             break
-        case .Unsupported:
+        case .unsupported:
             UserPeerInfo.instance.iBeaconUUID = nil
             peripheral.stopAdvertising()
             peripheral.delegate = nil
         default:
-            UserPeerInfo.instance.iBeaconUUID = NSUUID()
+            UserPeerInfo.instance.iBeaconUUID = UUID()
             peripheral.stopAdvertising()
             peripheral.delegate = nil
         }
@@ -227,38 +227,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     // MARK: Private Methods
     
-	private func remotePeerAppeared(peerID: MCPeerID) {
+	private func remotePeerAppeared(_ peerID: MCPeerID) {
 		if !isActive {
             guard RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) == nil else { return }
             
 			let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 			note.alertBody = String(format: alertBodyFormat, peerID.displayName)
-            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peerID)]
-			UIApplication.sharedApplication().presentLocalNotificationNow(note)
+            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+			UIApplication.shared.presentLocalNotificationNow(note)
         } else if BrowseViewController.instance == nil {
             updateNewPeerBadge()
 		}
 	}
 	
-	private func remotePeerDisappeared(peerID: MCPeerID) {
+	private func remotePeerDisappeared(_ peerID: MCPeerID) {
         updateNewPeerBadge()
 	}
     
-    private func pinMatchOccured(peer: PeerInfo) {
+    private func pinMatchOccured(_ peer: PeerInfo) {
         if isActive {
             setPinMatchBadge()
             // TODO PinMatchVC nur zeigen, wenn man nicht in der BrowseView, der PersonView des Peers oder einer FindView ist
-            let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier(PinMatchViewController.StoryboardID) as! PinMatchViewController
+            let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
             pinMatchVC.displayedPeer = peer
-            window?.rootViewController?.presentViewController(pinMatchVC, animated: true, completion: nil)
+            window?.rootViewController?.present(pinMatchVC, animated: true, completion: nil)
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
             note.alertBody = String(format: alertBodyFormat, peer.peerName)
-            note.applicationIconBadgeNumber = UIApplication.sharedApplication().applicationIconBadgeNumber + 1
-            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedDataWithRootObject(peer.peerID)]
-            UIApplication.sharedApplication().presentLocalNotificationNow(note)
+            note.applicationIconBadgeNumber = UIApplication.shared.applicationIconBadgeNumber + 1
+            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
+            UIApplication.shared.presentLocalNotificationNow(note)
         }
     }
     
@@ -273,7 +273,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         
         let pm = RemotePeerManager.sharedManager
         var newPeerCount: Int!
-        dispatch_sync(pm.availablePeers.accessQueue) {
+        pm.availablePeers.accessQueue.sync {
             // we can access the set variable safely here since we are on the queue
             newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
         }

@@ -23,7 +23,7 @@ class TestPeerInfo: NetworkPeerInfo {
             characterTraits[index].applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
             rand = arc4random()
         }
-        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.Female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: NSUUID(), lastChanged: NSDate(), _hasPicture: rand % 5000 > 2500, _picture: nil)
+        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.Female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: rand % 5000 > 2500, _picture: nil)
         super.init(peer: peer)
     }
     
@@ -43,24 +43,24 @@ final class UserPeerInfo: LocalPeerInfo {
     private static let DateOfBirthKey = "dateOfBirth"
     private static let PortraitFileName = "UserPotrait"
     
+    private static var __once: () = { () -> Void in
+        Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
+    }()
+    private struct Singleton {
+        static var sharedInstance: UserPeerInfo!
+    }
 	static var instance: UserPeerInfo {
-        struct Singleton {
-            static var sharedInstance: UserPeerInfo!
-            static var token: dispatch_once_t = 0
-        }
-        dispatch_once(&Singleton.token, { () -> Void in
-            Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
-        })
+        _ = UserPeerInfo.__once
         
         return Singleton.sharedInstance
 	}
 	
 	var delegate: UserPeerInfoDelegate?
     
-    var pictureResourceURL: NSURL {
+    var pictureResourceURL: URL {
         // Create a file path to our documents directory
-        let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        return NSURL.fileURLWithPath(paths[0]).URLByAppendingPathComponent(UserPeerInfo.PortraitFileName)
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+        return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeerInfo.PortraitFileName)
     }
     
     override var peer: PeerInfo {
@@ -70,11 +70,11 @@ final class UserPeerInfo: LocalPeerInfo {
         }
     }
 	
-	var dateOfBirth: NSDate? {
+	var dateOfBirth: Date? {
 		didSet {
 			if dateOfBirth != oldValue {
                 if let birth = dateOfBirth {
-                    peer.age = NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: birth, toDate: NSDate(), options: []).year
+                    peer.age = (Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: birth, to: Date(), options: []).year
                 } else {
                     peer.age = nil
                 }
@@ -110,7 +110,7 @@ final class UserPeerInfo: LocalPeerInfo {
         get { return peer.gender }
         set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
     }
-    var iBeaconUUID: NSUUID? {
+    var iBeaconUUID: UUID? {
         get { return peer.iBeaconUUID }
         set { if newValue != peer.iBeaconUUID { peer.iBeaconUUID = newValue; dirtied() } }
     }
@@ -125,19 +125,19 @@ final class UserPeerInfo: LocalPeerInfo {
             
                 if picture != nil {
                     // Don't block the UI when writing the image to documents
-                    dispatch_async(dispatch_get_global_queue(0, 0)) {
+                    DispatchQueue.global().async {
                         // Save the new image to the documents directory
                         do {
-                            try UIImageJPEGRepresentation(self.picture!, 1.0)?.writeToURL(self.pictureResourceURL, options: .DataWritingAtomic)
+                            try UIImageJPEGRepresentation(self.picture!, 1.0)?.write(to: self.pictureResourceURL, options: .atomic)
                         } catch let error as NSError {
                             // TODO error handling
                             print(error.debugDescription)
                         }
                     }
                 } else {
-                    let fileManager = NSFileManager.defaultManager()
+                    let fileManager = FileManager.default
                     do {
-                        try fileManager.removeItemAtURL(pictureResourceURL)
+                        try fileManager.removeItem(at: pictureResourceURL)
                     } catch let error as NSError {
                         // TODO error handling
                         print(error.debugDescription)
@@ -151,29 +151,29 @@ final class UserPeerInfo: LocalPeerInfo {
         set { peer.characterTraits = newValue; dirtied() }
     }
 	
-	private override init() {
-		dateOfBirth = NSDate(timeIntervalSinceNow: -3600*24*365*18)
-        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: nil, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: NSDate(), _hasPicture: false, _picture: nil))
+	private init() {
+		dateOfBirth = Date(timeIntervalSinceNow: -3600*24*365*18)
+        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: nil, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, _picture: nil))
 	}
 
 	@objc required init?(coder aDecoder: NSCoder) {
-		dateOfBirth = aDecoder.decodeObjectOfClass(NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) ?? NSDate(timeIntervalSinceNow: -3600*24*365*18)
+		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as? Date ?? Date(timeIntervalSinceNow: -3600*24*365*18)
 	    super.init(coder: aDecoder)
     }
     
-    @objc override func encodeWithCoder(aCoder: NSCoder) {
-        super.encodeWithCoder(aCoder)
-        aCoder.encodeObject(dateOfBirth, forKey: UserPeerInfo.DateOfBirthKey)
+    @objc override func encode(with aCoder: NSCoder) {
+        super.encode(with: aCoder)
+        aCoder.encode(dateOfBirth, forKey: UserPeerInfo.DateOfBirthKey)
     }
 	
-	private func warnIdentityChange(proceedHandler: ((UIAlertAction) -> Void)?, cancelHandler: ((UIAlertAction) -> Void)?, completionHandler: (() -> Void)?) {
-		let alertController = UIAlertController(title: NSLocalizedString("Change of Identity", comment: "Title message of alerting the user that he is about to change the unambigous representation of himself in the Peeree world."), message: NSLocalizedString("You are about to change your identification. If you continue others, even those who pinned you, won't recognize you any more. This is also the case if you again reset your name to the original one. However, your pins all keep being valid!", comment: "Description of 'Change of Identity'"), preferredStyle: .ActionSheet)
-		alertController.addAction(UIAlertAction(title: NSLocalizedString("Change Identity", comment: "Button text for choosing a new Peeree identity."), style: .Destructive, handler: proceedHandler))
-		alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Cancel, handler: cancelHandler))
+	private func warnIdentityChange(_ proceedHandler: ((UIAlertAction) -> Void)?, cancelHandler: ((UIAlertAction) -> Void)?, completionHandler: (() -> Void)?) {
+		let alertController = UIAlertController(title: NSLocalizedString("Change of Identity", comment: "Title message of alerting the user that he is about to change the unambigous representation of himself in the Peeree world."), message: NSLocalizedString("You are about to change your identification. If you continue others, even those who pinned you, won't recognize you any more. This is also the case if you again reset your name to the original one. However, your pins all keep being valid!", comment: "Description of 'Change of Identity'"), preferredStyle: .actionSheet)
+		alertController.addAction(UIAlertAction(title: NSLocalizedString("Change Identity", comment: "Button text for choosing a new Peeree identity."), style: .destructive, handler: proceedHandler))
+		alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: cancelHandler))
         alertController.present(completionHandler)
 	}
 	
-	private func dirtied() {
+	fileprivate func dirtied() {
 		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
 	}
 }
@@ -183,7 +183,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     var sentPinStatus = false
     var pinStatusAcknowledged = false
     
-    @objc static func supportsSecureCoding() -> Bool {
+    @objc static var supportsSecureCoding : Bool {
         return true
     }
     
@@ -196,30 +196,30 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     }
     
     @objc required init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: PeerInfo.PeerIDKey) else { return nil }
-        guard let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.GenderKey) as? String else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: MCPeerID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
+        guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
         guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
         
-        let lastChanged = aDecoder.decodeObjectOfClass(NSDate.self, forKey: PeerInfo.LastChangedKey) ?? NSDate()
-        let version = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.VersionKey) as? String ?? "1.0"
-        let uuid = aDecoder.decodeObjectOfClass(NSUUID.self, forKey: PeerInfo.BeaconUUIDKey)
+        let lastChanged = aDecoder.decodeObject(of: NSDate.self, forKey: PeerInfo.CodingKey.lastChanged.rawValue) as? Date ?? Date()
+        let version = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.version.rawValue) as? String ?? "1.0"
+        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
         var characterTraits: [CharacterTrait]
-        if let decodedTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.TraitsKey) as? [CharacterTraitCoding] {
+        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
             characterTraits = CharacterTraitCoding.structArray(decodedTraits)
         } else {
             characterTraits = CharacterTrait.standardTraits
         }
-        let picture = aDecoder.decodeObjectOfClass(UIImage.self, forKey: PeerInfo.PictureKey)
-        let age: Int? = aDecoder.containsValueForKey(PeerInfo.AgeKey) ? aDecoder.decodeIntegerForKey(PeerInfo.AgeKey) : nil
+        let picture = aDecoder.decodeObject(of: UIImage.self, forKey: PeerInfo.CodingKey.picture.rawValue)
+        let age: Int? = aDecoder.containsValue(forKey: PeerInfo.CodingKey.age.rawValue) ? aDecoder.decodeInteger(forKey: PeerInfo.CodingKey.age.rawValue) : nil
         
         var relationshipStatus: PeerInfo.RelationshipStatus
-        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.StatusKey) as? String {
+        if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
             relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
         } else {
             relationshipStatus = PeerInfo.RelationshipStatus.NoComment
         }
         
-        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid, lastChanged: lastChanged, _hasPicture: picture != nil, _picture: picture)
+        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, _picture: picture)
     }
     
     var picture: UIImage? {
@@ -227,16 +227,16 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         set { if newValue != peer.picture { peer._picture = newValue } }
     }
     
-    @objc func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeObject(peer.peerID, forKey: PeerInfo.PeerIDKey)
-        aCoder.encodeObject(peer.picture, forKey: PeerInfo.PictureKey)
-        aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.GenderKey)
-        aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.StatusKey)
-        aCoder.encodeObject(peer.version, forKey: PeerInfo.VersionKey)
-        aCoder.encodeObject(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.TraitsKey)
-        aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+    @objc func encode(with aCoder: NSCoder) {
+        aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
+        aCoder.encode(peer.picture, forKey: PeerInfo.CodingKey.picture.rawValue)
+        aCoder.encode(peer.gender.rawValue, forKey: PeerInfo.CodingKey.gender.rawValue)
+        aCoder.encode(peer.relationshipStatus.rawValue, forKey: PeerInfo.CodingKey.status.rawValue)
+        aCoder.encode(peer.version, forKey: PeerInfo.CodingKey.version.rawValue)
+        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
+        aCoder.encode(peer.lastChanged, forKey: PeerInfo.CodingKey.lastChanged.rawValue)
         if let age = peer.age {
-            aCoder.encodeInteger(age, forKey: PeerInfo.AgeKey)
+            aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
         }
     }
 }
@@ -244,7 +244,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
 /* final */ class NetworkPeerInfo: NSObject, NSSecureCoding {
     let peer: PeerInfo
     
-    @objc static func supportsSecureCoding() -> Bool {
+    @objc static var supportsSecureCoding : Bool {
         return true
     }
     
@@ -257,57 +257,50 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     }
     
     @objc required init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObjectOfClass(MCPeerID.self, forKey: PeerInfo.PeerIDKey) else { return nil }
-        guard let rawGenderValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.GenderKey) as? String else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: MCPeerID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
+        guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
         guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
         
-        let lastChanged = aDecoder.decodeObjectOfClass(NSDate.self, forKey: PeerInfo.LastChangedKey) ?? NSDate()
-        let version = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.VersionKey) as? String ?? "1.0"
-        let uuid = aDecoder.decodeObjectOfClass(NSUUID.self, forKey: PeerInfo.BeaconUUIDKey)
+        let lastChanged = aDecoder.decodeObject(of: NSDate.self, forKey: PeerInfo.CodingKey.lastChanged.rawValue) as? Date ?? Date()
+        let version = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.version.rawValue) as? String ?? "1.0"
+        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
         var characterTraits: [CharacterTrait]
-        if let decodedTraits = aDecoder.decodeObjectOfClass(NSArray.self, forKey: PeerInfo.TraitsKey) as? [CharacterTraitCoding] {
+        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
             characterTraits = CharacterTraitCoding.structArray(decodedTraits)
         } else {
             characterTraits = CharacterTrait.standardTraits
         }
-        let hasPicture = aDecoder.decodeBoolForKey(PeerInfo.HasPictureKey)
-        let age: Int? = aDecoder.containsValueForKey(PeerInfo.AgeKey) ? aDecoder.decodeIntegerForKey(PeerInfo.AgeKey) : nil
+        let hasPicture = aDecoder.decodeBool(forKey: PeerInfo.CodingKey.hasPicture.rawValue)
+        let age: Int? = aDecoder.containsValue(forKey: PeerInfo.CodingKey.age.rawValue) ? aDecoder.decodeInteger(forKey: PeerInfo.CodingKey.age.rawValue) : nil
 
         var relationshipStatus: PeerInfo.RelationshipStatus
-        if let rawStatusValue = aDecoder.decodeObjectOfClass(NSString.self, forKey: PeerInfo.StatusKey) as? String {
+        if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
             relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
         } else {
             relationshipStatus = PeerInfo.RelationshipStatus.NoComment
         }
         
-        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid, lastChanged: lastChanged, _hasPicture: hasPicture, _picture: nil)
+        peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, _picture: nil)
     }
     
-    @objc func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeObject(peer.peerID, forKey: PeerInfo.PeerIDKey)
-        aCoder.encodeBool(peer.hasPicture, forKey: PeerInfo.HasPictureKey)
-        aCoder.encodeObject(peer.gender.rawValue, forKey: PeerInfo.GenderKey)
-        aCoder.encodeObject(peer.relationshipStatus.rawValue, forKey: PeerInfo.StatusKey)
-        aCoder.encodeObject(peer.version, forKey: PeerInfo.VersionKey)
-        aCoder.encodeObject(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.TraitsKey)
-        aCoder.encodeObject(peer.lastChanged, forKey: PeerInfo.LastChangedKey)
+    @objc func encode(with aCoder: NSCoder) {
+        aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
+        aCoder.encode(peer.hasPicture, forKey: PeerInfo.CodingKey.hasPicture.rawValue)
+        aCoder.encode(peer.gender.rawValue, forKey: PeerInfo.CodingKey.gender.rawValue)
+        aCoder.encode(peer.relationshipStatus.rawValue, forKey: PeerInfo.CodingKey.status.rawValue)
+        aCoder.encode(peer.version, forKey: PeerInfo.CodingKey.version.rawValue)
+        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
+        aCoder.encode(peer.lastChanged, forKey: PeerInfo.CodingKey.lastChanged.rawValue)
         if let age = peer.age {
-            aCoder.encodeInteger(age, forKey: PeerInfo.AgeKey)
+            aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
         }
     }
 }
 
 struct PeerInfo: Equatable {
-    private static let PeerIDKey = "peerID"
-    private static let HasPictureKey = "hasPicture"
-    private static let GenderKey = "gender"
-    private static let AgeKey = "age"
-    private static let StatusKey = "status"
-    private static let TraitsKey = "traits"
-    private static let VersionKey = "version"
-    private static let BeaconUUIDKey = "beaconUUID"
-    private static let PictureKey = "picture"
-    private static let LastChangedKey = "lastChanged"
+    fileprivate enum CodingKey : String {
+        case peerID, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged
+    }
     
     static let MinAge = 13
     static let MaxAge = 100
@@ -361,17 +354,17 @@ struct PeerInfo: Equatable {
      */
     var version = "1.0"
     
-    var iBeaconUUID: NSUUID? = nil // TODO Swift 3: change to UUID Swift type, as it is a struct
+    var iBeaconUUID: UUID? = nil // TODO Swift 3: change to UUID Swift type, as it is a struct
     
-    var lastChanged = NSDate()
+    var lastChanged = Date()
     
-    private var _hasPicture: Bool = false
+    fileprivate var _hasPicture: Bool = false
     var hasPicture: Bool {
         return _hasPicture
     }
     
     /// Only stored in the LocalPeerInfo subclass. In this class it is not written to the encoder in encodeWithCoder.
-    private var _picture: UIImage? = nil {
+    fileprivate var _picture: UIImage? = nil {
         didSet {
             _hasPicture = _picture != nil
         }
@@ -415,7 +408,7 @@ struct PeerInfo: Equatable {
     }
     
     
-    func copyToNewID(peerID: MCPeerID) -> PeerInfo {
+    func copyToNewID(_ peerID: MCPeerID) -> PeerInfo {
         return PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: iBeaconUUID, lastChanged: lastChanged, _hasPicture:
             _hasPicture, _picture: _picture)
     }

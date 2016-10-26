@@ -19,8 +19,8 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     private var _currentProducts: [SKProduct]?
     
     private var productIdentifiers: [String]? {
-        guard let url = NSBundle.mainBundle().URLForResource("product_ids", withExtension:"plist") else { assertionFailure(); return nil }
-        return NSArray(contentsOfURL: url) as? [String]
+        guard let url = Bundle.main.url(forResource: "product_ids", withExtension:"plist") else { assertionFailure(); return nil }
+        return NSArray(contentsOf: url) as? [String]
     }
     
     var currentProducts: [SKProduct]? { return _currentProducts }
@@ -33,16 +33,16 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         guard productID.hasPrefix(prefix) else { return nil }
         
         let len = prefix.characters.count
-        let pinPointsString = productID.substringFromIndex(productID.startIndex.advancedBy(len))
+        let pinPointsString = productID.substring(from: productID.characters.index(productID.startIndex, offsetBy: len))
         return Int(pinPointsString)
     }
     
     static func getProductPrize(forProduct product: SKProduct) -> String {
-        let numberFormatter = NSNumberFormatter()
-        numberFormatter.formatterBehavior = .Behavior10_4
-        numberFormatter.numberStyle = .CurrencyStyle
+        let numberFormatter = NumberFormatter()
+        numberFormatter.formatterBehavior = .behavior10_4
+        numberFormatter.numberStyle = .currency
         numberFormatter.locale = product.priceLocale
-        return numberFormatter.stringFromNumber(product.price)!
+        return numberFormatter.string(from: product.price)!
     }
     
     /// Make a product request at Apple's servers.
@@ -62,7 +62,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         let payment = SKMutablePayment(product: product)
         payment.quantity = 1
 //        payment.applicationUsername = UIDevice.currentDevice().identifierForVendor
-        SKPaymentQueue.defaultQueue().addPayment(payment)
+        SKPaymentQueue.default().add(payment)
     }
     
     func clearCache() {
@@ -75,7 +75,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     
     // MARK: SKProductsRequestDelegate
     
-    @objc func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
+    @objc func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         _currentProducts = response.products
         currentProductsRequest = nil
         
@@ -89,31 +89,31 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     
     // MARK: SKPaymentTransactionObserver
     
-    func paymentQueue(queue: SKPaymentQueue, updatedDownloads downloads: [SKDownload]) {
+    func paymentQueue(_ queue: SKPaymentQueue, updatedDownloads downloads: [SKDownload]) {
         // we have no downloads from Apple's servers
     }
     
-    func paymentQueue(queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
+    func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         // Is handled by the updatedTransactions purchased or failed case
     }
     
-    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             switch (transaction.transactionState) {
             // Call the appropriate custom method for the transaction state.
-            case .Purchasing:
+            case .purchasing:
                 // Update UI to reflect the in-progress status, and wait to be called again.
                 break
-            case .Deferred:
+            case .deferred:
                 // Update UI to reflect the deferred status, and wait to be called again.
                 break
-            case .Failed:
+            case .failed:
                 // Use the value of the error property to present a message to the user.
                 self.failedTransaction(transaction)
-            case .Purchased:
+            case .purchased:
                 // Provide the purchased functionality.
                 completeTransaction(transaction)
-            case .Restored:
+            case .restored:
                 // Restore the previously purchased functionality.
                 // [self restoreTransaction:transaction];
                 break // we have no non-consumable products
@@ -122,25 +122,25 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         delegate?.updateTransactions(transactions)
     }
     
-    func paymentQueue(queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: NSError) {
+    func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
         // we have no non-consumable content yet
     }
     
-    func paymentQueueRestoreCompletedTransactionsFinished(queue: SKPaymentQueue) {
+    func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
         // we have no non-consumable content yet
     }
     
-    private func completeTransaction(transaction: SKPaymentTransaction) {
+    fileprivate func completeTransaction(_ transaction: SKPaymentTransaction) {
         // TODO handle the cases of the assertionFailure
         guard let pinPoints = InAppPurchaseController.getPinPoints(inProduct: transaction.payment.productIdentifier) else { assertionFailure(); return }
         
         WalletController.increasePinPoints(pinPoints)
         
-        SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+        SKPaymentQueue.default().finishTransaction(transaction)
     }
     
-    private func failedTransaction(transaction: SKPaymentTransaction) {
-        SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+    fileprivate func failedTransaction(_ transaction: SKPaymentTransaction) {
+        SKPaymentQueue.default().finishTransaction(transaction)
     }
     
 //    - (void)fetchProductIdentifiersFromURL:(NSURL *)url delegate:(id)delegate
@@ -165,13 +165,13 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
 //    });
 //    }
     
-    private override init() {
+    fileprivate override init() {
         super.init()
-        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
+        SKPaymentQueue.default().add(self)
     }
 }
 
 protocol InAppPurchaseDelegate: class {
     func productsLoaded()
-    func updateTransactions(transactions: [SKPaymentTransaction])
+    func updateTransactions(_ transactions: [SKPaymentTransaction])
 }

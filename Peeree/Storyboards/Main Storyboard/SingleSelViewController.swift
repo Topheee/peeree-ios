@@ -22,9 +22,9 @@ final class SingleSelViewController: UIViewController {
 	
 	// MARK: - Navigation
 	
-	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-		super.prepareForSegue(segue, sender: sender)
-		if let descriptionVC = segue.destinationViewController as? BasicDescriptionViewController {
+	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+		super.prepare(for: segue, sender: sender)
+		if let descriptionVC = segue.destination as? BasicDescriptionViewController {
 			descriptionVC.dataSource = dataSource
 		}
 	}
@@ -35,16 +35,16 @@ final class SingleSelViewController: UIViewController {
 		selectionPickerView.delegate = dataSource
 	}
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let selection = dataSource?.initialPickerSelection(selectionPickerView) else { return }
         
         selectionPickerView.selectRow(selection.row, inComponent: selection.inComponent, animated: false)
-        selectionPickerView.userInteractionEnabled = dataSource?.selectionEditable(selectionPickerView) ?? false
+        selectionPickerView.isUserInteractionEnabled = dataSource?.selectionEditable(selectionPickerView) ?? false
     }
 }
 
 protocol SingleSelViewControllerDataSource: BasicDescriptionViewControllerDataSource, UIPickerViewDataSource, UIPickerViewDelegate {
-    func initialPickerSelection(pickerView: UIPickerView) -> (row: Int, inComponent: Int)
-    func selectionEditable(pickerView: UIPickerView) -> Bool
+    func initialPickerSelection(_ pickerView: UIPickerView) -> (row: Int, inComponent: Int)
+    func selectionEditable(_ pickerView: UIPickerView) -> Bool
 }

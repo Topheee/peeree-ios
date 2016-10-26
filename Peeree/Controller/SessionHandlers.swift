@@ -9,12 +9,12 @@
 import MultipeerConnectivity
 
 class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
-    static private let InvitationTimeout: NSTimeInterval = 5.0
+    static fileprivate let InvitationTimeout: TimeInterval = 5.0
     
     /// Only used to keep a reference to the session handlers so the RemotePeerManager does not have to.
     private var activeSessions: Set<MCSessionDelegateAdapter> = Set()
     
-    let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .Required)
+    let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .required)
     
     override init() {
         super.init()
@@ -22,22 +22,18 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
         session.delegate = self
     }
     
-    func sendData(data: NSData, toPeers peerIDs: [MCPeerID]) {
+    func sendData(_ data: Data, toPeers peerIDs: [MCPeerID]) {
         do {
-            try session.sendData(data, toPeers: peerIDs, withMode: .Reliable)
+            try session.send(data, toPeers: peerIDs, with: .reliable)
         } catch let error as NSError where error.domain == MCErrorDomain {
-            guard let errorCode = MCErrorCode(rawValue: error.code) else {
-                print("Info sending failed due to unkown error: \(error)")
-                session.disconnect()
-                return
-            }
+            let errorCode = MCError(_nsError: error).code
             
             switch errorCode {
-            case .Unknown, .NotConnected, .TimedOut, .Cancelled, .Unavailable:
+            case .unknown, .notConnected, .timedOut, .cancelled, .unavailable:
                 // cancel gracefully here
                 // error is known, peer is not connected, connection attempt timed out or cancelled by user or multipeer connectivity is currently unavailable.
                 session.disconnect()
-            case .InvalidParameter, .Unsupported:
+            case .invalidParameter, .unsupported:
                 // seems that we did something wrong here
                 assertionFailure()
                 session.disconnect()
@@ -49,18 +45,18 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
     }
     
     // ignored
-    @objc func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {}
-    @objc func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {}
-    @objc func session(session: MCSession, didReceiveStream stream: NSInputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
-    @objc func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {}
+    @objc func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {}
+    @objc func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?) {}
+    @objc func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {}
+    @objc func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {}
     
-    @objc func session(session: MCSession, didReceiveCertificate certificate: [AnyObject]?, fromPeer peerID: MCPeerID, certificateHandler: (Bool) -> Void) {
+    @objc func session(_ session: MCSession, didReceiveCertificate certificate: [Any]?, fromPeer peerID: MCPeerID, certificateHandler: @escaping (Bool) -> Void) {
         // TODO security implementation
         certificateHandler(true)
     }
     
-    @objc func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-        if state == .NotConnected {
+    @objc func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        if state == .notConnected {
             // this should be the last reference to self so it should destroy it
             session.delegate = nil
             activeSessions.remove(self)
@@ -72,9 +68,9 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
 class DownloadSessionDelegate: MCSessionDelegateAdapter {
     private static let MaxAttempts = 3
     
-    private static var downloadSessions = SynchronizedDictionary<DownloadSessionID, DownloadSessionDelegate>()
+    fileprivate static var downloadSessions = SynchronizedDictionary<DownloadSessionID, DownloadSessionDelegate>()
     
-    private struct DownloadSessionID: Hashable {
+    fileprivate struct DownloadSessionID: Hashable {
         let peerID: MCPeerID
         let sessionKey: RemotePeerManager.SessionKey
         
@@ -88,7 +84,7 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
     }
     
     private let failNotification: RemotePeerManager.NetworkNotification
-    private let sessionID: DownloadSessionID
+    fileprivate let sessionID: DownloadSessionID
     private weak var btBrowser: MCNearbyServiceBrowser?
     private var attempt = 0
     var successful = false {
@@ -125,19 +121,19 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
         }
         
         attempt += 1
-        browser.invitePeer(sessionID.peerID, toSession: session, withContext: sessionID.sessionKey.rawData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
+        browser.invitePeer(sessionID.peerID, to: session, withContext: sessionID.sessionKey.rawData as Data, timeout: MCSessionDelegateAdapter.InvitationTimeout)
     }
     
-    override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+    override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch state {
-        case .Connected, .Connecting:
-            super.session(session, peer: peerID, didChangeState: state)
-        case .NotConnected:
+        case .connected, .connecting:
+            super.session(session, peer: peerID, didChange: state)
+        case .notConnected:
             if willReconnect {
                 connect()
             } else {
-                super.session(session, peer: peerID, didChangeState: state)
-                DownloadSessionDelegate.downloadSessions.removeValueForKey(sessionID)
+                super.session(session, peer: peerID, didChange: state)
+                _ = DownloadSessionDelegate.downloadSessions.removeValueForKey(sessionID)
                 if !successful {
                     failNotification.post(sessionID.peerID)
                 }
@@ -154,15 +150,15 @@ final class PeerInfoUploadSessionManager: MCSessionDelegateAdapter {
         invitationHandler(true, session)
     }
     
-    override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-        super.session(session, peer: peerID, didChangeState: state)
+    override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        super.session(session, peer: peerID, didChange: state)
         switch state {
-        case .Connected:
-            let data = NSKeyedArchiver.archivedDataWithRootObject(NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
+        case .connected:
+            let data = NSKeyedArchiver.archivedData(withRootObject: NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
             sendData(data, toPeers: [peerID])
-        case .Connecting:
+        case .connecting:
             break
-        case .NotConnected:
+        case .notConnected:
             break
         }
     }
@@ -179,8 +175,8 @@ final class PeerInfoDownloadSessionHandler: DownloadSessionDelegate {
     }
     
     /// Stores new LocalPeerInfo data and ignores all other data. Stays in session until the LocalPeerInfo is received.
-    override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-        guard let info = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? NetworkPeerInfo else { return }
+    override func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        guard let info = NSKeyedUnarchiver.unarchiveObject(with: data) as? NetworkPeerInfo else { return }
         
         RemotePeerManager.sharedManager.sessionHandlerDidLoad(info)
         
@@ -194,8 +190,8 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
     static let ProgressCancelledKeyPath          = "cancelled"
     static let ProgressCompletedUnitCountKeyPath = "completedUnitCount"
     
-    private var _progress: NSProgress? = nil
-    var progress: NSProgress? { return _progress }
+    private var _progress: Progress? = nil
+    var progress: Progress? { return _progress }
     
     weak var delegate: PotraitLoadingDelegate?
     
@@ -218,14 +214,14 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
         self.delegate = delegate
     }
     
-    override func session(session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, withProgress progress: NSProgress) {
-        
+    override func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
         _progress = progress
-        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCancelledKeyPath, options: [.New], context: nil)
-        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath, options: [.New], context: nil)
+        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCancelledKeyPath, options: [.new], context: nil)
+        progress.addObserver(self, forKeyPath: PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath, options: [.new], context: nil)
     }
     
-    override func session(session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, atURL localURL: NSURL, withError error: NSError?) {
+    // why the hell no override?!
+    /* override */ func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: NSError?) {
         // stop KVO
         progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCancelledKeyPath)
         progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath)
@@ -237,7 +233,7 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
             
             successful = false
         } else {
-            guard let data = NSData(contentsOfURL: localURL) else { return }
+            guard let data = try? Data(contentsOf: localURL) else { return }
             guard let image = UIImage(data: data) else { return }
             
             delegate?.portraitLoadFinished()
@@ -247,9 +243,9 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
         }
     }
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
 //        super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context) this throws an exception!
-        guard let progress = object as? NSProgress else { return }
+        guard let progress = object as? Progress else { return }
         guard delegate != nil && keyPath != nil else { return }
         
         switch keyPath! {
@@ -265,7 +261,7 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
 
 protocol PotraitLoadingDelegate: class {
     func portraitLoadCancelled()
-    func portraitLoadChanged(fractionCompleted: Double)
+    func portraitLoadChanged(_ fractionCompleted: Double)
     func portraitLoadFinished()
     func portraitLoadFailed(withError error: NSError)
 }
@@ -277,18 +273,18 @@ final class PictureUploadSessionManager: MCSessionDelegateAdapter {
         invitationHandler(true, session)
     }
     
-    override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
-        super.session(session, peer: peerID, didChangeState: state)
+    override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        super.session(session, peer: peerID, didChange: state)
         switch state {
-        case .Connected:
-            session.sendResourceAtURL(UserPeerInfo.instance.pictureResourceURL, withName: "Bild", toPeer: peerID, withCompletionHandler: { (error) in
+        case .connected:
+            session.sendResource(at: UserPeerInfo.instance.pictureResourceURL as URL, withName: "Bild", toPeer: peerID, withCompletionHandler: { (error) in
                 guard let nsError = error else { return }
                 
                 NSLog("Error sending potrait picture: \(nsError)")
             })
-        case .Connecting:
+        case .connecting:
             break
-        case .NotConnected:
+        case .notConnected:
             break
         }
     }
@@ -298,7 +294,7 @@ final class PictureUploadSessionManager: MCSessionDelegateAdapter {
 final class PinSessionHandler: DownloadSessionDelegate {
     let confirmation: WalletController.PinConfirmation
     
-    static func isPinning(peerID: MCPeerID) -> Bool {
+    static func isPinning(_ peerID: MCPeerID) -> Bool {
         return DownloadSessionDelegate.downloadSessions[DownloadSessionID(peerID: peerID, sessionKey: .Pin)] != nil
     }
     
@@ -307,20 +303,20 @@ final class PinSessionHandler: DownloadSessionDelegate {
         super.init(peerID: peerID, sessionKey: .Pin, failNotification: .PinFailed, btBrowser: btBrowser)
     }
     
-    override func session(session: MCSession, peer peerID: MCPeerID, didChangeState state: MCSessionState) {
+    override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch state {
-        case .Connected:
-            sendData(RemotePeerManager.SessionKey.Pin.rawData, toPeers: [peerID])
-        case .Connecting:
+        case .connected:
+            sendData(RemotePeerManager.SessionKey.Pin.rawData as Data, toPeers: [peerID])
+        case .connecting:
             break
-        case .NotConnected:
+        case .notConnected:
             break
         }
-        super.session(session, peer: peerID, didChangeState: state)
+        super.session(session, peer: peerID, didChange: state)
     }
     
-    override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
-        guard NSKeyedUnarchiver.unarchiveObjectWithData(data) as? String == "ack" else { return }
+    override func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        guard NSKeyedUnarchiver.unarchiveObject(with: data) as? String == "ack" else { return }
         guard !confirmation.redeemed else {
             successful = false
             return
@@ -339,10 +335,10 @@ final class PinnedSessionManager: MCSessionDelegateAdapter {
         invitationHandler(true, session)
     }
     
-    override func session(session: MCSession, didReceiveData data: NSData, fromPeer peerID: MCPeerID) {
+    override func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         guard RemotePeerManager.SessionKey(rawData: data) == RemotePeerManager.SessionKey.Pin else { return }
         
-        let ackData = NSKeyedArchiver.archivedDataWithRootObject("ack")
+        let ackData = NSKeyedArchiver.archivedData(withRootObject: "ack")
         sendData(ackData, toPeers: [peerID])
         
         RemotePeerManager.sharedManager.sessionHandlerReceivedPin(from: peerID)

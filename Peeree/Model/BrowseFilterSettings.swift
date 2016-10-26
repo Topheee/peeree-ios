@@ -20,25 +20,25 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
     private static let GenderKey = "gender"
     private static let OnlyWithAgeKey = "WithAgeKey"
     private static let OnlyWithPictureKey = "WithPictureKey"
-	
+    
+    private static var __once: () = { () -> Void in
+        Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
+    }()
+    private struct Singleton {
+        static var sharedInstance: BrowseFilterSettings!
+    }
+    
 	static var sharedSettings: BrowseFilterSettings {
-        struct Singleton {
-            static var sharedInstance: BrowseFilterSettings!
-            static var token: dispatch_once_t = 0
-        }
-        dispatch_once(&Singleton.token, { () -> Void in
-            Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
-        })
-        
+        _ = BrowseFilterSettings.__once        
 		return Singleton.sharedInstance
 	}
     
-    static func supportsSecureCoding() -> Bool {
+    static var supportsSecureCoding : Bool {
         return true
     }
 	
 	enum GenderType: Int {
-		case Unspecified = 0, Male, Female, Queer
+		case unspecified = 0, male, female, queer
 	}
 	
 	/// range from 10..100
@@ -46,7 +46,7 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	/// range from 10..100 or 0, where 0 means ∞
 	var ageMax: Float = 0.0
 	
-	var gender: GenderType = .Unspecified
+	var gender: GenderType = .unspecified
     
     var onlyWithAge: Bool = false
     var onlyWithPicture: Bool = false
@@ -54,27 +54,27 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	private override init() {}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
-		gender = GenderType(rawValue: aDecoder.decodeIntegerForKey(BrowseFilterSettings.GenderKey))!
-        ageMin = aDecoder.decodeFloatForKey(BrowseFilterSettings.AgeMinKey)
-        ageMax = aDecoder.decodeFloatForKey(BrowseFilterSettings.AgeMaxKey)
-        onlyWithAge = aDecoder.decodeBoolForKey(BrowseFilterSettings.OnlyWithAgeKey)
-        onlyWithPicture = aDecoder.decodeBoolForKey(BrowseFilterSettings.OnlyWithPictureKey)
+		gender = GenderType(rawValue: aDecoder.decodeInteger(forKey: BrowseFilterSettings.GenderKey))!
+        ageMin = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMinKey)
+        ageMax = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMaxKey)
+        onlyWithAge = aDecoder.decodeBool(forKey: BrowseFilterSettings.OnlyWithAgeKey)
+        onlyWithPicture = aDecoder.decodeBool(forKey: BrowseFilterSettings.OnlyWithPictureKey)
 	}
 	
-	@objc func encodeWithCoder(aCoder: NSCoder) {
-		aCoder.encodeFloat(ageMin, forKey: BrowseFilterSettings.AgeMinKey)
-        aCoder.encodeFloat(ageMax, forKey: BrowseFilterSettings.AgeMaxKey)
-        aCoder.encodeInteger(gender.rawValue, forKey: BrowseFilterSettings.GenderKey)
-        aCoder.encodeBool(onlyWithAge, forKey: BrowseFilterSettings.OnlyWithAgeKey)
-        aCoder.encodeBool(onlyWithPicture, forKey: BrowseFilterSettings.OnlyWithPictureKey)
+	@objc func encode(with aCoder: NSCoder) {
+		aCoder.encode(ageMin, forKey: BrowseFilterSettings.AgeMinKey)
+        aCoder.encode(ageMax, forKey: BrowseFilterSettings.AgeMaxKey)
+        aCoder.encode(gender.rawValue, forKey: BrowseFilterSettings.GenderKey)
+        aCoder.encode(onlyWithAge, forKey: BrowseFilterSettings.OnlyWithAgeKey)
+        aCoder.encode(onlyWithPicture, forKey: BrowseFilterSettings.OnlyWithPictureKey)
 	}
 	
 	func writeToDefaults() {
 		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
 	}
 	
-	func checkPeer(peer: PeerInfo) -> Bool {
-		let matchingGender = gender == .Unspecified || (gender == .Female && peer.gender == .Female) || (gender == .Male && peer.gender == .Male)
+	func checkPeer(_ peer: PeerInfo) -> Bool {
+		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .Female) || (gender == .male && peer.gender == .Male)
         var matchingAge: Bool
         if let peerAge = peer.age {
             matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))
