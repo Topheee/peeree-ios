@@ -37,14 +37,14 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
         let triggerTime = (Int64(NSEC_PER_SEC) * Int64(arc4random() % 3))
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(triggerTime) / Double(NSEC_PER_SEC), execute: { () -> Void in
             switch sessionKey {
-            case .PeerInfo:
+            case .peerInfo:
                 let data = NSKeyedArchiver.archivedData(withRootObject: TestPeerInfo(peerID: peerID))
                 
                 assert(session.delegate != nil)
                 
                 session.delegate?.session(session, peer: peerID, didChange: .connected)
                 session.delegate?.session(session, didReceive: data, fromPeer: peerID)
-            case .Picture:
+            case .picture:
                 let rand = arc4random()
                 let progress = Progress(totalUnitCount: Int64(rand % 99999))
                 session.delegate?.session(session, peer: peerID, didChange: .connected)
@@ -57,7 +57,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
                     let error: NSError? = (rand % 4 == 0) ? nil : NSError(domain: "test", code: 404, userInfo: nil)
                     session.delegate?.session(session, didFinishReceivingResourceWithName: "name", fromPeer: peerID, at: url, withError: error)
                 })
-            case .Pin:
+            case .pin:
                 session.delegate?.session(session, peer: peerID, didChange: .connected)
                 let data = NSKeyedArchiver.archivedData(withRootObject: "ack")
                 session.delegate?.session(session, didReceive: data, fromPeer: peerID)
@@ -89,10 +89,10 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
             guard invite else { return }
             
             session?.delegate?.session(session!, peer: peerID, didChange: .connected)
-            session?.delegate?.session(session!, didReceive: RemotePeerManager.SessionKey.Pin.rawData as Data, fromPeer: peerID)
+            session?.delegate?.session(session!, didReceive: RemotePeerManager.SessionKey.pin.rawData as Data, fromPeer: peerID)
             // TODO receive ack and close
         }
         
-        RemotePeerManager.sharedManager.advertiser(adv, didReceiveInvitationFromPeer: peerID, withContext: RemotePeerManager.SessionKey.Pin.rawData, invitationHandler: inv)
+        RemotePeerManager.shared.advertiser(adv, didReceiveInvitationFromPeer: peerID, withContext: RemotePeerManager.SessionKey.pin.rawData, invitationHandler: inv)
     }
 }

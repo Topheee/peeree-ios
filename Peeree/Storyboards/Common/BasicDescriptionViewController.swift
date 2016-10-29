@@ -10,22 +10,11 @@ import UIKit
 
 /// View controller for simple view with Heading, Subheading and descriptive text. Is embedded in other ViewControllers.
 final class BasicDescriptionViewController: UIViewController {
-	@IBOutlet private var headingLabel: UILabel!
-	@IBOutlet private var subHeadingLabel: UILabel!
-	@IBOutlet private var descriptionTextView: UITextView!
+	@IBOutlet private weak var headingLabel: UILabel!
+	@IBOutlet private weak var subHeadingLabel: UILabel!
+	@IBOutlet private weak var descriptionTextView: UITextView!
 	
 	var dataSource: BasicDescriptionViewControllerDataSource?
-	
-//	override func didMoveToParentViewController(parent: UIViewController?) {
-//		super.didMoveToParentViewController(parent)
-//		if let dataSource = dataSource {
-//			headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
-//			subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
-//			descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
-//            // I do not know why we have to set it here again
-//            descriptionTextView.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
-//		}
-//	}
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

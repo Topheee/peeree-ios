@@ -31,16 +31,16 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     private var beaconManager: CBPeripheralManager?
     
     enum ErrorReason: String {
-        case RemoteInsufficient, LocationServicesUnavailable, DeviceUnsupported, LocationNetworkError, MonitoringDelayed
+        case remoteInsufficient, locationServicesUnavailable, deviceUnsupported, locationNetworkError, monitoringDelayed
         
         /*
          *  For genstrings
          *
-         *  NSLocalizedString("DeviceInsufficient", comment: "Error: Remote peer has no iBeacon technology available.")
-         *  NSLocalizedString("LocationServicesDisabled", comment: "Error: Location Services are disabled.")
-         *  NSLocalizedString("DeviceUnsupported", comment: "Error: Device is lacking location features.")
-         *  NSLocalizedString("LocationNetworkError", comment: "Error: Networking issues with Location Services.")
-         *  NSLocalizedString("MonitoringDelayed", comment: "Error: Location Services delayed updates.")
+         *  NSLocalizedString("deviceInsufficient", comment: "Error: Remote peer has no iBeacon technology available.")
+         *  NSLocalizedString("locationServicesDisabled", comment: "Error: Location Services are disabled.")
+         *  NSLocalizedString("deviceUnsupported", comment: "Error: Device is lacking location features.")
+         *  NSLocalizedString("locationNetworkError", comment: "Error: Networking issues with Location Services.")
+         *  NSLocalizedString("monitoringDelayed", comment: "Error: Location Services delayed updates.")
          */
     }
     enum State {
@@ -95,7 +95,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         super.viewDidAppear(animated)
         
         guard searchedPeer?.iBeaconUUID != nil else {
-            state = .error(reason: .RemoteInsufficient, recoverable: false)
+            state = .error(reason: .remoteInsufficient, recoverable: false)
             return
         }
         guard ownRegion != nil else {
@@ -253,13 +253,13 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         }))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
         alertController.present(nil)
-        state = .error(reason: .LocationServicesUnavailable, recoverable: true)
+        state = .error(reason: .locationServicesUnavailable, recoverable: true)
     }
     
     private func handleLocationServicesUnsupportedError() {
         stopBeacon()
         
-        state = .error(reason: .DeviceUnsupported, recoverable: false)
+        state = .error(reason: .deviceUnsupported, recoverable: false)
     }
     
     private func handleLocationError(_ error: NSError) {
@@ -274,11 +274,11 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         case .denied:
             showLocationServicesUnavailableError()
         case .network, .rangingFailure, .regionMonitoringFailure:
-            state = .error(reason: .LocationNetworkError, recoverable: true)
+            state = .error(reason: .locationNetworkError, recoverable: true)
         case .rangingUnavailable:
             showLocationServicesUnavailableError()
         case .regionMonitoringSetupDelayed, .regionMonitoringResponseDelayed:
-            state = .error(reason: .MonitoringDelayed, recoverable: true)
+            state = .error(reason: .monitoringDelayed, recoverable: true)
         default:
             assertionFailure("Unexpected location error")
         }

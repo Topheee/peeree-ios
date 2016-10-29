@@ -40,11 +40,10 @@ let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255,
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelegate {
-	
     static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
-	static var sharedDelegate: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
+	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
     /// This is somehow set by the environment...
     var window: UIWindow?
@@ -60,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
 		}
         
-        UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.initialPinPoints])
+        UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.InitialPinPoints])
 		
 		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
 //		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
@@ -95,35 +94,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         
         UIWindow.appearance().tintColor = theme.globalTintColor
         
-        _ = RemotePeerManager.NetworkNotification.RemotePeerAppeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+        _ = RemotePeerManager.NetworkNotification.peerAppeared.addObserver { notification in
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
 
-            self.remotePeerAppeared(peerID)
+            self.peerAppeared(peerID)
         }
         
-        _ = RemotePeerManager.NetworkNotification.RemotePeerDisappeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+        _ = RemotePeerManager.NetworkNotification.peerDisappeared.addObserver { notification in
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
             
-            self.remotePeerDisappeared(peerID)
+            self.peerDisappeared(peerID)
         }
         
-        _ = RemotePeerManager.NetworkNotification.PinMatch.addObserver { notification in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
-            guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) else { return }
+        _ = RemotePeerManager.NetworkNotification.pinMatch.addObserver { notification in
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
+            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) else { return }
             
             self.pinMatchOccured(peer)
         }
         
-        _ = RemotePeerManager.NetworkNotification.ConnectionChangedState.addObserver { notification in
+        _ = RemotePeerManager.NetworkNotification.connectionChangedState.addObserver { notification in
             guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
             guard let browseItem = topVC.tabBar.items?.first else { return }
             
-            browseItem.image = UIImage(named: RemotePeerManager.sharedManager.peering ? "RadarTemplateFilled" : "RadarTemplate")
+            browseItem.image = UIImage(named: RemotePeerManager.shared.peering ? "RadarTemplateFilled" : "RadarTemplate")
             browseItem.selectedImage = browseItem.image
         }
         
         if UserDefaults.standard.bool(forKey: AppDelegate.PrefSkipOnboarding) {
-            RemotePeerManager.sharedManager.peering = true
+            RemotePeerManager.shared.peering = true
         }
 		
 		return true
@@ -162,7 +161,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
      *  Stops networking and synchronizes preferences
      */
 	func applicationWillTerminate(_ application: UIApplication) {
-        RemotePeerManager.sharedManager.peering = false
+        RemotePeerManager.shared.peering = false
         UserDefaults.standard.synchronize()
 	}
     
@@ -171,14 +170,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? Data else { return }
         guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? MCPeerID else { return }
         
-        showPeer(peerID)
+        show(peer: peerID)
     }
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         // TODO figure out whether this also disconnects all open sessions
-        RemotePeerManager.sharedManager.peering = false
-        RemotePeerManager.sharedManager.clearCache()
-        InAppPurchaseController.sharedController.clearCache()
+        RemotePeerManager.shared.peering = false
+        RemotePeerManager.shared.clearCache()
+        InAppPurchaseController.shared.clearCache()
     }
     
     func finishIntroduction() {
@@ -187,7 +186,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         _ = CBPeripheralManager(delegate: self, queue: nil)
     }
     
-    func showPeer(_ peerID: MCPeerID) {
+    func show(peer peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
@@ -196,7 +195,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
     
-    func findPeer(_ peerID: MCPeerID) {
+    func find(peer peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
@@ -227,9 +226,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     // MARK: Private Methods
     
-	private func remotePeerAppeared(_ peerID: MCPeerID) {
+	private func peerAppeared(_ peerID: MCPeerID) {
 		if !isActive {
-            guard RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID) == nil else { return }
+            guard RemotePeerManager.shared.getPeerInfo(of: peerID) == nil else { return }
             
 			let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
@@ -241,7 +240,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
 		}
 	}
 	
-	private func remotePeerDisappeared(_ peerID: MCPeerID) {
+	private func peerDisappeared(_ peerID: MCPeerID) {
         updateNewPeerBadge()
 	}
     
@@ -271,11 +270,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     private func updateNewPeerBadge() {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         
-        let pm = RemotePeerManager.sharedManager
+        let pm = RemotePeerManager.shared
         var newPeerCount: Int!
         pm.availablePeers.accessQueue.sync {
             // we can access the set variable safely here since we are on the queue
-            newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(forPeer: $0) == nil }).count
+            newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(of: $0) == nil }).count
         }
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
     }

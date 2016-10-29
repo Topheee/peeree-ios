@@ -9,7 +9,7 @@
 import UIKit
 
 final class SingleSelViewController: UIViewController {
-	@IBOutlet private var selectionPickerView: UIPickerView!
+	@IBOutlet private weak var selectionPickerView: UIPickerView!
 	
 	var dataSource: SingleSelViewControllerDataSource? {
 		didSet {
@@ -37,14 +37,14 @@ final class SingleSelViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        guard let selection = dataSource?.initialPickerSelection(selectionPickerView) else { return }
+        guard let selection = dataSource?.initialPickerSelection(for: selectionPickerView) else { return }
         
         selectionPickerView.selectRow(selection.row, inComponent: selection.inComponent, animated: false)
-        selectionPickerView.isUserInteractionEnabled = dataSource?.selectionEditable(selectionPickerView) ?? false
+        selectionPickerView.isUserInteractionEnabled = dataSource?.selectionEditable(in: selectionPickerView) ?? false
     }
 }
 
 protocol SingleSelViewControllerDataSource: BasicDescriptionViewControllerDataSource, UIPickerViewDataSource, UIPickerViewDelegate {
-    func initialPickerSelection(_ pickerView: UIPickerView) -> (row: Int, inComponent: Int)
-    func selectionEditable(_ pickerView: UIPickerView) -> Bool
+    func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int)
+    func selectionEditable(in pickerView: UIPickerView) -> Bool
 }

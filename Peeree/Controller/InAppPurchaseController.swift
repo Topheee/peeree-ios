@@ -13,7 +13,7 @@ import StoreKit
  *  This singleton is in charge of managing the process of all in-app purchases. Thus it is the endpoint for both incoming and outgoing messages to and from Apple's servers, provided by the StoreKit API.
  */
 final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver {
-    static let sharedController = InAppPurchaseController()
+    static let shared = InAppPurchaseController()
     
     private var currentProductsRequest: SKProductsRequest?
     private var _currentProducts: [SKProduct]?
@@ -28,16 +28,16 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     
     weak var delegate: InAppPurchaseDelegate?
     
-    static func getPinPoints(inProduct productID: String) -> Int? {
+    static func getPinPoints(inProduct id: String) -> Int? {
         let prefix = "com.peeree.pin_points_"
-        guard productID.hasPrefix(prefix) else { return nil }
+        guard id.hasPrefix(prefix) else { return nil }
         
         let len = prefix.characters.count
-        let pinPointsString = productID.substring(from: productID.characters.index(productID.startIndex, offsetBy: len))
+        let pinPointsString = id.substring(from: id.characters.index(id.startIndex, offsetBy: len))
         return Int(pinPointsString)
     }
     
-    static func getProductPrize(forProduct product: SKProduct) -> String {
+    static func getProductPrize(of product: SKProduct) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.formatterBehavior = .behavior10_4
         numberFormatter.numberStyle = .currency
@@ -58,7 +58,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     }
     
     /// Make a payment request at Apple's servers for the specified product.
-    func makePaymentRequest(forProduct product: SKProduct) {
+    func makePaymentRequest(for product: SKProduct) {
         let payment = SKMutablePayment(product: product)
         payment.quantity = 1
 //        payment.applicationUsername = UIDevice.currentDevice().identifierForVendor
@@ -83,7 +83,6 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
             NSLog("Invalid product identifier \(invalidIdentifier)")
         }
     
-//        WalletNotification.ProductsLoaded.post()
         delegate?.productsLoaded()
     }
     
@@ -109,10 +108,10 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
                 break
             case .failed:
                 // Use the value of the error property to present a message to the user.
-                self.failedTransaction(transaction)
+                fail(transaction: transaction)
             case .purchased:
                 // Provide the purchased functionality.
-                completeTransaction(transaction)
+                complete(transaction: transaction)
             case .restored:
                 // Restore the previously purchased functionality.
                 // [self restoreTransaction:transaction];
@@ -130,16 +129,16 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         // we have no non-consumable content yet
     }
     
-    fileprivate func completeTransaction(_ transaction: SKPaymentTransaction) {
+    private func complete(transaction: SKPaymentTransaction) {
         // TODO handle the cases of the assertionFailure
         guard let pinPoints = InAppPurchaseController.getPinPoints(inProduct: transaction.payment.productIdentifier) else { assertionFailure(); return }
         
-        WalletController.increasePinPoints(pinPoints)
+        WalletController.increasePinPoints(by: pinPoints)
         
         SKPaymentQueue.default().finishTransaction(transaction)
     }
     
-    fileprivate func failedTransaction(_ transaction: SKPaymentTransaction) {
+    private func fail(transaction: SKPaymentTransaction) {
         SKPaymentQueue.default().finishTransaction(transaction)
     }
     
@@ -165,7 +164,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
 //    });
 //    }
     
-    fileprivate override init() {
+    private override init() {
         super.init()
         SKPaymentQueue.default().add(self)
     }

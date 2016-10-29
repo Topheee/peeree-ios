@@ -28,8 +28,8 @@ import UIKit
 */
 final class WalletController {
 	/* Never change this value after the first App Store release! */
-	static let pinCost = 10
-    static let initialPinPoints = 200
+	static let PinCosts = 10
+    static let InitialPinPoints = 200
 	
     static let PinPointPrefKey = "PinPointPrefKey"
     private static let PinPointQueueLabel = "Pin Point Queue"
@@ -68,13 +68,13 @@ final class WalletController {
         return result
 	}
     
-    private static func decreasePinPoints(_ by: Int) {
+    private static func decreasePinPoints(by: Int) {
         pinPointQueue.async {
             _availablePinPoints -= by
         }
     }
     
-    static func increasePinPoints(_ by: Int) {
+    static func increasePinPoints(by: Int) {
         pinPointQueue.async {
             _availablePinPoints += by
         }
@@ -85,10 +85,10 @@ final class WalletController {
         var message: String
         var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)]
         
-		if _availablePinPoints >= pinCost {
+		if _availablePinPoints >= PinCosts {
             message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
-            message = String(format: message, WalletController._availablePinPoints)
-            let actionTitle = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), WalletController.pinCost)
+            message = String(format: message, _availablePinPoints)
+            let actionTitle = String(format: NSLocalizedString("Spend %d of them", comment: "The user accepts to spend pin points for this action."), PinCosts)
             actions.append(UIAlertAction(title: actionTitle, style: .default) { action in
                 confirmCallback(PinConfirmation())
             })
@@ -108,9 +108,9 @@ final class WalletController {
         alertController.present(nil)
 	}
     
-    static func redeem(_ confirmation: PinConfirmation) {
+    static func redeem(confirmation: PinConfirmation) {
         confirmation.redeem {
-            decreasePinPoints(pinCost)
+            decreasePinPoints(by: PinCosts)
         }
     }
     

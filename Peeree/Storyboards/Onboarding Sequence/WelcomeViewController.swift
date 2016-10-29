@@ -9,7 +9,7 @@
 import UIKit
 
 final class WelcomeViewController: UIViewController {
-	@IBOutlet private var infoButton: UIButton!
+	@IBOutlet private weak var infoButton: UIButton!
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }

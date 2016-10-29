@@ -15,9 +15,8 @@ func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
 }
 
 func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
-	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else {
-		return nil
-	}
+	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+    
     return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
 }
 

@@ -10,10 +10,10 @@ import UIKit
 //import MultipeerConnectivity
 
 final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
-	@IBOutlet private var nameTextField: UITextField!
-	@IBOutlet private var statusButton: UIButton!
-	@IBOutlet private var portraitImageButton: UIButton!
-    @IBOutlet private var genderControl: UISegmentedControl!
+	@IBOutlet private weak var nameTextField: UITextField!
+	@IBOutlet private weak var statusButton: UIButton!
+	@IBOutlet private weak var portraitImageButton: UIButton!
+    @IBOutlet private weak var genderControl: UISegmentedControl!
     @IBOutlet private weak var birthdayInput: UITextField!
     @IBOutlet private weak var scrollView: UIScrollView!
 	
@@ -24,10 +24,10 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			self.container = container
 		}
         
-        fileprivate func initialPickerSelection(_ pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
+        fileprivate func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
             return (PeerInfo.RelationshipStatus.values.index(of: UserPeerInfo.instance.relationshipStatus)!, 0)
         }
-        fileprivate func selectionEditable(_ pickerView: UIPickerView) -> Bool {
+        fileprivate func selectionEditable(in pickerView: UIPickerView) -> Bool {
             return true
         }
 		
@@ -207,7 +207,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         return newLength <= 63 //MCPeerID.MaxDisplayNameUTF8Length
     }
     
-    override func pickedImage(_ image: UIImage) {
+    override func picked(image: UIImage) {
         UserPeerInfo.instance.picture = image
         portraitImageButton.setImage(image, for: UIControlState())
     }

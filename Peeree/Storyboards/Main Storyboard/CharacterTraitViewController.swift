@@ -51,11 +51,11 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     
     // - MARK: SingleSelViewController Data Source
     
-    func selectionEditable(_ pickerView: UIPickerView) -> Bool {
+    func selectionEditable(in pickerView: UIPickerView) -> Bool {
         return characterTraits != nil && userTraits
     }
     
-    func initialPickerSelection(_ pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
+    func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
         return (CharacterTrait.ApplyType.values.index(of: characterTraits![selectedTrait!.row].applies)!, 0)
     }
 	

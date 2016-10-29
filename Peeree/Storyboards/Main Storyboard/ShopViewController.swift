@@ -10,16 +10,15 @@ import UIKit
 import StoreKit
 
 final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
-    
     private enum CellID: String {
-        case PinPointOffering, WalletInfo, NoInAppPurchase, Transaction
+        case pinPointOffering, walletInfo, noInAppPurchase, transaction
     }
     
     private enum SectionID: Int {
         case wallet=0, products, transactions
     }
     
-    private let inAppPurchaser = InAppPurchaseController.sharedController
+    private let inAppPurchaser = InAppPurchaseController.shared
     
     private var ongoingTransactions = Set<SKPaymentTransaction>()
     
@@ -58,7 +57,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
             if SKPaymentQueue.canMakePayments() {
                 return createPinPointOfferingCell(tableView, indexPath:  indexPath)
             } else {
-                return tableView.dequeueReusableCell(withIdentifier: CellID.NoInAppPurchase.rawValue, for: indexPath)
+                return tableView.dequeueReusableCell(withIdentifier: CellID.noInAppPurchase.rawValue, for: indexPath)
             }
         case .transactions:
             return createTransactionCell(tableView, indexPath: indexPath)
@@ -73,7 +72,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
 			return 1
         case .products:
             if SKPaymentQueue.canMakePayments() {
-                return InAppPurchaseController.sharedController.currentProducts?.count ?? 0
+                return InAppPurchaseController.shared.currentProducts?.count ?? 0
             } else {
                 return 1
             }
@@ -105,15 +104,15 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.section == 1 && SKPaymentQueue.canMakePayments() else { return }
-        guard let product = InAppPurchaseController.sharedController.currentProducts?[indexPath.row] else { return }
+        guard let product = InAppPurchaseController.shared.currentProducts?[indexPath.row] else { return }
         
         let localizedTitleFormat = NSLocalizedString("Buy %@ for %@ ,-", comment: "Title of the alert which pops up when the user is about to buy in-app purchase products (such as Pin Points). At the first placeholder the product name is inserted, at the second the price.")
-        let title = String(format: localizedTitleFormat, product.localizedTitle, InAppPurchaseController.getProductPrize(forProduct: product))
+        let title = String(format: localizedTitleFormat, product.localizedTitle, InAppPurchaseController.getProductPrize(of: product))
         
         let alertController = UIAlertController(title: title, message: product.localizedDescription, preferredStyle: .actionSheet)
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Verb."), style: .cancel, handler: nil))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Buy", comment: "Verb."), style: .default, handler: { (action) in
-            InAppPurchaseController.sharedController.makePaymentRequest(forProduct: product)
+            InAppPurchaseController.shared.makePaymentRequest(for: product)
         }))
         
         alertController.present(nil)
@@ -144,7 +143,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     }
     
     private func createWalletInfoCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.WalletInfo.rawValue, for: indexPath)
+        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.walletInfo.rawValue, for: indexPath)
         switch indexPath.row {
         case 0:
             ret.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency.")
@@ -157,20 +156,20 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     }
     
     private func createPinPointOfferingCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        guard let products = InAppPurchaseController.sharedController.currentProducts else { assertionFailure(); return UITableViewCell() }
+        guard let products = InAppPurchaseController.shared.currentProducts else { assertionFailure(); return UITableViewCell() }
         
-        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.PinPointOffering.rawValue, for: indexPath)
+        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.pinPointOffering.rawValue, for: indexPath)
         let numberFormatter = NumberFormatter()
         numberFormatter.formatterBehavior = .behavior10_4
         numberFormatter.numberStyle = .currency
         numberFormatter.locale = products[indexPath.row].priceLocale
         ret.textLabel?.text = products[indexPath.row].localizedTitle
-        ret.detailTextLabel?.text = InAppPurchaseController.getProductPrize(forProduct: products[indexPath.row])
+        ret.detailTextLabel?.text = InAppPurchaseController.getProductPrize(of: products[indexPath.row])
         return ret
     }
     
     private func createTransactionCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.Transaction.rawValue, for: indexPath) as! TransactionTableViewCell
+        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.transaction.rawValue, for: indexPath) as! TransactionTableViewCell
         
         let transaction = ongoingTransactions[ongoingTransactions.index(ongoingTransactions.startIndex, offsetBy: indexPath.row)]
         let localizedFormat = NSLocalizedString("Buying %d x %@ Pin Points", comment: "Cell title of ongoing transaction rows.")

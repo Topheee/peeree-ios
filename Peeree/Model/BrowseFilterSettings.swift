@@ -28,7 +28,7 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
         static var sharedInstance: BrowseFilterSettings!
     }
     
-	static var sharedSettings: BrowseFilterSettings {
+	static var shared: BrowseFilterSettings {
         _ = BrowseFilterSettings.__once        
 		return Singleton.sharedInstance
 	}
@@ -73,8 +73,8 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
 	}
 	
-	func checkPeer(_ peer: PeerInfo) -> Bool {
-		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .Female) || (gender == .male && peer.gender == .Male)
+	func check(peer: PeerInfo) -> Bool {
+		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .female) || (gender == .male && peer.gender == .male)
         var matchingAge: Bool
         if let peerAge = peer.age {
             matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))

@@ -8,10 +8,10 @@
 
 import UIKit
 
-class OnboardingDescriptionViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    @IBOutlet private var headerView: UIStackView!
+final class OnboardingDescriptionViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    @IBOutlet private weak var headerView: UIStackView!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet weak var backButton: UIButton!
+    @IBOutlet private weak var backButton: UIButton!
     
     static private let DescriptionParagraphCellID = "DescriptionParagraphCell"
     
@@ -78,7 +78,7 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return createDescriptionParagraphCell(tableView, indexPath: indexPath)
+        return createDescriptionParagraphCell(for: tableView, indexPath: indexPath)
     }
     
 //    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
@@ -104,7 +104,7 @@ class OnboardingDescriptionViewController: UIViewController, UITableViewDataSour
         }
     }
     
-    private func createDescriptionParagraphCell(_ tableView: UITableView, indexPath: IndexPath) -> DescriptionParagraphCell {
+    private func createDescriptionParagraphCell(for tableView: UITableView, indexPath: IndexPath) -> DescriptionParagraphCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: OnboardingDescriptionViewController.DescriptionParagraphCellID) as! DescriptionParagraphCell
         cell.heading = headingsAndContent[indexPath.row].0
         cell.content = headingsAndContent[indexPath.row].1

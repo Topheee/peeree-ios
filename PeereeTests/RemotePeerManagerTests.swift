@@ -10,7 +10,7 @@ import XCTest
 
 class RemotePeerManagerTests: XCTestCase {
 	
-	let rpm = RemotePeerManager.sharedManager
+	let rpm = RemotePeerManager.shared
 
     override func setUp() {
         super.setUp()

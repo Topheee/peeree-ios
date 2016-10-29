@@ -28,14 +28,14 @@ class PinMatchViewController: UIViewController {
         guard let peerID = displayedPeer?.peerID else { return }
         
         cancelMatchmaking(sender)
-        AppDelegate.sharedDelegate.showPeer(peerID)
+        AppDelegate.shared.show(peer: peerID)
     }
     
     @IBAction func findPeer(_ sender: AnyObject) {
         guard let peerID = displayedPeer?.peerID else { return }
         
         cancelMatchmaking(sender)
-        AppDelegate.sharedDelegate.findPeer(peerID)
+        AppDelegate.shared.find(peer: peerID)
     }
     
     @IBAction func cancelMatchmaking(_ sender: AnyObject) {

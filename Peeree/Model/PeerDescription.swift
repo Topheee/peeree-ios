@@ -17,13 +17,13 @@ class TestPeerInfo: NetworkPeerInfo {
     init(peerID: MCPeerID) {
         var rand = arc4random()
         let age: Int? = rand % 2 == 0 ? PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge)) : nil
-        let relationshipStatus = PeerInfo.RelationshipStatus.InRelationship
+        let relationshipStatus = PeerInfo.RelationshipStatus.inRelationship
         var characterTraits = CharacterTrait.standardTraits
         for index in 0..<characterTraits.count {
             characterTraits[index].applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
             rand = arc4random()
         }
-        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.Female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: rand % 5000 > 2500, _picture: nil)
+        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: rand % 5000 > 2500, _picture: nil)
         super.init(peer: peer)
     }
     
@@ -153,7 +153,7 @@ final class UserPeerInfo: LocalPeerInfo {
 	
 	private init() {
 		dateOfBirth = Date(timeIntervalSinceNow: -3600*24*365*18)
-        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .Female, age: nil, relationshipStatus: .InRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, _picture: nil))
+        super.init(peer: PeerInfo(peerID: MCPeerID(displayName: "Unknown"), gender: .female, age: nil, relationshipStatus: .inRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, _picture: nil))
 	}
 
 	@objc required init?(coder aDecoder: NSCoder) {
@@ -214,9 +214,9 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         
         var relationshipStatus: PeerInfo.RelationshipStatus
         if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
-            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
+            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.noComment
         } else {
-            relationshipStatus = PeerInfo.RelationshipStatus.NoComment
+            relationshipStatus = PeerInfo.RelationshipStatus.noComment
         }
         
         peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, _picture: picture)
@@ -275,9 +275,9 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
 
         var relationshipStatus: PeerInfo.RelationshipStatus
         if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
-            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.NoComment
+            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.noComment
         } else {
-            relationshipStatus = PeerInfo.RelationshipStatus.NoComment
+            relationshipStatus = PeerInfo.RelationshipStatus.noComment
         }
         
         peer = PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, _picture: nil)
@@ -306,35 +306,31 @@ struct PeerInfo: Equatable {
     static let MaxAge = 100
     
     enum Gender: String {
-        case Male, Female, Queer
+        case male, female, queer
         
-        static let values = [Male, Female, Queer]
+        static let values = [male, female, queer]
         
         /*
          *  For genstrings
          *
-         *  NSLocalizedString("Male", comment: "Male gender")
-         *  NSLocalizedString("Female", comment: "Female gender")
-         *  NSLocalizedString("Queer", comment: "Gender type for everyone who does not fit into the other two genders")
+         *  NSLocalizedString("male", comment: "Male gender.")
+         *  NSLocalizedString("female", comment: "Female gender.")
+         *  NSLocalizedString("queer", comment: "Gender type for everyone who does not fit into the other two genders.")
          */
     }
     
-//    enum Interest {
-//        case NothingSpecific, Friends, OneNightStand, Relationship
-//    }
-    
     enum RelationshipStatus: String {
-        case NoComment, Single, Married, InRelationship
+        case noComment, single, married, inRelationship
         
-        static let values = [NoComment, Single, Married, InRelationship]
+        static let values = [noComment, single, married, inRelationship]
         
         /*
          * For genstrings
          *
-         *  NSLocalizedString("NoComment", comment: "The user does not want to expose his relationship status")
-         *  NSLocalizedString("Single", comment: "The user is not in an relationship nor was married")
-         *  NSLocalizedString("Married", comment: "The user is married")
-         *  NSLocalizedString("InRelationship", comment: "The user is already in some kind of relationship")
+         *  NSLocalizedString("noComment", comment: "The user does not want to expose his relationship status.")
+         *  NSLocalizedString("single", comment: "The user is not in an relationship nor was married.")
+         *  NSLocalizedString("married", comment: "The user is married.")
+         *  NSLocalizedString("inRelationship", comment: "The user is already in some kind of relationship.")
          */
     }
     
@@ -344,9 +340,9 @@ struct PeerInfo: Equatable {
         return peerID.displayName
     }
     
-    var gender = Gender.Female
+    var gender = Gender.female
     var age: Int?
-    var relationshipStatus = RelationshipStatus.NoComment
+    var relationshipStatus = RelationshipStatus.noComment
     
     var characterTraits: [CharacterTrait]
     /*
@@ -374,15 +370,15 @@ struct PeerInfo: Equatable {
     }
     
     var isPictureLoading: Bool {
-        return PictureDownloadSessionHandler.isPictureLoading(ofPeer: peerID)
+        return PictureDownloadSessionHandler.isPictureLoading(of: peerID)
     }
     
     var pinMatched: Bool {
-        return RemotePeerManager.sharedManager.hasPinMatch(peerID)
+        return RemotePeerManager.shared.hasPinMatch(peerID)
     }
     
     var pinned: Bool {
-        return RemotePeerManager.sharedManager.isPeerPinned(peerID)
+        return RemotePeerManager.shared.isPeerPinned(peerID)
     }
     
     var pinStatus: String {

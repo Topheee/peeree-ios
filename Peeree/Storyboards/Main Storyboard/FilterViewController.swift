@@ -22,7 +22,7 @@ final class FilterViewController: UITableViewController {
     @IBOutlet private weak var pictureSwitch: UISwitch!
     @IBOutlet private weak var ageSwitch: UISwitch!
     
-    private let filterSettings = BrowseFilterSettings.sharedSettings
+    private let filterSettings = BrowseFilterSettings.shared
 	
 	@IBAction func changeFilter(_ sender: AnyObject) {
 		updatePrefs()
@@ -68,7 +68,7 @@ final class FilterViewController: UITableViewController {
     }
     
     private func updatePrefs() {
-        let filterSettings = BrowseFilterSettings.sharedSettings
+        let filterSettings = BrowseFilterSettings.shared
         filterSettings.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
         filterSettings.ageMin = ageMinSlider.value
         filterSettings.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!

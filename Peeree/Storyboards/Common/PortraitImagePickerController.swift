@@ -67,7 +67,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
                 UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
             }
             
-            pickedImage(imageToSave!)
+            picked(image: imageToSave!)
         }
         
         // picker.parentViewController is nil, but I don't know why
@@ -75,7 +75,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         self.dismiss(animated: true, completion: nil)
     }
     
-    func pickedImage(_ image: UIImage) {
+    func picked(image: UIImage) {
         // may be overridden by subclasses
     }
 }

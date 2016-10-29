@@ -20,11 +20,11 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     /// Identifies a MCSession. Is sent via the context info.
     enum SessionKey: String {
         /// Session which transfers LocalPeerInfo objects.
-        case PeerInfo
+        case peerInfo
         /// Session key for transmitting portrait images.
-        case Picture
+        case picture
         /// Session key for populating pin status.
-        case Pin
+        case pin
         
         init?(rawData: Data) {
             guard let rawString = String(data: rawData, encoding: String.Encoding.ascii) else { return nil }
@@ -35,27 +35,27 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     enum NetworkNotification: String {
-        case ConnectionChangedState
-        case RemotePeerAppeared, RemotePeerDisappeared
-        case PeerInfoLoaded, PeerInfoLoadFailed
-        case PictureLoaded, PictureLoadFailed
-        case Pinned, PinFailed
-        case PinMatch
+        case connectionChangedState
+        case peerAppeared, peerDisappeared
+        case peerInfoLoaded, peerInfoLoadFailed
+        case pictureLoaded, pictureLoadFailed
+        case pinned, pinFailed
+        case pinMatch
         
         func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
             return NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
         }
         
         func post(_ peerID: MCPeerID?) {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: RemotePeerManager.sharedManager, userInfo: peerID != nil ? [NetworkNotificationKey.PeerID.rawValue : peerID!] : nil)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: RemotePeerManager.shared, userInfo: peerID != nil ? [NetworkNotificationKey.peerID.rawValue : peerID!] : nil)
         }
     }
     
     enum NetworkNotificationKey: String {
-        case PeerID
+        case peerID
     }
     
-    static let sharedManager = RemotePeerManager()
+    static let shared = RemotePeerManager()
 	
 	///	Since bluetooth connections are not very reliable, all peers and their images are cached.
     private var cachedPeers = SynchronizedDictionary<MCPeerID, LocalPeerInfo>()
@@ -124,11 +124,11 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         return isPeerPinned(peerID) && pinnedByPeers.contains(peerID)
     }
     
-    func loadPicture(forPeer peer: PeerInfo, delegate: PotraitLoadingDelegate?) {
+    func loadPicture(of peer: PeerInfo, delegate: PotraitLoadingDelegate?) {
         if peer.hasPicture && peer.picture == nil && peer != UserPeerInfo.instance.peer {
-            if isPictureLoading(ofPeer: peer.peerID) {
+            if isPictureLoading(of: peer.peerID) {
                 guard let d = delegate else { return }
-                PictureDownloadSessionHandler.setPictureLoadingDelegate(ofPeer: peer.peerID, delegate: d)
+                PictureDownloadSessionHandler.setPictureLoadingDelegate(of: peer.peerID, delegate: d)
             } else {
                 let handler = PictureDownloadSessionHandler(peerID: peer.peerID, btBrowser: btBrowser, delegate: delegate)
                 assert(handler != nil)
@@ -136,30 +136,30 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         }
     }
     
-    func isPictureLoading(ofPeer peerID: MCPeerID) -> Bool {
-        return PictureDownloadSessionHandler.isPictureLoading(ofPeer: peerID)
+    func isPictureLoading(of peerID: MCPeerID) -> Bool {
+        return PictureDownloadSessionHandler.isPictureLoading(of: peerID)
     }
     
-    func getPictureLoadFraction(ofPeer peerID: MCPeerID) -> Double {
-        return PictureDownloadSessionHandler.getPictureLoadFraction(ofPeer: peerID)
+    func getPictureLoadFraction(of peerID: MCPeerID) -> Double {
+        return PictureDownloadSessionHandler.getPictureLoadFraction(of: peerID)
     }
     
-    func isPeerInfoLoading(ofPeerID peerID: MCPeerID) -> Bool {
-        return PeerInfoDownloadSessionHandler.isPeerInfoLoading(ofPeerID: peerID)
+    func isPeerInfoLoading(of peerID: MCPeerID) -> Bool {
+        return PeerInfoDownloadSessionHandler.isPeerInfoLoading(of: peerID)
     }
     
-    func setPictureLoadingDelegate(ofPeer peerID: MCPeerID, delegate: PotraitLoadingDelegate) {
-        return PictureDownloadSessionHandler.setPictureLoadingDelegate(ofPeer: peerID, delegate: delegate)
+    func setPictureLoadingDelegate(of peerID: MCPeerID, delegate: PotraitLoadingDelegate) {
+        return PictureDownloadSessionHandler.setPictureLoadingDelegate(of: peerID, delegate: delegate)
     }
     
     func isPinning(_ peerID: MCPeerID) -> Bool {
         return PinSessionHandler.isPinning(peerID)
     }
     
-    func getPeerInfo(forPeer peerID: MCPeerID, download: Bool = false) -> PeerInfo? {
+    func getPeerInfo(of peerID: MCPeerID, download: Bool = false) -> PeerInfo? {
         if let ret = cachedPeers[peerID]?.peer {
             return ret
-        } else if download && peering && !PeerInfoDownloadSessionHandler.isPeerInfoLoading(ofPeerID: peerID) {
+        } else if download && peering && !PeerInfoDownloadSessionHandler.isPeerInfoLoading(of: peerID) {
             let handler = PeerInfoDownloadSessionHandler(peerID: peerID, btBrowser: btBrowser)
             assert(handler != nil)
         }
@@ -180,24 +180,24 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     
     func sessionHandlerDidLoad(_ peerInfo: NetworkPeerInfo) {
         cachedPeers[peerInfo.peer.peerID] = LocalPeerInfo(peer: peerInfo.peer)
-        NetworkNotification.PeerInfoLoaded.post(peerInfo.peer.peerID)
+        NetworkNotification.peerInfoLoaded.post(peerInfo.peer.peerID)
     }
     
-    func sessionHandlerDidLoad(_ picture: UIImage, ofPeer peerID: MCPeerID) {
+    func sessionHandlerDidLoad(_ picture: UIImage, of peerID: MCPeerID) {
         guard let peerInfo = cachedPeers[peerID] else { return }
         
         peerInfo.picture = picture
-        NetworkNotification.PictureLoaded.post(peerID)
+        NetworkNotification.pictureLoaded.post(peerID)
     }
     
     func sessionHandlerDidPin(_ peerID: MCPeerID) {
         pinnedPeers.insert(peerID)
         archiveObjectInUserDefs(pinnedPeers.set as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
-        if !RemotePeerManager.sharedManager.pinnedPeers.contains(peerID) && RemotePeerManager.sharedManager.pinnedByPeers.contains(peerID) {
-            RemotePeerManager.sharedManager.pinMatchOccured(peerID)
+        if !RemotePeerManager.shared.pinnedPeers.contains(peerID) && RemotePeerManager.shared.pinnedByPeers.contains(peerID) {
+            RemotePeerManager.shared.pinMatchOccured(peerID)
         }
         
-        NetworkNotification.Pinned.post(peerID)
+        NetworkNotification.pinned.post(peerID)
     }
     
     func sessionHandlerReceivedPin(from peerID: MCPeerID) {
@@ -228,12 +228,12 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         }
         
         switch sessionKey {
-        case .PeerInfo:
-            _ = PeerInfoUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
-        case .Picture:
-            _ = PictureUploadSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
-        case .Pin:
-            _ = PinnedSessionManager(fromPeer: peerID, invitationHandler: invitationHandler)
+        case .peerInfo:
+            _ = PeerInfoUploadSessionManager(from: peerID, invitationHandler: invitationHandler)
+        case .picture:
+            _ = PictureUploadSessionManager(from: peerID, invitationHandler: invitationHandler)
+        case .pin:
+            _ = PinnedSessionManager(from: peerID, invitationHandler: invitationHandler)
         }
 	}
 	
@@ -249,12 +249,12 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         
         peersMet = peersMet + 1
         _availablePeers.insert(peerID)
-        self.remotePeerAppeared(peerID)
+        self.peerAppeared(peerID)
 	}
 	
 	@objc func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
 		_availablePeers.remove(peerID)
-		self.remotePeerDisappeared(peerID)
+		self.peerDisappeared(peerID)
     }
     
     // MARK: Private Methods
@@ -266,19 +266,19 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         pinnedByPeers = SynchronizedSet(set: nsPinnedBy as? Set<MCPeerID> ?? Set())
     }
     
-    private func remotePeerAppeared(_ peerID: MCPeerID) {
-        NetworkNotification.RemotePeerAppeared.post(peerID)
+    private func peerAppeared(_ peerID: MCPeerID) {
+        NetworkNotification.peerAppeared.post(peerID)
     }
     
-    private func remotePeerDisappeared(_ peerID: MCPeerID) {
-        NetworkNotification.RemotePeerDisappeared.post(peerID)
+    private func peerDisappeared(_ peerID: MCPeerID) {
+        NetworkNotification.peerDisappeared.post(peerID)
     }
     
     private func connectionChangedState() {
-        NetworkNotification.ConnectionChangedState.post(nil)
+        NetworkNotification.connectionChangedState.post(nil)
     }
     
     private func pinMatchOccured(_ peerID: MCPeerID) {
-        NetworkNotification.PinMatch.post(peerID)
+        NetworkNotification.pinMatch.post(peerID)
     }
 }

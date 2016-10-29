@@ -9,7 +9,7 @@
 import UIKit
 
 class BasicInfoViewContoller: UIViewController {
-	@IBOutlet private var backButton: UIButton!
+	@IBOutlet private weak var backButton: UIButton!
 	
 	override func viewDidLoad() {
 		backButton.alpha = 0.0

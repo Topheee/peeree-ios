@@ -39,16 +39,16 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         }
         
         var isLocalPeer: Bool { return peerID == UserPeerInfo.instance.peer.peerID }
-        var isOnline: Bool { return RemotePeerManager.sharedManager.peering }
-        var isAvailable: Bool { return RemotePeerManager.sharedManager.availablePeers.contains(peerID) }
+        var isOnline: Bool { return RemotePeerManager.shared.peering }
+        var isAvailable: Bool { return RemotePeerManager.shared.availablePeers.contains(peerID) }
         
         var peerInfoDownloadState: DownloadState {
-            guard !isLocalPeer && RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) == nil else { return .downloaded }
-            return RemotePeerManager.sharedManager.isPeerInfoLoading(ofPeerID: peerID) ? .downloading : .notDownloaded
+            guard !isLocalPeer && RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) == nil else { return .downloaded }
+            return RemotePeerManager.shared.isPeerInfoLoading(of: peerID) ? .downloading : .notDownloaded
         }
         
         var pictureDownloadState: DownloadState {
-            guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) else { return .notDownloaded }
+            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return .notDownloaded }
             if peer.picture == nil {
                 return peer.isPictureLoading ? .downloading : .notDownloaded
             } else {
@@ -57,20 +57,20 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         }
         
         var pictureDownloadProgress: Double {
-            return RemotePeerManager.sharedManager.getPictureLoadFraction(ofPeer: peerID)
+            return RemotePeerManager.shared.getPictureLoadFraction(of: peerID)
         }
         
         var pinState: PinState {
-            guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) else { return .notPinned }
+            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return .notPinned }
             if peer.pinned {
                 return .pinned
             } else {
-                return RemotePeerManager.sharedManager.isPinning(peerID) ? .pinning : .notPinned
+                return RemotePeerManager.shared.isPinning(peerID) ? .pinning : .notPinned
             }
         }
         
         var pinMatch: Bool {
-            guard let peer = RemotePeerManager.sharedManager.getPeerInfo(forPeer: peerID, download: false) else { return false }
+            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return false }
             return peer.pinMatched
         }
     }
@@ -80,7 +80,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
     
     private var displayedPeerInfo: PeerInfo? {
         if displayedPeerID! != UserPeerInfo.instance.peer.peerID {
-            return RemotePeerManager.sharedManager.getPeerInfo(forPeer: displayedPeerID!, download: true)
+            return RemotePeerManager.shared.getPeerInfo(of: displayedPeerID!, download: true)
         } else {
             return UserPeerInfo.instance.peer
         }
@@ -96,7 +96,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         guard let peer = displayedPeerInfo else { return }
         guard !peer.pinned else { return }
         
-        RemotePeerManager.sharedManager.pinPeer(peer.peerID)
+        RemotePeerManager.shared.pinPeer(peer.peerID)
         updateState()
     }
     
@@ -124,34 +124,34 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         navigationItem.title = displayedPeerID!.displayName
         
         if let peerInfo = displayedPeerInfo {
-            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo, delegate: self)
+            RemotePeerManager.shared.loadPicture(of: peerInfo, delegate: self)
         }
         
         updateState()
         
         let simpleStateUpdate = { (notification: Notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
             guard self.displayedPeerID == peerID else { return }
             self.updateState()
         }
         
-        let simpleHandledNotifications: [RemotePeerManager.NetworkNotification] = [.RemotePeerAppeared, .RemotePeerDisappeared, .PictureLoaded, .PinMatch, .Pinned, .PinFailed, .PictureLoadFailed]
+        let simpleHandledNotifications: [RemotePeerManager.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pictureLoaded, .pinMatch, .pinned, .pinFailed, .pictureLoadFailed]
         for networkNotification in simpleHandledNotifications {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.PeerInfoLoaded.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+        notificationObservers.append(RemotePeerManager.NetworkNotification.peerInfoLoaded.addObserver { (notification) in
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
             guard self.displayedPeerID == peerID else { return }
             guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
             
-            RemotePeerManager.sharedManager.loadPicture(forPeer: peerInfo, delegate: self)
+            RemotePeerManager.shared.loadPicture(of: peerInfo, delegate: self)
             self.displayPeerInfo()
             self.updateState()
         })
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.PeerInfoLoadFailed.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.PeerID.rawValue] as? MCPeerID else { return }
+        notificationObservers.append(RemotePeerManager.NetworkNotification.peerInfoLoadFailed.addObserver { (notification) in
+            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
             guard self.displayedPeerID == peerID else { return }
             
             self.performSegue(withIdentifier: PersonDetailViewController.unwindSegueID, sender: self)

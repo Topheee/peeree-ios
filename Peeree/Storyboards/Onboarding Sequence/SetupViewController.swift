@@ -9,11 +9,11 @@
 import UIKit
 
 final class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
-	@IBOutlet private var picButton: UIButton!
-	@IBOutlet private var infoButton: UIButton!
-	@IBOutlet private var launchAppButton: UIButton!
-	@IBOutlet private var nameTextField: UITextField!
-    @IBOutlet private var genderPicker: UISegmentedControl!
+	@IBOutlet private weak var picButton: UIButton!
+	@IBOutlet private weak var infoButton: UIButton!
+	@IBOutlet private weak var launchAppButton: UIButton!
+	@IBOutlet private weak var nameTextField: UITextField!
+    @IBOutlet private weak var genderPicker: UISegmentedControl!
     
     var nameTextFieldFrame: CGRect?
 	
@@ -25,7 +25,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         UserPeerInfo.instance.picture = picButton.image(for: UIControlState())
         
-        AppDelegate.sharedDelegate.finishIntroduction()
+        AppDelegate.shared.finishIntroduction()
 	}
 	
 	@IBAction func takePic(_ sender: UIButton) {
@@ -34,7 +34,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         picButton.layer.removeAllAnimations()
         picButton.alpha = 1.0
         showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding.")) { (action) in
-            self.pickedImage(UIImage(named: "PortraitUnavailable")!)
+            self.picked(image: UIImage(named: "PortraitUnavailable")!)
         }
 	}
 	@IBAction func filledFirstname(_ sender: UITextField) {
@@ -87,12 +87,12 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
         
         switch UserPeerInfo.instance.gender {
-        case .Female:
-            BrowseFilterSettings.sharedSettings.gender = .male
-        case .Male:
-            BrowseFilterSettings.sharedSettings.gender = .female
+        case .female:
+            BrowseFilterSettings.shared.gender = .male
+        case .male:
+            BrowseFilterSettings.shared.gender = .female
         default:
-            BrowseFilterSettings.sharedSettings.gender = .unspecified
+            BrowseFilterSettings.shared.gender = .unspecified
         }
         
         rootTabBarController.selectedIndex = 1
@@ -140,10 +140,10 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     override func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         super.imagePickerControllerDidCancel(picker)
-        pickedImage(UIImage(named: "PortraitUnavailable")!)
+        picked(image: UIImage(named: "PortraitUnavailable")!)
     }
     
-    override func pickedImage(_ image: UIImage) {
+    override func picked(image: UIImage) {
         picButton.setImage(image, for: UIControlState())
         DispatchQueue.main.async {
             self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
