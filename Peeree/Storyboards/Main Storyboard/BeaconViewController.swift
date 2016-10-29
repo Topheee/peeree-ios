@@ -75,11 +75,17 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         stopBeacon()
         startBeacon()
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        distanceView.controller = self
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        userPortrait.image = UserPeerInfo.instance.picture
+        userPortrait.image = UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")
         remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         state = .idle
         updateDistance(.unknown)
@@ -100,12 +106,12 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         startBeacon()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        _ = CircleMaskView(maskedView: userPortrait)
-        _ = CircleMaskView(maskedView: remotePortrait)
-    }
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//    
+//            _ = CircleMaskView(maskedView: userPortrait)
+//            _ = CircleMaskView(maskedView: remotePortrait)
+//    }
     
     // MARK: CLLocationManagerDelegate
     
@@ -211,6 +217,11 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     }
     
     // MARK: Private Methods
+    
+    fileprivate func updateMaskViews() {
+        _ = CircleMaskView(maskedView: userPortrait)
+        _ = CircleMaskView(maskedView: remotePortrait)
+    }
 
     private func updateDistance(_ proximity: CLProximity) {
         let multipliers: [CLProximity : CGFloat] = [.immediate : 0.0, .near : 0.3, .far : 0.6, .unknown : 0.85]
@@ -320,6 +331,8 @@ final class DistanceView: UIView {
     /// number of previously "installed" layers
     private var layerOffset: Int = 0
     
+    weak var controller: BeaconViewController?
+    
     var pulsing: Bool {
         get { return timer != nil }
         set {
@@ -348,6 +361,9 @@ final class DistanceView: UIView {
     override func layoutSublayers(of layer: CALayer) {
         super.layoutSublayers(of: layer)
         guard let sublayers = layer.sublayers else { return }
+        
+        // since setting the masks in viewDidLayoutSubviews() does not work we have to inform our controller here
+        controller?.updateMaskViews()
         
         var scale: CGFloat = 1.0
         var theRect = self.bounds.insetBy(dx: 2.0, dy: 2.0)

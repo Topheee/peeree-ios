@@ -60,11 +60,11 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     }
 	
 	func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-		return NSLocalizedString("How about...", comment: "Heading of character trait view")
+		return characterTraits?[selectedTrait!.row].kind.localizedRawValue
 	}
 	
 	func subHeadingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-        return characterTraits?[selectedTrait!.row].kind.localizedRawValue ?? ""
+        return nil
 	}
 	
 	func descriptionOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {

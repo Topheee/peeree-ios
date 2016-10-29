@@ -65,14 +65,14 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Christopher &quot;Topher&quot; Kobusch" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="oo4-4n-i4a">
-                                            <frame key="frameInset" minX="60" minY="15" width="222" height="20"/>
+                                            <frame key="frameInset" minX="60" minY="16" width="222" height="19.5"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Female, 18, not in a relationship" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="wGc-0s-dzf">
-                                            <frame key="frameInset" minX="60" minY="35" width="166" height="14"/>
+                                            <frame key="frameInset" minX="60" minY="35.5" width="166" height="13.5"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -100,7 +100,7 @@
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You are invisible – and blind." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You are invisible – and blind." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -136,7 +136,9 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
+                                    <outlet property="headLabel" destination="geS-Ue-hzN" id="MNg-mh-bii"/>
                                     <outlet property="peersMetLabel" destination="zK8-SI-A6d" id="jNV-l1-W5p"/>
+                                    <outlet property="subheadLabel" destination="9An-iq-LoL" id="CRR-b9-pI0"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -148,7 +150,7 @@
                     <navigationItem key="navigationItem" id="sgW-Kv-UY4">
                         <nil key="title"/>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="EJE-It-Ehg">
-                            <rect key="frame" x="137" y="7" width="46" height="30"/>
+                            <rect key="frame" x="52" y="7" width="215" height="30"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                             <state key="normal" title="Offline"/>
@@ -168,7 +170,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xco-ft-52g" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1393" y="-40"/>
+            <point key="canvasLocation" x="1392.8" y="-40.029985007496258"/>
         </scene>
         <!--Person Detail-->
         <scene sceneID="MsX-Xf-3X7">
@@ -275,13 +277,13 @@
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
-                                        <exclude reference="0fi-V2-vIY"/>
-                                        <exclude reference="TRd-og-r2p"/>
                                         <exclude reference="4oa-gE-ebq"/>
-                                        <exclude reference="h1e-kV-WZo"/>
                                         <exclude reference="ehp-h6-9AI"/>
                                         <exclude reference="hmd-sZ-nyh"/>
+                                        <exclude reference="0fi-V2-vIY"/>
+                                        <exclude reference="TRd-og-r2p"/>
                                         <exclude reference="Twd-gQ-3Ox"/>
+                                        <exclude reference="h1e-kV-WZo"/>
                                     </mask>
                                 </variation>
                             </scrollView>
@@ -958,6 +960,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="Mch-5o-MB8">
+                        <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
@@ -980,6 +983,7 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="IJd-3E-U4u">
+                        <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
@@ -1148,8 +1152,8 @@ To enable In-App Purchase for this app, go to settings of this iPhone and remove
         <image name="RadarTemplate" width="40" height="40"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="7Nf-9B-BLi"/>
         <segue reference="r7K-aS-PK5"/>
+        <segue reference="EzW-Ik-xrC"/>
         <segue reference="GK2-iA-YLH"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.0" green="0.49458033379999999" blue="0.0079442504549999994" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

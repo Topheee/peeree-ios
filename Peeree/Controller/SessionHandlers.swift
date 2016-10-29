@@ -14,7 +14,11 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
     /// Only used to keep a reference to the session handlers so the RemotePeerManager does not have to.
     private var activeSessions: Set<MCSessionDelegateAdapter> = Set()
     
+    #if OFFLINE
     let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .required)
+    #else
+    let session = MCSessionMock(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .required)
+    #endif
     
     override init() {
         super.init()
@@ -221,7 +225,7 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
     }
     
     // why the hell no override?!
-    /* override */ func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: NSError?) {
+    override func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?) {
         // stop KVO
         progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCancelledKeyPath)
         progress?.removeObserver(self, forKeyPath:PictureDownloadSessionHandler.ProgressCompletedUnitCountKeyPath)
@@ -263,7 +267,7 @@ protocol PotraitLoadingDelegate: class {
     func portraitLoadCancelled()
     func portraitLoadChanged(_ fractionCompleted: Double)
     func portraitLoadFinished()
-    func portraitLoadFailed(withError error: NSError)
+    func portraitLoadFailed(withError error: Error)
 }
 
 final class PictureUploadSessionManager: MCSessionDelegateAdapter {

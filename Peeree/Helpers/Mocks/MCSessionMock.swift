@@ -9,9 +9,13 @@
 import MultipeerConnectivity
 
 class MCSessionMock: MCSession {
-//	override init(peer myPeerID: MCPeerID, securityIdentity identity: [AnyObject]?, encryptionPreference: MCEncryptionPreference) {
-//		<#code#>
-//	}
+    override init(peer myPeerID: MCPeerID, securityIdentity identity: [Any]?, encryptionPreference: MCEncryptionPreference) {
+        super.init(peer: myPeerID, securityIdentity: identity, encryptionPreference: encryptionPreference)
+    }
 	
-	
+    override func disconnect() {
+        DispatchQueue.global().async {
+            self.delegate?.session(self, peer: self.myPeerID, didChange: .notConnected)
+        }
+    }
 }

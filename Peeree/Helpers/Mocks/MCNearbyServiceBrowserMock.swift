@@ -18,6 +18,9 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
         guard addTimer == nil else { return }
         let dummy = Timer()
         self.addPeer(dummy)
+        self.addPeer(dummy)
+        self.addPeer(dummy)
+        self.addPeer(dummy)
 		addTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(MCNearbyServiceBrowserMock.addPeer(_:)), userInfo: nil, repeats: true)
 	}
     

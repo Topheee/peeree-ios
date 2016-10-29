@@ -24,6 +24,8 @@ final class BrowseViewController: UITableViewController {
     
     static let ViewPeerSegueID = "ViewPeerSegue"
     
+    static var instance: BrowseViewController?
+    
 //    private var peerCache: [[MCPeerID]] = [[], [], [], []]
     private var matchedPeers: [PeerInfo] = []
     private var newPeers: [MCPeerID] = []
@@ -32,7 +34,14 @@ final class BrowseViewController: UITableViewController {
     
     private var notificationObservers: [AnyObject] = []
     
-    static var instance: BrowseViewController?
+    private var placeholderCellActive: Bool {
+        var peerAvailable = false
+        for peerArray in [matchedPeers, inFilterPeers, outFilterPeers] {
+            peerAvailable = peerAvailable || peerArray.count > 0
+        }
+        peerAvailable = peerAvailable || newPeers.count > 0
+        return !RemotePeerManager.sharedManager.peering && !peerAvailable
+    }
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {
 		
@@ -142,36 +151,41 @@ final class BrowseViewController: UITableViewController {
     // MARK: UITableView Data Source
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
-        return RemotePeerManager.sharedManager.peering ? 4 : 1
+        return !placeholderCellActive ? 4 : 1
 	}
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if RemotePeerManager.sharedManager.peering {
-            switch section {
-            case BrowseViewController.MatchedPeersSection:
-                return matchedPeers.count
-            case BrowseViewController.NewPeersSection:
-                return newPeers.count
-            case BrowseViewController.InFilterPeersSection:
-                return inFilterPeers.count
-            case BrowseViewController.OutFilterPeersSection:
-                return outFilterPeers.count
-            default:
-                return 0
-            }
-        } else {
-            return 1
+        guard !placeholderCellActive else { return 1 }
+        
+        switch section {
+        case BrowseViewController.MatchedPeersSection:
+            return matchedPeers.count
+        case BrowseViewController.NewPeersSection:
+            return newPeers.count
+        case BrowseViewController.InFilterPeersSection:
+            return inFilterPeers.count
+        case BrowseViewController.OutFilterPeersSection:
+            return outFilterPeers.count
+        default:
+            return 0
         }
 	}
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard RemotePeerManager.sharedManager.peering else {
+        guard !placeholderCellActive else {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.OfflineModeCellID) as? OfflineTableViewCell else {
                 assertionFailure()
                 return UITableViewCell()
             }
             
             cell.peersMetLabel.text = String(RemotePeerManager.sharedManager.peersMet)
+            if RemotePeerManager.sharedManager.peering {
+                cell.headLabel.text = NSLocalizedString("All Alone", comment: "Heading of the placeholder shown in browse view if no peers are around.")
+                cell.subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
+            } else {
+                cell.headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
+                cell.subheadLabel.text = NSLocalizedString("You are invisible – and blind.", comment: "Subhead of the offline mode placeholder shown in browse view.")
+            }
             return cell
         }
         
@@ -206,26 +220,24 @@ final class BrowseViewController: UITableViewController {
 	}
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard RemotePeerManager.sharedManager.peering else {
-            return nil
-        }
+        guard !placeholderCellActive else { return nil }
         
         switch section {
         case BrowseViewController.MatchedPeersSection:
             return matchedPeers.count > 0 ? NSLocalizedString("Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
         case BrowseViewController.NewPeersSection:
-            return newPeers.count > 0 ? NSLocalizedString("New Peers", comment: "Header of table view section in browse view, which contains entries for new users around whoose data has not been loaded yet.") : nil
+            return newPeers.count > 0 ? NSLocalizedString("New People", comment: "Header of table view section in browse view, which contains entries for new users around whoose data has not been loaded yet.") : nil
         case BrowseViewController.InFilterPeersSection:
-            return inFilterPeers.count > 0 ? NSLocalizedString("People around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are nere around).") : nil
+            return inFilterPeers.count > 0 ? NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are nere around).") : nil
         case BrowseViewController.OutFilterPeersSection:
-            return outFilterPeers.count > 0 ? NSLocalizedString("Filtered people", comment: "Header of table view section in browse view, which contains entries for people who are most likely not interesting for the user because they did not pass his filter.") : nil
+            return outFilterPeers.count > 0 ? NSLocalizedString("Filtered People", comment: "Header of table view section in browse view, which contains entries for people who are most likely not interesting for the user because they did not pass his filter.") : nil
         default:
             return super.tableView(tableView, titleForHeaderInSection: section)
         }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return RemotePeerManager.sharedManager.peering ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.shared.statusBarFrame.height
+        return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.shared.statusBarFrame.height
     }
     
     // MARK: Private Methods
@@ -315,6 +327,7 @@ final class BrowseViewController: UITableViewController {
             clearCache()
         }
 //        networkButton.frame = CGRect(origin: CGPoint.zero, size: networkButton.intrinsicContentSize)
+        networkButton.setNeedsLayout()
         tableView.isScrollEnabled = nowOnline
     }
     
@@ -366,5 +379,7 @@ final class BrowseViewController: UITableViewController {
 }
 
 final class OfflineTableViewCell: UITableViewCell {
+    @IBOutlet weak var headLabel: UILabel!
+    @IBOutlet weak var subheadLabel: UILabel!
     @IBOutlet weak var peersMetLabel: UILabel!
 }

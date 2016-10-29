@@ -38,16 +38,11 @@ class CircleMaskView: UIView {
         self.bounds = superBounds
     }
     
-//    override init(frame: CGRect) {
     init(maskedView: UIView) {
-        super.init(frame: maskedView.frame)
+        super.init(frame: maskedView.bounds)
+        maskedView.mask = self
         backgroundColor = UIColor(white: 1.0, alpha: 0.0)
         autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleTopMargin, .flexibleBottomMargin]
-//        centerXAnchor.constraint(equalTo: maskedView.centerXAnchor)
-//        centerYAnchor.constraint(equalTo: maskedView.centerYAnchor)
-//        widthAnchor.constraint(equalTo: maskedView.widthAnchor)
-//        heightAnchor.constraint(equalTo: maskedView.heightAnchor)
-        maskedView.mask = self
     }
     
     required init?(coder aDecoder: NSCoder) {
