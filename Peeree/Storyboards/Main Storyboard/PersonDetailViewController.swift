@@ -75,7 +75,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         }
     }
     
-    private var notificationObservers: [AnyObject] = []
+    private var notificationObservers: [NSObjectProtocol] = []
     private var circleLayer: CAShapeLayer!
     
     private var displayedPeerInfo: PeerInfo? {
@@ -88,15 +88,13 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
     
     var displayedPeerID: MCPeerID?
     
-    @IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {
-        
-    }
+    @IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
     
 	@IBAction func pinPeer(_ sender: UIButton) {
         guard let peer = displayedPeerInfo else { return }
         guard !peer.pinned else { return }
         
-        RemotePeerManager.shared.pinPeer(peer.peerID)
+        RemotePeerManager.shared.pin(peer.peerID)
         updateState()
     }
     
@@ -104,6 +102,8 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         if let charTraitVC = segue.destination as? CharacterTraitViewController {
             charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
             charTraitVC.userTraits = false
+        } else if let beaconVC = segue.destination as? BeaconViewController {
+            beaconVC.searchedPeer = displayedPeerInfo
         }
     }
     
@@ -135,7 +135,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
             self.updateState()
         }
         
-        let simpleHandledNotifications: [RemotePeerManager.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pictureLoaded, .pinMatch, .pinned, .pinFailed, .pictureLoadFailed]
+        let simpleHandledNotifications: [RemotePeerManager.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pictureLoaded, .pinMatch, .pinned, .pinningStarted, .pinFailed, .pictureLoadFailed]
         for networkNotification in simpleHandledNotifications {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }

@@ -139,6 +139,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     }
     
     private func fail(transaction: SKPaymentTransaction) {
+        // TODO evaluate the error code
         SKPaymentQueue.default().finishTransaction(transaction)
     }
     

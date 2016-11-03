@@ -46,7 +46,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
                 session.delegate?.session(session, didReceive: data, fromPeer: peerID)
             case .picture:
                 let rand = arc4random()
-                let progress = Progress(totalUnitCount: Int64(rand % 99999))
+                let progress = Progress(totalUnitCount: Int64(rand % 999))
                 session.delegate?.session(session, peer: peerID, didChange: .connected)
                 session.delegate?.session(session, didStartReceivingResourceWithName: "name", fromPeer: peerID, with: progress)
                 DispatchQueue.global().async(execute: {

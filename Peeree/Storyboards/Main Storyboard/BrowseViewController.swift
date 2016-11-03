@@ -32,7 +32,7 @@ final class BrowseViewController: UITableViewController {
     private var inFilterPeers: [PeerInfo] = []
     private var outFilterPeers: [PeerInfo] = []
     
-    private var notificationObservers: [AnyObject] = []
+    private var notificationObservers: [NSObjectProtocol] = []
     
     private var placeholderCellActive: Bool {
         var peerAvailable = false
@@ -74,23 +74,9 @@ final class BrowseViewController: UITableViewController {
             break
         }
 	}
-	
-	override func viewDidAppear(_ animated: Bool) {
-		super.viewDidAppear(animated)
-        BrowseViewController.instance = self
-        tableView.tableFooterView = UIView(frame: CGRect.zero)
-        RemotePeerManager.shared.availablePeers.accessQueue.sync {
-            // we can access the set variable safely here since we are on the queue
-            for peerID in RemotePeerManager.shared.availablePeers.set {
-                self.addPeerIDToView(peerID, updateTable: false)
-            }
-        }
-        
-		tableView.reloadData()
-        connectionChangedState(RemotePeerManager.shared.peering)
-		
-        tabBarController?.tabBar.items?[0].badgeValue = nil
-        UIApplication.shared.applicationIconBadgeNumber = 0
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
         notificationObservers.append(RemotePeerManager.NetworkNotification.peerAppeared.addObserver { (notification) in
             if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
@@ -137,6 +123,24 @@ final class BrowseViewController: UITableViewController {
                 self.pinMatchOccured(RemotePeerManager.shared.getPeerInfo(of: peerID)!)
             }
         })
+    }
+	
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+        BrowseViewController.instance = self
+//        tableView.tableFooterView = UIView(frame: CGRect.zero)
+        RemotePeerManager.shared.availablePeers.accessQueue.sync {
+            // we can access the set variable safely here since we are on the queue
+            for peerID in RemotePeerManager.shared.availablePeers.set {
+                self.addPeerIDToView(peerID, updateTable: false)
+            }
+        }
+        
+		tableView.reloadData()
+        connectionChangedState(RemotePeerManager.shared.peering)
+		
+        tabBarController?.tabBar.items?[0].badgeValue = nil
+        UIApplication.shared.applicationIconBadgeNumber = 0
 	}
 	
 	override func viewDidDisappear(_ animated: Bool) {
@@ -144,6 +148,7 @@ final class BrowseViewController: UITableViewController {
         for observer in notificationObservers {
             NotificationCenter.default.removeObserver(observer)
         }
+        notificationObservers.removeAll()
         clearCache()
         BrowseViewController.instance = nil
 	}
@@ -193,25 +198,16 @@ final class BrowseViewController: UITableViewController {
         
         switch indexPath.section {
         case BrowseViewController.MatchedPeersSection:
-            let peer = matchedPeers[indexPath.row]
-            cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = peer.summary
-            addPicture(to: cell, peer: peer)
+            fill(cell: cell, peer: matchedPeers[indexPath.row])
         case BrowseViewController.NewPeersSection:
             let peerID = newPeers[indexPath.row]
             cell.textLabel!.text = peerID.displayName
             cell.detailTextLabel!.text = ""
             cell.imageView?.image = nil
         case BrowseViewController.InFilterPeersSection:
-            let peer = inFilterPeers[indexPath.row]
-            cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = peer.summary
-            addPicture(to: cell, peer: peer)
+            fill(cell: cell, peer: inFilterPeers[indexPath.row])
         case BrowseViewController.OutFilterPeersSection:
-            let peer = outFilterPeers[indexPath.row]
-            cell.textLabel!.text = peer.peerID.displayName
-            cell.detailTextLabel!.text = peer.summary
-            addPicture(to: cell, peer: peer)
+            fill(cell: cell, peer: outFilterPeers[indexPath.row])
         default:
             break
         }
@@ -242,13 +238,15 @@ final class BrowseViewController: UITableViewController {
     
     // MARK: Private Methods
     
-    func addPicture(to cell: UITableViewCell, peer: PeerInfo) {
-        guard let imageView = cell.imageView else { return }
-        imageView.image = peer.picture
-        guard let originalImageSize = imageView.image?.size else { return }
+    private func fill(cell: UITableViewCell, peer: PeerInfo) {
+        cell.textLabel!.text = peer.peerID.displayName
+        cell.detailTextLabel!.text = peer.summary
+        guard let imageView = cell.imageView else { assertionFailure(); return }
+        imageView.image = peer.picture ?? (peer.hasPicture ? UIImage(named: "PortraitPlaceholder") : UIImage(named: "PortraitUnavailable"))
+        guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
         
         let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
-        guard let croppedImage = imageView.image?.croppedImage(CGRect(x: (originalImageSize.width - minImageEdgeLength) / 2, y: (originalImageSize.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { return }
+        guard let croppedImage = imageView.image?.croppedImage(CGRect(x: (originalImageSize.width - minImageEdgeLength) / 2, y: (originalImageSize.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { assertionFailure(); return }
         
         UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cell.contentView.marginFrame.height), true, UIScreen.main.scale)
         let imageRect = CGRect(squareEdgeLength: cell.contentView.marginFrame.height)

@@ -39,7 +39,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         case peerAppeared, peerDisappeared
         case peerInfoLoaded, peerInfoLoadFailed
         case pictureLoaded, pictureLoadFailed
-        case pinned, pinFailed
+        case pinned, pinningStarted, pinFailed
         case pinMatch
         
         func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
@@ -166,11 +166,12 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
         return nil
     }
     
-    func pinPeer(_ peerID: MCPeerID) {
+    func pin(_ peerID: MCPeerID) {
         guard !pinnedPeers.contains(peerID) else { return }
         
         WalletController.requestPin { (confirmation) in
             _ = PinSessionHandler(peerID: peerID, btBrowser: self.btBrowser, confirmation: confirmation)
+            NetworkNotification.pinningStarted.post(peerID)
         }
     }
     
@@ -193,7 +194,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     func sessionHandlerDidPin(_ peerID: MCPeerID) {
         pinnedPeers.insert(peerID)
         archiveObjectInUserDefs(pinnedPeers.set as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
-        if !RemotePeerManager.shared.pinnedPeers.contains(peerID) && RemotePeerManager.shared.pinnedByPeers.contains(peerID) {
+        if RemotePeerManager.shared.pinnedByPeers.contains(peerID) {
             RemotePeerManager.shared.pinMatchOccured(peerID)
         }
         

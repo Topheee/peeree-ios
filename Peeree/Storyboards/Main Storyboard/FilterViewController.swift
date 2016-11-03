@@ -9,16 +9,11 @@
 import UIKit
 
 final class FilterViewController: UITableViewController {
-	
 	@IBOutlet private weak var ageMaxLabel: UILabel!
 	@IBOutlet private weak var ageMaxSlider: UISlider!
-	
 	@IBOutlet private weak var ageMinLabel: UILabel!
 	@IBOutlet private weak var ageMinSlider: UISlider!
-	
 	@IBOutlet private weak var genderSeg: UISegmentedControl!
-    
-    // TODO implement age- and pictureSwitch
     @IBOutlet private weak var pictureSwitch: UISwitch!
     @IBOutlet private weak var ageSwitch: UISwitch!
     
@@ -55,7 +50,6 @@ final class FilterViewController: UITableViewController {
 	
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         ageMaxSlider.value = filterSettings.ageMax == 0 ? ageMaxSlider.maximumValue : filterSettings.ageMax
 		updateAgeMaxLabel()
 		ageMinSlider.value = filterSettings.ageMin

@@ -14,6 +14,7 @@
 		9D0CDD4E1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */; };
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
+		9D2A76BA1DC63E9D004E6386 /* PeereeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2A76B91DC63E9D004E6386 /* PeereeUITests.swift */; };
 		9D2E0C921DB916C7006F6355 /* IchAlbert.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */; };
 		9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D2E7F2F1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
@@ -84,6 +85,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9D2A76BC1DC63E9D004E6386 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9DA0F7B41B5C3AB800F3BA87;
+			remoteInfo = Peeree;
+		};
 		9DA0F7CD1B5C3AB900F3BA87 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
@@ -99,12 +107,15 @@
 		9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensions.swift; path = Peeree/Helpers/PeereeExtensions.swift; sourceTree = "<group>"; };
 		9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FirstLaunchViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/FirstLaunchViewController.swift"; sourceTree = "<group>"; };
 		9D2923261B91E50B00B5B622 /* SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupViewController.swift"; sourceTree = "<group>"; };
+		9D2A76B71DC63E9D004E6386 /* PeereeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D2A76B91DC63E9D004E6386 /* PeereeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeUITests.swift; sourceTree = "<group>"; };
+		9D2A76BB1DC63E9D004E6386 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9D2A76C41DC6861D004E6386 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = IchAlbert.jpg; path = ../../../../../../../../Pictures/Spielereien/IchAlbert.jpg; sourceTree = "<group>"; };
 		9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PortraitImagePickerController.swift; path = Peeree/Storyboards/Common/PortraitImagePickerController.swift; sourceTree = "<group>"; };
 		9D33E8F11D418839001CECAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/FirstLaunch.storyboard; sourceTree = "<group>"; };
 		9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SampleAssets.xcassets; sourceTree = "<group>"; };
 		9D41E11D1D5E903A0042FB63 /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
-		9D482D8F1D5E925C00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9D482D941D5ED2ED00B5022A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9D49DB291BEA92E100F9583E /* PeereePurchasement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereePurchasement.swift; path = Model/PeereePurchasement.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Peeree/Storyboards/Launch/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -149,6 +160,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9D2A76B41DC63E9D004E6386 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B21B5C3AB800F3BA87 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -204,6 +222,15 @@
 			);
 			name = "Main Storyboard";
 			path = Peeree;
+			sourceTree = "<group>";
+		};
+		9D2A76B81DC63E9D004E6386 /* PeereeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9D2A76B91DC63E9D004E6386 /* PeereeUITests.swift */,
+				9D2A76BB1DC63E9D004E6386 /* Info.plist */,
+			);
+			path = PeereeUITests;
 			sourceTree = "<group>";
 		};
 		9D4D70A51DBA70A80065D23D /* Launch */ = {
@@ -264,6 +291,7 @@
 			children = (
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
 				9DA0F7CF1B5C3AB900F3BA87 /* PeereeTests */,
+				9D2A76B81DC63E9D004E6386 /* PeereeUITests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -273,6 +301,7 @@
 			children = (
 				9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */,
 				9DA0F7CC1B5C3AB900F3BA87 /* PeereeTests.xctest */,
+				9D2A76B71DC63E9D004E6386 /* PeereeUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -365,6 +394,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		9D2A76B61DC63E9D004E6386 /* PeereeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9D2A76C01DC63E9D004E6386 /* Build configuration list for PBXNativeTarget "PeereeUITests" */;
+			buildPhases = (
+				9D2A76B31DC63E9D004E6386 /* Sources */,
+				9D2A76B41DC63E9D004E6386 /* Frameworks */,
+				9D2A76B51DC63E9D004E6386 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9D2A76BD1DC63E9D004E6386 /* PBXTargetDependency */,
+			);
+			name = PeereeUITests;
+			productName = PeereeUITests;
+			productReference = 9D2A76B71DC63E9D004E6386 /* PeereeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		9DA0F7B41B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9DA0F7D61B5C3AB900F3BA87 /* Build configuration list for PBXNativeTarget "Peeree" */;
@@ -407,10 +454,15 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftMigration = 0700;
-				LastSwiftUpdateCheck = 0700;
+				LastSwiftUpdateCheck = 0810;
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
+					9D2A76B61DC63E9D004E6386 = {
+						CreatedOnToolsVersion = 8.1;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
+					};
 					9DA0F7B41B5C3AB800F3BA87 = {
 						CreatedOnToolsVersion = 6.3.2;
 						DevelopmentTeam = 86J6LQ96WM;
@@ -443,11 +495,19 @@
 			targets = (
 				9DA0F7B41B5C3AB800F3BA87 /* Peeree */,
 				9DA0F7CB1B5C3AB900F3BA87 /* PeereeTests */,
+				9D2A76B61DC63E9D004E6386 /* PeereeUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9D2A76B51DC63E9D004E6386 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B31B5C3AB800F3BA87 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -477,6 +537,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9D2A76B31DC63E9D004E6386 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D2A76BA1DC63E9D004E6386 /* PeereeUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B11B5C3AB800F3BA87 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -556,6 +624,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9D2A76BD1DC63E9D004E6386 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
+			targetProxy = 9D2A76BC1DC63E9D004E6386 /* PBXContainerItemProxy */;
+		};
 		9DA0F7CE1B5C3AB900F3BA87 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
@@ -568,7 +641,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9D33E8F11D418839001CECAB /* Base */,
-				9D482D8F1D5E925C00B5022A /* en */,
+				9D2A76C41DC6861D004E6386 /* en */,
 			);
 			name = FirstLaunch.storyboard;
 			path = "Peeree/Storyboards/Onboarding Sequence";
@@ -594,6 +667,40 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		9D2A76BE1DC63E9D004E6386 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				INFOPLIST_FILE = PeereeUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = Peeree;
+			};
+			name = Debug;
+		};
+		9D2A76BF1DC63E9D004E6386 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				INFOPLIST_FILE = PeereeUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = Peeree;
+			};
+			name = Release;
+		};
 		9DA0F7D41B5C3AB900F3BA87 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -764,6 +871,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9D2A76C01DC63E9D004E6386 /* Build configuration list for PBXNativeTarget "PeereeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D2A76BE1DC63E9D004E6386 /* Debug */,
+				9D2A76BF1DC63E9D004E6386 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		9DA0F7B01B5C3AB800F3BA87 /* Build configuration list for PBXProject "Peeree" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

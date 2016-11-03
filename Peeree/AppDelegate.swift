@@ -189,21 +189,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     func show(peer peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
-        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
         
         rootTabBarController.selectedIndex = 0
-        browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
+        var browseVC: BrowseViewController? = nil
+        for vc in browseNavVC.viewControllers {
+            if vc is BrowseViewController {
+                browseVC = vc as? BrowseViewController
+            } else if let personVC = vc as? PersonDetailViewController {
+                guard personVC.displayedPeerID != peerID else { return }
+            }
+        }
+        browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
     
     func find(peer peerID: MCPeerID) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
-        guard let browseVC = browseNavVC.viewControllers[0] as? BrowseViewController else { return }
         
         rootTabBarController.selectedIndex = 0
-        browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
-        let test = browseNavVC.viewControllers[0] as? PersonDetailViewController
-        print(test)
+        
+        var _browseVC: BrowseViewController? = nil
+        var _personVC: PersonDetailViewController? = nil
+        for vc in browseNavVC.viewControllers {
+            if vc is BrowseViewController {
+                _browseVC = vc as? BrowseViewController
+            } else if let somePersonVC = vc as? PersonDetailViewController {
+                if somePersonVC.displayedPeerID == peerID {
+                    _personVC = somePersonVC
+                }
+            } else if let someBeaconVC = vc as? BeaconViewController {
+                guard someBeaconVC.searchedPeer?.peerID != peerID else { return }
+            }
+        }
+        
+        if let personVC = _personVC {
+            personVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
+        } else if let browseVC = _browseVC {
+            browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
+            // is the new PersonDetailVC now available? I don't know... let's see, whether we can find it
+            for vc in browseNavVC.viewControllers {
+                guard let somePersonVC = vc as? PersonDetailViewController else { continue }
+                guard somePersonVC.displayedPeerID == peerID else { continue }
+                
+                somePersonVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
+            }
+        }
     }
     
     // MARK: CBPeripheralManagerDelegate

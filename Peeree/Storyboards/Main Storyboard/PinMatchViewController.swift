@@ -19,8 +19,7 @@ class PinMatchViewController: UIViewController {
     
     var displayedPeer: PeerInfo? {
         didSet {
-            portraitView.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
-            peerNameLabel.text = displayedPeer?.peerName
+            displayPeer()
         }
     }
     
@@ -63,6 +62,19 @@ class PinMatchViewController: UIViewController {
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        backgroundImageView.image = image
+        if #available(iOS 10.0, *) {
+            image?.imageRendererFormat.opaque = true
+            backgroundImageView.image = image
+        } else {
+            backgroundImageView.image = image
+        }
+        backgroundImageView.isOpaque = true
+        
+        displayPeer()
+    }
+    
+    private func displayPeer() {
+        portraitView?.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
+        peerNameLabel?.text = displayedPeer?.peerName
     }
 }

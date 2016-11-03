@@ -50,7 +50,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
-        for view in [infoButton, picButton, nameTextField, genderPicker, launchAppButton] as [UIView] {
+        for view in [picButton, nameTextField, genderPicker, launchAppButton] as [UIView] {
             view.alpha = 0.0
         }
     }
@@ -64,8 +64,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         super.viewDidAppear(animated)
         guard nameTextField.alpha == 0.0 else { return }
         
-        self.view.flyInSubviews([infoButton], duration: 1.0, delay: 0.0, damping: 1.0, velocity: 1.0)
-        self.view.flyInSubviews([picButton], duration: 1.0, delay: 1.0, damping: 1.0, velocity: 1.0)
+        self.view.flyInSubviews([picButton], duration: 1.0, delay: 0.2, damping: 1.0, velocity: 1.0)
         UIView.animate(withDuration: 1.0, delay: 7.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: {
             self.picButton.alpha = 0.6
         }, completion: nil)
