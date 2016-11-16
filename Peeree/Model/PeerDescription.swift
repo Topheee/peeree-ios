@@ -308,8 +308,7 @@ struct PeerInfo: Equatable {
         case peerID, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged
     }
     
-    static let MinAge = 13
-    static let MaxAge = 100
+    static let MinAge = 13, MaxAge = 100
     
     enum Gender: String {
         case male, female, queer
@@ -351,7 +350,7 @@ struct PeerInfo: Equatable {
     var relationshipStatus = RelationshipStatus.noComment
     
     var characterTraits: [CharacterTrait]
-    /*
+    /**
      *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
      */
     var version = "1.0"
@@ -365,7 +364,6 @@ struct PeerInfo: Equatable {
         return _hasPicture
     }
     
-    /// Only stored in the LocalPeerInfo subclass. In this class it is not written to the encoder in encodeWithCoder.
     fileprivate var _picture: UIImage? = nil {
         didSet {
             _hasPicture = _picture != nil

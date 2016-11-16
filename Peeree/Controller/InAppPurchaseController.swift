@@ -101,10 +101,10 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
             switch (transaction.transactionState) {
             // Call the appropriate custom method for the transaction state.
             case .purchasing:
-                // Update UI to reflect the in-progress status, and wait to be called again.
+                // TODO Update UI to reflect the in-progress status, and wait to be called again.
                 break
             case .deferred:
-                // Update UI to reflect the deferred status, and wait to be called again.
+                // TODO Update UI to reflect the deferred status, and wait to be called again.
                 break
             case .failed:
                 // Use the value of the error property to present a message to the user.

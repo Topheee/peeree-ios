@@ -79,13 +79,11 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         distanceView.controller = self
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         userPortrait.image = UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")
         remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         let format = NSLocalizedString("Ranging only works if %@ is also trying to find you.", comment: "Warning displayed in beacon view when a peer is not in range.")

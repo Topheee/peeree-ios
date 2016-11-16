@@ -125,7 +125,7 @@ class DownloadSessionDelegate: MCSessionDelegateAdapter {
         }
         
         attempt += 1
-        browser.invitePeer(sessionID.peerID, to: session, withContext: sessionID.sessionKey.rawData as Data, timeout: MCSessionDelegateAdapter.InvitationTimeout)
+        browser.invitePeer(sessionID.peerID, to: session, withContext: sessionID.sessionKey.rawData, timeout: MCSessionDelegateAdapter.InvitationTimeout)
     }
     
     override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
@@ -304,7 +304,7 @@ final class PinSessionHandler: DownloadSessionDelegate {
     override func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         switch state {
         case .connected:
-            sendData(RemotePeerManager.SessionKey.pin.rawData as Data, toPeers: [peerID])
+            sendData(RemotePeerManager.SessionKey.pin.rawData, toPeers: [peerID])
         case .connecting:
             break
         case .notConnected:
@@ -327,14 +327,13 @@ final class PinSessionHandler: DownloadSessionDelegate {
 }
 
 final class PinnedSessionManager: MCSessionDelegateAdapter {
-    
     init(from peerID: MCPeerID, invitationHandler: (Bool, MCSession) -> Void) {
         super.init()
         invitationHandler(true, session)
     }
     
     override func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        guard RemotePeerManager.SessionKey(rawData: data) == RemotePeerManager.SessionKey.pin else { return }
+        guard RemotePeerManager.SessionKey(rawData: data) == .pin else { return }
         
         let ackData = NSKeyedArchiver.archivedData(withRootObject: "ack")
         sendData(ackData, toPeers: [peerID])

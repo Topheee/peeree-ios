@@ -60,39 +60,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
 		}
         
         UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.InitialPinPoints])
-		
-		//let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
-//		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
-		//let theme = Theme(globalTintRed: 255/255, globalTintGreen: 128/255, globalTintBlue: 0/255, globalBackgroundRed: 204/255 /*213/255*/, globalBackgroundGreen: 1.0 /*250/255*/, globalBackgroundBlue: 127/255 /*128/255*/) //sugar melon
-        //let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
-//        let theme = Theme(globalTint: (0/255, 72/255, 185/255), barTint: (0/255, 146/255, 0/255), globalBackground: (160/255, 255/255, 180/255)) //bright green (98/255, 255/255, 139/255)
         
-		RootView.appearance().tintColor = theme.globalTintColor
-		RootView.appearance().backgroundColor = theme.globalBackgroundColor
-		
-//        UINavigationBar.appearance().tintColor = theme.barTintColor
-        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
-		
-        UITabBar.appearance().tintColor = theme.barTintColor
-		UITabBar.appearance().backgroundColor = theme.barBackgroundColor
-		
-		UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
-        UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
-        UITableView.appearance().backgroundColor = theme.globalBackgroundColor
-//        UITableView.appearance().tintColor = theme.globalTintColor
-		
-		UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-		UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-        
-        UIToolbar.appearance().tintColor = theme.globalTintColor
-        
-        UIActivityIndicatorView.appearance().color = theme.globalTintColor
-        UIStackView.appearance().tintColor = theme.globalTintColor
-        
-        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
-        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
-        
-        UIWindow.appearance().tintColor = theme.globalTintColor
+        setupAppearance()
         
         _ = RemotePeerManager.NetworkNotification.peerAppeared.addObserver { notification in
             guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
@@ -309,5 +278,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             newPeerCount = pm.availablePeers.set.filter({ pm.getPeerInfo(of: $0) == nil }).count
         }
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
+    }
+    
+    private func setupAppearance() {
+        //let theme = Theme(globalTintRed: 0/255, globalTintGreen: 128/255, globalTintBlue: 7/255, globalBackgroundRed: 177/255 /*120/255*/, globalBackgroundGreen: 1.0 /*248/255*/, globalBackgroundBlue: 184/255 /*127/255*/) //plant green
+        //		let theme = Theme(globalTintRed: 0.0, globalTintGreen: 72/255, globalTintBlue: 185/255, globalBackgroundRed: 122/255, globalBackgroundGreen: 214/255, globalBackgroundBlue: 253/255) //sky blue
+        //let theme = Theme(globalTintRed: 255/255, globalTintGreen: 128/255, globalTintBlue: 0/255, globalBackgroundRed: 204/255 /*213/255*/, globalBackgroundGreen: 1.0 /*250/255*/, globalBackgroundBlue: 127/255 /*128/255*/) //sugar melon
+        //let theme = Theme(globalTintRed: 12/255, globalTintGreen: 96/255, globalTintBlue: 247/255, globalBackgroundRed: 121/255, globalBackgroundGreen: 251/255, globalBackgroundBlue: 214/255) //ocean green
+        //        let theme = Theme(globalTint: (0/255, 72/255, 185/255), barTint: (0/255, 146/255, 0/255), globalBackground: (160/255, 255/255, 180/255)) //bright green (98/255, 255/255, 139/255)
+        
+        RootView.appearance().tintColor = theme.globalTintColor
+        RootView.appearance().backgroundColor = theme.globalBackgroundColor
+        
+        //        UINavigationBar.appearance().tintColor = theme.barTintColor
+        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
+        
+        UITabBar.appearance().tintColor = theme.barTintColor
+        UITabBar.appearance().backgroundColor = theme.barBackgroundColor
+        
+        UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
+        UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+        UITableView.appearance().backgroundColor = theme.globalBackgroundColor
+        //        UITableView.appearance().tintColor = theme.globalTintColor
+        
+        UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
+        UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
+        
+        UIToolbar.appearance().tintColor = theme.globalTintColor
+        
+        UIActivityIndicatorView.appearance().color = theme.globalTintColor
+        UIStackView.appearance().tintColor = theme.globalTintColor
+        
+        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
+        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
+        
+        UIWindow.appearance().tintColor = theme.globalTintColor
     }
 }

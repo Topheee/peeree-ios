@@ -194,8 +194,8 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     func sessionHandlerDidPin(_ peerID: MCPeerID) {
         pinnedPeers.insert(peerID)
         archiveObjectInUserDefs(pinnedPeers.set as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
-        if RemotePeerManager.shared.pinnedByPeers.contains(peerID) {
-            RemotePeerManager.shared.pinMatchOccured(peerID)
+        if pinnedByPeers.contains(peerID) {
+            pinMatchOccured(peerID)
         }
         
         NetworkNotification.pinned.post(peerID)
