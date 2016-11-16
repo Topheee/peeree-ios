@@ -65,10 +65,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
-        showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Removing the own portrait image.")) { (action) in
-            UserPeerInfo.instance.picture = nil
-            self.portraitImageButton.setImage(UIImage(named: "PortraitUnavailable")!, for: UIControlState())
-        }
+        showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Removing the own portrait image."))
     }
     
     func agePickerChanged(_ sender: UIDatePicker) {
@@ -207,9 +204,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         return newLength <= 63 //MCPeerID.MaxDisplayNameUTF8Length
     }
     
-    override func picked(image: UIImage) {
-        UserPeerInfo.instance.picture = image
-        portraitImageButton.setImage(image, for: UIControlState())
+    override func picked(image: UIImage?) {
+        super.picked(image: image)
+        portraitImageButton.setImage(image ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
     }
     
     // MARK: UserPeerInfoDelegate

@@ -238,6 +238,9 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         if let age = peer.age {
             aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
         }
+        if let uuid = peer.iBeaconUUID {
+            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
+        }
     }
 }
 
@@ -293,6 +296,9 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         aCoder.encode(peer.lastChanged, forKey: PeerInfo.CodingKey.lastChanged.rawValue)
         if let age = peer.age {
             aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
+        }
+        if let uuid = peer.iBeaconUUID {
+            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
         }
     }
 }
@@ -412,4 +418,12 @@ struct PeerInfo: Equatable {
 
 func ==(lhs: PeerInfo, rhs: PeerInfo) -> Bool {
     return lhs.peerID == rhs.peerID
+}
+
+func ==(lhs: PeerInfo, rhs: MCPeerID) -> Bool {
+    return lhs.peerID == rhs
+}
+
+func ==(lhs: MCPeerID, rhs: PeerInfo) -> Bool {
+    return lhs == rhs.peerID
 }

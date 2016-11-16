@@ -142,11 +142,13 @@ extension UIView {
 }
 
 extension UIImage {
-    func croppedImage(_ cropRect: CGRect) -> UIImage {
-        let scaledCropRect = CGRect(x: cropRect.origin.x * scale, y: cropRect.origin.y * scale, width: cropRect.size.width * scale, height: cropRect.size.height * scale)
-        
-        let imageRef = self.cgImage?.cropping(to: scaledCropRect)
-        return UIImage(cgImage: imageRef!, scale: scale, orientation: imageOrientation)
+    func cropped(to cropRect: CGRect) -> UIImage? {
+//        return autoreleasepool {
+            let scaledCropRect = CGRect(x: cropRect.origin.x * scale, y: cropRect.origin.y * scale, width: cropRect.size.width * scale, height: cropRect.size.height * scale)
+            
+            guard let imageRef = self.cgImage?.cropping(to: scaledCropRect) else { return nil }
+            return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
+//        }
     }
 }
 
@@ -380,7 +382,7 @@ open class SynchronizedArray<T> {
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
 open class SynchronizedDictionary<Key: Hashable, Value> {
-    /* private */ var dictionary: [Key : Value] = [:]
+    /* private */ var dictionary = [Key : Value]()
     /* private */ let accessQueue = DispatchQueue(label: "com.peeree.sync_dic_q", attributes: [])
     
     init() { }
@@ -388,6 +390,15 @@ open class SynchronizedDictionary<Key: Hashable, Value> {
     init(dictionary: [Key : Value]) {
         self.dictionary = dictionary
     }
+    
+    // would be more safe but does not work since value semantics
+//    /// runs the passed block synchronized and gives direct access to the dictionary
+//    open func access(_ query: (_ dict: [Key : Value]) -> Void) {
+//        accessQueue.sync {
+//            
+//            query(dictionary)
+//        }
+//    }
     
     open subscript(index: Key) -> Value? {
         set {

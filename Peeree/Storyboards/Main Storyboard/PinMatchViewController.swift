@@ -53,12 +53,24 @@ class PinMatchViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        displayPeer()
+        
+        guard !UIAccessibilityIsReduceTransparencyEnabled() else {
+            backgroundImageView.image = nil
+            backgroundImageView.isHidden = true
+            return
+        }
+        
         guard let superView = presentingViewController?.view else { return }
         
         UIGraphicsBeginImageContextWithOptions(superView.bounds.size, true, 0.0)
         
         superView.drawHierarchy(in: superView.bounds, afterScreenUpdates: false)
         
+//        let image = autoreleasepool {
+//            return UIGraphicsGetImageFromCurrentImageContext()
+//        }
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
@@ -69,12 +81,13 @@ class PinMatchViewController: UIViewController {
             backgroundImageView.image = image
         }
         backgroundImageView.isOpaque = true
-        
-        displayPeer()
+        // TEST is the image and the image view really opaque?
+        backgroundImageView.isHidden = false
     }
     
     private func displayPeer() {
         portraitView?.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         peerNameLabel?.text = displayedPeer?.peerName
+        _ = CircleMaskView(maskedView: portraitView)
     }
 }

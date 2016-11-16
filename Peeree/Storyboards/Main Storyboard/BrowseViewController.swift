@@ -10,17 +10,16 @@ import UIKit
 import MultipeerConnectivity
 
 final class BrowseViewController: UITableViewController {
-    @IBOutlet weak var networkButton: UIButton!
+    @IBOutlet private weak var networkButton: UIButton!
 	
     private static let PeerDisplayCellID = "peerDisplayCell"
-    private static let OfflineModeCellID = "offlineModeCell"
+    private static let OfflineModeCellID = "placeholderCell"
     private static let AddAnimation = UITableViewRowAnimation.automatic
     private static let DelAnimation = UITableViewRowAnimation.automatic
     
-    private static let MatchedPeersSection = 0
-    private static let NewPeersSection = 1
-    private static let InFilterPeersSection = 2
-    private static let OutFilterPeersSection = 3
+    enum PeersSection: Int {
+        case Matched = 0, New, InFilter, OutFilter
+    }
     
     static let ViewPeerSegueID = "ViewPeerSegue"
     
@@ -40,7 +39,7 @@ final class BrowseViewController: UITableViewController {
             peerAvailable = peerAvailable || peerArray.count > 0
         }
         peerAvailable = peerAvailable || newPeers.count > 0
-        return !RemotePeerManager.shared.peering && !peerAvailable
+        return !RemotePeerManager.shared.peering || !peerAvailable
     }
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {
@@ -60,18 +59,17 @@ final class BrowseViewController: UITableViewController {
         }
         guard tappedCell.reuseIdentifier == BrowseViewController.PeerDisplayCellID else { return }
         guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
+        guard let section = PeersSection(rawValue: cellPath.section) else { return }
         
-        switch cellPath.section {
-        case BrowseViewController.MatchedPeersSection:
+        switch section {
+        case .Matched:
             personDetailVC.displayedPeerID = matchedPeers[cellPath.row].peerID
-        case BrowseViewController.NewPeersSection:
+        case .New:
             personDetailVC.displayedPeerID = newPeers[cellPath.row]
-        case BrowseViewController.InFilterPeersSection:
+        case .InFilter:
             personDetailVC.displayedPeerID = inFilterPeers[cellPath.row].peerID
-        case BrowseViewController.OutFilterPeersSection:
+        case .OutFilter:
             personDetailVC.displayedPeerID = outFilterPeers[cellPath.row].peerID
-        default:
-            break
         }
 	}
     
@@ -104,23 +102,18 @@ final class BrowseViewController: UITableViewController {
             guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
             guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) else { return }
             
-            var index, section: Int?
-            let array = [(self.inFilterPeers, BrowseViewController.InFilterPeersSection), (self.outFilterPeers, BrowseViewController.OutFilterPeersSection), (self.matchedPeers, BrowseViewController.MatchedPeersSection)]
-            for a in array {
-                index = a.0.index(of: peer)
-                if index != nil {
-                    section = a.1
-                    break
-                }
-            }
-            
-            guard index != nil && section != nil else { return }
-            self.tableView.reloadRows(at: [IndexPath(row: index!, section: section!)], with: .automatic)
+            self.pictureLoaded(peer)
         })
         
         notificationObservers.append(RemotePeerManager.NetworkNotification.pinMatch.addObserver { notification in
             if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
                 self.pinMatchOccured(RemotePeerManager.shared.getPeerInfo(of: peerID)!)
+            }
+        })
+        
+        notificationObservers.append(RemotePeerManager.NetworkNotification.pinned.addObserver { notification in
+            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
+                self.pinned(peer: peerID)
             }
         })
     }
@@ -132,7 +125,7 @@ final class BrowseViewController: UITableViewController {
         RemotePeerManager.shared.availablePeers.accessQueue.sync {
             // we can access the set variable safely here since we are on the queue
             for peerID in RemotePeerManager.shared.availablePeers.set {
-                self.addPeerIDToView(peerID, updateTable: false)
+                self.addToView(peerID: peerID, updateTable: false)
             }
         }
         
@@ -161,18 +154,17 @@ final class BrowseViewController: UITableViewController {
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard !placeholderCellActive else { return 1 }
+        guard let peerSection = PeersSection(rawValue: section) else { return 0 }
         
-        switch section {
-        case BrowseViewController.MatchedPeersSection:
+        switch peerSection {
+        case .Matched:
             return matchedPeers.count
-        case BrowseViewController.NewPeersSection:
+        case .New:
             return newPeers.count
-        case BrowseViewController.InFilterPeersSection:
+        case .InFilter:
             return inFilterPeers.count
-        case BrowseViewController.OutFilterPeersSection:
+        case .OutFilter:
             return outFilterPeers.count
-        default:
-            return 0
         }
 	}
 	
@@ -194,22 +186,24 @@ final class BrowseViewController: UITableViewController {
             return cell
         }
         
-		let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
+        let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
+        guard let peerSection = PeersSection(rawValue: indexPath.section) else {
+            assertionFailure()
+            return UITableViewCell()
+        }
         
-        switch indexPath.section {
-        case BrowseViewController.MatchedPeersSection:
+        switch peerSection {
+        case .Matched:
             fill(cell: cell, peer: matchedPeers[indexPath.row])
-        case BrowseViewController.NewPeersSection:
+        case .New:
             let peerID = newPeers[indexPath.row]
             cell.textLabel!.text = peerID.displayName
             cell.detailTextLabel!.text = ""
             cell.imageView?.image = nil
-        case BrowseViewController.InFilterPeersSection:
+        case .InFilter:
             fill(cell: cell, peer: inFilterPeers[indexPath.row])
-        case BrowseViewController.OutFilterPeersSection:
+        case .OutFilter:
             fill(cell: cell, peer: outFilterPeers[indexPath.row])
-        default:
-            break
         }
         
 		return cell
@@ -217,23 +211,42 @@ final class BrowseViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard !placeholderCellActive else { return nil }
+        guard let peerSection = PeersSection(rawValue: section) else { return super.tableView(tableView, titleForHeaderInSection: section) }
         
-        switch section {
-        case BrowseViewController.MatchedPeersSection:
+        switch peerSection {
+        case .Matched:
             return matchedPeers.count > 0 ? NSLocalizedString("Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
-        case BrowseViewController.NewPeersSection:
+        case .New:
             return newPeers.count > 0 ? NSLocalizedString("New People", comment: "Header of table view section in browse view, which contains entries for new users around whoose data has not been loaded yet.") : nil
-        case BrowseViewController.InFilterPeersSection:
+        case .InFilter:
             return inFilterPeers.count > 0 ? NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are nere around).") : nil
-        case BrowseViewController.OutFilterPeersSection:
+        case .OutFilter:
             return outFilterPeers.count > 0 ? NSLocalizedString("Filtered People", comment: "Header of table view section in browse view, which contains entries for people who are most likely not interesting for the user because they did not pass his filter.") : nil
-        default:
-            return super.tableView(tableView, titleForHeaderInSection: section)
         }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.shared.statusBarFrame.height
+    }
+    
+    func indexPath(of peerID: MCPeerID) -> IndexPath? {
+        guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) else {
+            guard let row = newPeers.index(of: peerID) else { return nil }
+            return IndexPath(row: row, section: PeersSection.New.rawValue)
+        }
+
+        return indexPath(of: peer)
+    }
+    
+    func indexPath(of peer: PeerInfo) -> IndexPath? {
+        let array: [([PeerInfo], PeersSection)] = [(inFilterPeers, .InFilter), (outFilterPeers, .OutFilter), (matchedPeers, .Matched)]
+        for a in array {
+            let row = a.0.index(of: peer)
+            if row != nil {
+                return IndexPath(row: row!, section: a.1.rawValue)
+            }
+        }
+        return nil
     }
     
     // MARK: Private Methods
@@ -246,73 +259,90 @@ final class BrowseViewController: UITableViewController {
         guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
         
         let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
-        guard let croppedImage = imageView.image?.croppedImage(CGRect(x: (originalImageSize.width - minImageEdgeLength) / 2, y: (originalImageSize.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { assertionFailure(); return }
+        guard let croppedImage = imageView.image?.cropped(to: CGRect(x: (originalImageSize.width - minImageEdgeLength) / 2, y: (originalImageSize.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { assertionFailure(); return }
         
         UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cell.contentView.marginFrame.height), true, UIScreen.main.scale)
         let imageRect = CGRect(squareEdgeLength: cell.contentView.marginFrame.height)
         croppedImage.draw(in: imageRect)
+//        imageView.image = autoreleasepool {
+//            return UIGraphicsGetImageFromCurrentImageContext()
+//        }
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        _ = CircleMaskView(maskedView: imageView)
+        let maskView = CircleMaskView(maskedView: imageView)
+        maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
     }
     
     private func addPeerToView(_ peer: PeerInfo) -> Int {
         if peer.pinMatched {
             matchedPeers.insert(peer, at: 0)
-            return BrowseViewController.MatchedPeersSection
+            return PeersSection.Matched.rawValue
         } else if BrowseFilterSettings.shared.check(peer: peer) {
             inFilterPeers.insert(peer, at: 0)
-            return BrowseViewController.InFilterPeersSection
+            return PeersSection.InFilter.rawValue
         } else {
             outFilterPeers.insert(peer, at: 0)
-            return BrowseViewController.OutFilterPeersSection
+            return PeersSection.OutFilter.rawValue
         }
     }
     
-    private func addPeerIDToView(_ peerID: MCPeerID, updateTable: Bool) {
+    private func addToView(peerID: MCPeerID, updateTable: Bool) {
+        let placeHolderWasActive = placeholderCellActive
+        
         var section: Int
         if let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) {
             section = addPeerToView(peer)
         } else {
             newPeers.insert(peerID, at: 0)
-            section = BrowseViewController.NewPeersSection
+            section = PeersSection.New.rawValue
         }
         
         if updateTable {
-            add(row: 0, section: section)
+            if placeHolderWasActive && !placeholderCellActive {
+                tableView.reloadData()
+            } else {
+                add(row: 0, section: section)
+            }
         }
     }
     
     private func add(row: Int, section: Int) {
-        self.tableView.insertRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.AddAnimation)
+        tableView.insertRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.AddAnimation)
     }
     
     private func remove(row: Int, section: Int) {
-        self.tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.DelAnimation)
+        tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.DelAnimation)
     }
 	
 	private func peerAppeared(_ peerID: MCPeerID) {
-        addPeerIDToView(peerID, updateTable: true)
+        addToView(peerID: peerID, updateTable: true)
 	}
 	
-	private func peerDisappeared(_ peerID: MCPeerID) {
-        if let idx = (matchedPeers.index { $0.peerID == peerID }) {
-            matchedPeers.remove(at: idx)
-            if matchedPeers.count == 0 {
-                tableView.reloadSections(IndexSet(integer: BrowseViewController.MatchedPeersSection), with: .automatic)
-            } else {
-                remove(row: idx, section: BrowseViewController.MatchedPeersSection)
-            }
-        } else if let idx = (newPeers.index { $0 == peerID }) {
-            newPeers.remove(at: idx)
-            remove(row: idx, section: BrowseViewController.NewPeersSection)
-        } else if let idx = (inFilterPeers.index { $0.peerID == peerID }) {
-            inFilterPeers.remove(at: idx)
-            remove(row: idx, section: BrowseViewController.InFilterPeersSection)
-        } else if let idx = (outFilterPeers.index { $0.peerID == peerID }) {
-            outFilterPeers.remove(at: idx)
-            remove(row: idx, section: BrowseViewController.OutFilterPeersSection)
+    private func peerDisappeared(_ peerID: MCPeerID) {
+        guard let peerPath = indexPath(of: peerID) else { return }
+        guard let peerSection = PeersSection(rawValue: peerPath.section) else { return }
+        
+        var wasOne: Bool
+        switch peerSection {
+        case .Matched:
+            wasOne = matchedPeers.count == 1
+            matchedPeers.remove(at: peerPath.row)
+        case .New:
+            wasOne = newPeers.count == 1
+            newPeers.remove(at: peerPath.row)
+        case .InFilter:
+            wasOne = inFilterPeers.count == 1
+            inFilterPeers.remove(at: peerPath.row)
+        case .OutFilter:
+            wasOne = outFilterPeers.count == 1
+            outFilterPeers.remove(at: peerPath.row)
+        }
+        
+        if wasOne && placeholderCellActive {
+            tableView.reloadData()
+        } else {
+            remove(row: peerPath.row, section: peerPath.section)
         }
 	}
     
@@ -330,13 +360,38 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func peerInfoLoaded(_ peer: PeerInfo) {
-        if let idx = (newPeers.index { $0 == peer.peerID }) {
-            newPeers.remove(at: idx)
-            let oldPath = IndexPath(row: idx, section: BrowseViewController.NewPeersSection)
-            let newPath = IndexPath(row: 0, section: addPeerToView(peer))
-            tableView.moveRow(at: oldPath, to: newPath)
-            tableView.reloadRows(at: [newPath], with: .automatic)
+        guard let idx = (newPeers.index { $0 == peer.peerID }) else { return }
+        
+        newPeers.remove(at: idx)
+        let oldPath = IndexPath(row: idx, section: PeersSection.New.rawValue)
+        let newPath = IndexPath(row: 0, section: addPeerToView(peer))
+        tableView.moveRow(at: oldPath, to: newPath)
+        tableView.scrollToRow(at: newPath, at: .none, animated: true)
+        tableView.reloadRows(at: [newPath], with: .automatic)
+    }
+    
+    private func pictureLoaded(_ peer: PeerInfo) {
+        guard let indexPath = indexPath(of: peer) else { return }
+        guard let peerSection = PeersSection(rawValue: indexPath.section) else { return }
+        
+        // we have to refresh our cache if a peer changes - PeerInfos are structs!
+        switch peerSection {
+        case .Matched:
+            matchedPeers[indexPath.row] = peer
+        case .InFilter:
+            inFilterPeers[indexPath.row] = peer
+        case .OutFilter:
+            outFilterPeers[indexPath.row] = peer
+        case .New:
+            assertionFailure()
         }
+        tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+    
+    private func pinned(peer peerID: MCPeerID) {
+        guard let indexPath = indexPath(of: peerID) else { return }
+        
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     private func pinMatchOccured(_ peer: PeerInfo) {
@@ -348,21 +403,22 @@ final class BrowseViewController: UITableViewController {
         if let idx = (newPeers.index { $0 == peer.peerID }) {
             newPeers.remove(at: idx)
             _row = idx
-            _sec = BrowseViewController.NewPeersSection
+            _sec = PeersSection.New.rawValue
         } else if let idx = (inFilterPeers.index { $0 == peer }) {
             inFilterPeers.remove(at: idx)
             _row = idx
-            _sec = BrowseViewController.InFilterPeersSection
+            _sec = PeersSection.InFilter.rawValue
         } else if let idx = (outFilterPeers.index { $0 == peer }) {
             outFilterPeers.remove(at: idx)
             _row = idx
-            _sec = BrowseViewController.OutFilterPeersSection
+            _sec = PeersSection.OutFilter.rawValue
         }
         
         if let row = _row {
             let oldPath = IndexPath(row: row, section: _sec!)
             let newPath = IndexPath(row: 0, section: addPeerToView(peer))
             tableView.moveRow(at: oldPath, to: newPath)
+            tableView.scrollToRow(at: newPath, at: .none, animated: true)
         }
     }
     

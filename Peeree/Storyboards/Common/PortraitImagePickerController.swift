@@ -11,7 +11,7 @@ import MobileCoreServices
 
 /// Base class for view controllers providing availablity to change the user's portrait image.
 class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func showPicturePicker(_ allowCancel: Bool = false, destructiveActionName: String, destructiveAction: @escaping ((UIAlertAction) -> Void)) {
+    func showPicturePicker(_ allowCancel: Bool = false, destructiveActionName: String) {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
@@ -23,6 +23,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         }
         let cameraHandler = {(alertAction: UIAlertAction) -> Void in
             imagePicker.sourceType = .camera
+            imagePicker.showsCameraControls = true
             presentPicker()
         }
         let photoLibraryHandler = {(alertAction: UIAlertAction) -> Void in
@@ -33,10 +34,13 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         let alertController = UIAlertController()
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .default, handler: cameraHandler))
-        } else if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
+        }
+        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .default, handler: photoLibraryHandler))
         }
-        alertController.addAction(UIAlertAction(title: destructiveActionName, style: .destructive, handler: destructiveAction))
+        alertController.addAction(UIAlertAction(title: destructiveActionName, style: .destructive) { (action) in
+            self.picked(image: nil)
+        })
         if allowCancel {
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
         }
@@ -67,7 +71,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
                 UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
             }
             
-            picked(image: imageToSave!)
+            picked(image: imageToSave)
         }
         
         // picker.parentViewController is nil, but I don't know why
@@ -75,7 +79,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         self.dismiss(animated: true, completion: nil)
     }
     
-    func picked(image: UIImage) {
-        // may be overridden by subclasses
+    func picked(image: UIImage?) {
+        UserPeerInfo.instance.picture = image
     }
 }

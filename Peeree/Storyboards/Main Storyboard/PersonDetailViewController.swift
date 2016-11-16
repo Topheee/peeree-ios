@@ -174,6 +174,13 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         for observer in notificationObservers {
             NotificationCenter.default.removeObserver(observer)
         }
+        notificationObservers.removeAll()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        portraitImageView.image = nil
+        circleLayer = nil
     }
     
     // MARK: PotraitLoadingDelegate
@@ -195,7 +202,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
     
     func portraitLoadChanged(_ fractionCompleted: Double) {
         DispatchQueue.main.async {
-            self.circleLayer.strokeEnd = CGFloat(fractionCompleted)
+            self.circleLayer?.strokeEnd = CGFloat(fractionCompleted)
         }
     }
     

@@ -15,9 +15,9 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
     private var activeSessions: Set<MCSessionDelegateAdapter> = Set()
     
     #if OFFLINE
-    let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .required)
-    #else
     let session = MCSessionMock(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .required)
+    #else
+    let session = MCSession(peer: UserPeerInfo.instance.peer.peerID, securityIdentity: nil, encryptionPreference: .none /*.required*/)
     #endif
     
     override init() {

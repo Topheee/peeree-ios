@@ -14,16 +14,23 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	@IBOutlet private weak var launchAppButton: UIButton!
 	@IBOutlet private weak var nameTextField: UITextField!
     @IBOutlet private weak var genderPicker: UISegmentedControl!
+    @IBOutlet private weak var pickPicButton: UIButton!
     
-    var nameTextFieldFrame: CGRect?
-	
 	@IBAction func finishIntroduction(_ sender: AnyObject) {
         guard let chosenName = nameTextField.text else { return }
         guard chosenName != "" else { return }
         
         UserPeerInfo.instance.peerName = chosenName
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
-        UserPeerInfo.instance.picture = picButton.image(for: UIControlState())
+        
+        switch UserPeerInfo.instance.gender {
+        case .female:
+            BrowseFilterSettings.shared.gender = .male
+        case .male:
+            BrowseFilterSettings.shared.gender = .female
+        default:
+            BrowseFilterSettings.shared.gender = .unspecified
+        }
         
         AppDelegate.shared.finishIntroduction()
 	}
@@ -31,14 +38,9 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	@IBAction func takePic(_ sender: UIButton) {
         guard !nameTextField.isFirstResponder else { return }
         
-        picButton.layer.removeAllAnimations()
-        picButton.alpha = 1.0
-        showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding.")) { (action) in
-            self.picked(image: UIImage(named: "PortraitUnavailable")!)
-        }
+        showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
 	}
 	@IBAction func filledFirstname(_ sender: UITextField) {
-		self.view.flyInSubviews([genderPicker], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
 		UIView.animate(withDuration: 1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
         }, completion: { finished in
@@ -50,25 +52,13 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
-        for view in [picButton, nameTextField, genderPicker, launchAppButton] as [UIView] {
-            view.alpha = 0.0
-        }
+        launchAppButton.alpha = 0.0
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         _ = CircleMaskView(maskedView: picButton.imageView!)
     }
-	
-	override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        guard nameTextField.alpha == 0.0 else { return }
-        
-        self.view.flyInSubviews([picButton], duration: 1.0, delay: 0.2, damping: 1.0, velocity: 1.0)
-        UIView.animate(withDuration: 1.0, delay: 7.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: {
-            self.picButton.alpha = 0.6
-        }, completion: nil)
-	}
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "finishOnboardingSegue" {
@@ -85,15 +75,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
             return
         }
         
-        switch UserPeerInfo.instance.gender {
-        case .female:
-            BrowseFilterSettings.shared.gender = .male
-        case .male:
-            BrowseFilterSettings.shared.gender = .female
-        default:
-            BrowseFilterSettings.shared.gender = .unspecified
-        }
-        
         rootTabBarController.selectedIndex = 1
     }
     
@@ -101,13 +82,18 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         return true
     }
     
+    override func picked(image: UIImage?) {
+        super.picked(image: image)
+        picButton.setImage(image ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
+        pickPicButton.isHidden = true
+    }
+    
     func keyboardWillShow(_ notification: Notification) {
         guard let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue else { return }
         
         let keyboardFrameRect = keyboardFrame.cgRectValue
         
-        nameTextFieldFrame = nameTextField.frame
-        var newFrame = nameTextFieldFrame!
+        var newFrame = nameTextField.frame
         let textFieldsBottom = nameTextField.frame.origin.y + nameTextField.frame.height
         let keyboardTop = self.view.frame.height - keyboardFrameRect.size.height
         if textFieldsBottom > keyboardTop {
@@ -135,39 +121,5 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
 		return true
-	}
-    
-    override func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        super.imagePickerControllerDidCancel(picker)
-        picked(image: UIImage(named: "PortraitUnavailable")!)
-    }
-    
-    override func picked(image: UIImage) {
-        picButton.setImage(image, for: UIControlState())
-        DispatchQueue.main.async {
-            self.view.flyInSubviews([self.nameTextField], duration: 1.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-        }
-    }
-}
-
-/**
- *	Animates views like they are flown in from the bottom of the screen.
- *	@param views    the views to animate
- */
-extension UIView {
-	func flyInSubviews(_ views: [UIView], duration: TimeInterval, delay: TimeInterval, damping: CGFloat, velocity: CGFloat) {
-		var positions = [CGRect]()
-		for value in views {
-			positions.append(value.frame)
-			value.frame.origin.y = self.frame.height
-			value.alpha = 0.0
-		}
-		
-		UIView.animate(withDuration: duration, delay: delay, usingSpringWithDamping: damping, initialSpringVelocity: velocity, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
-		for (index, view) in views.enumerated() {
-			view.frame = positions[index]
-			view.alpha = 1.0
-		}
-		}, completion: nil)
 	}
 }

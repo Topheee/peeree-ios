@@ -15,12 +15,13 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     static private let PeerBeaconRegionID = "remote"
 
     @IBOutlet private weak var distanceView: DistanceView!
-    @IBOutlet weak var remotePortrait: UIImageView!
-    @IBOutlet weak var portraitDistanceConstraint: NSLayoutConstraint!
-    @IBOutlet weak var userPortrait: UIImageView!
-    @IBOutlet weak var portraitWidthConstraint: NSLayoutConstraint!
-    @IBOutlet weak var retryButton: UIBarButtonItem!
-    @IBOutlet weak var errorItem: UIBarButtonItem!
+    @IBOutlet private weak var remotePortrait: UIImageView!
+    @IBOutlet private weak var portraitDistanceConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var userPortrait: UIImageView!
+    @IBOutlet private weak var portraitWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var retryButton: UIBarButtonItem!
+    @IBOutlet private weak var errorItem: UIBarButtonItem!
+    @IBOutlet private weak var notInRangeLabel: UILabel!
     
     private let locationManager = CLLocationManager()
     private var ownRegion: CLBeaconRegion! {
@@ -36,7 +37,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         /*
          *  For genstrings
          *
-         *  NSLocalizedString("deviceInsufficient", comment: "Error: Remote peer has no iBeacon technology available.")
+         *  NSLocalizedString("remoteInsufficient", comment: "Error: Remote peer has no iBeacon technology available.")
          *  NSLocalizedString("locationServicesDisabled", comment: "Error: Location Services are disabled.")
          *  NSLocalizedString("deviceUnsupported", comment: "Error: Device is lacking location features.")
          *  NSLocalizedString("locationNetworkError", comment: "Error: Networking issues with Location Services.")
@@ -87,13 +88,15 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         
         userPortrait.image = UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")
         remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
+        let format = NSLocalizedString("Ranging only works if %@ is also trying to find you.", comment: "Warning displayed in beacon view when a peer is not in range.")
+        let placeholder = NSLocalizedString("the opposite", comment: "Placeholder for the name of the remote peer if it is not yet known.")
+        notInRangeLabel.text = String(format: format, searchedPeer?.peerName ?? placeholder)
         state = .idle
         updateDistance(.unknown)
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         guard searchedPeer?.iBeaconUUID != nil else {
             state = .error(reason: .remoteInsufficient, recoverable: false)
             return
@@ -106,12 +109,13 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         startBeacon()
     }
     
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
-//    
-//            _ = CircleMaskView(maskedView: userPortrait)
-//            _ = CircleMaskView(maskedView: remotePortrait)
-//    }
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // the UUID has to be changed after each iBeacon session so sniffing it won’t help other apps.
+        if UserPeerInfo.instance.iBeaconUUID != nil {
+            UserPeerInfo.instance.iBeaconUUID = UUID()
+        }
+    }
     
     // MARK: CLLocationManagerDelegate
     
@@ -134,9 +138,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         guard let beaconRegion = region as? CLBeaconRegion else { assertionFailure(); return }
         
         locationManager.startRangingBeacons(in: beaconRegion)
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveLinear, animations: {
-            self.remotePortrait.alpha = 1.0
-        }, completion: nil)
+        showPeerAvailable()
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -241,9 +243,20 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     }
     
     private func showPeerUnavailable() {
+        notInRangeLabel.isHidden = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveLinear, animations: {
             self.remotePortrait.alpha = 0.5
+            self.notInRangeLabel.alpha = 1.0
         }, completion: nil)
+    }
+    
+    private func showPeerAvailable() {
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveLinear, animations: {
+            self.remotePortrait.alpha = 1.0
+            self.notInRangeLabel.alpha = 0.0
+        }) { (completed) in
+            self.notInRangeLabel.isHidden = true
+        }
     }
     
     private func showLocationServicesUnavailableError() {

@@ -151,7 +151,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             // this is the first launch of the app, so we show the first launch UI
             let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
             
-            self.window!.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
+            window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
         }
         
         UIApplication.shared.cancelAllLocalNotifications()
@@ -182,8 +182,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     func finishIntroduction() {
         UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
-        // TODO test whether this one keeps alive long enough to send us the didUpdateState and whether we need to call startAdvertising
-        _ = CBPeripheralManager(delegate: self, queue: nil)
+        let cbManager = CBPeripheralManager(delegate: self, queue: DispatchQueue.global())
+        cbManager.startAdvertising(nil)
     }
     
     func show(peer peerID: MCPeerID) {
@@ -280,7 +280,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
             // TODO PinMatchVC nur zeigen, wenn man nicht in der BrowseView, der PersonView des Peers oder einer FindView ist
             let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
             pinMatchVC.displayedPeer = peer
-            window?.rootViewController?.present(pinMatchVC, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                (self.window?.rootViewController as? UITabBarController)?.selectedViewController?.present(pinMatchVC, animated: true, completion: nil)
+            }
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")

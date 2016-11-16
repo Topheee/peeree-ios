@@ -241,8 +241,8 @@ the first Social P2P App</string>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="2du-D3-2eY"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Swipe to continue &gt;" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="All-J7-11I">
-                                <rect key="frame" x="16" y="465.5" width="288" height="14.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&lt; Swipe to continue" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="All-J7-11I">
+                                <rect key="frame" x="16" y="465.5" width="288" height="15"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -326,8 +326,9 @@ the first Social P2P App</string>
                                 </segments>
                             </segmentedControl>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
-                                <rect key="frame" x="116" y="442" width="92" height="30"/>
-                                <state key="normal" title="Get started &gt;">
+                                <rect key="frame" x="119.5" y="442" width="85" height="30"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Get Started">
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -336,9 +337,9 @@ the first Social P2P App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="50.5" y="101" width="219" height="30"/>
+                                <rect key="frame" x="91.5" y="101" width="137" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
-                                <state key="normal" title="What do you want with my data?"/>
+                                <state key="normal" title="Who can see these?"/>
                                 <connections>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="zJZ-DL-UQZ"/>
                                 </connections>
@@ -358,9 +359,17 @@ the first Social P2P App</string>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRI-ar-stS">
+                                <rect key="frame" x="145" y="226" width="30" height="30"/>
+                                <state key="normal" title="Pick"/>
+                                <connections>
+                                    <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="Yhr-TB-Qec"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="YRI-ar-stS" firstAttribute="centerY" secondItem="bd8-Ey-isT" secondAttribute="centerY" id="4uk-QG-Tpd"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
                             <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
@@ -371,6 +380,7 @@ the first Social P2P App</string>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
                             <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
                             <constraint firstAttribute="centerX" secondItem="JLo-5M-7YM" secondAttribute="centerX" id="PC3-oH-0Lt"/>
+                            <constraint firstItem="YRI-ar-stS" firstAttribute="centerX" secondItem="bd8-Ey-isT" secondAttribute="centerX" id="PL3-Bo-awe"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="top" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="RE1-yz-tPI"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="trailing" id="RwY-PN-x7Y"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="TZh-su-XOJ"/>
@@ -399,6 +409,7 @@ the first Social P2P App</string>
                         <outlet property="launchAppButton" destination="WkH-8i-IuH" id="1wU-Ld-ktE"/>
                         <outlet property="nameTextField" destination="maF-ir-g9C" id="xh2-zG-6AQ"/>
                         <outlet property="picButton" destination="bd8-Ey-isT" id="8PK-y8-tbX"/>
+                        <outlet property="pickPicButton" destination="YRI-ar-stS" id="o6U-Eu-bMF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zM0-44-3Vw" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -414,7 +425,7 @@ the first Social P2P App</string>
         <image name="ReadIconSocial" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2du-D3-2eY"/>
+        <segue reference="zJZ-DL-UQZ"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>
