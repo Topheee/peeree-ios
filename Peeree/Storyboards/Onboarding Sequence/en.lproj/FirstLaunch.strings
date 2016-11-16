@@ -5,8 +5,8 @@
 /* Class = "UIViewController"; title = "First"; ObjectID = "9TP-2c-bIB"; */
 "9TP-2c-bIB.title" = "First";
 
-/* Class = "UILabel"; text = "Swipe to continue >"; ObjectID = "All-J7-11I"; */
-"All-J7-11I.text" = "Swipe to continue >";
+/* Class = "UILabel"; text = "< Swipe to continue"; ObjectID = "All-J7-11I"; */
+"All-J7-11I.text" = "< Swipe to continue";
 
 /* Class = "UIViewController"; title = "Second"; ObjectID = "BiV-OX-JbO"; */
 "BiV-OX-JbO.title" = "Second";
@@ -17,11 +17,14 @@
 /* Class = "UILabel"; text = "Hello and Welcome!"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.text" = "Hello and Welcome!";
 
-/* Class = "UIButton"; normalTitle = "Get started >"; ObjectID = "WkH-8i-IuH"; */
-"WkH-8i-IuH.normalTitle" = "Get started >";
+/* Class = "UIButton"; normalTitle = "Get Started"; ObjectID = "WkH-8i-IuH"; */
+"WkH-8i-IuH.normalTitle" = "Get Started";
 
 /* Class = "UIButton"; normalTitle = "What does that mean?"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.normalTitle" = "What does that mean?";
+
+/* Class = "UIButton"; normalTitle = "Pick"; ObjectID = "YRI-ar-stS"; */
+"YRI-ar-stS.normalTitle" = "Pick";
 
 /* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
 "b8Y-IF-X4f.normalTitle" = "Sounds great!";
@@ -47,5 +50,5 @@
 /* Class = "UIViewController"; title = "First Info"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "First Info";
 
-/* Class = "UIButton"; normalTitle = "What do you want with my data?"; ObjectID = "yag-kE-4K4"; */
-"yag-kE-4K4.normalTitle" = "What do you want with my data?";
+/* Class = "UIButton"; normalTitle = "Who can see these?"; ObjectID = "yag-kE-4K4"; */
+"yag-kE-4K4.normalTitle" = "Who can see these?";
