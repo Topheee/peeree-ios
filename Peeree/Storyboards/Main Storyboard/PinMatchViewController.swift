@@ -86,8 +86,10 @@ class PinMatchViewController: UIViewController {
     }
     
     private func displayPeer() {
-        portraitView?.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         peerNameLabel?.text = displayedPeer?.peerName
+        
+        guard portraitView != nil else { return }
+        portraitView.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         _ = CircleMaskView(maskedView: portraitView)
     }
 }

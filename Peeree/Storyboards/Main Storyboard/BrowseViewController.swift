@@ -367,6 +367,9 @@ final class BrowseViewController: UITableViewController {
         tableView.moveRow(at: oldPath, to: newPath)
         tableView.scrollToRow(at: newPath, at: .none, animated: true)
         tableView.reloadRows(at: [newPath], with: .automatic)
+        if newPeers.count == 0 {
+            tableView.reloadSections(IndexSet(integer: PeersSection.New.rawValue), with: .automatic)
+        }
     }
     
     private func pictureLoaded(_ peer: PeerInfo) {
@@ -398,26 +401,34 @@ final class BrowseViewController: UITableViewController {
         
         var _row: Int? = nil
         var _sec: Int? = nil
+        var wasOne = false
         
         if let idx = (newPeers.index { $0 == peer.peerID }) {
             newPeers.remove(at: idx)
+            wasOne = newPeers.count == 0
             _row = idx
             _sec = PeersSection.New.rawValue
         } else if let idx = (inFilterPeers.index { $0 == peer }) {
             inFilterPeers.remove(at: idx)
+            wasOne = inFilterPeers.count == 0
             _row = idx
             _sec = PeersSection.InFilter.rawValue
         } else if let idx = (outFilterPeers.index { $0 == peer }) {
             outFilterPeers.remove(at: idx)
+            wasOne = outFilterPeers.count == 0
             _row = idx
             _sec = PeersSection.OutFilter.rawValue
         }
         
-        if let row = _row {
-            let oldPath = IndexPath(row: row, section: _sec!)
-            let newPath = IndexPath(row: 0, section: addPeerToView(peer))
-            tableView.moveRow(at: oldPath, to: newPath)
-            tableView.scrollToRow(at: newPath, at: .none, animated: true)
+        guard let row = _row else { return }
+        
+        let oldPath = IndexPath(row: row, section: _sec!)
+        let newPath = IndexPath(row: 0, section: addPeerToView(peer))
+        tableView.moveRow(at: oldPath, to: newPath)
+        tableView.scrollToRow(at: newPath, at: .none, animated: true)
+        tableView.reloadRows(at: [newPath], with: .automatic)
+        if wasOne {
+            tableView.reloadSections(IndexSet(integer: _sec!), with: .automatic)
         }
     }
     

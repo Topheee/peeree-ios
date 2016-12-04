@@ -193,7 +193,11 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     
     func sessionHandlerDidPin(_ peerID: MCPeerID) {
         pinnedPeers.insert(peerID)
-        archiveObjectInUserDefs(pinnedPeers.set as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
+        pinnedPeers.accessQueue.async {
+            // access the set on the queue to ensure the last peerID is also included ...
+            // ... and besides get a smoother UI
+            archiveObjectInUserDefs(self.pinnedPeers.set as NSSet, forKey: RemotePeerManager.PinnedPeersKey)
+        }
         if pinnedByPeers.contains(peerID) {
             pinMatchOccured(peerID)
         }
@@ -203,7 +207,11 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     
     func sessionHandlerReceivedPin(from peerID: MCPeerID) {
         pinnedByPeers.insert(peerID)
-        archiveObjectInUserDefs(pinnedByPeers.set as NSSet, forKey: RemotePeerManager.PinnedByPeersKey)
+        pinnedByPeers.accessQueue.async {
+            // access the set on the queue to ensure the last peerID is also included ...
+            // ... and besides get a smoother UI
+            archiveObjectInUserDefs(self.pinnedByPeers.set as NSSet, forKey: RemotePeerManager.PinnedByPeersKey)
+        }
         if pinnedPeers.contains(peerID) {
             pinMatchOccured(peerID)
         }
