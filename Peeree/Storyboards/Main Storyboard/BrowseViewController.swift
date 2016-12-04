@@ -354,7 +354,6 @@ final class BrowseViewController: UITableViewController {
             networkButton.setTitle(NSLocalizedString("Go Online", comment: "Toggle to online mode. Also title in browse view."), for: UIControlState())
             clearCache()
         }
-//        networkButton.frame = CGRect(origin: CGPoint.zero, size: networkButton.intrinsicContentSize)
         networkButton.setNeedsLayout()
         tableView.isScrollEnabled = nowOnline
     }

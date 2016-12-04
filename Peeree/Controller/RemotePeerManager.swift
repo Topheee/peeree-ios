@@ -243,6 +243,7 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
 	@objc func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
 		// here one could log the error and send it via internet, but in a very very future
         peering = false
+        // TODO if unavailable, someone turned off bt and we should reflect that in the UI (in the other error cases, e.g. in receiving data, aswell)
 	}
 	
     @objc func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {

@@ -23,7 +23,7 @@ class TestPeerInfo: NetworkPeerInfo {
             characterTraits[index].applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
             rand = arc4random()
         }
-        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: rand % 5000 > 2500, _picture: nil)
+        let peer = PeerInfo(peerID: peerID, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: true /* rand % 5000 > 2500 */, _picture: nil)
         super.init(peer: peer)
     }
     

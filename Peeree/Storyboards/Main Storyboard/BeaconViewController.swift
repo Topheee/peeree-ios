@@ -169,6 +169,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     
     func locationManager(_ manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
         // CoreLocation will call this delegate method at 1 Hz with updated range information.
+        // Additionally, if you are ranging an iOS device that has been configured as a beacon, there may be a brief period in which the locationManager:didRangeBeacons:inRegion: method reports two devices with the same proximity UUID, major, and minor values instead of just one. This behavior occurs because the Bluetooth identifier of an iOS device changes periodically out of privacy concerns. The proximity property based on the original Bluetooth identifier reports a value of CLProximityUnknown within 2 seconds of the identifier change. Within 10 seconds, the identifiers resolve and only one beacon region is reported.
         updateDistance(beacons.first!.proximity)
     }
     

@@ -26,7 +26,7 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
         session.delegate = self
     }
     
-    func sendData(_ data: Data, toPeers peerIDs: [MCPeerID]) {
+    fileprivate func sendData(_ data: Data, toPeers peerIDs: [MCPeerID]) {
         do {
             try session.send(data, toPeers: peerIDs, with: .reliable)
         } catch let error as NSError where error.domain == MCErrorDomain {
@@ -35,7 +35,8 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
             switch errorCode {
             case .unknown, .notConnected, .timedOut, .cancelled, .unavailable:
                 // cancel gracefully here
-                // error is known, peer is not connected, connection attempt timed out or cancelled by user or multipeer connectivity is currently unavailable.
+                // error is unknown, peer is not connected, connection attempt timed out or cancelled by user or multipeer connectivity is currently unavailable.
+                // TODO if unavailable, someone turned off bt and we should reflect that in the UI (in the other error cases, e.g. in receiving data, aswell)
                 session.disconnect()
             case .invalidParameter, .unsupported:
                 // seems that we did something wrong here
@@ -43,7 +44,7 @@ class MCSessionDelegateAdapter: NSObject, MCSessionDelegate {
                 session.disconnect()
             }
         } catch let error as NSError {
-            print("Info sending failed due to unkown error: \(error)")
+            NSLog("Info sending failed due to unkown error: \(error)")
             session.disconnect()
         }
     }
@@ -229,17 +230,15 @@ final class PictureDownloadSessionHandler: DownloadSessionDelegate {
         if let nsError = error {
             NSLog("Error receiving potrait picture: \(nsError)")
             delegate?.portraitLoadFailed(withError: nsError)
-            
-            successful = false
         } else {
             guard let data = try? Data(contentsOf: localURL) else { return }
             guard let image = UIImage(data: data) else { return }
             
             delegate?.portraitLoadFinished()
             RemotePeerManager.shared.sessionHandlerDidLoad(image, of: peerID)
-            
-            successful = true
         }
+        
+        successful = error != nil
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {

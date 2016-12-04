@@ -246,12 +246,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     private func pinMatchOccured(_ peer: PeerInfo) {
         if isActive {
             setPinMatchBadge()
-            // TODO PinMatchVC nur zeigen, wenn man nicht in der BrowseView, der PersonView des Peers oder einer FindView ist
             let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
             pinMatchVC.displayedPeer = peer
-            DispatchQueue.main.async {
+//            DispatchQueue.main.async {
                 (self.window?.rootViewController as? UITabBarController)?.selectedViewController?.present(pinMatchVC, animated: true, completion: nil)
-            }
+//            }
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")

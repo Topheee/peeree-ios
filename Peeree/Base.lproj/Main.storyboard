@@ -71,14 +71,14 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Christopher &quot;Topher&quot; Kobusch" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="oo4-4n-i4a">
-                                            <rect key="frame" x="60" y="16" width="222" height="19.5"/>
+                                            <rect key="frame" x="60" y="15" width="222" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Female, 18, not in a relationship" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="wGc-0s-dzf">
-                                            <rect key="frame" x="60" y="35.5" width="166" height="13.5"/>
+                                            <rect key="frame" x="60" y="35" width="166" height="14"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -126,7 +126,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Visit a crowded place and go online to find new people!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oar-8r-xH3">
-                                            <rect key="frame" x="8" y="211" width="359" height="40.5"/>
+                                            <rect key="frame" x="16" y="211" width="343" height="40.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -140,8 +140,8 @@
                                         <constraint firstItem="xdp-HW-ags" firstAttribute="top" secondItem="zK8-SI-A6d" secondAttribute="bottom" id="DAL-LT-ARo"/>
                                         <constraint firstItem="zK8-SI-A6d" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="K5Y-uo-VBO"/>
                                         <constraint firstItem="geS-Ue-hzN" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="W7w-lW-yZk"/>
-                                        <constraint firstItem="Oar-8r-xH3" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" id="bjG-jZ-HK3"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="Oar-8r-xH3" secondAttribute="trailing" id="qwX-1R-JQd"/>
+                                        <constraint firstItem="Oar-8r-xH3" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" constant="8" id="bjG-jZ-HK3"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="Oar-8r-xH3" secondAttribute="trailing" constant="8" id="qwX-1R-JQd"/>
                                         <constraint firstItem="geS-Ue-hzN" firstAttribute="top" secondItem="daC-My-itZ" secondAttribute="topMargin" id="v1j-n7-pnt"/>
                                         <constraint firstItem="xdp-HW-ags" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="yap-tK-Thf"/>
                                     </constraints>
@@ -504,6 +504,7 @@
                                         <constraint firstItem="244-rB-aaA" firstAttribute="trailing" secondItem="EP0-kC-egm" secondAttribute="trailingMargin" id="zr3-Ef-8p1"/>
                                     </constraints>
                                 </view>
+                                <color key="tintColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <blurEffect style="light"/>
                             </visualEffectView>
                         </subviews>

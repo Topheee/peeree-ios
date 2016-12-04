@@ -34,7 +34,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
         
         assert(session.delegate != nil)
         
-        let triggerTime = (Int64(NSEC_PER_SEC) * Int64(arc4random() % 3))
+        let triggerTime = (Int64(NSEC_PER_SEC) * Int64(arc4random() % 10))
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(triggerTime) / Double(NSEC_PER_SEC), execute: { () -> Void in
             switch sessionKey {
             case .peerInfo:
@@ -54,7 +54,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
                     for step in 0..<progress.totalUnitCount {
                         progress.completedUnitCount = step
                     }
-                    let error: NSError? = (rand % 4 == 0) ? nil : NSError(domain: "test", code: 404, userInfo: nil)
+                    let error: NSError? = nil //(rand % 4 == 0) ? nil : NSError(domain: "test", code: 404, userInfo: nil)
                     session.delegate?.session(session, didFinishReceivingResourceWithName: "name", fromPeer: peerID, at: url, withError: error)
                 })
             case .pin:
@@ -89,7 +89,7 @@ class MCNearbyServiceBrowserMock: MCNearbyServiceBrowser {
             guard invite else { return }
             
             session?.delegate?.session(session!, peer: peerID, didChange: .connected)
-            session?.delegate?.session(session!, didReceive: RemotePeerManager.SessionKey.pin.rawData as Data, fromPeer: peerID)
+            session?.delegate?.session(session!, didReceive: RemotePeerManager.SessionKey.pin.rawData, fromPeer: peerID)
             // TODO receive ack and close
         }
         
