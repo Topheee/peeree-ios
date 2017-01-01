@@ -112,7 +112,7 @@
 		9D2A76B71DC63E9D004E6386 /* PeereeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D2A76B91DC63E9D004E6386 /* PeereeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeUITests.swift; sourceTree = "<group>"; };
 		9D2A76BB1DC63E9D004E6386 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = IchAlbert.jpg; path = ../../../../../../../../Pictures/Spielereien/IchAlbert.jpg; sourceTree = "<group>"; };
+		9D2E0C911DB916C7006F6355 /* IchAlbert.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = IchAlbert.jpg; path = ../../../../../../../Pictures/Spielereien/IchAlbert.jpg; sourceTree = "<group>"; };
 		9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PortraitImagePickerController.swift; path = Peeree/Storyboards/Common/PortraitImagePickerController.swift; sourceTree = "<group>"; };
 		9D33E8F11D418839001CECAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/FirstLaunch.storyboard; sourceTree = "<group>"; };
 		9D3839571D2B122C00028DC2 /* SampleAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SampleAssets.xcassets; sourceTree = "<group>"; };

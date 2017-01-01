@@ -8,7 +8,6 @@
 
 import UIKit
 import MultipeerConnectivity
-import CoreBluetooth
 
 struct Theme {
     let globalTintRed: CGFloat
@@ -39,7 +38,7 @@ struct Theme {
 let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (98/255, 255/255, 139/255)) //white with green
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
@@ -151,8 +150,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     func finishIntroduction() {
         UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
-        let cbManager = CBPeripheralManager(delegate: self, queue: DispatchQueue.global())
-        cbManager.startAdvertising(nil)
     }
     
     func show(peer peerID: MCPeerID) {
@@ -202,24 +199,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
                 
                 somePersonVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
             }
-        }
-    }
-    
-    // MARK: CBPeripheralManagerDelegate
-    
-    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        switch peripheral.state {
-        case .unknown, .resetting:
-            // just wait
-            break
-        case .unsupported:
-            UserPeerInfo.instance.iBeaconUUID = nil
-            peripheral.stopAdvertising()
-            peripheral.delegate = nil
-        default:
-            UserPeerInfo.instance.iBeaconUUID = UUID()
-            peripheral.stopAdvertising()
-            peripheral.delegate = nil
         }
     }
     

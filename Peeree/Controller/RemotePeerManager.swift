@@ -8,9 +8,10 @@
 
 import Foundation
 import MultipeerConnectivity
+import CoreBluetooth
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
-final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate {
+final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate, CBPeripheralManagerDelegate {
 	static private let DiscoveryServiceID = "peeree-discover"
     
     static private let PinnedPeersKey = "PinnedPeers"
@@ -56,6 +57,8 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     static let shared = RemotePeerManager()
+    
+    private var cbManager: CBPeripheralManager!
 	
 	///	Since bluetooth connections are not very reliable, all peers and their images are cached.
     private var cachedPeers = SynchronizedDictionary<MCPeerID, LocalPeerInfo>()
@@ -115,6 +118,10 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
     }
     
     lazy var peersMet = UserDefaults.standard.integer(forKey: RemotePeerManager.PeersMetKey)
+    
+    var isBluetoothOn: Bool {
+        return cbManager.state == .poweredOn
+    }
     
     func isPeerPinned(_ peerID: MCPeerID) -> Bool {
         return pinnedPeers.contains(peerID)
@@ -267,13 +274,32 @@ final class RemotePeerManager: NSObject, MCNearbyServiceAdvertiserDelegate, MCNe
 		self.peerDisappeared(peerID)
     }
     
+    // MARK: CBPeripheralManagerDelegate
+    
+    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+        switch peripheral.state {
+        case .unknown, .resetting:
+            // just wait
+            break
+        case .unsupported:
+            UserPeerInfo.instance.iBeaconUUID = nil
+        case .poweredOff:
+            peering = false
+        default:
+            UserPeerInfo.instance.iBeaconUUID = UUID()
+        }
+    }
+    
     // MARK: Private Methods
     
     private override init() {
+        cbManager = nil
         let nsPinned: NSSet? = unarchiveObjectFromUserDefs(RemotePeerManager.PinnedPeersKey)
         pinnedPeers = SynchronizedSet(set: nsPinned as? Set<MCPeerID> ?? Set())
         let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(RemotePeerManager.PinnedByPeersKey)
         pinnedByPeers = SynchronizedSet(set: nsPinnedBy as? Set<MCPeerID> ?? Set())
+        super.init()
+        cbManager = CBPeripheralManager(delegate: self, queue: DispatchQueue.global())
     }
     
     private func peerAppeared(_ peerID: MCPeerID) {

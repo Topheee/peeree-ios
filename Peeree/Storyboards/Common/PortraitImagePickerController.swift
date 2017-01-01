@@ -8,6 +8,7 @@
 
 import UIKit
 import MobileCoreServices
+import Photos
 
 /// Base class for view controllers providing availablity to change the user's portrait image.
 class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -67,7 +68,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         
         // Save the new image (original or edited) to the Camera Roll
         if imageToSave != nil {
-            if picker.sourceType == .camera {
+            if picker.sourceType == .camera && PHPhotoLibrary.authorizationStatus() == .authorized {
                 UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
             }
             

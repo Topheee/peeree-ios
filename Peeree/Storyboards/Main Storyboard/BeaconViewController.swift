@@ -277,6 +277,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
     private func handleLocationError(_ error: NSError) {
         stopBeacon()
         
+        NSLog("Location error: \(error.localizedDescription), \(error.localizedFailureReason), \(error.localizedRecoverySuggestion)")
         guard let clError = CLError.Code(rawValue: error.code) else { assertionFailure("Unexpected location error"); return }
         
         switch clError {
