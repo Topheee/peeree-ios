@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import MultipeerConnectivity
 
 final class BrowseViewController: UITableViewController {
     @IBOutlet private weak var networkButton: UIButton!
@@ -25,9 +24,9 @@ final class BrowseViewController: UITableViewController {
     
     static var instance: BrowseViewController?
     
-//    private var peerCache: [[MCPeerID]] = [[], [], [], []]
+//    private var peerCache: [[PeerID]] = [[], [], [], []]
     private var matchedPeers: [PeerInfo] = []
-    private var newPeers: [MCPeerID] = []
+    private var newPeers: [PeerID] = []
     private var inFilterPeers: [PeerInfo] = []
     private var outFilterPeers: [PeerInfo] = []
     
@@ -39,7 +38,68 @@ final class BrowseViewController: UITableViewController {
             peerAvailable = peerAvailable || peerArray.count > 0
         }
         peerAvailable = peerAvailable || newPeers.count > 0
-        return !RemotePeerManager.shared.peering || !peerAvailable
+        return !PeeringController.shared.peering || !peerAvailable
+    }
+    
+    private var peerInfoProgressManagers = [PeerID : PeerInfoProgressDelegate]()
+    private var pictureProgressManagers = [PeerID : PictureProgressDelegate]()
+    
+    private class PeerInfoProgressDelegate: ProgressDelegate {
+        var progressManager: ProgressManager!
+        let browseViewController: BrowseViewController
+        
+        func progress(didPause progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didCancel progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didResume progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didUpdate progress: Progress, peerID: PeerID) {
+            if progress.completedUnitCount == progress.totalUnitCount {
+                browseViewController.peerInfoLoaded(PeeringController.shared.remote.getPeerInfo(of: peerID)!)
+            }
+        }
+        
+        init(peerID: PeerID, progress: Progress, browseViewController: BrowseViewController) {
+            self.progressManager = nil
+            self.browseViewController = browseViewController
+            self.progressManager = ProgressManager(peerID: peerID, progress: progress, delegate: self, queue: DispatchQueue.main)
+        }
+    }
+    
+    private class PictureProgressDelegate: ProgressDelegate {
+        var progressManager: ProgressManager!
+        let browseViewController: BrowseViewController
+        
+        func progress(didPause progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didCancel progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didResume progress: Progress, peerID: PeerID) {
+            // ignored
+        }
+        
+        func progress(didUpdate progress: Progress, peerID: PeerID) {
+            if progress.completedUnitCount == progress.totalUnitCount {
+                browseViewController.pictureLoaded(PeeringController.shared.remote.getPeerInfo(of: peerID)!)
+            }
+        }
+        
+        init(peerID: PeerID, progress: Progress, browseViewController: BrowseViewController) {
+            self.progressManager = nil
+            self.browseViewController = browseViewController
+            self.progressManager = ProgressManager(peerID: peerID, progress: progress, delegate: self, queue: DispatchQueue.main)
+        }
     }
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {
@@ -47,14 +107,14 @@ final class BrowseViewController: UITableViewController {
 	}
 	
     @IBAction func toggleNetwork(_ sender: AnyObject) {
-        RemotePeerManager.shared.peering = !RemotePeerManager.shared.peering
+        PeeringController.shared.peering = !PeeringController.shared.peering
     }
     
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
 		guard let personDetailVC = segue.destination as? PersonDetailViewController else { return }
         guard let tappedCell = sender as? UITableViewCell else {
-            personDetailVC.displayedPeerID = sender as? MCPeerID
+            personDetailVC.displayedPeerID = sender as? PeerID
             return
         }
         guard tappedCell.reuseIdentifier == BrowseViewController.PeerDisplayCellID else { return }
@@ -76,43 +136,30 @@ final class BrowseViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.peerAppeared.addObserver { (notification) in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
+        notificationObservers.append(PeeringController.NetworkNotification.peerAppeared.addObserver { (notification) in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.peerAppeared(peerID)
             }
         })
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.peerDisappeared.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
+        notificationObservers.append(PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.peerDisappeared(peerID)
             }
         })
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.connectionChangedState.addObserver { notification in
-            self.connectionChangedState(RemotePeerManager.shared.peering)
+        notificationObservers.append(PeeringController.NetworkNotification.connectionChangedState.addObserver { notification in
+            self.connectionChangedState(PeeringController.shared.peering)
         })
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.peerInfoLoaded.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
-                self.peerInfoLoaded(RemotePeerManager.shared.getPeerInfo(of: peerID)!)
+        notificationObservers.append(PeeringController.NetworkNotification.pinMatch.addObserver { notification in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
+                self.pinMatchOccured(PeeringController.shared.remote.getPeerInfo(of: peerID)!)
             }
         })
         
-        notificationObservers.append(RemotePeerManager.NetworkNotification.pictureLoaded.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
-            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) else { return }
-            
-            self.pictureLoaded(peer)
-        })
-        
-        notificationObservers.append(RemotePeerManager.NetworkNotification.pinMatch.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
-                self.pinMatchOccured(RemotePeerManager.shared.getPeerInfo(of: peerID)!)
-            }
-        })
-        
-        notificationObservers.append(RemotePeerManager.NetworkNotification.pinned.addObserver { notification in
-            if let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID {
+        notificationObservers.append(PeeringController.NetworkNotification.pinned.addObserver { notification in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.pinned(peer: peerID)
             }
         })
@@ -121,16 +168,17 @@ final class BrowseViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
         BrowseViewController.instance = self
-//        tableView.tableFooterView = UIView(frame: CGRect.zero)
-        RemotePeerManager.shared.availablePeers.accessQueue.sync {
-            // we can access the set variable safely here since we are on the queue
-            for peerID in RemotePeerManager.shared.availablePeers.set {
-                self.addToView(peerID: peerID, updateTable: false)
+        for peerID in PeeringController.shared.availablePeers {
+            self.addToView(peerID: peerID, updateTable: false)
+            if let progress = PeeringController.shared.remote.isPeerInfoLoading(of: peerID) {
+                peerInfoProgressManagers[peerID] = PeerInfoProgressDelegate(peerID: peerID, progress: progress, browseViewController: self)
+            } else if let progress = PeeringController.shared.remote.isPictureLoading(of: peerID) {
+                pictureProgressManagers[peerID] = PictureProgressDelegate(peerID: peerID, progress: progress, browseViewController: self)
             }
         }
         
 		tableView.reloadData()
-        connectionChangedState(RemotePeerManager.shared.peering)
+        connectionChangedState(PeeringController.shared.peering)
 		
         tabBarController?.tabBar.items?[0].badgeValue = nil
         UIApplication.shared.applicationIconBadgeNumber = 0
@@ -142,6 +190,8 @@ final class BrowseViewController: UITableViewController {
             NotificationCenter.default.removeObserver(observer)
         }
         notificationObservers.removeAll()
+        peerInfoProgressManagers.removeAll()
+        pictureProgressManagers.removeAll()
         clearCache()
         BrowseViewController.instance = nil
 	}
@@ -175,13 +225,13 @@ final class BrowseViewController: UITableViewController {
                 return UITableViewCell()
             }
             
-            cell.peersMetLabel.text = String(RemotePeerManager.shared.peersMet)
-            if RemotePeerManager.shared.peering {
+            cell.peersMetLabel.text = String(PeeringController.shared.remote.peersMet)
+            if PeeringController.shared.peering {
                 cell.headLabel.text = NSLocalizedString("All Alone", comment: "Heading of the placeholder shown in browse view if no peers are around.")
                 cell.subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
             } else {
                 cell.headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
-                if RemotePeerManager.shared.isBluetoothOn {
+                if PeeringController.shared.remote.isBluetoothOn {
                     cell.subheadLabel.text = NSLocalizedString("You are invisible – and blind.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
                 } else {
                     cell.subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
@@ -233,8 +283,8 @@ final class BrowseViewController: UITableViewController {
         return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.shared.statusBarFrame.height
     }
     
-    func indexPath(of peerID: MCPeerID) -> IndexPath? {
-        guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) else {
+    func indexPath(of peerID: PeerID) -> IndexPath? {
+        guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
             guard let row = newPeers.index(of: peerID) else { return nil }
             return IndexPath(row: row, section: PeersSection.New.rawValue)
         }
@@ -252,6 +302,7 @@ final class BrowseViewController: UITableViewController {
         }
         return nil
     }
+    
     
     // MARK: Private Methods
     
@@ -291,11 +342,11 @@ final class BrowseViewController: UITableViewController {
         }
     }
     
-    private func addToView(peerID: MCPeerID, updateTable: Bool) {
+    private func addToView(peerID: PeerID, updateTable: Bool) {
         let placeHolderWasActive = placeholderCellActive
         
         var section: Int
-        if let peer = RemotePeerManager.shared.getPeerInfo(of: peerID) {
+        if let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) {
             section = addPeerToView(peer)
         } else {
             newPeers.insert(peerID, at: 0)
@@ -319,11 +370,11 @@ final class BrowseViewController: UITableViewController {
         tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.DelAnimation)
     }
 	
-	private func peerAppeared(_ peerID: MCPeerID) {
+	private func peerAppeared(_ peerID: PeerID) {
         addToView(peerID: peerID, updateTable: true)
 	}
 	
-    private func peerDisappeared(_ peerID: MCPeerID) {
+    private func peerDisappeared(_ peerID: PeerID) {
         guard let peerPath = indexPath(of: peerID) else { return }
         guard let peerSection = PeersSection(rawValue: peerPath.section) else { return }
         
@@ -363,6 +414,7 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func peerInfoLoaded(_ peer: PeerInfo) {
+        _ = peerInfoProgressManagers.removeValue(forKey: peer.peerID)
         guard let idx = (newPeers.index { $0 == peer.peerID }) else { return }
         
         newPeers.remove(at: idx)
@@ -377,6 +429,7 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func pictureLoaded(_ peer: PeerInfo) {
+        _ = pictureProgressManagers.removeValue(forKey: peer.peerID)
         guard let indexPath = indexPath(of: peer) else { return }
         guard let peerSection = PeersSection(rawValue: indexPath.section) else { return }
         
@@ -394,7 +447,7 @@ final class BrowseViewController: UITableViewController {
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
-    private func pinned(peer peerID: MCPeerID) {
+    private func pinned(peer peerID: PeerID) {
         guard let indexPath = indexPath(of: peerID) else { return }
         
         tableView.reloadRows(at: [indexPath], with: .automatic)

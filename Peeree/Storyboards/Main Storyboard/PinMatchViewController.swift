@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import MultipeerConnectivity
 
 class PinMatchViewController: UIViewController {
     @IBOutlet private weak var portraitView: UIImageView!
@@ -86,7 +85,7 @@ class PinMatchViewController: UIViewController {
     }
     
     private func displayPeer() {
-        peerNameLabel?.text = displayedPeer?.peerName
+        peerNameLabel?.text = displayedPeer?.nickname
         
         guard portraitView != nil else { return }
         portraitView.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")

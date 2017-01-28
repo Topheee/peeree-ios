@@ -88,7 +88,7 @@ final class BeaconViewController: UIViewController, CLLocationManagerDelegate, C
         remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
         let format = NSLocalizedString("Ranging only works if %@ is also trying to find you.", comment: "Warning displayed in beacon view when a peer is not in range.")
         let placeholder = NSLocalizedString("the opposite", comment: "Placeholder for the name of the remote peer if it is not yet known.")
-        notInRangeLabel.text = String(format: format, searchedPeer?.peerName ?? placeholder)
+        notInRangeLabel.text = String(format: format, searchedPeer?.nickname ?? placeholder)
         state = .idle
         updateDistance(.unknown)
     }

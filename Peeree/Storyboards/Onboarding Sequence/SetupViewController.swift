@@ -20,7 +20,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         guard let chosenName = nameTextField.text else { return }
         guard chosenName != "" else { return }
         
-        UserPeerInfo.instance.peerName = chosenName
+        UserPeerInfo.instance.nickname = chosenName
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         
         switch UserPeerInfo.instance.gender {

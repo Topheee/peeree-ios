@@ -7,7 +7,6 @@
 //
 
 import UIKit
-//import MultipeerConnectivity
 
 final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
 	@IBOutlet private weak var nameTextField: UITextField!
@@ -132,7 +131,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-		nameTextField.text = UserPeerInfo.instance.peerName
+		nameTextField.text = UserPeerInfo.instance.nickname
         statusButton.setTitle(UserPeerInfo.instance.relationshipStatus.rawValue, for: UIControlState())
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .none
@@ -171,7 +170,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         switch textField {
         case nameTextField:
             guard let newValue = textField.text else { return }
-            UserPeerInfo.instance.peerName = newValue
+            UserPeerInfo.instance.nickname = newValue
         case birthdayInput:
             scrollView.contentInset = UIEdgeInsets.zero
             guard textField.text != nil && textField.text != "" else {
@@ -193,6 +192,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		return true
     }
     
+    // TODO do we need this anymore? or should we restrict it still but allow more characters?
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard textField == nameTextField else { return true }
         
@@ -201,7 +201,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         }
         
         let newLength = textField.text!.characters.count + string.characters.count - range.length
-        return newLength <= 63 //MCPeerID.MaxDisplayNameUTF8Length
+        return newLength <= 63
     }
     
     override func picked(image: UIImage?) {
@@ -212,7 +212,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     // MARK: UserPeerInfoDelegate
 	
 	func userCancelledIDChange() {
-		nameTextField.text = UserPeerInfo.instance.peerName
+		nameTextField.text = UserPeerInfo.instance.nickname
 	}
 	
 	func userConfirmedIDChange() {

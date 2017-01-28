@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import MultipeerConnectivity
 
-final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate {
+final class PersonDetailViewController: UIViewController, ProgressDelegate {
 	@IBOutlet private weak var portraitImageView: UIImageView!
 	@IBOutlet private weak var ageGenderLabel: UILabel!
 	@IBOutlet private weak var stateLabel: UILabel!
@@ -24,7 +23,8 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
     static let beaconSegueID = "beaconSegue"
     
     private struct PeerState {
-        let peerID: MCPeerID
+        let peerID: PeerID
+//        lazy var _peerInfo = PeeringController.shared.remote.getPeerInfo(of: self.peerID, download: false)
         
         enum ConnectionState {
             case connected, disconnected
@@ -39,38 +39,38 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         }
         
         var isLocalPeer: Bool { return peerID == UserPeerInfo.instance.peer.peerID }
-        var isOnline: Bool { return RemotePeerManager.shared.peering }
-        var isAvailable: Bool { return RemotePeerManager.shared.availablePeers.contains(peerID) }
+        var isOnline: Bool { return PeeringController.shared.peering }
+        var isAvailable: Bool { return PeeringController.shared.availablePeers.contains(peerID) }
         
         var peerInfoDownloadState: DownloadState {
-            guard !isLocalPeer && RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) == nil else { return .downloaded }
-            return RemotePeerManager.shared.isPeerInfoLoading(of: peerID) ? .downloading : .notDownloaded
+            guard !isLocalPeer && PeeringController.shared.remote.getPeerInfo(of: peerID) == nil else { return .downloaded }
+            return PeeringController.shared.remote.isPeerInfoLoading(of: peerID) != nil ? .downloading : .notDownloaded
         }
         
         var pictureDownloadState: DownloadState {
-            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return .notDownloaded }
+            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return .notDownloaded }
             if peer.picture == nil {
-                return peer.isPictureLoading ? .downloading : .notDownloaded
+                return PeeringController.shared.remote.isPictureLoading(of: peerID) != nil ? .downloading : .notDownloaded
             } else {
                 return .downloaded
             }
         }
         
         var pictureDownloadProgress: Double {
-            return RemotePeerManager.shared.getPictureLoadFraction(of: peerID)
+            return PeeringController.shared.remote.isPictureLoading(of: peerID)?.fractionCompleted ?? 0.0
         }
         
         var pinState: PinState {
-            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return .notPinned }
+            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return .notPinned }
             if peer.pinned {
                 return .pinned
             } else {
-                return RemotePeerManager.shared.isPinning(peerID) ? .pinning : .notPinned
+                return PeeringController.shared.local.isPinning(peerID) ? .pinning : .notPinned
             }
         }
         
         var pinMatch: Bool {
-            guard let peer = RemotePeerManager.shared.getPeerInfo(of: peerID, download: false) else { return false }
+            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return false }
             return peer.pinMatched
         }
     }
@@ -80,13 +80,15 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
     
     private var displayedPeerInfo: PeerInfo? {
         if displayedPeerID! != UserPeerInfo.instance.peer.peerID {
-            return RemotePeerManager.shared.getPeerInfo(of: displayedPeerID!, download: true)
+            return PeeringController.shared.remote.getPeerInfo(of: displayedPeerID!)
         } else {
             return UserPeerInfo.instance.peer
         }
     }
     
-    var displayedPeerID: MCPeerID?
+    var displayedPeerID: PeerID?
+    var pictureProgressManager: ProgressManager?
+    var peerInfoProgressManager: ProgressManager?
     
     @IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
     
@@ -94,7 +96,7 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         guard let peer = displayedPeerInfo else { return }
         guard !peer.pinned else { return }
         
-        RemotePeerManager.shared.pin(peer.peerID)
+        PeeringController.shared.pin(peer.peerID)
         updateState()
     }
     
@@ -120,42 +122,29 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         super.viewWillAppear(animated)
         guard displayedPeerID != nil else { assertionFailure(); return }
         
+        if let progress = PeeringController.shared.remote.loadPeerInfo(of: displayedPeerID!) {
+            peerInfoProgressManager = ProgressManager(peerID: displayedPeerID!, progress: progress, delegate: self, queue: DispatchQueue.main)
+        } else if let peerInfo = displayedPeerInfo {
+            if let progress = PeeringController.shared.remote.loadPicture(of: peerInfo) {
+                pictureProgressManager = ProgressManager(peerID: peerInfo.peerID, progress: progress, delegate: self, queue: DispatchQueue.main)
+            }
+        }
+        
         displayPeerInfo()
         navigationItem.title = displayedPeerID!.displayName
-        
-        if let peerInfo = displayedPeerInfo {
-            RemotePeerManager.shared.loadPicture(of: peerInfo, delegate: self)
-        }
         
         updateState()
         
         let simpleStateUpdate = { (notification: Notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
+            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard self.displayedPeerID == peerID else { return }
             self.updateState()
         }
         
-        let simpleHandledNotifications: [RemotePeerManager.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pictureLoaded, .pinMatch, .pinned, .pinningStarted, .pinFailed, .pictureLoadFailed]
+        let simpleHandledNotifications: [PeeringController.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pinMatch, .pinned, .pinningStarted, .pinFailed]
         for networkNotification in simpleHandledNotifications {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
-        
-        notificationObservers.append(RemotePeerManager.NetworkNotification.peerInfoLoaded.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
-            guard self.displayedPeerID == peerID else { return }
-            guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
-            
-            RemotePeerManager.shared.loadPicture(of: peerInfo, delegate: self)
-            self.displayPeerInfo()
-            self.updateState()
-        })
-        
-        notificationObservers.append(RemotePeerManager.NetworkNotification.peerInfoLoadFailed.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[RemotePeerManager.NetworkNotificationKey.peerID.rawValue] as? MCPeerID else { return }
-            guard self.displayedPeerID == peerID else { return }
-            
-            self.performSegue(withIdentifier: PersonDetailViewController.unwindSegueID, sender: self)
-        })
     }
     
     override func viewDidLayoutSubviews() {
@@ -183,50 +172,59 @@ final class PersonDetailViewController: UIViewController, PotraitLoadingDelegate
         circleLayer = nil
     }
     
-    // MARK: PotraitLoadingDelegate
+    // MARK: ProgressDelegate
     
-    func portraitLoadFailed(withError error: Error) {
-        displayPictureLoadError()
+    func progress(didPause progress: Progress, peerID: PeerID) {
+        // ignored
     }
     
-    func portraitLoadFinished() {
-        DispatchQueue.main.async {
-            self.removePictureLoadLayer()
-            self.updateState()
-        }
-    }
-    
-    func portraitLoadCancelled() {
-        displayPictureLoadError()
-    }
-    
-    func portraitLoadChanged(_ fractionCompleted: Double) {
-        DispatchQueue.main.async {
-            self.circleLayer?.strokeEnd = CGFloat(fractionCompleted)
-        }
-    }
-    
-    // MARK: Private methods
-    
-    private func displayPictureLoadError() {
-        DispatchQueue.main.async {
-            self.removePictureLoadLayer()
-//            UIView.animate(withDuration: 1.0, delay: 0.0, options: [.autoreverse], animations: {
-//                self.portraitImageView.backgroundColor = UIColor.red
-//            }) { (completed) in
-//                    self.portraitImageView.backgroundColor = nil
-//            }
+    func progress(didCancel progress: Progress, peerID: PeerID) {
+        if progress === pictureProgressManager?.progress {
+            removePictureLoadLayer()
+            //            UIView.animate(withDuration: 1.0, delay: 0.0, options: [.autoreverse], animations: {
+            //                self.portraitImageView.backgroundColor = UIColor.red
+            //            }) { (completed) in
+            //                    self.portraitImageView.backgroundColor = nil
+            //            }
             // as above is not working...
             UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                 self.portraitImageView.backgroundColor = UIColor.red
             }) { (completed) in
                 UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                     self.portraitImageView.backgroundColor = nil
-                    }, completion: nil)
+                }, completion: nil)
             }
+        } else if progress === peerInfoProgressManager?.progress {
+            performSegue(withIdentifier: PersonDetailViewController.unwindSegueID, sender: self)
         }
     }
     
+    func progress(didResume progress: Progress, peerID: PeerID) {
+        // ignored
+    }
+    
+    func progress(didUpdate progress: Progress, peerID: PeerID) {
+        if progress === pictureProgressManager?.progress {
+            if progress.completedUnitCount == progress.totalUnitCount {
+                pictureProgressManager = nil
+                removePictureLoadLayer()
+                updateState()
+            } else {
+                circleLayer?.strokeEnd = CGFloat(progress.fractionCompleted)
+            }
+        } else if progress === peerInfoProgressManager?.progress {
+            guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
+            
+            if let progress = PeeringController.shared.remote.loadPicture(of: peerInfo) {
+                pictureProgressManager = ProgressManager(peerID: displayedPeerID!, progress: progress, delegate: self, queue: DispatchQueue.main)
+            }
+            displayPeerInfo()
+            updateState()
+        }
+    }
+
+    // MARK: Private methods
+
     private func displayPeerInfo() {
         guard let peerInfo = displayedPeerInfo else { return }
         

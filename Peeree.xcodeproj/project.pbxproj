@@ -29,8 +29,6 @@
 		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
-		9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
-		9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
 		9D883A4B1C26B64A00702F9A /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctions.swift */; };
 		9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
@@ -42,20 +40,22 @@
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
+		9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */; };
+		9D9BC64E1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */; };
+		9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
+		9D9BC6511E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
+		9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
+		9D9BC6541E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
 		9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA039811C1B21EE003D1624 /* ShopViewController.swift */; };
 		9DA039841C1B257C003D1624 /* WalletController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA039831C1B257C003D1624 /* WalletController.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */; };
-		9DA93EE51D5D501100607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
-		9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93EE41D5D501100607D9B /* SessionHandlers.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DCB2F3B1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
-		9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
-		9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049481C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift */; };
 		9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDA3A521D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
@@ -133,6 +133,9 @@
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
+		9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalPeerManager.swift; path = Controller/LocalPeerManager.swift; sourceTree = "<group>"; };
+		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeerManager.swift; path = Controller/PeerManager.swift; sourceTree = "<group>"; };
+		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeeringController.swift; path = Controller/PeeringController.swift; sourceTree = "<group>"; };
 		9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		9DA039811C1B21EE003D1624 /* ShopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShopViewController.swift; path = "Storyboards/Main Storyboard/ShopViewController.swift"; sourceTree = "<group>"; };
 		9DA039831C1B257C003D1624 /* WalletController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WalletController.swift; path = Controller/WalletController.swift; sourceTree = "<group>"; };
@@ -198,10 +201,13 @@
 			isa = PBXGroup;
 			children = (
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
-				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
-				9DA039831C1B257C003D1624 /* WalletController.swift */,
 				9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */,
+				9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */,
+				9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */,
+				9D9BC64F1E1C633600D031C5 /* PeerManager.swift */,
+				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9DA93EE41D5D501100607D9B /* SessionHandlers.swift */,
+				9DA039831C1B257C003D1624 /* WalletController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -550,23 +556,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctions.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
 				9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */,
-				9DA93EE51D5D501100607D9B /* SessionHandlers.swift in Sources */,
+				9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
+				9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
-				9DD049491C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
 				9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */,
-				9D726FE11C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
@@ -590,18 +596,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DDBD4C91D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
-				9D726FE21C6509EE007F3C14 /* MCSessionMock.swift in Sources */,
 				9DDD0D461C24BBA9009A518F /* BrowseFilterSettings.swift in Sources */,
 				9D6431131D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
 				9DDD0D421C24BBA9009A518F /* PeerDescription.swift in Sources */,
 				9DDD0D351C24BBA1009A518F /* MeViewController.swift in Sources */,
 				9DD049461C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 				9DDD0D321C24BBA1009A518F /* BrowseViewController.swift in Sources */,
+				9D9BC64E1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */,
+				9D9BC6541E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
+				9D9BC6511E1C633600D031C5 /* PeerManager.swift in Sources */,
 				9DDD0D371C24BBA1009A518F /* PersonDetailViewController.swift in Sources */,
 				9D5E80701D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
-				9DA93EE61D5D62E600607D9B /* SessionHandlers.swift in Sources */,
 				9DDD0D401C24BBA5009A518F /* RemotePeerManager.swift in Sources */,
-				9DD0494A1C5FD57F00A91C71 /* MCNearbyServiceBrowserMock.swift in Sources */,
 				9DDD0D4A1C24BBAF009A518F /* AppDelegate.swift in Sources */,
 				9DA0F7D31B5C3AB900F3BA87 /* PeereeTests.swift in Sources */,
 				9DDD0D431C24BBA9009A518F /* DisplayName.swift in Sources */,

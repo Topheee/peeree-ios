@@ -489,10 +489,3 @@ open class SynchronizedSet<T : Hashable> {
         }
     }
 }
-
-//import MultipeerConnectivity
-//
-//extension MCPeerID {
-//    /// The maximum allowable length of MCPeerID.displayName is 63 bytes in UTF-8 encoding.
-//    static let MaxDisplayNameUTF8Length = 63
-//}
