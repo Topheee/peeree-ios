@@ -6,62 +6,46 @@
 //  Copyright © 2015 Kobusch. All rights reserved.
 //
 
-import UIKit
+import Foundation
+import CoreGraphics
 
 // MARK: - Functions
 
 func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
-	UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+    UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
 }
 
 func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
-	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+    guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
     
     return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
 }
 
-func getIdentity(fromResource resource: String, password : String?) -> (SecIdentity, SecTrust)? {
-    // Load certificate file
-    guard let path = Bundle.main.path(forResource: resource, ofType : "p12") else { return nil }
-    guard let p12KeyFileContent = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return nil }
-    
-    // Setting options for the identity
-    let options = [String(kSecImportExportPassphrase):password ?? ""]
-    var citems: CFArray? = nil
-    let resultPKCS12Import = withUnsafeMutablePointer(to: &citems) { citemsPtr in
-        SecPKCS12Import(p12KeyFileContent as CFData, options as CFDictionary, citemsPtr)
-    }
-    
-    guard resultPKCS12Import == errSecSuccess else { return nil }
-    
-    // Recover the identity
-    let items = citems! as NSArray
-    let identityAndTrust = items.object(at: 0) as! NSDictionary
-    let identity = identityAndTrust[String(kSecImportItemIdentity)] as! SecIdentity
-    let trust = identityAndTrust[String(kSecImportItemTrust)] as! SecTrust
-    
-    return (identity as SecIdentity, trust as SecTrust)
-}
 
-//Swift 2
+//"Swift 2" - not working
+///// Objective-C __bridge cast
 //func bridge<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
 //    return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
 //    // return unsafeAddressOf(obj) // ***
 //}
 //
+///// Objective-C __bridge cast
 //func bridge<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
 //    return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeUnretainedValue()
 //    // return unsafeBitCast(ptr, T.self) // ***
 //}
 //
+///// Objective-C __bridge_retained equivalent. Casts the object pointer to a void pointer and retains the object.
 //func bridgeRetained<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
 //    return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
 //}
 //
+///// Objective-C __bridge_transfer equivalent. Converts the void pointer back to an object pointer and consumes the retain.
 //func bridgeTransfer<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
 //    return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeRetainedValue()
 //}
 
+//Swift 1.2
 /// Objective-C __bridge cast
 func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
     return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
@@ -82,28 +66,6 @@ func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
     return Unmanaged<T>.fromOpaque(ptr).takeRetainedValue()
 }
 
-//func getSecIdentitySummaryString(identity: SecIdentityRef) -> String? {
-//    // Get the certificate from the identity.
-//    var certificatePtr: SecCertificate? = nil
-//    let status: OSStatus = withUnsafeMutablePointer(&certificatePtr) { ptr in
-//        SecIdentityCopyCertificate(identity, ptr);  // Extracts the certificate from the identity.
-//    }
-//    
-//    guard (status == errSecSuccess) else { return nil }
-//    guard let returnedCertificate = certificatePtr else { return nil }
-//    
-//    return SecCertificateCopySubjectSummary(returnedCertificate) as? String // Gets summary information from the certificate.
-//}
-//
-//func persistentRefForIdentity(identity: SecIdentityRef) -> CFData? {
-//    var persistent_ref: CFTypeRef? = nil
-//    let dict: [String:AnyObject] = [kSecReturnPersistentRef as String : kCFBooleanTrue, kSecValueRef as String : identity]
-//    let status = SecItemAdd(dict, &persistent_ref);
-//    
-//    guard (status == errSecSuccess) else { return nil }
-//    
-//    return (persistent_ref as! CFDataRef)
-//}
 
 // MARK: - Extensions
 
@@ -129,53 +91,11 @@ extension RawRepresentable where Self.RawValue == String {
     }
 }
 
-extension UIView {
-    var marginFrame: CGRect {
-        let margins = self.layoutMargins
-        var ret = self.frame
-        ret.origin.x += margins.left
-        ret.origin.y += margins.top
-        ret.size.height -= margins.top + margins.bottom
-        ret.size.width -= margins.left + margins.right
-        return ret
-    }
-}
-
-extension UIImage {
-    func cropped(to cropRect: CGRect) -> UIImage? {
-//        return autoreleasepool {
-            let scaledCropRect = CGRect(x: cropRect.origin.x * scale, y: cropRect.origin.y * scale, width: cropRect.size.width * scale, height: cropRect.size.height * scale)
-            
-            guard let imageRef = self.cgImage?.cropping(to: scaledCropRect) else { return nil }
-            return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
-//        }
-    }
-}
-
 extension NotificationCenter {
     class func addObserverOnMain(_ name: String?, usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
         return NotificationCenter.default.addObserver(forName: name.map { NSNotification.Name(rawValue: $0) }, object: nil, queue: OperationQueue.main, using: block)
     }
 }
-
-extension UIViewController {
-    func presentInFrontMostViewController(_ animated: Bool, completion: (() -> Void)?) {
-        guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else { return }
-        
-        var vc = rootVC
-        while vc.presentedViewController != nil {
-            vc = vc.presentedViewController!
-        }
-        vc.present(self, animated: animated, completion: completion)
-    }
-}
-
-//protocol NotificationPoster {
-//    associatedtype NotificationType: RawRepresentable //where NotificationType.RawValue == String
-//    
-//    static let PostedNotifications: NotificationType
-//    func test() where NotificationType.RawValue == String
-//}
 
 // MARK: - Network Reachability
 
@@ -184,32 +104,32 @@ import SystemConfiguration
 
 class Reachability {
     static let ReachabilityChangedNotification = "kNetworkReachabilityChangedNotification"
-
+    
     let reachabilityRef: SCNetworkReachability
     
     enum NetworkStatus: Int {
         case notReachable, reachableViaWiFi, reachableViaWWAN
     }
-
-//    static let ShouldPrintReachabilityFlags = true
-//
-//    static func PrintReachabilityFlags(flags: SCNetworkReachabilityFlags, comment: String) {
-//        if ShouldPrintReachabilityFlags {
-//            NSLog("Reachability Flag Status: %c%c %c%c%c%c%c%c%c %s\n",
-//                   (flags & SCNetworkReachabilityFlags.IsWWAN.rawValue)		 ? "W" : "-",
-//                   (flags & SCNetworkReachabilityFlags.Reachable)            ? "R" : "-",
-//                   
-//                   (flags & SCNetworkReachabilityFlags.TransientConnection)  ? "t" : "-",
-//                   (flags & SCNetworkReachabilityFlags.ConnectionRequired)   ? "c" : "-",
-//                   (flags & SCNetworkReachabilityFlags.ConnectionOnTraffic)  ? "C" : "-",
-//                   (flags & SCNetworkReachabilityFlags.InterventionRequired) ? "i" : "-",
-//                   (flags & SCNetworkReachabilityFlags.ConnectionOnDemand)   ? "D" : "-",
-//                   (flags & SCNetworkReachabilityFlags.IsLocalAddress)       ? "l" : "-",
-//                   (flags & SCNetworkReachabilityFlags.IsDirect)             ? "d" : "-",
-//                   comment
-//            );
-//        }
-//    }
+    
+    //    static let ShouldPrintReachabilityFlags = true
+    //
+    //    static func PrintReachabilityFlags(flags: SCNetworkReachabilityFlags, comment: String) {
+    //        if ShouldPrintReachabilityFlags {
+    //            NSLog("Reachability Flag Status: %c%c %c%c%c%c%c%c%c %s\n",
+    //                   (flags & SCNetworkReachabilityFlags.IsWWAN.rawValue)		 ? "W" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.Reachable)            ? "R" : "-",
+    //
+    //                   (flags & SCNetworkReachabilityFlags.TransientConnection)  ? "t" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.ConnectionRequired)   ? "c" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.ConnectionOnTraffic)  ? "C" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.InterventionRequired) ? "i" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.ConnectionOnDemand)   ? "D" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.IsLocalAddress)       ? "l" : "-",
+    //                   (flags & SCNetworkReachabilityFlags.IsDirect)             ? "d" : "-",
+    //                   comment
+    //            );
+    //        }
+    //    }
     
     static func getNetworkStatus() -> NetworkStatus {
         guard let instance = Reachability() else { return .notReachable }
@@ -244,7 +164,7 @@ class Reachability {
         
         reachabilityRef = tmp
     }
-
+    
     func startNotifier() -> Bool {
         var returnValue = false
         var selfptr = bridge(obj: self)
@@ -266,19 +186,19 @@ class Reachability {
         
         return returnValue
     }
-        
-        
+    
+    
     func stopNotifier() {
         SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)
     }
-            
+    
     deinit {
         stopNotifier()
-//        CFRelease(reachabilityRef)
+        //        CFRelease(reachabilityRef)
     }
-
+    
     func networkStatusForFlags(_ flags: SCNetworkReachabilityFlags) -> NetworkStatus {
-//        Reachability.PrintReachabilityFlags(flags, "networkStatusForFlags")
+        //        Reachability.PrintReachabilityFlags(flags, "networkStatusForFlags")
         if !flags.contains(SCNetworkReachabilityFlags.reachable) {
             // The target host is not reachable.
             return .notReachable
@@ -315,8 +235,8 @@ class Reachability {
         
         return returnValue
     }
-        
-        
+    
+    
     func connectionRequired() -> Bool {
         var flags: SCNetworkReachabilityFlags = []
         
@@ -327,7 +247,7 @@ class Reachability {
         return false
     }
     
-            
+    
     func currentReachabilityStatus() -> NetworkStatus {
         var returnValue = NetworkStatus.notReachable
         var flags: SCNetworkReachabilityFlags = []
@@ -392,13 +312,13 @@ open class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     // would be more safe but does not work since value semantics
-//    /// runs the passed block synchronized and gives direct access to the dictionary
-//    open func access(_ query: (_ dict: [Key : Value]) -> Void) {
-//        accessQueue.sync {
-//            
-//            query(dictionary)
-//        }
-//    }
+    //    /// runs the passed block synchronized and gives direct access to the dictionary
+    //    open func access(_ query: (_ dict: [Key : Value]) -> Void) {
+    //        accessQueue.sync {
+    //
+    //            query(dictionary)
+    //        }
+    //    }
     
     open subscript(index: Key) -> Value? {
         set {
@@ -443,7 +363,7 @@ open class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     open func removeAll() {
-        accessQueue.async { 
+        accessQueue.async {
             self.dictionary.removeAll()
         }
     }
