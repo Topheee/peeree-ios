@@ -757,7 +757,7 @@
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "";
+				OTHER_SWIFT_FLAGS = "-D compile_iOS";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -782,7 +782,7 @@
 				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "-D OFFLINE";
+				OTHER_SWIFT_FLAGS = "-D compile_iOS";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

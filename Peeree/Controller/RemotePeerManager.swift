@@ -6,7 +6,7 @@
 //  Copyright © 2015 Kobusch. All rights reserved.
 //
 
-import UIKit
+import CoreGraphics
 import CoreBluetooth
 
 protocol RemotePeerManagerDelegate {
@@ -56,11 +56,17 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     var isScanning: Bool {
-        return centralManager.isScanning
+        #if compile_iOS
+            return centralManager.isScanning
+        #else
+            return true // shitty shit is not available on mac - what the fuck?
+        #endif
     }
     
     func scan() {
-        guard !isScanning else { return }
+        #if compile_iOS
+            guard !isScanning else { return }
+        #endif
         
         centralManager.scanForPeripherals(withServices: [CBUUID.BluetoothServiceID], options: nil)
     }
@@ -98,7 +104,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func loadPicture(of peer: PeerInfo) -> Progress? {
-        guard peer.hasPicture && peer.picture == nil else { return nil }
+        guard peer.hasPicture && peer.cgPicture == nil else { return nil }
         return load(characteristic: portraitCharacteristic, of: peer.peerID)
     }
     
@@ -244,10 +250,10 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 guard let peerInfo = NSKeyedUnarchiver.unarchiveObject(with: data) as? NetworkPeerInfo else { return }
                 cachedPeers[peerInfo.peer.peerID] = LocalPeerInfo(peer: peerInfo.peer)
             case CBUUID.PortraitCharacteristicID:
-                guard let picture = UIImage(data: data) else { return }
                 guard let peerInfo = cachedPeers[peripheral.identifier] else { return }
+                guard let image = CGImage(jpegDataProviderSource: CGDataProvider(data: data as CFData)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) else { return }
                 
-                peerInfo.picture = picture
+                peerInfo.cgPicture = image
             default:
                 break
             }

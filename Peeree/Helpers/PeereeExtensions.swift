@@ -8,6 +8,53 @@
 
 import UIKit
 
+extension PeerInfo {
+    var picture: UIImage? {
+        get {
+            return cgPicture != nil ? UIImage(cgImage: cgPicture!) : nil
+        }
+        set {
+            cgPicture = picture?.cgImage
+        }
+    }
+}
+
+extension LocalPeerInfo {
+    var picture: UIImage? {
+        get { return peer.picture }
+        set { peer.picture = newValue }
+    }
+}
+
+extension UserPeerInfo {
+    override var picture: UIImage? {
+        didSet {
+            dirtied()
+            
+            if picture != nil {
+                // Don't block the UI when writing the image to documents
+                DispatchQueue.global().async {
+                    // Save the new image to the documents directory
+                    do {
+                        try UIImageJPEGRepresentation(self.picture!, 1.0)?.write(to: self.pictureResourceURL, options: .atomic)
+                    } catch let error as NSError {
+                        // TODO error handling
+                        print(error.debugDescription)
+                    }
+                }
+            } else {
+                let fileManager = FileManager.default
+                do {
+                    try fileManager.removeItem(at: pictureResourceURL)
+                } catch let error as NSError {
+                    // TODO error handling
+                    print(error.debugDescription)
+                }
+            }
+        }
+    }
+}
+
 extension UIAlertController {
     /// This is the preferred method to display an UIAlertController since it sets the tint color of the global theme. 
     func present(_ completion: (() -> Void)?) {

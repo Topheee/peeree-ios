@@ -7,7 +7,8 @@
 //
 
 import Foundation
-import UIKit.UIImage
+import CoreGraphics
+import ImageIO
 
 /**
  Class used only for unit testing.
@@ -22,7 +23,7 @@ class TestPeerInfo: NetworkPeerInfo {
             characterTraits[index].applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
             rand = arc4random()
         }
-        let peer = PeerInfo(peerID: peerID, nickname: peerID.uuidString, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: true /* rand % 5000 > 2500 */, _picture: nil)
+        let peer = PeerInfo(peerID: peerID, nickname: peerID.uuidString, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: true /* rand % 5000 > 2500 */, cgPicture: nil)
         super.init(peer: peer)
     }
     
@@ -40,7 +41,7 @@ protocol UserPeerInfoDelegate {
 final class UserPeerInfo: LocalPeerInfo {
 	private static let PrefKey = "UserPeerInfo"
     private static let DateOfBirthKey = "dateOfBirth"
-    private static let PortraitFileName = "UserPotrait"
+    private static let PortraitFileName = "UserPortrait"
     
     private static var __once: () = { () -> Void in
         Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
@@ -105,34 +106,6 @@ final class UserPeerInfo: LocalPeerInfo {
         get { return peer.relationshipStatus }
         set { if newValue != peer.relationshipStatus { peer.relationshipStatus = newValue; dirtied() } }
     }
-    override var picture: UIImage? {
-        didSet {
-            if oldValue != peer.picture {
-                dirtied()
-            
-                if picture != nil {
-                    // Don't block the UI when writing the image to documents
-                    DispatchQueue.global().async {
-                        // Save the new image to the documents directory
-                        do {
-                            try UIImageJPEGRepresentation(self.picture!, 1.0)?.write(to: self.pictureResourceURL, options: .atomic)
-                        } catch let error as NSError {
-                            // TODO error handling
-                            print(error.debugDescription)
-                        }
-                    }
-                } else {
-                    let fileManager = FileManager.default
-                    do {
-                        try fileManager.removeItem(at: pictureResourceURL)
-                    } catch let error as NSError {
-                        // TODO error handling
-                        print(error.debugDescription)
-                    }
-                }
-            }
-        }
-    }
     var characterTraits: [CharacterTrait] {
         get { return peer.characterTraits }
         set { peer.characterTraits = newValue; dirtied() }
@@ -140,7 +113,7 @@ final class UserPeerInfo: LocalPeerInfo {
 	
 	private init() {
 		dateOfBirth = Date(timeIntervalSinceNow: -3600*24*365*18)
-        super.init(peer: PeerInfo(peerID: PeerID(), nickname: "Unknown", gender: .female, age: nil, relationshipStatus: .inRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, _picture: nil))
+        super.init(peer: PeerInfo(peerID: PeerID(), nickname: "Unknown", gender: .female, age: nil, relationshipStatus: .inRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, cgPicture: nil))
 	}
 
 	@objc required init?(coder aDecoder: NSCoder) {
@@ -160,7 +133,7 @@ final class UserPeerInfo: LocalPeerInfo {
 //        alertController.present(completionHandler)
 //	}
 	
-	fileprivate func dirtied() {
+	func dirtied() {
 		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
 	}
 }
@@ -169,6 +142,11 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     var peer: PeerInfo
     var sentPinStatus = false
     var pinStatusAcknowledged = false
+    
+    var cgPicture: CGImage? {
+        get { return peer.cgPicture }
+        set { peer.cgPicture = newValue }
+    }
     
     @objc static var supportsSecureCoding : Bool {
         return true
@@ -197,7 +175,8 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         } else {
             characterTraits = CharacterTrait.standardTraits
         }
-        let picture = aDecoder.decodeObject(of: UIImage.self, forKey: PeerInfo.CodingKey.picture.rawValue)
+        let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
+        let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
         let age: Int? = aDecoder.containsValue(forKey: PeerInfo.CodingKey.age.rawValue) ? aDecoder.decodeInteger(forKey: PeerInfo.CodingKey.age.rawValue) : nil
         
         var relationshipStatus: PeerInfo.RelationshipStatus
@@ -207,18 +186,21 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
             relationshipStatus = PeerInfo.RelationshipStatus.noComment
         }
         
-        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, _picture: picture)
-    }
-    
-    var picture: UIImage? {
-        get { return peer.picture }
-        set { if newValue != peer.picture { peer._picture = newValue } }
+        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, cgPicture: picture)
     }
     
     @objc func encode(with aCoder: NSCoder) {
         aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
         aCoder.encode(peer.nickname, forKey: PeerInfo.CodingKey.nickname.rawValue)
-        aCoder.encode(peer.picture, forKey: PeerInfo.CodingKey.picture.rawValue)
+        if let image = peer.cgPicture {
+            let data = NSMutableData()
+            if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
+                CGImageDestinationAddImage(dest, image, nil) // TODO use options
+                if CGImageDestinationFinalize(dest) {
+                    aCoder.encode(data, forKey: PeerInfo.CodingKey.picture.rawValue)
+                }
+            }
+        }
         aCoder.encode(peer.gender.rawValue, forKey: PeerInfo.CodingKey.gender.rawValue)
         aCoder.encode(peer.relationshipStatus.rawValue, forKey: PeerInfo.CodingKey.status.rawValue)
         aCoder.encode(peer.version, forKey: PeerInfo.CodingKey.version.rawValue)
@@ -273,7 +255,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
             relationshipStatus = PeerInfo.RelationshipStatus.noComment
         }
         
-        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, _picture: nil)
+        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, cgPicture: nil)
     }
     
     @objc func encode(with aCoder: NSCoder) {
@@ -353,15 +335,12 @@ struct PeerInfo: Equatable {
         return _hasPicture
     }
     
-    fileprivate var _picture: UIImage? = nil {
+    var cgPicture: CGImage? {
         didSet {
-            _hasPicture = _picture != nil
+            _hasPicture = cgPicture != nil
         }
     }
-    var picture: UIImage? {
-        return _picture
-    }
-        
+
     var pinMatched: Bool {
         return PeeringController.shared.hasPinMatch(peerID)
     }
