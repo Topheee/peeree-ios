@@ -9,7 +9,17 @@
 import Foundation
 import CoreBluetooth
 
-typealias PeerID = UUID
+public typealias PeerID = UUID
+
+extension PeerID {
+    init?(data: Data) {
+        guard let string = String(data: data, encoding: PeerManager.uuidEncoding) else {
+            assertionFailure()
+            return nil
+        }
+        self.init(uuidString: string)
+    }
+}
 
 extension CBUUID {
     static let BluetoothServiceID = CBUUID(string: "EEB9E7F2-5442-42CC-AC91-E25E10A8D6EE")
@@ -25,27 +35,41 @@ extension CBUUID {
     }
 }
 
+extension CBCharacteristic {
+    var isSizePrefixed: Bool {
+        return self.uuid == CBUUID.PeerInfoCharacteristicID || self.uuid == CBUUID.PortraitCharacteristicID
+    }
+}
+
 class PeerManager: NSObject {
-    private static let properties: CBCharacteristicProperties = [.notify]
-    var peerUUIDCharacteristic: CBMutableCharacteristic {
-        // value: NSKeyedArchiver.archivedData(withRootObject: UserPeerInfo.instance.peer.peerID)
-        return CBMutableCharacteristic(type: CBUUID.UUIDCharacteristicID, properties: PeerManager.properties, value: nil, permissions: [.readable]) // TODO use encrypted option variants
+    private static let indicatedProperties: CBCharacteristicProperties = [.indicate] // TODO use encrypted notify
+    private static let indicatedWriteProperties: CBCharacteristicProperties = [.indicate, .write] // TODO use encrypted notify
+    private static let readWriteProperties: CBCharacteristicProperties = [.read, .write] // TODO use encrypted notify
+    
+    private static let readWritePermissions: CBAttributePermissions = [.readable, .writeable] // TODO use encrypted notify
+    private static let indicateWritePermissions: CBAttributePermissions = [.writeable] // TODO use encrypted notify
+    
+    static let uuidEncoding = String.Encoding.ascii
+    
+    // value: peerIDData (UserPeerInfo.instance.peer.peerID.uuidString.data(using: PeerManager.uuidEncoding))
+    let peerUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.UUIDCharacteristicID, properties: PeerManager.readWriteProperties, value: nil, permissions: PeerManager.readWritePermissions) // TODO use encrypted option variants
+    // value: NSKeyedArchiver.archivedData(withRootObject: NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
+    let peerInfoCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerInfoCharacteristicID, properties: PeerManager.indicatedProperties, value: nil, permissions: []) // TODO use encrypted option variants
+    // value: Data(count: 1)
+    let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinnedCharacteristicID, properties: PeerManager.readWriteProperties.union(.writeWithoutResponse), value: nil, permissions: PeerManager.readWritePermissions) // TODO use authenticatedSignedWrites additionally (I hope the combination of write and authenticatedSignedWrites makes it encrypted with response)
+    // value try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
+    let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: PeerManager.indicatedProperties, value: nil, permissions: []) // TODO use encrypted option variants
+    let peripheralService = CBMutableService(type: CBUUID.BluetoothServiceID, primary: true)
+    
+    var peerIDData: Data? {
+        return UserPeerInfo.instance.peer.peerID.uuidString.data(using: PeerManager.uuidEncoding)
     }
-    var peerInfoCharacteristic: CBMutableCharacteristic {
-        // value: NSKeyedArchiver.archivedData(withRootObject: NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
-        return CBMutableCharacteristic(type: CBUUID.PeerInfoCharacteristicID, properties: PeerManager.properties, value: nil, permissions: [.readable]) // TODO use encrypted option variants
+    
+    func pinnedData(_ pinned: Bool) -> Data {
+        return pinned ? Data(repeating: UInt8(1), count: 1) : Data(count: 1)
     }
-    var pinnedCharacteristic: CBMutableCharacteristic {
-        // value: Data(count: 1)
-        return CBMutableCharacteristic(type: CBUUID.PinnedCharacteristicID, properties: PeerManager.properties, value: nil, permissions: [.readable]) // TODO use encrypted option variants
-    }
-    var portraitCharacteristic: CBMutableCharacteristic {
-//        let data = try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
-        return CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: PeerManager.properties, value: nil, permissions: [.readable]) // TODO use encrypted option variants
-    }
-    var peripheralService: CBMutableService {
-        let service = CBMutableService(type: CBUUID.BluetoothServiceID, primary: true)
-        service.characteristics = [peerUUIDCharacteristic, peerInfoCharacteristic, pinnedCharacteristic, portraitCharacteristic]
-        return service
+    
+    override init() {
+        peripheralService.characteristics = [peerUUIDCharacteristic, peerInfoCharacteristic, pinnedCharacteristic, portraitCharacteristic]
     }
 }

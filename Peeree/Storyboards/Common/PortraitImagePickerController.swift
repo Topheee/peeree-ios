@@ -19,8 +19,10 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         imagePicker.mediaTypes = [kUTTypeImage as String]
         
         let presentPicker = {
-            self.present(imagePicker, animated: true, completion: nil)
-            imagePicker.view.tintColor = theme.globalTintColor
+            DispatchQueue.main.async {
+                self.present(imagePicker, animated: true, completion: nil)
+                imagePicker.view.tintColor = theme.globalTintColor
+            }
         }
         let cameraHandler = {(alertAction: UIAlertAction) -> Void in
             imagePicker.sourceType = .camera

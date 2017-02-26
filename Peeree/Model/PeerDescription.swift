@@ -32,13 +32,7 @@ class TestPeerInfo: NetworkPeerInfo {
     }
 }
 
-protocol UserPeerInfoDelegate {
-	func userConfirmedIDChange()
-	func userCancelledIDChange()
-	func idChangeDialogPresented()
-}
-
-final class UserPeerInfo: LocalPeerInfo {
+public final class UserPeerInfo: LocalPeerInfo {
 	private static let PrefKey = "UserPeerInfo"
     private static let DateOfBirthKey = "dateOfBirth"
     private static let PortraitFileName = "UserPortrait"
@@ -54,8 +48,6 @@ final class UserPeerInfo: LocalPeerInfo {
         
         return Singleton.sharedInstance
 	}
-	
-	var delegate: UserPeerInfoDelegate?
     
     var pictureResourceURL: URL {
         // Create a file path to our documents directory
@@ -116,12 +108,12 @@ final class UserPeerInfo: LocalPeerInfo {
         super.init(peer: PeerInfo(peerID: PeerID(), nickname: "Unknown", gender: .female, age: nil, relationshipStatus: .inRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, cgPicture: nil))
 	}
 
-	@objc required init?(coder aDecoder: NSCoder) {
+	@objc required public init?(coder aDecoder: NSCoder) {
 		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as? Date ?? Date(timeIntervalSinceNow: -3600*24*365*18)
 	    super.init(coder: aDecoder)
     }
     
-    @objc override func encode(with aCoder: NSCoder) {
+    @objc override public func encode(with aCoder: NSCoder) {
         super.encode(with: aCoder)
         aCoder.encode(dateOfBirth, forKey: UserPeerInfo.DateOfBirthKey)
     }
@@ -138,7 +130,7 @@ final class UserPeerInfo: LocalPeerInfo {
 	}
 }
 
-class LocalPeerInfo: NSObject, NSSecureCoding {
+public class LocalPeerInfo: NSObject, NSSecureCoding {
     var peer: PeerInfo
     var sentPinStatus = false
     var pinStatusAcknowledged = false
@@ -148,7 +140,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         set { peer.cgPicture = newValue }
     }
     
-    @objc static var supportsSecureCoding : Bool {
+    @objc public static var supportsSecureCoding : Bool {
         return true
     }
     
@@ -160,7 +152,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         self.peer = peer
     }
     
-    @objc required init?(coder aDecoder: NSCoder) {
+    @objc required public init?(coder aDecoder: NSCoder) {
         guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
         guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
         guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
@@ -189,7 +181,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, cgPicture: picture)
     }
     
-    @objc func encode(with aCoder: NSCoder) {
+    @objc public func encode(with aCoder: NSCoder) {
         aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
         aCoder.encode(peer.nickname, forKey: PeerInfo.CodingKey.nickname.rawValue)
         if let image = peer.cgPicture {
@@ -215,12 +207,12 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     }
 }
 
-/* final */ class NetworkPeerInfo: NSObject, NSSecureCoding {
+public /* final */ class NetworkPeerInfo: NSObject, NSCoding /* NSSecureCoding */ {
     let peer: PeerInfo
     
-    @objc static var supportsSecureCoding : Bool {
-        return true
-    }
+//    @objc static var supportsSecureCoding : Bool {
+//        return true
+//    }
     
     private override init() {
         fatalError()
@@ -230,7 +222,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         self.peer = peer
     }
     
-    @objc required init?(coder aDecoder: NSCoder) {
+    @objc required public init?(coder aDecoder: NSCoder) {
         guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
         guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
         guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
@@ -258,7 +250,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
         peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, cgPicture: nil)
     }
     
-    @objc func encode(with aCoder: NSCoder) {
+    @objc public func encode(with aCoder: NSCoder) {
         aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
         aCoder.encode(peer.nickname, forKey: PeerInfo.CodingKey.nickname.rawValue)
         aCoder.encode(peer.hasPicture, forKey: PeerInfo.CodingKey.hasPicture.rawValue)
@@ -276,7 +268,7 @@ class LocalPeerInfo: NSObject, NSSecureCoding {
     }
 }
 
-struct PeerInfo: Equatable {
+public struct PeerInfo: Equatable {
     fileprivate enum CodingKey : String {
         case peerID, nickname, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged
     }
@@ -377,7 +369,7 @@ struct PeerInfo: Equatable {
 //    }
 }
 
-func ==(lhs: PeerInfo, rhs: PeerInfo) -> Bool {
+public func ==(lhs: PeerInfo, rhs: PeerInfo) -> Bool {
     return lhs.peerID == rhs.peerID
 }
 

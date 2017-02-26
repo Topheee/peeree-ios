@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UserPeerInfoDelegate {
+final class MeViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private weak var nameTextField: UITextField!
 	@IBOutlet private weak var statusButton: UIButton!
 	@IBOutlet private weak var portraitImageButton: UIButton!
@@ -141,18 +141,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         
         statusButton.setNeedsLayout()
 	}
-	
-	override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        UserPeerInfo.instance.delegate = self
-	}
-	
-	override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-//		if UserPeerInfo.instance.delegate! == self as UserPeerInfoDelegate {
-			UserPeerInfo.instance.delegate = nil
-//		}
-	}
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -208,18 +196,4 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         super.picked(image: image)
         portraitImageButton.setImage(image ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
     }
-    
-    // MARK: UserPeerInfoDelegate
-	
-	func userCancelledIDChange() {
-		nameTextField.text = UserPeerInfo.instance.nickname
-	}
-	
-	func userConfirmedIDChange() {
-		// nothing
-	}
-	
-	func idChangeDialogPresented() {
-		// nothing
-	}
 }

@@ -65,7 +65,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             if peer.pinned {
                 return .pinned
             } else {
-                return PeeringController.shared.local.isPinning(peerID) ? .pinning : .notPinned
+                return PeeringController.shared.remote.isPinning(peerID) ? .pinning : .notPinned
             }
         }
         
@@ -130,7 +130,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             }
         }
         
-        displayPeerInfo()
         navigationItem.title = displayedPeerID!.displayName
         
         updateState()
@@ -194,6 +193,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
                     self.portraitImageView.backgroundColor = nil
                 }, completion: nil)
             }
+            pictureProgressManager = nil
         } else if progress === peerInfoProgressManager?.progress {
             performSegue(withIdentifier: PersonDetailViewController.unwindSegueID, sender: self)
         }
@@ -213,23 +213,19 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
                 circleLayer?.strokeEnd = CGFloat(progress.fractionCompleted)
             }
         } else if progress === peerInfoProgressManager?.progress {
-            guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
-            
-            if let progress = PeeringController.shared.remote.loadPicture(of: peerInfo) {
-                pictureProgressManager = ProgressManager(peerID: displayedPeerID!, progress: progress, delegate: self, queue: DispatchQueue.main)
+            if progress.completedUnitCount == progress.totalUnitCount {
+                peerInfoProgressManager = nil
+                guard let peerInfo = self.displayedPeerInfo else { assertionFailure(); return }
+                
+                if let progress = PeeringController.shared.remote.loadPicture(of: peerInfo) {
+                    pictureProgressManager = ProgressManager(peerID: displayedPeerID!, progress: progress, delegate: self, queue: DispatchQueue.main)
+                }
+                updateState()
             }
-            displayPeerInfo()
-            updateState()
         }
     }
 
     // MARK: Private methods
-
-    private func displayPeerInfo() {
-        guard let peerInfo = displayedPeerInfo else { return }
-        
-        stateLabel.text = peerInfo.relationshipStatus.localizedRawValue
-    }
     
     private func updateState() {
         guard let peerID = displayedPeerID else { return }
@@ -282,6 +278,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         
         guard let peerInfo = displayedPeerInfo else { return }
         
+        stateLabel.text = peerInfo.relationshipStatus.localizedRawValue
         ageGenderLabel.text = peerInfo.summary
         portraitImageView.image = peerInfo.picture ?? UIImage(named: peerInfo.hasPicture ? "PortraitPlaceholder" : "PortraitUnavailable")
     }

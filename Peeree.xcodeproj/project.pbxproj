@@ -25,6 +25,7 @@
 		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6431161D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
+		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
 		9D8A592E1B92EC3F00164C9F /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
@@ -51,6 +52,7 @@
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
 		9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */; };
 		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
+		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
 		9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
 		9DEAE8CE1B6415EF00D4F6BF /* HideableProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */; };
@@ -97,6 +99,7 @@
 		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D726FE01C6509EE007F3C14 /* MCSessionMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MCSessionMock.swift; path = Helpers/Mocks/MCSessionMock.swift; sourceTree = "<group>"; };
+		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
 		9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTraitViewController.swift; path = "Storyboards/Main Storyboard/CharacterTraitViewController.swift"; sourceTree = "<group>"; };
 		9D8A592F1B92EC4500164C9F /* MeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MeViewController.swift; path = "Storyboards/Main Storyboard/MeViewController.swift"; sourceTree = "<group>"; };
@@ -130,6 +133,7 @@
 		9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BeaconViewController.swift; path = "Storyboards/Main Storyboard/BeaconViewController.swift"; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
+		9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProgressManager.swift; path = Peeree/Helpers/ProgressManager.swift; sourceTree = "<group>"; };
 		9DEAE8C91B63ED4B00D4F6BF /* DisplayName.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DisplayName.swift; path = Model/DisplayName.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
 		9DEAE8CD1B6415EF00D4F6BF /* HideableProperty.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HideableProperty.swift; path = Model/HideableProperty.swift; sourceTree = "<group>"; };
@@ -234,9 +238,11 @@
 			isa = PBXGroup;
 			children = (
 				9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */,
+				9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */,
 				9DD049471C5FD53C00A91C71 /* Mocks */,
 				9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */,
 				9D0EA9F21E44DB9000C71312 /* GenericFunctions.swift */,
+				9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */,
 			);
 			name = Helpers;
 			path = ..;
@@ -456,6 +462,7 @@
 					};
 					9DA0F7CB1B5C3AB900F3BA87 = {
 						CreatedOnToolsVersion = 6.3.2;
+						DevelopmentTeam = 86J6LQ96WM;
 						LastSwiftMigration = 0800;
 						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
 					};
@@ -542,7 +549,9 @@
 				9D0EA9F31E44DB9000C71312 /* GenericFunctions.swift in Sources */,
 				9DEAE8CA1B63ED4B00D4F6BF /* DisplayName.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
+				9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
+				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */,
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
@@ -795,6 +804,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -813,6 +823,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = PeereeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "";

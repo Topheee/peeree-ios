@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol RemotePeering {
+public protocol RemotePeering {
     var peersMet: Int { get }
     var isBluetoothOn: Bool { get }
     func getPeerInfo(of peerID: PeerID) -> PeerInfo?
@@ -16,29 +16,30 @@ protocol RemotePeering {
     func isPeerInfoLoading(of peerID: PeerID) -> Progress?
     func loadPicture(of peer: PeerInfo) -> Progress?
     func isPictureLoading(of peerID: PeerID) -> Progress?
-}
-
-protocol LocalPeering {
     func isPinning(_ peerID: PeerID) -> Bool
 }
 
-final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate {
+//public protocol LocalPeering {
+//}
+
+/// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about pinned peers.
+public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate {
     static private let PinnedPeersKey = "PinnedPeers"
     static private let PinnedByPeersKey = "PinnedByPeers"
     
-    static let shared = PeeringController()
+    public static let shared = PeeringController()
     
-    enum NetworkNotificationKey: String {
+    public enum NetworkNotificationKey: String {
         case peerID
     }
     
-    enum NetworkNotification: String {
+    public enum NetworkNotification: String {
         case connectionChangedState
         case peerAppeared, peerDisappeared
         case pinned, pinningStarted, pinFailed
         case pinMatch
         
-        func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
+        public func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
             return NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
         }
         
@@ -46,28 +47,25 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
             NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: PeeringController.shared, userInfo: peerID != nil ? [NetworkNotificationKey.peerID.rawValue : peerID!] : nil)
         }
     }
-    enum TransmissionProgressKey {
-        /// Key for the NSMutableData object in the user info dictionary.
-        case data
-    }
     
     private let _local = LocalPeerManager()
     private let _remote = RemotePeerManager()
-    
     
     /// stores acknowledged pinned peers
     private var pinnedPeers = SynchronizedSet<PeerID>()
     // maybe encrypt these on disk so no one can read out their display names
     private var pinnedByPeers = SynchronizedSet<PeerID>()
     
-    let remote: RemotePeering
-    let local: LocalPeering
+    private var pinningConfirmations = SynchronizedDictionary<PeerID, WalletController.PinConfirmation>()
     
-    var availablePeers: [PeerID] {
-        return _remote.availablePeripherals
+    public let remote: RemotePeering
+//    public let local: LocalPeering
+    
+    public var availablePeers: [PeerID] {
+        return _remote.availablePeers
     }
     
-    var peering: Bool {
+    public var peering: Bool {
         get {
             return _local.isAdvertising //|| _remote.isScanning
         }
@@ -82,21 +80,23 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
         }
     }
     
-    func hasPinMatch(_ peerID: PeerID) -> Bool {
+    public func hasPinMatch(_ peerID: PeerID) -> Bool {
         return isPinned(peerID) && isPinned(by: peerID)
     }
     
-    func isPinned(by peerID: PeerID) -> Bool {
+    public func isPinned(by peerID: PeerID) -> Bool {
         return pinnedByPeers.contains(peerID)
     }
     
-    func pin(_ peerID: PeerID) {
+    public func pin(_ peerID: PeerID) {
         guard !isPinned(peerID) else { return }
-        guard _local.availablePeers.contains(peerID) else { return }
+        guard _remote.availablePeers.contains(peerID) else { return }
+        guard !(pinningConfirmations.contains { $0.0 == peerID }) else { return }
         
-        WalletController.requestPin { (confirmation) in
+        WalletController.requestPin { confirmation in
+            self.pinningConfirmations[peerID] = confirmation
+            self._remote.pin(peerID)
             NetworkNotification.pinningStarted.post(peerID)
-            self._local.pin(peerID)
         }
     }
     
@@ -112,22 +112,18 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
         connectionChangedState()
     }
     
-    func isPinned(_ peerID: PeerID) -> Bool {
-        return pinnedPeers.contains(peerID)
-    }
-    
-    func sessionHandlerDidPin(_ peerID: PeerID) {
-        pinnedPeers.insert(peerID)
-        pinnedPeers.accessQueue.async {
+    func receivedPin(from peerID: PeerID) {
+        pinnedByPeers.accessQueue.async {
+            guard !self.pinnedByPeers.set.contains(peerID) else { return }
+            self.pinnedByPeers.set.insert(peerID)
             // access the set on the queue to ensure the last peerID is also included ...
             // ... and besides get a smoother UI
-            archiveObjectInUserDefs(self.pinnedPeers.set as NSSet, forKey: PeeringController.PinnedPeersKey)
+            archiveObjectInUserDefs(self.pinnedByPeers.set as NSSet, forKey: PeeringController.PinnedByPeersKey)
+            
+            if self.pinnedPeers.contains(peerID) {
+                self.pinMatchOccured(peerID)
+            }
         }
-        if pinnedByPeers.contains(peerID) {
-            pinMatchOccured(peerID)
-        }
-        
-        NetworkNotification.pinned.post(peerID)
     }
     
     // MARK: RemotePeerManagerDelegate
@@ -139,19 +135,10 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
 //        }
 //    }
     
-    func sessionHandlerReceivedPin(from peerID: PeerID) {
-        pinnedByPeers.insert(peerID)
-        pinnedByPeers.accessQueue.async {
-            // access the set on the queue to ensure the last peerID is also included ...
-            // ... and besides get a smoother UI
-            archiveObjectInUserDefs(self.pinnedByPeers.set as NSSet, forKey: PeeringController.PinnedByPeersKey)
-        }
-        if pinnedPeers.contains(peerID) {
-            pinMatchOccured(peerID)
-        }
-    }
-    
     func peerAppeared(_ peerID: PeerID) {
+        if _remote.getPeerInfo(of: peerID) == nil {
+            _ = _remote.loadPeerInfo(of: peerID)
+        }
         NetworkNotification.peerAppeared.post(peerID)
     }
     
@@ -159,11 +146,40 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
         NetworkNotification.peerDisappeared.post(peerID)
     }
     
+    func didPin(_ peerID: PeerID) {
+        guard let confirmation = pinningConfirmations.removeValueForKey(peerID) else {
+            assertionFailure("Pinned \(peerID) without confirmation. Refused.")
+            return
+        }
+        
+        WalletController.redeem(confirmation: confirmation)
+        pinnedPeers.accessQueue.async {
+            self.pinnedPeers.set.insert(peerID)
+            // access the set on the queue to ensure the last peerID is also included ...
+            // ... and besides get a smoother UI
+            archiveObjectInUserDefs(self.pinnedPeers.set as NSSet, forKey: PeeringController.PinnedPeersKey)
+        }
+        if pinnedByPeers.contains(peerID) {
+            pinMatchOccured(peerID)
+        }
+        
+        NetworkNotification.pinned.post(peerID)
+    }
+    
+    func didFailPin(_ peerID: PeerID) {
+        _ = pinningConfirmations.removeValueForKey(peerID)
+        NetworkNotification.pinFailed.post(peerID)
+    }
+    
+    func isPinned(_ peerID: PeerID) -> Bool {
+        return pinnedPeers.contains(peerID)
+    }
+    
     // MARK: Private Methods
     
     private init() {
         remote = _remote
-        local = _local
+//        local = _local
         let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(PeeringController.PinnedByPeersKey)
         pinnedByPeers = SynchronizedSet(set: nsPinnedBy as? Set<PeerID> ?? Set())
         let nsPinned: NSSet? = unarchiveObjectFromUserDefs(PeeringController.PinnedPeersKey)
@@ -173,7 +189,9 @@ final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDeleg
     }
     
     private func pinMatchOccured(_ peerID: PeerID) {
-        NetworkNotification.pinMatch.post(peerID)
+//        DispatchQueue.main.async { // PERFORMACE do we need this?
+            NetworkNotification.pinMatch.post(peerID)
+//        }
     }
     
     private func connectionChangedState() {

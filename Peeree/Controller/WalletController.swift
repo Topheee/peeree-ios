@@ -117,7 +117,7 @@ final class WalletController {
     class PinConfirmation {
         private var queue = DispatchQueue(label: "com.kobusch.peeree.pin_confirmation")
         private var _redeemed = false
-        var redeemed: Bool { return _redeemed }
+        var redeemed: Bool { return queue.sync { return _redeemed } }
         
         fileprivate init() {}
         

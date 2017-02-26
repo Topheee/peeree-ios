@@ -53,7 +53,7 @@ final class BrowseViewController: UITableViewController {
         }
         
         func progress(didCancel progress: Progress, peerID: PeerID) {
-            // ignored
+            progressManager = nil
         }
         
         func progress(didResume progress: Progress, peerID: PeerID) {
@@ -82,7 +82,7 @@ final class BrowseViewController: UITableViewController {
         }
         
         func progress(didCancel progress: Progress, peerID: PeerID) {
-            // ignored
+            progressManager = nil
         }
         
         func progress(didResume progress: Progress, peerID: PeerID) {

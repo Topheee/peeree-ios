@@ -174,20 +174,27 @@ open class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     // @warn_unused_result public @rethrows func contains(@noescape predicate: (Self.Generator.Element) throws -> Bool) rethrows -> Bool {
-    open func contains(_ predicate: ((Key, Value)) throws -> Bool) throws -> Bool {
-        var ret = false
-        var throwError: Error?
-        accessQueue.sync {
-            do {
-                try ret = self.dictionary.contains(where: predicate)
-            } catch let error {
-                throwError = error
-            }
+//    open func contains(_ predicate: ((Key, Value)) throws -> Bool) rethrows -> Bool {
+//        var ret = false
+//        var throwError: Error?
+//        accessQueue.sync {
+//            do {
+//                try ret = self.dictionary.contains(where: predicate)
+//            } catch let error {
+//                throwError = error
+//            }
+//        }
+//        if let error = throwError {
+//            throw error
+//        }
+//        return ret
+//    }
+    
+    // non-throwing as rethrows as above does not work and simple throws would result in too much boilerplate in user code
+    open func contains(_ predicate: ((Key, Value)) -> Bool) -> Bool {
+        return accessQueue.sync {
+            return self.dictionary.contains(where: predicate)
         }
-        if let error = throwError {
-            throw error
-        }
-        return ret
     }
     
     open func removeValueForKey(_ key: Key) -> Value? {

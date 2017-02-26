@@ -13,23 +13,23 @@ protocol LocalPeerManagerDelegate {
     func advertisingStarted()
     func advertisingStopped()
 //    func networkTurnedOff()
-    func sessionHandlerDidPin(_ peerID: PeerID)
-    func isPinned(_ peerID: PeerID) -> Bool
+    func receivedPin(from: PeerID)
 }
 
-/// The LocalPeerManager singleton serves as an globally access point for information about the local peer, the user's information
-final class LocalPeerManager: PeerManager, LocalPeering, CBPeripheralManagerDelegate {
+/// The LocalPeerManager singleton serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
+/// All the CBPeripheralManagerDelegate methods work on a separate queue so you must not call them yourself.
+final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     private let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", attributes: [])
     
     private var peripheralManager: CBPeripheralManager! = nil
     
-    private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral)] = []
+    private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
     
-    private var _availableCentrals = SynchronizedDictionary<PeerID, CBCentral>()
+    private var _availableCentrals = SynchronizedDictionary<CBCentral, PeerID>()
     
     var availablePeers: [PeerID] {
         return _availableCentrals.accessQueue.sync {
-            _availableCentrals.dictionary.flatMap({ (peerID, _) -> PeerID? in
+            _availableCentrals.dictionary.flatMap({ (_, peerID) -> PeerID? in // PERFORMANCE
                 return peerID
             })
         }
@@ -50,37 +50,21 @@ final class LocalPeerManager: PeerManager, LocalPeering, CBPeripheralManagerDele
     func stopAdvertising() {
         guard isAdvertising else { return }
         
-        // TODO cancel connections
         peripheralManager.stopAdvertising()
         peripheralManager = nil
+        _availableCentrals.removeAll()
+        // I think we don't have to do this here as it is done in didStartAdvertising
+//        dQueue.async {
+//            self.interruptedTransfers.removeAll()
+//        }
         delegate?.advertisingStopped()
-    }
-    
-    func pin(_ peerID: PeerID) {
-        guard let central = self._availableCentrals[peerID] else {
-            // TODO confirmation.revoke
-            return
-        }
-        let data = pinnedData(for: peerID)
-        let characteristic = self.pinnedCharacteristic
-        if peripheralManager.updateValue(data, for: characteristic, onSubscribedCentrals: [central]) {
-            delegate?.sessionHandlerDidPin(peerID)
-        } else {
-            interruptedTransfers.append((data, characteristic, central))
-        }
-    }
-    
-    func isPinning(_ peerID: PeerID) -> Bool {
-        return interruptedTransfers.contains(where: { (_, _, central) -> Bool in
-            return central.identifier == peerID
-        })
     }
     
     // MARK: CBPeripheralManagerDelegate
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
         guard error == nil else {
-            NSLog("Adding service \(service) failed (\(error!.localizedDescription)).")
+            NSLog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)).")
             return
         }
     }
@@ -92,143 +76,172 @@ final class LocalPeerManager: PeerManager, LocalPeering, CBPeripheralManagerDele
             break
         case .unsupported, .unauthorized:
             UserPeerInfo.instance.iBeaconUUID = nil
-            peripheralManager = nil
-            delegate?.advertisingStopped()
+            stopAdvertising()
         case .poweredOff:
-            peripheralManager = nil
-            delegate?.advertisingStopped()
+            stopAdvertising()
         case .poweredOn:
             UserPeerInfo.instance.iBeaconUUID = UUID()
             peripheralManager.add(peripheralService)
-            peripheralManager.startAdvertising(nil)
+            peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.BluetoothServiceID]])
         }
     }
     
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         guard let theError = error else {
+            interruptedTransfers.removeAll()
             delegate?.advertisingStarted()
             return
         }
         
-        delegate?.advertisingStopped()
         NSLog("Failed to start advertising. (\(theError.localizedDescription))")
+        stopAdvertising()
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
-        NSLog("Central subscribed to characteristic")
         switch characteristic.uuid {
         case CBUUID.UUIDCharacteristicID:
-            guard let data = UserPeerInfo.instance.peer.peerID.uuidString.data(using: String.Encoding.ascii) else {
+            // this is dead code since subscribing is no longer possible to this characteristic
+            guard let data = peerIDData else {
                 assertionFailure()
                 break
             }
-            sendData(data: data, of: peerUUIDCharacteristic, to: central)
+            sendData(data: data, of: peerUUIDCharacteristic, to: central, sendSize: false)
         case CBUUID.PeerInfoCharacteristicID:
             let data = NSKeyedArchiver.archivedData(withRootObject: NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
-            sendData(data: data, of: peerInfoCharacteristic, to: central)
+            sendData(data: data, of: peerInfoCharacteristic, to: central, sendSize: true)
         case CBUUID.PortraitCharacteristicID:
             guard let data = try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL) else { return }
-            sendData(data: data, of: portraitCharacteristic, to: central)
-        case CBUUID.PinnedCharacteristicID:
-            sendData(data: pinnedData(for: central.identifier), of: portraitCharacteristic, to: central)
+            sendData(data: data, of: portraitCharacteristic, to: central, sendSize: true)
         default:
             break
         }
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
-        NSLog("Central unsubscribed from characteristic")
-        interruptedTransfers = interruptedTransfers.filter { (_, _, interruptedCentral) -> Bool in
-            return interruptedCentral != central
+        interruptedTransfers = interruptedTransfers.filter { (_, _, interruptedCentral, _) -> Bool in // PERFORMANCE
+            return interruptedCentral.identifier != central.identifier
         }
     }
     
     func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
-        NSLog("Peripheral is ready to update subscribers")
         // Start sending again
         let transfers = interruptedTransfers
-        interruptedTransfers.removeAll() // TODO does this keep the elements in transfers?
-        for (data, characteristic, central) in transfers {
-            sendData(data: data, of: characteristic, to: central)
+        interruptedTransfers.removeAll() // TEST does this keep the elements in transfers?
+        for (data, characteristic, central, sendSize) in transfers {
+            sendData(data: data, of: characteristic, to: central, sendSize: sendSize)
         }
+    }
+    
+    func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
+        if request.characteristic.uuid == peerUUIDCharacteristic.uuid {
+            request.value = peerIDData
+            if request.value != nil {
+                peripheral.respond(to: request, withResult: .success)
+            } else {
+                peripheral.respond(to: request, withResult: .unlikelyError)
+            }
+        } else {
+            peripheral.respond(to: request, withResult: .readNotPermitted)
+        }
+    }
+    
+    func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
+        var error: CBATTError.Code = .success
+        var _peer: (PeerID, CBCentral)? = nil
+        var _pin: (PeerID, Bool)? = nil
+        for request in requests {
+            if request.characteristic.uuid == peerUUIDCharacteristic.uuid {
+                guard let data = request.value else { continue }
+                guard let peerID = PeerID(data: data) else {
+                    error = .unlikelyError
+                    break
+                }
+                _peer = (peerID, request.central)
+            } else if request.characteristic.uuid == pinnedCharacteristic.uuid {
+                guard let data = request.value else {
+                    error = .unlikelyError
+                    break
+                }
+                guard let pinFlag = data.first else {
+                    error = .unlikelyError
+                    break
+                }
+                guard let peerID = _availableCentrals[request.central] else {
+                    error = .unlikelyError
+                    break
+                }
+                _pin = (peerID, pinFlag != 0)
+            } else {
+                error = .writeNotPermitted
+                break
+            }
+        }
+        if error == .success {
+            if let peer = _peer {
+                _availableCentrals[peer.1] = peer.0
+            }
+            if let pin = _pin {
+                if pin.1 {
+                    delegate?.receivedPin(from: pin.0)
+                }
+            }
+        }
+        peripheral.respond(to: requests.first!, withResult: error)
     }
     
     // MARK: Private Methods
     
-    private func sendData(data: Data, of characteristic: CBMutableCharacteristic, to central: CBCentral) {
-        // First up, check if we're meant to be sending an EOM
-        var sendingEOM = data.count == 0
-        
-        if sendingEOM {
+    private func sendData(data: Data, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
+        if sendSize {
+            // send the amount of bytes in data in the first package
+            var size = Int32(data.count)
+            let sizePointer = withUnsafeMutablePointer(to: &size, { (pointer) -> UnsafeMutablePointer<Int32> in
+                return pointer
+            })
             
-            // send it
-            let didSend = peripheralManager.updateValue("EOM".data(using: String.Encoding.utf8)!, for:characteristic, onSubscribedCentrals:[central])
-            
-            // Did it send?
-            if didSend {
-                // It did, so mark it as sent
-                sendingEOM = false
-                NSLog("Sent: EOM")
+            let sizeData = Data(bytesNoCopy: sizePointer, count: 4, deallocator: Data.Deallocator.none)
+            guard peripheralManager.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
+                if isAdvertising {
+                    interruptedTransfers.append((data, characteristic, central, true))
+                }
+                return
             }
-            
-            // It didn't send, so we'll exit and wait for peripheralManagerIsReadyToUpdateSubscribers to call sendData again
-            return;
         }
         
-        // We're not sending an EOM, so we're sending data
-        
-        // Is there any left to send?
         var fromIndex = data.startIndex
+        var toIndex = data.index(fromIndex, offsetBy: central.maximumUpdateValueLength, limitedBy: data.endIndex) ?? data.endIndex
         
         // There's data left, so send until the callback fails, or we're done.
         
-        var didSend = true
+        var send = fromIndex != data.endIndex
         
-        while didSend {
+        while (send) {
             // Make the next chunk
-            
-            let toIndex = data.index(fromIndex, offsetBy: central.maximumUpdateValueLength, limitedBy: data.endIndex) ?? data.endIndex
-            //            // Work out how big it should be
-            //            var amountToSend = data.count - sendDataIndex
-            //
-            //            // Can't be longer than 20 bytes
-            //            if amountToSend > central.maximumUpdateValueLength {
-            //                amountToSend = central.maximumUpdateValueLength
-            //            }
             
             // Copy out the data we want
             let chunk = data.subdata(in: fromIndex..<toIndex)
             
             // Send it
-            didSend = peripheralManager.updateValue(chunk, for: characteristic, onSubscribedCentrals: [central])
+            send = peripheralManager.updateValue(chunk, for: characteristic, onSubscribedCentrals: [central])
             
             // If it didn't work, drop out and wait for the callback
-            guard didSend else {
-                interruptedTransfers.append((data.subdata(in: fromIndex..<data.endIndex), characteristic, central))
+            guard send else {
+                if isAdvertising {
+                    interruptedTransfers.append((data.subdata(in: fromIndex..<data.endIndex), characteristic, central, false))
+                }
                 return
             }
             
-            // It did send, so update our index
+            // It did send, so update our indices
             fromIndex = toIndex
+            toIndex = data.index(fromIndex, offsetBy: central.maximumUpdateValueLength, limitedBy: data.endIndex) ?? data.endIndex
             
             // Was it the last one?
-            if fromIndex == data.endIndex {
-                // It was - send an EOM
-                
-                // Set this so if the send fails, we'll send it next time
-                sendingEOM = true
-                
-                // Send it
-                guard peripheralManager.updateValue("EOM".data(using: String.Encoding.utf8)!, for: characteristic, onSubscribedCentrals: [central]) else { return }
-                
-                NSLog("Sent: EOM")
-                
-                return
-            }
+            send = fromIndex != data.endIndex
         }
-    }
-    
-    private func pinnedData(for peerID: PeerID) -> Data {
-        return (delegate?.isPinned(peerID) ?? false) ? Data(repeating: 1, count: 1) : Data(count: 1)
+        
+        if fromIndex == data.endIndex {
+            characteristic.value = nil
+        }
     }
 }
