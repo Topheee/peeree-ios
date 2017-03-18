@@ -97,6 +97,124 @@ extension NotificationCenter {
     }
 }
 
+extension Bool {
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: UInt32) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: UInt64) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: UInt16) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: UInt8) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Int32) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Double) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Int8) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Int16) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Float) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: UInt) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Int64) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: Int) {
+        self.init(value != 0)
+    }
+    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
+    init(_ value: CGFloat) {
+        self.init(value != 0)
+    }
+}
+
+extension UInt32 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension UInt64 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension UInt16 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension UInt8 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension Int32 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension Int64 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension Int16 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension Int8 {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
+extension Int {
+    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
+    init(_ value: Bool) {
+        self.init(value ? 1 : 0)
+    }
+}
+
 // MARK: - Synchronized Collections
 
 // we could implement CollectionType, SequenceType here, but nope
@@ -197,7 +315,7 @@ open class SynchronizedDictionary<Key: Hashable, Value> {
         }
     }
     
-    open func removeValueForKey(_ key: Key) -> Value? {
+    open func removeValue(forKey key: Key) -> Value? {
         var ret: Value? = nil
         accessQueue.sync {
             ret = self.dictionary.removeValue(forKey: key)

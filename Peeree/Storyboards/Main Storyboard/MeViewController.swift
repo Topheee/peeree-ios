@@ -10,54 +10,10 @@ import UIKit
 
 final class MeViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private weak var nameTextField: UITextField!
-	@IBOutlet private weak var statusButton: UIButton!
 	@IBOutlet private weak var portraitImageButton: UIButton!
     @IBOutlet private weak var genderControl: UISegmentedControl!
     @IBOutlet private weak var birthdayInput: UITextField!
     @IBOutlet private weak var scrollView: UIScrollView!
-	
-	private class StatusSelViewControllerDataSource: NSObject, SingleSelViewControllerDataSource {
-		private let container: MeViewController
-		
-		init(container: MeViewController) {
-			self.container = container
-		}
-        
-        fileprivate func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
-            return (PeerInfo.RelationshipStatus.values.index(of: UserPeerInfo.instance.relationshipStatus)!, 0)
-        }
-        fileprivate func selectionEditable(in pickerView: UIPickerView) -> Bool {
-            return true
-        }
-		
-		func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-			return NSLocalizedString("Relationship Status", comment: "Heading of the relation ship status picker view controller.")
-		}
-		
-		func subHeadingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-			return ""
-		}
-		
-		func descriptionOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
-			return NSLocalizedString("Tell others, what's up with your relationship.", comment: "Description of relation ship status picker view controller.")
-		}
-		
-		@objc func numberOfComponents(in pickerView: UIPickerView) -> Int {
-			return 1
-		}
-		
-		@objc func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-            return PeerInfo.RelationshipStatus.values.count
-		}
-		
-		@objc func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-			return PeerInfo.RelationshipStatus.values[row].localizedRawValue
-		}
-		
-		@objc func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-			UserPeerInfo.instance.relationshipStatus = PeerInfo.RelationshipStatus.values[row]
-		}
-	}
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
 		UserPeerInfo.instance.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
@@ -87,8 +43,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         super.prepare(for: segue, sender: sender)
         if let personDetailVC = segue.destination as? PersonDetailViewController {
             personDetailVC.displayedPeerID = UserPeerInfo.instance.peer.peerID
-        } else if let singleSelVC = segue.destination as? SingleSelViewController {
-            singleSelVC.dataSource = StatusSelViewControllerDataSource(container: self)
         } else if let charTraitVC = segue.destination as? CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerInfo.instance.peer.characterTraits
             charTraitVC.userTraits = true
@@ -132,14 +86,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 		nameTextField.text = UserPeerInfo.instance.nickname
-        statusButton.setTitle(UserPeerInfo.instance.relationshipStatus.rawValue, for: UIControlState())
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .none
         dateFormatter.dateStyle = .long
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.gender) ?? 0
         portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
-        
-        statusButton.setNeedsLayout()
 	}
     
     override func viewDidLayoutSubviews() {

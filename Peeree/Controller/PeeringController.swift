@@ -12,11 +12,15 @@ public protocol RemotePeering {
     var peersMet: Int { get }
     var isBluetoothOn: Bool { get }
     func getPeerInfo(of peerID: PeerID) -> PeerInfo?
-    func loadPeerInfo(of peerID: PeerID) -> Progress?
+//    func loadPeerInfo(of peerID: PeerID) -> Progress?
     func isPeerInfoLoading(of peerID: PeerID) -> Progress?
     func loadPicture(of peer: PeerInfo) -> Progress?
     func isPictureLoading(of peerID: PeerID) -> Progress?
     func isPinning(_ peerID: PeerID) -> Bool
+}
+
+public enum PeerDistance {
+    case unknown, close, nearby, far
 }
 
 //public protocol LocalPeering {
@@ -57,6 +61,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     private var pinnedByPeers = SynchronizedSet<PeerID>()
     
     private var pinningConfirmations = SynchronizedDictionary<PeerID, WalletController.PinConfirmation>()
+    
+    private var rangeBlock: ((PeerID, PeerDistance) -> Void)?
     
     public let remote: RemotePeering
 //    public let local: LocalPeering
@@ -100,6 +106,37 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
         }
     }
     
+    @objc func callRange(_ timer: Timer) {
+        PeeringController.shared._remote.range(timer.userInfo as! PeerID)
+    }
+    
+    private func range(_ peerID: PeerID, timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
+        guard rangeBlock != nil else { return }
+        
+        if #available(iOS 10.0, *) {
+            let timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
+                PeeringController.shared._remote.range(peerID)
+            }
+            timer.tolerance = tolerance
+            RunLoop.main.add(timer, forMode: .defaultRunLoopMode)
+        } else {
+            let timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(PeeringController.callRange(_:)), userInfo: peerID, repeats: false)
+            timer.tolerance = tolerance
+            RunLoop.main.add(timer, forMode: .defaultRunLoopMode)
+        }
+        
+        rangeBlock?(peerID, distance)
+    }
+    
+    public func range(_ peerID: PeerID, block: @escaping (PeerID, PeerDistance) -> Void) {
+        rangeBlock = block
+        _remote.range(peerID)
+    }
+    
+    public func stopRanging() {
+        rangeBlock = nil
+    }
+    
     // MARK: LocalPeerManagerDelegate
     
     func advertisingStarted() {
@@ -136,9 +173,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 //    }
     
     func peerAppeared(_ peerID: PeerID) {
-        if _remote.getPeerInfo(of: peerID) == nil {
-            _ = _remote.loadPeerInfo(of: peerID)
-        }
         NetworkNotification.peerAppeared.post(peerID)
     }
     
@@ -147,7 +181,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     }
     
     func didPin(_ peerID: PeerID) {
-        guard let confirmation = pinningConfirmations.removeValueForKey(peerID) else {
+        guard let confirmation = pinningConfirmations.removeValue(forKey: peerID) else {
             assertionFailure("Pinned \(peerID) without confirmation. Refused.")
             return
         }
@@ -167,12 +201,30 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     }
     
     func didFailPin(_ peerID: PeerID) {
-        _ = pinningConfirmations.removeValueForKey(peerID)
+        _ = pinningConfirmations.removeValue(forKey: peerID)
         NetworkNotification.pinFailed.post(peerID)
     }
     
     func isPinned(_ peerID: PeerID) -> Bool {
         return pinnedPeers.contains(peerID)
+    }
+    
+    func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
+        guard error == nil else {
+            NSLog("Error updating range: \(error!.localizedDescription)") // TODO probably if the peripheral got out of range so we can delete this
+            range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+            return
+        }
+        switch rssi!.intValue {
+        case -20 ... 100:
+            range(peerID, timeInterval: 3.0, tolerance: 1.0, distance: .close)
+        case -40 ... -20:
+            range(peerID, timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
+        case -70 ... -40:
+            range(peerID, timeInterval: 5.0, tolerance: 2.0, distance: .far)
+        default:
+            range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+        }
     }
     
     // MARK: Private Methods

@@ -58,7 +58,7 @@ final class FilterViewController: UITableViewController {
         ageSwitch.isOn = filterSettings.onlyWithAge
         pictureSwitch.isOn = filterSettings.onlyWithPicture
         // why? i don't know
-        self.tableView.backgroundColor = theme.globalBackgroundColor
+        self.tableView.backgroundColor = AppDelegate.shared.theme.globalBackgroundColor
     }
     
     private func updatePrefs() {

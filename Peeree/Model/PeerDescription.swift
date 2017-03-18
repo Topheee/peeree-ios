@@ -9,28 +9,7 @@
 import Foundation
 import CoreGraphics
 import ImageIO
-
-/**
- Class used only for unit testing.
- */
-class TestPeerInfo: NetworkPeerInfo {
-    init(peerID: PeerID) {
-        var rand = arc4random()
-        let age: Int? = rand % 2 == 0 ? PeerInfo.MinAge + Int(rand % UInt32(PeerInfo.MaxAge - PeerInfo.MinAge)) : nil
-        let relationshipStatus = PeerInfo.RelationshipStatus.inRelationship
-        var characterTraits = CharacterTrait.standardTraits
-        for index in 0..<characterTraits.count {
-            characterTraits[index].applies = CharacterTrait.ApplyType.values[Int(rand % 4)]
-            rand = arc4random()
-        }
-        let peer = PeerInfo(peerID: peerID, nickname: peerID.uuidString, gender: PeerInfo.Gender.female, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: "1.0", iBeaconUUID: UUID(), lastChanged: Date(), _hasPicture: true /* rand % 5000 > 2500 */, cgPicture: nil)
-        super.init(peer: peer)
-    }
-    
-    @objc required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-}
+import CoreBluetooth.CBUUID
 
 public final class UserPeerInfo: LocalPeerInfo {
 	private static let PrefKey = "UserPeerInfo"
@@ -90,26 +69,18 @@ public final class UserPeerInfo: LocalPeerInfo {
         get { return peer.gender }
         set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
     }
-    var iBeaconUUID: UUID? {
-        get { return peer.iBeaconUUID }
-        set { if newValue != peer.iBeaconUUID { peer.iBeaconUUID = newValue; dirtied() } }
-    }
-    var relationshipStatus: PeerInfo.RelationshipStatus {
-        get { return peer.relationshipStatus }
-        set { if newValue != peer.relationshipStatus { peer.relationshipStatus = newValue; dirtied() } }
-    }
     var characterTraits: [CharacterTrait] {
         get { return peer.characterTraits }
         set { peer.characterTraits = newValue; dirtied() }
     }
 	
 	private init() {
-		dateOfBirth = Date(timeIntervalSinceNow: -3600*24*365*18)
-        super.init(peer: PeerInfo(peerID: PeerID(), nickname: "Unknown", gender: .female, age: nil, relationshipStatus: .inRelationship, characterTraits: CharacterTrait.standardTraits, version: "1.0", iBeaconUUID: nil, lastChanged: Date(), _hasPicture: false, cgPicture: nil))
+		dateOfBirth = nil
+        super.init(peer: PeerInfo(peerID: PeerID(), nickname: Bundle.main.localizedString(forKey: "New Peer", value: nil, table: nil), gender: .female, age: nil, cgPicture: nil))
 	}
 
 	@objc required public init?(coder aDecoder: NSCoder) {
-		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as? Date ?? Date(timeIntervalSinceNow: -3600*24*365*18)
+		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as? Date
 	    super.init(coder: aDecoder)
     }
     
@@ -130,10 +101,16 @@ public final class UserPeerInfo: LocalPeerInfo {
 	}
 }
 
+private func decode(_ aDecoder: NSCoder, characteristicID: CBUUID) -> NSData? {
+    return aDecoder.decodeObject(of: NSData.self, forKey: characteristicID.uuidString)
+}
+
+private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
+    return aCoder.encode(data as NSData, forKey: characteristicID.uuidString)
+}
+
 public class LocalPeerInfo: NSObject, NSSecureCoding {
     var peer: PeerInfo
-    var sentPinStatus = false
-    var pinStatusAcknowledged = false
     
     var cgPicture: CGImage? {
         get { return peer.cgPicture }
@@ -153,37 +130,32 @@ public class LocalPeerInfo: NSObject, NSSecureCoding {
     }
     
     @objc required public init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
-        guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
-        guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.UUIDCharacteristicID.uuidString) else { return nil }
+        guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
+        guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
+        let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
         
-        let nickname = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.nickname.rawValue) as? String ?? "Unknown"
-        let lastChanged = aDecoder.decodeObject(of: NSDate.self, forKey: PeerInfo.CodingKey.lastChanged.rawValue) as? Date ?? Date()
-        let version = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.version.rawValue) as? String ?? "1.0"
-        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        var characterTraits: [CharacterTrait]
-        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
-            characterTraits = CharacterTraitCoding.structArray(decodedTraits)
-        } else {
-            characterTraits = CharacterTrait.standardTraits
-        }
+//        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
+//        var characterTraits: [CharacterTrait]
+//        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
+//            characterTraits = CharacterTraitCoding.structArray(decodedTraits)
+//        } else {
+//            characterTraits = CharacterTrait.standardTraits
+//        }
+        
+        guard let _peer = PeerInfo(peerID: peerID as PeerID, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as? Data) else { return nil }
+        peer = _peer
         let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
         let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
-        let age: Int? = aDecoder.containsValue(forKey: PeerInfo.CodingKey.age.rawValue) ? aDecoder.decodeInteger(forKey: PeerInfo.CodingKey.age.rawValue) : nil
-        
-        var relationshipStatus: PeerInfo.RelationshipStatus
-        if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
-            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.noComment
-        } else {
-            relationshipStatus = PeerInfo.RelationshipStatus.noComment
-        }
-        
-        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: picture != nil, cgPicture: picture)
+        peer.cgPicture = picture
     }
     
     @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
-        aCoder.encode(peer.nickname, forKey: PeerInfo.CodingKey.nickname.rawValue)
+        aCoder.encode(peer.peerID, forKey: CBUUID.UUIDCharacteristicID.uuidString)
+        for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
+            guard let data = peer.characteristicValue(for: characteristicID) else { continue }
+            encodeIt(aCoder, characteristicID: characteristicID, data: data)
+        }
         if let image = peer.cgPicture {
             let data = NSMutableData()
             if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
@@ -193,78 +165,10 @@ public class LocalPeerInfo: NSObject, NSSecureCoding {
                 }
             }
         }
-        aCoder.encode(peer.gender.rawValue, forKey: PeerInfo.CodingKey.gender.rawValue)
-        aCoder.encode(peer.relationshipStatus.rawValue, forKey: PeerInfo.CodingKey.status.rawValue)
-        aCoder.encode(peer.version, forKey: PeerInfo.CodingKey.version.rawValue)
-        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
-        aCoder.encode(peer.lastChanged, forKey: PeerInfo.CodingKey.lastChanged.rawValue)
-        if let age = peer.age {
-            aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
-        }
-        if let uuid = peer.iBeaconUUID {
-            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        }
-    }
-}
-
-public /* final */ class NetworkPeerInfo: NSObject, NSCoding /* NSSecureCoding */ {
-    let peer: PeerInfo
-    
-//    @objc static var supportsSecureCoding : Bool {
-//        return true
-//    }
-    
-    private override init() {
-        fatalError()
-    }
-    
-    init(peer: PeerInfo) {
-        self.peer = peer
-    }
-    
-    @objc required public init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.peerID.rawValue) else { return nil }
-        guard let rawGenderValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.gender.rawValue) as? String else { return nil }
-        guard let gender = PeerInfo.Gender(rawValue: rawGenderValue) else { return nil }
-        
-        let nickname = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.nickname.rawValue) as? String ?? "Unknown"
-        let lastChanged = aDecoder.decodeObject(of: NSDate.self, forKey: PeerInfo.CodingKey.lastChanged.rawValue) as? Date ?? Date()
-        let version = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.version.rawValue) as? String ?? "1.0"
-        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        var characterTraits: [CharacterTrait]
-        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
-            characterTraits = CharacterTraitCoding.structArray(decodedTraits)
-        } else {
-            characterTraits = CharacterTrait.standardTraits
-        }
-        let hasPicture = aDecoder.decodeBool(forKey: PeerInfo.CodingKey.hasPicture.rawValue)
-        let age: Int? = aDecoder.containsValue(forKey: PeerInfo.CodingKey.age.rawValue) ? aDecoder.decodeInteger(forKey: PeerInfo.CodingKey.age.rawValue) : nil
-
-        var relationshipStatus: PeerInfo.RelationshipStatus
-        if let rawStatusValue = aDecoder.decodeObject(of: NSString.self, forKey: PeerInfo.CodingKey.status.rawValue) as? String {
-            relationshipStatus = PeerInfo.RelationshipStatus(rawValue:rawStatusValue) ?? PeerInfo.RelationshipStatus.noComment
-        } else {
-            relationshipStatus = PeerInfo.RelationshipStatus.noComment
-        }
-        
-        peer = PeerInfo(peerID: peerID as PeerID, nickname: nickname, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: uuid as UUID?, lastChanged: lastChanged, _hasPicture: hasPicture, cgPicture: nil)
-    }
-    
-    @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: PeerInfo.CodingKey.peerID.rawValue)
-        aCoder.encode(peer.nickname, forKey: PeerInfo.CodingKey.nickname.rawValue)
-        aCoder.encode(peer.hasPicture, forKey: PeerInfo.CodingKey.hasPicture.rawValue)
-        aCoder.encode(peer.gender.rawValue, forKey: PeerInfo.CodingKey.gender.rawValue)
-        aCoder.encode(peer.relationshipStatus.rawValue, forKey: PeerInfo.CodingKey.status.rawValue)
-        aCoder.encode(peer.version, forKey: PeerInfo.CodingKey.version.rawValue)
-        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
-        aCoder.encode(peer.lastChanged, forKey: PeerInfo.CodingKey.lastChanged.rawValue)
-        if let age = peer.age {
-            aCoder.encode(age, forKey: PeerInfo.CodingKey.age.rawValue)
-        }
-        if let uuid = peer.iBeaconUUID {
-            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        }
+//        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
+//        if let uuid = peer.iBeaconUUID {
+//            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
+//        }
     }
 }
 
@@ -288,39 +192,24 @@ public struct PeerInfo: Equatable {
          *  NSLocalizedString("queer", comment: "Gender type for everyone who does not fit into the other two genders.")
          */
     }
-    
-    enum RelationshipStatus: String {
-        case noComment, single, married, inRelationship
-        
-        static let values = [noComment, single, married, inRelationship]
-        
-        /*
-         * For genstrings
-         *
-         *  NSLocalizedString("noComment", comment: "The user does not want to expose his relationship status.")
-         *  NSLocalizedString("single", comment: "The user is not in an relationship nor was married.")
-         *  NSLocalizedString("married", comment: "The user is married.")
-         *  NSLocalizedString("inRelationship", comment: "The user is already in some kind of relationship.")
-         */
+    private enum GenderByte: UInt8 {
+        case male, female, queer
     }
     
     let peerID: PeerID
     
-    var nickname: String
+    var nickname = ""
     
-    var gender = Gender.female
-    var age: Int?
-    var relationshipStatus = RelationshipStatus.noComment
+    var gender = Gender.queer
+    var age: Int? = nil
     
-    var characterTraits: [CharacterTrait]
+    var characterTraits: [CharacterTrait] = CharacterTrait.standardTraits
     /**
      *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
      */
-    var version = "1.0"
+    var version = UInt8(0)
     
-    var iBeaconUUID: UUID? = nil // TODO Swift 3: change to UUID Swift type, as it is a struct
-    
-    var lastChanged = Date()
+    var lastChanged = Date.distantPast
     
     fileprivate var _hasPicture: Bool = false
     var hasPicture: Bool {
@@ -363,10 +252,109 @@ public struct PeerInfo: Equatable {
         }
     }
     
-//    func copyToNewID(_ peerID: MCPeerID) -> PeerInfo {
-//        return PeerInfo(peerID: peerID, gender: gender, age: age, relationshipStatus: relationshipStatus, characterTraits: characterTraits, version: version, iBeaconUUID: iBeaconUUID, lastChanged: lastChanged, _hasPicture:
-//            _hasPicture, _picture: _picture)
-//    }
+    var aggregateData: Data {
+        get {
+            let ageByte = age != nil ? UInt8(age!) : UInt8(0)
+            let genderByte: GenderByte = gender == .queer ? .queer : gender == .female ? .female : .male;
+            return Data(bytes: [ageByte, genderByte.rawValue, UInt8(hasPicture), version])
+        }
+        set {
+            if aggregateData.count > 0 {
+                let _age = Int(aggregateData[0])
+                if !(_age < PeerInfo.MinAge || _age > PeerInfo.MaxAge) {
+                    age = _age
+                }
+            }
+            if aggregateData.count > 1 {
+                if let genderByte = GenderByte(rawValue: aggregateData[1]) {
+                    switch genderByte {
+                    case .female:
+                        gender = .female
+                    case .queer:
+                        gender = .queer
+                    case .male:
+                        gender = .male
+                    }
+                }
+            }
+            if aggregateData.count > 2 {
+                _hasPicture = Bool(aggregateData[2])
+            }
+        }
+    }
+    
+    var nicknameData: Data {
+        get {
+            return nickname.data(using: PeerManager.nicknameEncoding)!
+        }
+        set {
+            nickname = String(data: newValue, encoding: PeerManager.nicknameEncoding) ?? ""
+        }
+    }
+    
+    var idData: Data { return peerID.uuidString.data(using: PeerManager.uuidEncoding)! }
+    
+    var lastChangedData: Data {
+        get {
+            var changed = lastChanged.timeIntervalSince1970
+            return Data(bytes: &changed, count: MemoryLayout<TimeInterval>.size)
+        }
+        set {
+            guard newValue.count >= MemoryLayout<TimeInterval>.size else { return }
+            
+            var changed: TimeInterval = 0.0
+            withUnsafeMutableBytes(of: &changed) { pointer in
+                pointer.copyBytes(from: newValue)
+            }
+            lastChanged = Date(timeIntervalSince1970: changed)
+        }
+    }
+    
+    func characteristicValue(for characteristicID: CBUUID) -> Data? {
+        switch characteristicID {
+        case CBUUID.UUIDCharacteristicID:
+            return idData
+        case CBUUID.AggregateCharacteristicID:
+            return aggregateData
+        case CBUUID.LastChangedCharacteristicID:
+            return lastChangedData
+        case CBUUID.NicknameCharacteristicID:
+            return nicknameData
+        default:
+            return nil
+        }
+    }
+    
+    mutating func characteristicValue(for characteristicID: CBUUID, to: Data) {
+        switch characteristicID {
+        case CBUUID.AggregateCharacteristicID:
+            aggregateData = to
+        case CBUUID.LastChangedCharacteristicID:
+            lastChangedData = to
+        case CBUUID.NicknameCharacteristicID:
+            nicknameData = to
+        default:
+            break
+        }
+    }
+    
+    init(peerID: PeerID, nickname: String, gender: PeerInfo.Gender, age: Int?, cgPicture: CGImage?) {
+        self.peerID = peerID
+        self.nickname = nickname
+        self.gender = gender
+        self.age = age
+        self.cgPicture = cgPicture
+    }
+    
+    init?(peerID: PeerID, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
+        guard aggregateData.count > 2 else { return nil }
+        self.peerID = peerID
+        self.aggregateData = aggregateData
+        self.nicknameData = nicknameData
+        if nickname == "" { return nil }
+        guard let changedData = lastChangedData else { return }
+        self.lastChangedData = changedData
+    }
 }
 
 public func ==(lhs: PeerInfo, rhs: PeerInfo) -> Bool {

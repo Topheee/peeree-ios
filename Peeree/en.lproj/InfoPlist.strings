@@ -8,6 +8,5 @@
 
 NSPhotoLibraryUsageDescription = "Your photo library is used to let you choose a picture of you to display it to other users.";
 NSMotionUsageDescription = "The accelerator sensor is used to improve location calculations.";
-NSLocationWhenInUseUsageDescription = "Your location is used to compare it to the location of other users, but only if both users pinned each other.";
 NSBluetoothPeripheralUsageDescription = "Bluetooth networking is used to connect to other Peeree users around you.";
-NSCameraUsageDescription = "Your camera is used to create a picture of you to display it to other users.";
+NSCameraUsageDescription = "Take a picture of you to display it to others around you!";

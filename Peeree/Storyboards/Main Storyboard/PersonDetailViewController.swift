@@ -11,7 +11,6 @@ import UIKit
 final class PersonDetailViewController: UIViewController, ProgressDelegate {
 	@IBOutlet private weak var portraitImageView: UIImageView!
 	@IBOutlet private weak var ageGenderLabel: UILabel!
-	@IBOutlet private weak var stateLabel: UILabel!
     @IBOutlet private weak var downloadIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var pinButton: UIButton!
     @IBOutlet private weak var traitsButton: UIButton!
@@ -122,7 +121,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         super.viewWillAppear(animated)
         guard displayedPeerID != nil else { assertionFailure(); return }
         
-        if let progress = PeeringController.shared.remote.loadPeerInfo(of: displayedPeerID!) {
+        if let progress = PeeringController.shared.remote.isPeerInfoLoading(of: displayedPeerID!) {
             peerInfoProgressManager = ProgressManager(peerID: displayedPeerID!, progress: progress, delegate: self, queue: DispatchQueue.main)
         } else if let peerInfo = displayedPeerInfo {
             if let progress = PeeringController.shared.remote.loadPicture(of: peerInfo) {
@@ -233,9 +232,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         
         portraitImageView.isHidden = state.peerInfoDownloadState != .downloaded
         ageGenderLabel.isHidden = state.peerInfoDownloadState != .downloaded
-        //        stateLabel.hidden = state.peerInfoDownloadState != .Downloaded
         downloadIndicator.isHidden = state.peerInfoDownloadState != .downloading
-        pinButton.isHidden = state.peerInfoDownloadState != .downloaded
+        pinButton.isHidden = state.peerInfoDownloadState != .downloaded || state.pinState == .pinning
         pinButton.isEnabled = state.isAvailable && !state.isLocalPeer
         pinButton.isSelected = state.pinState == .pinned
         traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
@@ -255,7 +253,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
                 circleLayer = CAShapeLayer()
                 circleLayer.path = circlePath.cgPath
                 circleLayer.fillColor = UIColor.clear.cgColor
-                circleLayer.strokeColor = theme.globalTintColor.cgColor
+                circleLayer.strokeColor = UIColor.black.cgColor //AppDelegate.shared.theme.globalTintColor.cgColor
                 circleLayer.lineWidth = 10.0;
                 
                 // Add the circleLayer to the view's layer's sublayers
@@ -267,6 +265,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         
         if state.isLocalPeer || state.isAvailable {
             navigationItem.titleView = nil
+            navigationItem.title = peerID.displayName
         } else {
             let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
             titleLable.text = peerID.displayName
@@ -278,7 +277,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         
         guard let peerInfo = displayedPeerInfo else { return }
         
-        stateLabel.text = peerInfo.relationshipStatus.localizedRawValue
         ageGenderLabel.text = peerInfo.summary
         portraitImageView.image = peerInfo.picture ?? UIImage(named: peerInfo.hasPicture ? "PortraitPlaceholder" : "PortraitUnavailable")
     }

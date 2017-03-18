@@ -11,7 +11,6 @@ import UIKit
 class PinMatchViewController: UIViewController {
     @IBOutlet private weak var portraitView: UIImageView!
     @IBOutlet private weak var backgroundImageView: UIImageView!
-    @IBOutlet private weak var beaconButton: UIBarButtonItem!
     @IBOutlet private weak var peerNameLabel: UILabel!
     
     static let StoryboardID = "PinMatch"
@@ -43,11 +42,6 @@ class PinMatchViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         _ = CircleMaskView(maskedView: portraitView)
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        beaconButton.isEnabled = UserPeerInfo.instance.peer.iBeaconUUID != nil
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -89,6 +83,7 @@ class PinMatchViewController: UIViewController {
         
         guard portraitView != nil else { return }
         portraitView.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
+        portraitView.layoutIfNeeded()
         _ = CircleMaskView(maskedView: portraitView)
     }
 }

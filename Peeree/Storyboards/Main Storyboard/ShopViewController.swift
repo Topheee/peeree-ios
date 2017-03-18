@@ -37,7 +37,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
             inAppPurchaser.requestProducts()
         }
         // why? i don't know
-        self.tableView.backgroundColor = theme.globalBackgroundColor
+        self.tableView.backgroundColor = AppDelegate.shared.theme.globalBackgroundColor
     }
     
     override func viewDidDisappear(_ animated: Bool) {

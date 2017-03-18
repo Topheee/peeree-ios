@@ -97,7 +97,7 @@ extension UIAlertController {
     /// This is the preferred method to display an UIAlertController since it sets the tint color of the global theme.
     func present(_ completion: (() -> Void)?) {
         presentInFrontMostViewController(true, completion: completion)
-        self.view.tintColor = theme.globalTintColor
+        self.view.tintColor = AppDelegate.shared.theme.globalTintColor
     }
 }
 

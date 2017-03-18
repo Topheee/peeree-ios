@@ -75,14 +75,13 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             // just wait
             break
         case .unsupported, .unauthorized:
-            UserPeerInfo.instance.iBeaconUUID = nil
             stopAdvertising()
         case .poweredOff:
             stopAdvertising()
         case .poweredOn:
-            UserPeerInfo.instance.iBeaconUUID = UUID()
-            peripheralManager.add(peripheralService)
-            peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.BluetoothServiceID]])
+            peripheralManager.add(peerInfoService)
+            peripheralManager.add(peereeService)
+            peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.PeereeServiceID]])
         }
     }
     
@@ -99,16 +98,6 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
         switch characteristic.uuid {
-        case CBUUID.UUIDCharacteristicID:
-            // this is dead code since subscribing is no longer possible to this characteristic
-            guard let data = peerIDData else {
-                assertionFailure()
-                break
-            }
-            sendData(data: data, of: peerUUIDCharacteristic, to: central, sendSize: false)
-        case CBUUID.PeerInfoCharacteristicID:
-            let data = NSKeyedArchiver.archivedData(withRootObject: NetworkPeerInfo(peer: UserPeerInfo.instance.peer))
-            sendData(data: data, of: peerInfoCharacteristic, to: central, sendSize: true)
         case CBUUID.PortraitCharacteristicID:
             guard let data = try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL) else { return }
             sendData(data: data, of: portraitCharacteristic, to: central, sendSize: true)
@@ -133,13 +122,9 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
-        if request.characteristic.uuid == peerUUIDCharacteristic.uuid {
-            request.value = peerIDData
-            if request.value != nil {
-                peripheral.respond(to: request, withResult: .success)
-            } else {
-                peripheral.respond(to: request, withResult: .unlikelyError)
-            }
+        if let data = UserPeerInfo.instance.peer.characteristicValue(for: request.characteristic.uuid) {
+            request.value = data
+            peripheral.respond(to: request, withResult: .success)
         } else {
             peripheral.respond(to: request, withResult: .readNotPermitted)
         }

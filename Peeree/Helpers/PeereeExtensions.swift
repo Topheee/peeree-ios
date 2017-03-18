@@ -11,18 +11,22 @@ import CoreBluetooth
 
 extension PeerID {
     var displayName: String {
-        return PeeringController.shared.remote.getPeerInfo(of: self)?.nickname ?? NSLocalizedString("New Peer", comment: "Heading of Person View when peer information is not yet retrieved.")
+        return self == UserPeerInfo.instance.peer.peerID ? UserPeerInfo.instance.peer.nickname : PeeringController.shared.remote.getPeerInfo(of: self)?.nickname ?? NSLocalizedString("New Peer", comment: "Heading of Person View when peer information is not yet retrieved.")
     }
 }
 
-extension CBService {
-    func correspondingCharacteristic(for characteristic: CBCharacteristic) -> CBCharacteristic? {
-        guard self.characteristics != nil else { return nil }
-        for discoveredCharacteristic in self.characteristics! {
-            if discoveredCharacteristic.uuid == characteristic.uuid {
-                return discoveredCharacteristic
-            }
+extension CBPeripheral {
+    var peereeService: CBService? {
+        return services?.first
+    }
+    
+    var peerInfoService: CBService? {
+        return peereeService?.includedServices?.first
+    }
+    
+    func readValues(for characteristics: [CBCharacteristic]) {
+        for characteristic in characteristics {
+            readValue(for: characteristic)
         }
-        return nil
     }
 }

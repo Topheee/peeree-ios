@@ -14,19 +14,49 @@ protocol RemotePeerManagerDelegate {
 //    func scanningStopped()
     func peerAppeared(_ peerID: PeerID)
     func peerDisappeared(_ peerID: PeerID)
+    func isPinned(_ peerID: PeerID) -> Bool
     func didPin(_ peerID: PeerID)
     func didFailPin(_ peerID: PeerID)
-    func isPinned(_ peerID: PeerID) -> Bool
+    func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
 }
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
 final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDelegate, CBPeripheralDelegate {
     static private let PeersMetKey = "PeersMet"
     
+    private struct PeerData {
+        var progress = Progress(totalUnitCount: 3)
+        var aggregateData: Data? = nil
+        var nicknameData: Data? = nil
+        var lastChangedData: Data? = nil
+        
+        mutating func set(data: Data, for characteristicID: CBUUID) {
+            switch characteristicID {
+            case CBUUID.AggregateCharacteristicID:
+                aggregateData = data
+            case CBUUID.NicknameCharacteristicID:
+                nicknameData = data
+            case CBUUID.LastChangedCharacteristicID:
+                lastChangedData = data
+            default:
+                break
+            }
+            var count = Int64(0)
+            for datum in [aggregateData, nicknameData] {
+                if datum != nil {
+                    count += Int64(1)
+                }
+            }
+            progress.completedUnitCount = count
+        }
+    }
+    
     private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
     
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
     private var cachedPeers = SynchronizedDictionary<PeerID, LocalPeerInfo>()
+    private var peerInfoTransmissions = [PeerID : PeerData]()
+    
     private var activeTransmissions = [Transmission : (Progress, Data)]() // TODO if the synchronization through the dQueue is too slow, switch to a delegate model, where the delegate is being told when a transmission begins/ends. Also, inform new delegates (via didSet and then dQueue.aysnc) of ongoing transmissions by calling transmissionDidBegin for every current transmission.
     private var ongoingPins = SynchronizedSet<PeerID>()
     
@@ -64,7 +94,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             guard !isScanning else { return }
         #endif
         
-        centralManager.scanForPeripherals(withServices: [CBUUID.BluetoothServiceID], options: nil)
+        centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: nil)
 //        centralManager.scanForPeripherals(withServices: nil, options: nil)
     }
 
@@ -76,6 +106,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 progress.cancel()
             }
             self.activeTransmissions.removeAll()
+            self.peerInfoTransmissions.removeAll()
             // writing peersMet here is a good choice, since we will stop peering before the app is quit and also this method won't get called often and the peers met are not that critical
             UserDefaults.standard.set(self.peersMet, forKey:RemotePeerManager.PeersMetKey)
             self.centralManager.stopScan()
@@ -103,7 +134,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 return progress
             } else {
                 // TODO maybe search in the peripherals services and check whether we already subscribed
-                guard let characteristic = (peripheral.services?.first?.characteristics?.first { $0.uuid == characteristicID }) else {
+                guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == characteristicID }) else {
                     NSLog("Tried to load unknown characteristic \(characteristicID.uuidString).")
                     return nil
                 }
@@ -126,10 +157,11 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         return load(characteristicID: portraitCharacteristic.uuid, of: peer.peerID)
     }
     
-    func loadPeerInfo(of peerID: PeerID) -> Progress? {
-        guard getPeerInfo(of: peerID) == nil else { return nil }
-        return load(characteristicID: peerInfoCharacteristic.uuid, of: peerID)
-    }
+//    func loadPeerInfo(of peerID: PeerID) -> Progress? {
+//        guard getPeerInfo(of: peerID) == nil else { return nil }
+//        guard let transmission = peerInfoTransmissions[peerID] else { return nil /* we load it anyway, so do not read again */ }
+//        return transmission.progress
+//    }
     
     func isPictureLoading(of peerID: PeerID) -> Progress? {
         guard let peripheral = peripheralPeerIDs[peerID] else { return nil }
@@ -137,8 +169,8 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func isPeerInfoLoading(of peerID: PeerID) -> Progress? {
-        guard let peripheral = peripheralPeerIDs[peerID] else { return nil }
-        return isLoading(characteristicID: CBUUID.PeerInfoCharacteristicID, of: peripheral)
+        guard let transmission = peerInfoTransmissions[peerID] else { return nil /* we load it anyway, so do not read again */ }
+        return transmission.progress
     }
     
     func getPeerInfo(of peerID: PeerID) -> PeerInfo? {
@@ -154,12 +186,17 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             return
         }
         let data = pinnedData(true)
-        guard let characteristic = peripheral.services?.first?.correspondingCharacteristic(for: pinnedCharacteristic) else { return }
+        guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == pinnedCharacteristic.uuid }) else { return }
         peripheral.writeValue(data, for: characteristic, type: .withResponse)
     }
     
     func isPinning(_ peerID: PeerID) -> Bool {
         return ongoingPins.contains(peerID)
+    }
+    
+    func range(_ peerID: PeerID) {
+        guard let peripheral = peripheralPeerIDs[peerID] else { return }
+        peripheral.readRSSI()
     }
     
     func clearCache() {
@@ -209,18 +246,21 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         NSLog("Connected to peripheral \(peripheral)")
         peripheral.delegate = self
-        peripheral.discoverServices([CBUUID.BluetoothServiceID])
+        peripheral.discoverServices([CBUUID.PeereeServiceID])
 //        peripheral.discoverServices(nil)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         // error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
-        for characteristicID in CBUUID.characteristicIDs {
+        for characteristicID in CBUUID.splitCharacteristicIDs {
             cancelTransmission(to: peripheral, of: characteristicID)
         }
         guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral) else { return }
         guard let peerID = _peerID else { return }
-        _ = peripheralPeerIDs.removeValueForKey(peerID)
+        if let peerData = peerInfoTransmissions.removeValue(forKey: peerID) {
+            peerData.progress.cancel()
+        }
+        _ = peripheralPeerIDs.removeValue(forKey: peerID)
         delegate?.peerDisappeared(peerID)
     }
     
@@ -242,14 +282,38 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         
         // Loop through the newly filled peripheral.services array, just in case there's more than one.
         for service in peripheral.services! {
-            guard service.uuid == peripheralService.uuid else { continue }
-            peripheral.discoverCharacteristics(peripheralService.characteristics!.flatMap { $0.uuid }, for:service)
-            NSLog("Peripheral \(peripheral.identifier): Discovered service \(service.uuid.uuidString)")
+            NSLog("Discovered service \(service.uuid.uuidString).")
+            guard service.uuid == CBUUID.PeereeServiceID else { continue }
+            
+//            peripheral.discoverIncludedServices([CBUUID.PeerInfoServiceID], for: service)
+            peripheral.discoverIncludedServices(nil, for: service)
+            peripheral.discoverCharacteristics(peereeService.characteristics!.flatMap { $0.uuid }, for:service)
 //            peripheral.discoverCharacteristics(nil, for:service)
-            if let peerID = peerID(of: peripheral) {
-                // we discovered this one earlier but he went offline in between (modified services to nil or empty, resp.) but now he is back online again
-                delegate?.peerAppeared(peerID)
-            }
+            guard let peerID = peerID(of: peripheral) else { continue }
+            guard getPeerInfo(of: peerID) != nil else { continue }
+            // we discovered this one earlier but he went offline in between (modified services to nil or empty, resp.) but now he is back online again
+            delegate?.peerAppeared(peerID)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
+        guard error == nil else {
+            NSLog("Error discovering included services: \(error!.localizedDescription)")
+            disconnect(peripheral)
+            return
+        }
+        guard service.includedServices != nil && service.includedServices!.count > 0 else {
+            NSLog("Found peripheral with no included services.")
+            return
+        }
+        
+        // Discover the characteristic we want...
+        
+        // Loop through the newly filled included services array, just in case there's more than one.
+        for service in service.includedServices! {
+            NSLog("Discovered included service \(service.uuid.uuidString).")
+            guard service.uuid == CBUUID.PeerInfoServiceID else { continue }
+            peripheral.discoverCharacteristics(peerInfoService.characteristics!.flatMap { $0.uuid }, for:service)
         }
     }
     
@@ -260,7 +324,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             return
         }
 
-        var found = false
+        var found = service.uuid != CBUUID.PeereeServiceID // only search for uuid characteristic in the top service
         // Again, we loop through the array, just in case.
         for characteristic in service.characteristics! {
             // And check if it's the right one
@@ -280,15 +344,11 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                     }
                 }
             }
-            if characteristic.uuid == peerUUIDCharacteristic.uuid {
+            if characteristic.uuid == CBUUID.UUIDCharacteristicID {
                 // If it is, subscribe to it
                 peripheral.readValue(for: characteristic)
                 found = true
-                if let data = peerIDData {
-                    peripheral.writeValue(data, for: characteristic, type: .withResponse)
-                } else {
-                    assertionFailure()
-                }
+                peripheral.writeValue(UserPeerInfo.instance.peer.idData, for: characteristic, type: .withResponse)
             }
         }
         
@@ -313,7 +373,9 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             return
         }
         guard !progress.isCancelled else {
-            peripheral.setNotifyValue(false, for: characteristic)
+            if characteristic.isNotifying {
+                peripheral.setNotifyValue(false, for: characteristic)
+            }
             return
         }
         guard progress.totalUnitCount > 0 else {
@@ -327,12 +389,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         // Have we got everything we need?
         if activeTransmissions[transmission]?.1.count == Int(progress.totalUnitCount) {
             switch characteristic.uuid {
-            case CBUUID.PeerInfoCharacteristicID:
-                guard let peerInfo = NSKeyedUnarchiver.unarchiveObject(with: data) as? NetworkPeerInfo else {
-                    NSLog("Failed to unarchive peer info data \(data).")
-                    break
-                }
-                cachedPeers[peerInfo.peer.peerID] = LocalPeerInfo(peer: peerInfo.peer)
             case CBUUID.PortraitCharacteristicID:
                 guard let peerID = peerID(of: peripheral) else {
                     NSLog("Loaded portrait of unknown peripheral \(peripheral).")
@@ -364,20 +420,20 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             }
             _availablePeripherals[peripheral] = peerID
             peripheralPeerIDs[peerID] = peripheral
-            delegate?.peerAppeared(peerID)
             if cachedPeers[peerID] == nil {
                 peersMet = peersMet + 1
-//                peripheral.setNotifyValue(true, for: peerInfoCharacteristic)
+                guard let characteristics = peripheral.peerInfoService?.characteristics else { break }
+                peripheral.readValues(for: characteristics)
             }
             // always send pin on new connect to be absolutely sure that the other really got that
             if delegate?.isPinned(peerID) ?? false {
-                guard let characteristic = peripheral.services?.first?.correspondingCharacteristic(for: pinnedCharacteristic) else {
+                guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == pinnedCharacteristic.uuid }) else {
                     assertionFailure("could not find pinned characteristic in services")
                     return
                 }
                 peripheral.writeValue(pinnedData(true), for: characteristic, type: .withoutResponse)
             }
-        case CBUUID.PeerInfoCharacteristicID, CBUUID.PortraitCharacteristicID:
+        case CBUUID.PortraitCharacteristicID:
             var size: Int32 = 0
             var offset: Int32 = 0
             for byte in chunk {
@@ -391,7 +447,26 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 activeTransmissions[transmission] = (progress, Data(capacity: Int(size)))
             }
         default:
-            break
+            guard let peerID = peerID(of: peripheral) else { return }
+            if let peer = cachedPeers[peerID] {
+                peer.peer.characteristicValue(for: transmission.characteristicID, to: chunk)
+            } else {
+                var peerData = peerInfoTransmissions[peerID] ?? PeerData()
+                peerData.set(data: chunk, for: transmission.characteristicID)
+                if peerData.aggregateData != nil && peerData.nicknameData != nil {
+                    guard let peer = PeerInfo(peerID: peerID, aggregateData: peerData.aggregateData!, nicknameData: peerData.nicknameData!, lastChangedData: peerData.lastChangedData) else {
+                        NSLog("Creating peer info failed, disconnecting.")
+                        // peer info is essential
+                        disconnect(peripheral)
+                        return
+                    }
+                    cachedPeers[peerID] = LocalPeerInfo(peer: peer)
+                    peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
+                    delegate?.peerAppeared(peerID)
+                } else {
+                    peerInfoTransmissions[peerID] = peerData
+                }
+            }
         }
     }
     
@@ -410,6 +485,19 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             NSLog("Notification stopped on \(characteristic.uuid.uuidString).")
         }
     }
+    
+    #if os(iOS)
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        NSLog("Did read RSSI \(RSSI) of peripheral \(peripheral).")
+        guard let peerID = peerID(of: peripheral) else { assertionFailure(); return }
+        delegate?.didRange(peerID, rssi: RSSI, error: error)
+    }
+    #else
+    func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
+        guard let peerID = peerID(of: peripheral) else { assertionFailure(); return }
+        delegate?.didRange(peerID, rssi: peripheral.rssi, error: error)
+    }
+    #endif
     
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
         NSLog("Transitioned from services \(invalidatedServices) to \(peripheral.services). State: \(peripheral.state.rawValue).")
@@ -436,13 +524,13 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         }
     }
     
-    // MARK: Private Methods
-    
     override init() {
         centralManager = nil
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: dQueue, options: [CBCentralManagerOptionShowPowerAlertKey : 1])
     }
+    
+    // MARK: Private Methods
     
     private func disconnect(_ peripheral: CBPeripheral) {
         // Don't do anything if we're not connected
@@ -457,7 +545,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         for service in peripheral.services! {
             guard service.characteristics != nil else { continue }
             for characteristic in service.characteristics! {
-                if characteristic.uuid.isCharacteristicID && characteristic.isNotifying {
+                if characteristic.isNotifying {
                     peripheral.setNotifyValue(false, for: characteristic)
                 }
             }
@@ -474,27 +562,11 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         progress.cancel()
     }
     
-    private func removePeripheral(_ peripheral: CBPeripheral) {
-        for characteristicID in CBUUID.characteristicIDs {
-            cancelTransmission(to: peripheral, of: characteristicID)
-        }
-        guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral) else { return }
-        guard let peerID = _peerID else { return }
-        _ = peripheralPeerIDs.removeValueForKey(peerID)
-    }
-    
     private func peerID(of peripheral: CBPeripheral) -> PeerID? {
         guard let _peerID = _availablePeripherals[peripheral] else { return nil }
         return _peerID
     }
 }
-
-//fileprivate final class RemotePeer: NSObjectProtocol {
-//    let peripheral: CBPeripheral
-//    var peerInfo: LocalPeerInfo?
-//    
-//    private var servicesDiscovered = false
-//}
 
 struct Transmission: Hashable {
     let peripheralID: UUID

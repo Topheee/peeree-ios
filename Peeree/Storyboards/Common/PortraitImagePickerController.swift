@@ -21,7 +21,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         let presentPicker = {
             DispatchQueue.main.async {
                 self.present(imagePicker, animated: true, completion: nil)
-                imagePicker.view.tintColor = theme.globalTintColor
+                imagePicker.view.tintColor = AppDelegate.shared.theme.globalTintColor
             }
         }
         let cameraHandler = {(alertAction: UIAlertAction) -> Void in

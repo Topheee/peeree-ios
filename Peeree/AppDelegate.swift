@@ -29,12 +29,10 @@ struct Theme {
         self.globalBackgroundGreen = globalBackground.g
         self.globalBackgroundBlue = globalBackground.b
         self.globalBackgroundColor = UIColor(red: globalBackgroundRed, green: globalBackgroundGreen, blue: globalBackgroundBlue, alpha: 1.0)
-        self.barBackgroundColor = UIColor(red: barBackground.r, green: barBackground.g, blue: barBackground.b, alpha: 0.3)
+        self.barBackgroundColor = UIColor(red: barBackground.r, green: barBackground.g, blue: barBackground.b, alpha: 1.0)
         barTintColor = UIColor(red: barTint.r, green: barTint.g, blue: barTint.b, alpha: 1.0)
     }
 }
-
-let theme = Theme(globalTint: (0/255, 146/255, 0/255), barTint: (0/255, 146/255, 0/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (98/255, 255/255, 139/255)) //white with green
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -43,6 +41,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
+    let theme = Theme(globalTint: (22/255, 145/255, 101/255), barTint: (22/255, 145/255, 101/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (255/255, 255/255, 255/255)) //white with green
+    
     /// This is somehow set by the environment...
     var window: UIWindow?
     
@@ -52,12 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
      *  Registers for notifications, presents onboarding on first launch and applies GUI theme
      */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-		if UIApplication.instancesRespond(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
-			//only ask on iOS 8 or later
-            UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
-		}
-        
-        UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.InitialPinPoints])
+		UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.InitialPinPoints])
         
         setupAppearance()
         
@@ -76,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ = PeeringController.NetworkNotification.pinMatch.addObserver { notification in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
-                _ = PeeringController.shared.remote.loadPeerInfo(of: peerID)
+                assertionFailure()
                 return
             }
             
@@ -84,6 +79,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         _ = PeeringController.NetworkNotification.connectionChangedState.addObserver { notification in
+            if UIApplication.instancesRespond(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
+                //only ask on iOS 8 or later
+                UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
+            }
+            
             guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
             guard let browseItem = topVC.tabBar.items?.first else { return }
             
@@ -140,7 +140,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-        // TODO figure out whether this also disconnects all open sessions
         PeeringController.shared.peering = false
 //        RemotePeerManager.shared.clearCache()
         InAppPurchaseController.shared.clearCache()
@@ -262,8 +261,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         RootView.appearance().tintColor = theme.globalTintColor
         RootView.appearance().backgroundColor = theme.globalBackgroundColor
         
-        //        UINavigationBar.appearance().tintColor = theme.barTintColor
-        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
+        UINavigationBar.appearance().tintColor = theme.barBackgroundColor
+        UINavigationBar.appearance().barTintColor = theme.barTintColor
+//        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
         
         UITabBar.appearance().tintColor = theme.barTintColor
         UITabBar.appearance().backgroundColor = theme.barBackgroundColor
