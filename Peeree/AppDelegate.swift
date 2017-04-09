@@ -57,9 +57,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         setupAppearance()
         
         _ = PeeringController.NetworkNotification.peerAppeared.addObserver { notification in
+            guard let again = notification.userInfo?[PeeringController.NetworkNotificationKey.again.rawValue] as? Bool else { return }
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
 
-            self.peerAppeared(peerID)
+            self.peerAppeared(peer, again: again)
         }
         
         _ = PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
@@ -87,7 +89,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
             guard let browseItem = topVC.tabBar.items?.first else { return }
             
-            browseItem.image = UIImage(named: PeeringController.shared.peering ? "RadarTemplateFilled" : "RadarTemplate")
+            browseItem.image = PeeringController.shared.peering ? #imageLiteral(resourceName: "RadarTemplateFilled") : #imageLiteral(resourceName: "RadarTemplate")
             browseItem.selectedImage = browseItem.image
         }
 		
@@ -135,8 +137,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard application.applicationState == .inactive else { return }
         guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? Data else { return }
         guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else { return }
+        guard let peerInfo = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
         
-        show(peer: peerID)
+        show(peer: peerInfo)
     }
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
@@ -149,7 +152,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
     }
     
-    func show(peer peerID: PeerID) {
+    func show(peer: PeerInfo) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         
@@ -159,13 +162,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if vc is BrowseViewController {
                 browseVC = vc as? BrowseViewController
             } else if let personVC = vc as? PersonDetailViewController {
-                guard personVC.displayedPeerID != peerID else { return }
+                guard personVC.displayedPeerInfo != peer else { return }
             }
         }
-        browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
+        browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peer)
     }
     
-    func find(peer peerID: PeerID) {
+    func find(peer: PeerInfo) {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
         
@@ -177,22 +180,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if vc is BrowseViewController {
                 _browseVC = vc as? BrowseViewController
             } else if let somePersonVC = vc as? PersonDetailViewController {
-                if somePersonVC.displayedPeerID == peerID {
+                if somePersonVC.displayedPeerInfo == peer {
                     _personVC = somePersonVC
                 }
             } else if let someBeaconVC = vc as? BeaconViewController {
-                guard someBeaconVC.searchedPeer?.peerID != peerID else { return }
+                guard someBeaconVC.searchedPeer != peer else { return }
             }
         }
         
         if let personVC = _personVC {
             personVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
         } else if let browseVC = _browseVC {
-            browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
+            browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peer)
             // is the new PersonDetailVC now available? I don't know... let's see, whether we can find it
             for vc in browseNavVC.viewControllers {
                 guard let somePersonVC = vc as? PersonDetailViewController else { continue }
-                guard somePersonVC.displayedPeerID == peerID else { continue }
+                guard somePersonVC.displayedPeerInfo == peer else { continue }
                 
                 somePersonVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
             }
@@ -201,14 +204,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     // MARK: Private Methods
     
-	private func peerAppeared(_ peerID: PeerID) {
+    private func peerAppeared(_ peer: PeerInfo, again: Bool) {
 		if !isActive {
-            guard PeeringController.shared.remote.getPeerInfo(of: peerID) == nil else { return }
+            guard !again else { return }
             
 			let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-			note.alertBody = String(format: alertBodyFormat, peerID.displayName)
-            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+			note.alertBody = String(format: alertBodyFormat, peer.nickname)
+            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
 			UIApplication.shared.presentLocalNotificationNow(note)
         } else if BrowseViewController.instance == nil {
             updateNewPeerBadge()
@@ -224,9 +227,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             setPinMatchBadge()
             let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
             pinMatchVC.displayedPeer = peer
-//            DispatchQueue.main.async {
+            DispatchQueue.main.async {
                 (self.window?.rootViewController as? UITabBarController)?.selectedViewController?.present(pinMatchVC, animated: true, completion: nil)
-//            }
+            }
         } else {
             let note = UILocalNotification()
             let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
@@ -247,7 +250,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
         
         let pm = PeeringController.shared
-        let newPeerCount = pm.availablePeers.filter({ pm.remote.getPeerInfo(of: $0) == nil }).count
+        let newPeerCount = pm.remote.availablePeers.filter({ pm.remote.getPeerInfo(of: $0) == nil }).count
         rootTabBarController.tabBar.items?[0].badgeValue = newPeerCount == 0 ? nil : String(newPeerCount)
     }
     

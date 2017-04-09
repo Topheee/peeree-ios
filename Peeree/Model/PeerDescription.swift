@@ -22,26 +22,26 @@ public final class UserPeerInfo: LocalPeerInfo {
     private struct Singleton {
         static var sharedInstance: UserPeerInfo!
     }
-	static var instance: UserPeerInfo {
+	public static var instance: UserPeerInfo {
         _ = UserPeerInfo.__once
         
         return Singleton.sharedInstance
 	}
     
-    var pictureResourceURL: URL {
+    public var pictureResourceURL: URL {
         // Create a file path to our documents directory
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeerInfo.PortraitFileName)
     }
     
-    override var peer: PeerInfo {
+    public override var peer: PeerInfo {
         didSet {
             assert(peer == oldValue)
             dirtied()
         }
     }
 	
-	var dateOfBirth: Date? {
+	public var dateOfBirth: Date? {
 		didSet {
 			if dateOfBirth != oldValue {
                 if let birth = dateOfBirth {
@@ -55,7 +55,7 @@ public final class UserPeerInfo: LocalPeerInfo {
 		}
     }
     
-    var nickname: String {
+    public var nickname: String {
         get { return peer.nickname }
         set {
             guard newValue != "" && newValue != peer.nickname else { return }
@@ -64,23 +64,23 @@ public final class UserPeerInfo: LocalPeerInfo {
             dirtied()
         }
     }
-	var age: Int? { return peer.age }
-	var gender: PeerInfo.Gender {
+	public var age: Int? { return peer.age }
+	public var gender: PeerInfo.Gender {
         get { return peer.gender }
         set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
     }
-    var characterTraits: [CharacterTrait] {
+    public var characterTraits: [CharacterTrait] {
         get { return peer.characterTraits }
         set { peer.characterTraits = newValue; dirtied() }
     }
 	
 	private init() {
 		dateOfBirth = nil
-        super.init(peer: PeerInfo(peerID: PeerID(), nickname: Bundle.main.localizedString(forKey: "New Peer", value: nil, table: nil), gender: .female, age: nil, cgPicture: nil))
+        super.init(peer: PeerInfo(peerID: PeerID(), nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
 	}
 
 	@objc required public init?(coder aDecoder: NSCoder) {
-		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as? Date
+		dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as Date?
 	    super.init(coder: aDecoder)
     }
     
@@ -96,7 +96,7 @@ public final class UserPeerInfo: LocalPeerInfo {
 //        alertController.present(completionHandler)
 //	}
 	
-	func dirtied() {
+	public func dirtied() {
 		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
 	}
 }
@@ -130,7 +130,7 @@ public class LocalPeerInfo: NSObject, NSSecureCoding {
     }
     
     @objc required public init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.UUIDCharacteristicID.uuidString) else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
         let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
@@ -143,17 +143,18 @@ public class LocalPeerInfo: NSObject, NSSecureCoding {
 //            characterTraits = CharacterTrait.standardTraits
 //        }
         
-        guard let _peer = PeerInfo(peerID: peerID as PeerID, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as? Data) else { return nil }
+        guard let _peer = PeerInfo(peerID: peerID as PeerID, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
         peer = _peer
+
         let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
         let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
         peer.cgPicture = picture
     }
     
     @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: CBUUID.UUIDCharacteristicID.uuidString)
+        aCoder.encode(peer.peerID, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString)
         for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
-            guard let data = peer.characteristicValue(for: characteristicID) else { continue }
+            guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
             encodeIt(aCoder, characteristicID: characteristicID, data: data)
         }
         if let image = peer.cgPicture {
@@ -177,9 +178,9 @@ public struct PeerInfo: Equatable {
         case peerID, nickname, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged
     }
     
-    static let MinAge = 13, MaxAge = 100
+    public static let MinAge = 13, MaxAge = 100
     
-    enum Gender: String {
+    public enum Gender: String {
         case male, female, queer
         
         static let values = [male, female, queer]
@@ -196,41 +197,41 @@ public struct PeerInfo: Equatable {
         case male, female, queer
     }
     
-    let peerID: PeerID
+    public let peerID: PeerID
     
-    var nickname = ""
+    public var nickname = ""
     
-    var gender = Gender.queer
-    var age: Int? = nil
+    public var gender = Gender.queer
+    public var age: Int? = nil
     
-    var characterTraits: [CharacterTrait] = CharacterTrait.standardTraits
+    public var characterTraits: [CharacterTrait] = CharacterTrait.standardTraits
     /**
      *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
      */
-    var version = UInt8(0)
+    public var version = UInt8(0)
     
-    var lastChanged = Date.distantPast
+    public var lastChanged = Date.distantPast
     
     fileprivate var _hasPicture: Bool = false
-    var hasPicture: Bool {
+    public var hasPicture: Bool {
         return _hasPicture
     }
     
-    var cgPicture: CGImage? {
+    public var cgPicture: CGImage? {
         didSet {
             _hasPicture = cgPicture != nil
         }
     }
 
-    var pinMatched: Bool {
+    public var pinMatched: Bool {
         return PeeringController.shared.hasPinMatch(peerID)
     }
     
-    var pinned: Bool {
+    public var pinned: Bool {
         return PeeringController.shared.isPinned(peerID)
     }
     
-    var pinStatus: String {
+    public var pinStatus: String {
         if pinned {
             if pinMatched {
                 return NSLocalizedString("Pin Match!", comment: "Two peers have pinned each other")
@@ -242,7 +243,7 @@ public struct PeerInfo: Equatable {
         }
     }
     
-    var summary: String {
+    public var summary: String {
         if age != nil {
             let format = NSLocalizedString("%d years old, %@ - %@", comment: "Text describing the peers age, gender and pin status.")
             return String(format: format, age!, gender.localizedRawValue, pinStatus)
@@ -259,14 +260,14 @@ public struct PeerInfo: Equatable {
             return Data(bytes: [ageByte, genderByte.rawValue, UInt8(hasPicture), version])
         }
         set {
-            if aggregateData.count > 0 {
-                let _age = Int(aggregateData[0])
+            if newValue.count > 0 {
+                let _age = Int(newValue[0])
                 if !(_age < PeerInfo.MinAge || _age > PeerInfo.MaxAge) {
                     age = _age
                 }
             }
-            if aggregateData.count > 1 {
-                if let genderByte = GenderByte(rawValue: aggregateData[1]) {
+            if newValue.count > 1 {
+                if let genderByte = GenderByte(rawValue: newValue[1]) {
                     switch genderByte {
                     case .female:
                         gender = .female
@@ -277,18 +278,21 @@ public struct PeerInfo: Equatable {
                     }
                 }
             }
-            if aggregateData.count > 2 {
-                _hasPicture = Bool(aggregateData[2])
+            if newValue.count > 2 {
+                _hasPicture = Bool(newValue[2])
+            }
+            if newValue.count > 3 {
+                version = newValue[3]
             }
         }
     }
     
     var nicknameData: Data {
         get {
-            return nickname.data(using: PeerManager.nicknameEncoding)!
+            return nickname.data(prefixedEncoding: nickname.smallestEncoding)!
         }
         set {
-            nickname = String(data: newValue, encoding: PeerManager.nicknameEncoding) ?? ""
+            nickname = String(dataPrefixedEncoding: newValue) ?? ""
         }
     }
     
@@ -310,9 +314,9 @@ public struct PeerInfo: Equatable {
         }
     }
     
-    func characteristicValue(for characteristicID: CBUUID) -> Data? {
+    func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
         switch characteristicID {
-        case CBUUID.UUIDCharacteristicID:
+        case CBUUID.LocalUUIDCharacteristicID:
             return idData
         case CBUUID.AggregateCharacteristicID:
             return aggregateData
@@ -325,7 +329,7 @@ public struct PeerInfo: Equatable {
         }
     }
     
-    mutating func characteristicValue(for characteristicID: CBUUID, to: Data) {
+    mutating func setCharacteristicValue(of characteristicID: CBUUID, to: Data) {
         switch characteristicID {
         case CBUUID.AggregateCharacteristicID:
             aggregateData = to
@@ -346,14 +350,59 @@ public struct PeerInfo: Equatable {
         self.cgPicture = cgPicture
     }
     
+//    init?(peerID: PeerID, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
+//        guard aggregateData.count > 2 else { return nil }
+//        self.peerID = peerID
+//        self.aggregateData = aggregateData
+//        self.nicknameData = nicknameData
+//        print("new nickname: \(nickname)")
+//        if nickname == "" { return nil }
+//        guard let changedData = lastChangedData else { return }
+//        self.lastChangedData = changedData
+//    }
+    
     init?(peerID: PeerID, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
         guard aggregateData.count > 2 else { return nil }
         self.peerID = peerID
-        self.aggregateData = aggregateData
-        self.nicknameData = nicknameData
+        // same as self.aggregateData = aggregateData
+        if aggregateData.count > 0 {
+            let _age = Int(aggregateData[0])
+            if !(_age < PeerInfo.MinAge || _age > PeerInfo.MaxAge) {
+                age = _age
+            }
+        }
+        if aggregateData.count > 1 {
+            if let genderByte = GenderByte(rawValue: aggregateData[1]) {
+                switch genderByte {
+                case .female:
+                    gender = .female
+                case .queer:
+                    gender = .queer
+                case .male:
+                    gender = .male
+                }
+            }
+        }
+        if aggregateData.count > 2 {
+            _hasPicture = Bool(aggregateData[2])
+        }
+        if aggregateData.count > 3 {
+            version = aggregateData[3]
+        }
+        
+        // same as self.nicknameData = nicknameData
+        nickname = String(dataPrefixedEncoding: nicknameData) ?? ""
         if nickname == "" { return nil }
+        
+        // same as self.lastChangedData = lastChangedData
         guard let changedData = lastChangedData else { return }
-        self.lastChangedData = changedData
+        guard changedData.count >= MemoryLayout<TimeInterval>.size else { return }
+        
+        var changed: TimeInterval = 0.0
+        withUnsafeMutableBytes(of: &changed) { pointer in
+            pointer.copyBytes(from: changedData)
+        }
+        lastChanged = Date(timeIntervalSince1970: changed)
     }
 }
 

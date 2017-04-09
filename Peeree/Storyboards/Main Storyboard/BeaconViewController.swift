@@ -20,6 +20,9 @@ final class BeaconViewController: UIViewController {
     @IBOutlet private weak var userPortrait: UIImageView!
     @IBOutlet private weak var portraitWidthConstraint: NSLayoutConstraint!
     
+    private var appearedObserver: NSObjectProtocol!
+    private var disappearedObserver: NSObjectProtocol!
+    
     var searchedPeer: PeerInfo?
     
     override func viewDidLoad() {
@@ -29,18 +32,39 @@ final class BeaconViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        userPortrait.image = UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable")
-        remotePortrait.image = searchedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
+        userPortrait.image = UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+        remotePortrait.image = searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         updateDistance(.unknown)
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+        if let peer = searchedPeer {
+            if PeeringController.shared.remote.availablePeers.contains(peer.peerID) {
+                showPeerAvailable()
+            } else {
+                showPeerUnavailable()
+            }
+        }
+        
+        appearedObserver = PeeringController.NetworkNotification.peerAppeared.addObserver { (notification) in
+            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard self.searchedPeer?.peerID == peerID else { return }
+            
+            self.showPeerAvailable()
+        }
+        
+        disappearedObserver = PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
+            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard self.searchedPeer?.peerID == peerID else { return }
+            
+            self.showPeerUnavailable()
+        }
+        
         startBeacon()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        stopBeacon()
+        NotificationCenter.default.removeObserver(appearedObserver)
+        NotificationCenter.default.removeObserver(disappearedObserver)
     }
     
     // MARK: Private Methods
@@ -71,12 +95,22 @@ final class BeaconViewController: UIViewController {
         UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveLinear, animations: {
             self.remotePortrait.alpha = 0.5
         }, completion: nil)
+        
+        let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
+        titleLable.text = self.searchedPeer?.nickname
+        titleLable.textColor = UIColor(white: 0.5, alpha: 1.0)
+        titleLable.textAlignment = .center
+        titleLable.lineBreakMode = .byTruncatingTail
+        self.navigationItem.titleView = titleLable
     }
     
     private func showPeerAvailable() {
         UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveLinear, animations: {
             self.remotePortrait.alpha = 1.0
         }, completion: nil)
+        
+        self.navigationItem.titleView = nil
+        self.navigationItem.title = self.searchedPeer?.nickname
     }
     
     private func startBeacon() {
@@ -97,15 +131,13 @@ final class BeaconViewController: UIViewController {
 
 final class DistanceView: UIView {
     private class PulseIndex: NSObject {
-        static let StartInterval: TimeInterval = 0.75
+        static let StartInterval: TimeInterval = 1.5
         var index: Int = DistanceView.ringCount - 1
     }
     
     static let ringCount = 3
     
     private var timer: Timer?
-    /// number of previously "installed" layers
-    private var layerOffset: Int = 0
     
     weak var controller: BeaconViewController?
     
@@ -136,7 +168,6 @@ final class DistanceView: UIView {
     
     override func layoutSublayers(of layer: CALayer) {
         super.layoutSublayers(of: layer)
-        guard let sublayers = layer.sublayers else { return }
         
         // since setting the masks in viewDidLayoutSubviews() does not work we have to inform our controller here
         controller?.updateMaskViews()
@@ -146,6 +177,7 @@ final class DistanceView: UIView {
         theRect.size.height = theRect.height*2
         let position = CGPoint(x: theRect.width/2, y: theRect.height/2)
         
+        guard let sublayers = layer.sublayers else { return }
         for sublayer in sublayers {
             guard let ringLayer = sublayer as? CAShapeLayer else { continue }
             ringLayer.bounds = theRect
@@ -160,14 +192,14 @@ final class DistanceView: UIView {
     
     func pulse(_ sender: Timer) {
         guard let pulseIndex = sender.userInfo as? PulseIndex else { sender.invalidate(); return }
-        guard let previousLayer = layer.sublayers?[pulseIndex.index+layerOffset] else { sender.invalidate(); return }
+        guard let previousLayer = layer.sublayers?[pulseIndex.index] else { sender.invalidate(); return }
         
         pulseIndex.index = pulseIndex.index > 0 ? pulseIndex.index - 1 : DistanceView.ringCount - 1
 //        let timeInterval = pulseIndex.index == DistanceView.ringCount - 1 ? PulseIndex.StartInterval : 1.5*NSTimeInterval(pulseIndex.index + 1)
 //        sender.fireDate = NSDate(timeInterval: timeInterval, sinceDate: sender.fireDate)
         previousLayer.shadowOpacity = 0.0
         
-        let pulseLayer = layer.sublayers![pulseIndex.index+layerOffset]
+        let pulseLayer = layer.sublayers![pulseIndex.index]
         pulseLayer.shadowOpacity = 1.0
     }
     
@@ -176,9 +208,8 @@ final class DistanceView: UIView {
         var theRect = self.bounds.insetBy(dx: 2.0, dy: 2.0)
         theRect.size.height = theRect.height*2
         let position = CGPoint(x: theRect.width/2, y: theRect.height/2)
-        layerOffset = layer.sublayers?.count ?? 0
         
-        for index in 1...DistanceView.ringCount {
+        for index in 0..<DistanceView.ringCount {
             let ringLayer = CAShapeLayer()
             ringLayer.bounds = theRect
             ringLayer.position = position
@@ -188,8 +219,9 @@ final class DistanceView: UIView {
             ringLayer.lineWidth = 1.0 / scale
 //            ringLayer.shadowPath = ringLayer.path
             ringLayer.shadowColor = self.tintColor.cgColor
-            ringLayer.shadowRadius = 15.0
-            self.layer.insertSublayer(ringLayer, at: UInt32(index - 1))
+            ringLayer.shadowRadius = 7.0
+            layer.insertSublayer(ringLayer, at: UInt32(index))
+            
             scale *= 0.65
             theRect.size.width *= scale
             theRect.size.height *= scale

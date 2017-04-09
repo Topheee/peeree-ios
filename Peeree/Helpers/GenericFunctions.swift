@@ -97,6 +97,36 @@ extension NotificationCenter {
     }
 }
 
+extension String {
+    /// stores the encoding along the serialization of the string to let decoders know which it is
+    func data(prefixedEncoding encoding: String.Encoding) -> Data? {
+        // TODO performance: let size = MemoryLayout<String.Encoding>.size + nickname.lengthOfBytes(using: encoding)
+        var encodingRawValue = encoding.rawValue
+        let encodingPointer = withUnsafeMutablePointer(to: &encodingRawValue, { (pointer) -> UnsafeMutablePointer<String.Encoding.RawValue> in
+            return pointer
+        })
+        
+        var data = Data(bytesNoCopy: encodingPointer, count: MemoryLayout<String.Encoding.RawValue>.size, deallocator: Data.Deallocator.none)
+        
+        guard let payload = self.data(using: encoding) else { return nil }
+        data.append(payload)
+        return data
+    }
+    
+    /// takes data encoded with <code>data(prefixedEncoding:)</code> and constructs a string with the serialized encoding
+    init?(dataPrefixedEncoding data: Data) {
+        // TODO performance
+        let encodingData = data.subdata(in: 0..<MemoryLayout<String.Encoding.RawValue>.size)
+        var encodingRawValue: String.Encoding.RawValue = String.Encoding.utf8.rawValue
+        withUnsafeMutableBytes(of: &encodingRawValue) { pointer in
+            pointer.copyBytes(from: encodingData)
+        }
+        let encoding = String.Encoding(rawValue: encodingRawValue)
+        let suffix = data.suffix(from: MemoryLayout<String.Encoding.RawValue>.size)
+        self.init(data: data.subdata(in: suffix.startIndex..<suffix.endIndex), encoding: encoding)
+    }
+}
+
 extension Bool {
     /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
     init(_ value: UInt32) {

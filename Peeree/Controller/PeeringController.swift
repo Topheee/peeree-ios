@@ -9,11 +9,13 @@
 import Foundation
 
 public protocol RemotePeering {
+    var availablePeers: [PeerID] { get }
     var peersMet: Int { get }
     var isBluetoothOn: Bool { get }
+    
     func getPeerInfo(of peerID: PeerID) -> PeerInfo?
 //    func loadPeerInfo(of peerID: PeerID) -> Progress?
-    func isPeerInfoLoading(of peerID: PeerID) -> Progress?
+//    func isPeerInfoLoading(of peerID: PeerID) -> Progress?
     func loadPicture(of peer: PeerInfo) -> Progress?
     func isPictureLoading(of peerID: PeerID) -> Progress?
     func isPinning(_ peerID: PeerID) -> Bool
@@ -34,7 +36,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     public static let shared = PeeringController()
     
     public enum NetworkNotificationKey: String {
-        case peerID
+        case peerID, again
     }
     
     public enum NetworkNotification: String {
@@ -47,8 +49,16 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
             return NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
         }
         
-        func post(_ peerID: PeerID?) {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: PeeringController.shared, userInfo: peerID != nil ? [NetworkNotificationKey.peerID.rawValue : peerID!] : nil)
+        func post(_ peerID: PeerID?, again: Bool? = nil) {
+            var userInfo: [AnyHashable: Any]? = nil
+            if let id = peerID {
+                if let a = again {
+                    userInfo = [NetworkNotificationKey.peerID.rawValue : id, NetworkNotificationKey.again.rawValue : a]
+                } else {
+                    userInfo = [NetworkNotificationKey.peerID.rawValue : id]
+                }
+            }
+            NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: PeeringController.shared, userInfo: userInfo)
         }
     }
     
@@ -66,10 +76,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     public let remote: RemotePeering
 //    public let local: LocalPeering
-    
-    public var availablePeers: [PeerID] {
-        return _remote.availablePeers
-    }
     
     public var peering: Bool {
         get {
@@ -172,8 +178,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 //        }
 //    }
     
-    func peerAppeared(_ peerID: PeerID) {
-        NetworkNotification.peerAppeared.post(peerID)
+    func peerAppeared(_ peerID: PeerID, again: Bool) {
+        NetworkNotification.peerAppeared.post(peerID, again: again)
     }
     
     func peerDisappeared(_ peerID: PeerID) {
@@ -216,11 +222,11 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
             return
         }
         switch rssi!.intValue {
-        case -20 ... 100:
+        case -40 ... 100:
             range(peerID, timeInterval: 3.0, tolerance: 1.0, distance: .close)
-        case -40 ... -20:
+        case -60 ... -40:
             range(peerID, timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
-        case -70 ... -40:
+        case -100 ... -60:
             range(peerID, timeInterval: 5.0, tolerance: 2.0, distance: .far)
         default:
             range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)

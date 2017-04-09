@@ -84,7 +84,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     
     override func picked(image: UIImage?) {
         super.picked(image: image)
-        picButton.setImage(image ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
+        picButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
         pickPicButton.isHidden = true
     }
     

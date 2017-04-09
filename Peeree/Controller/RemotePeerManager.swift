@@ -12,7 +12,7 @@ import CoreBluetooth
 protocol RemotePeerManagerDelegate {
 //    func scanningStarted()
 //    func scanningStopped()
-    func peerAppeared(_ peerID: PeerID)
+    func peerAppeared(_ peerID: PeerID, again: Bool)
     func peerDisappeared(_ peerID: PeerID)
     func isPinned(_ peerID: PeerID) -> Bool
     func didPin(_ peerID: PeerID)
@@ -73,8 +73,12 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     var availablePeers: [PeerID] {
         return peripheralPeerIDs.accessQueue.sync {
-            return peripheralPeerIDs.dictionary.flatMap({ (peerID, _) -> PeerID? in // PERFORMANCE
-                return peerID
+            return peripheralPeerIDs.dictionary.flatMap({ (peerID, peripheral) -> PeerID? in
+                if peripheral.services == nil || peripheral.services!.isEmpty {
+                    return nil
+                } else {
+                    return peerID
+                }
             })
         }
     }
@@ -102,6 +106,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         guard isScanning else { return }
         
         dQueue.async {
+            self.centralManager.stopScan()
             for (_, (progress, _)) in self.activeTransmissions {
                 progress.cancel()
             }
@@ -109,12 +114,12 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             self.peerInfoTransmissions.removeAll()
             // writing peersMet here is a good choice, since we will stop peering before the app is quit and also this method won't get called often and the peers met are not that critical
             UserDefaults.standard.set(self.peersMet, forKey:RemotePeerManager.PeersMetKey)
-            self.centralManager.stopScan()
             for (peripheral, _) in self._availablePeripherals {
                 self.disconnect(peripheral)
             }
             self._availablePeripherals.removeAll()
             self.peripheralPeerIDs.removeAll() // does this make sense?
+            self.clearCache()
             self.ongoingPins.accessQueue.async {
                 for peerID in self.ongoingPins.set {
                     self.delegate?.didFailPin(peerID)
@@ -133,7 +138,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             if let progress = isLoading(characteristicID: characteristicID, of: peripheral) {
                 return progress
             } else {
-                // TODO maybe search in the peripherals services and check whether we already subscribed
                 guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == characteristicID }) else {
                     NSLog("Tried to load unknown characteristic \(characteristicID.uuidString).")
                     return nil
@@ -154,7 +158,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     func loadPicture(of peer: PeerInfo) -> Progress? {
         guard peer.hasPicture && peer.cgPicture == nil else { return nil }
-        return load(characteristicID: portraitCharacteristic.uuid, of: peer.peerID)
+        return load(characteristicID: CBUUID.PortraitCharacteristicID, of: peer.peerID)
     }
     
 //    func loadPeerInfo(of peerID: PeerID) -> Progress? {
@@ -186,7 +190,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             return
         }
         let data = pinnedData(true)
-        guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == pinnedCharacteristic.uuid }) else { return }
+        guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == CBUUID.PinnedCharacteristicID }) else { return }
         peripheral.writeValue(data, for: characteristic, type: .withResponse)
     }
     
@@ -236,6 +240,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        NSLog("Discovered \(_availablePeripherals[peripheral] == nil ? "unknown" : "known") peripheral \(peripheral).")
         guard _availablePeripherals[peripheral] == nil else { return }
         
         _availablePeripherals.updateValue(nil, forKey: peripheral)
@@ -252,7 +257,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         // error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
-        for characteristicID in CBUUID.splitCharacteristicIDs {
+        for characteristicID in CBUUID.SplitCharacteristicIDs {
             cancelTransmission(to: peripheral, of: characteristicID)
         }
         guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral) else { return }
@@ -285,35 +290,8 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             NSLog("Discovered service \(service.uuid.uuidString).")
             guard service.uuid == CBUUID.PeereeServiceID else { continue }
             
-//            peripheral.discoverIncludedServices([CBUUID.PeerInfoServiceID], for: service)
-            peripheral.discoverIncludedServices(nil, for: service)
-            peripheral.discoverCharacteristics(peereeService.characteristics!.flatMap { $0.uuid }, for:service)
+            peripheral.discoverCharacteristics(CBUUID.PeereeCharacteristicIDs, for:service)
 //            peripheral.discoverCharacteristics(nil, for:service)
-            guard let peerID = peerID(of: peripheral) else { continue }
-            guard getPeerInfo(of: peerID) != nil else { continue }
-            // we discovered this one earlier but he went offline in between (modified services to nil or empty, resp.) but now he is back online again
-            delegate?.peerAppeared(peerID)
-        }
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
-        guard error == nil else {
-            NSLog("Error discovering included services: \(error!.localizedDescription)")
-            disconnect(peripheral)
-            return
-        }
-        guard service.includedServices != nil && service.includedServices!.count > 0 else {
-            NSLog("Found peripheral with no included services.")
-            return
-        }
-        
-        // Discover the characteristic we want...
-        
-        // Loop through the newly filled included services array, just in case there's more than one.
-        for service in service.includedServices! {
-            NSLog("Discovered included service \(service.uuid.uuidString).")
-            guard service.uuid == CBUUID.PeerInfoServiceID else { continue }
-            peripheral.discoverCharacteristics(peerInfoService.characteristics!.flatMap { $0.uuid }, for:service)
         }
     }
     
@@ -344,10 +322,12 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                     }
                 }
             }
-            if characteristic.uuid == CBUUID.UUIDCharacteristicID {
-                // If it is, subscribe to it
+            if characteristic.uuid == CBUUID.LocalUUIDCharacteristicID {
+                // If it is, read it
                 peripheral.readValue(for: characteristic)
                 found = true
+            } else if characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
+                NSLog("Writing peer id \(String(data: UserPeerInfo.instance.peer.idData, encoding: PeerManager.uuidEncoding) ?? "<error>").")
                 peripheral.writeValue(UserPeerInfo.instance.peer.idData, for: characteristic, type: .withResponse)
             }
         }
@@ -360,7 +340,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil else {
-            NSLog("Error updating characteristic value: \(error!.localizedDescription)")
+            NSLog("Error receiving characteristic \(characteristic.uuid.uuidString) update: \(error!.localizedDescription)")
             cancelTransmission(to: peripheral, of: characteristic.uuid)
             return
         }
@@ -411,34 +391,46 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         progress.completedUnitCount = Int64(activeTransmissions[transmission]?.1.count ?? 0)
     }
     
+    private var malformedTimer: Timer?
     private func processFirstChunk(_ chunk: Data, transmission: Transmission, peripheral: CBPeripheral) {
         switch transmission.characteristicID {
-        case CBUUID.UUIDCharacteristicID:
+        case CBUUID.LocalUUIDCharacteristicID:
             guard let peerID = PeerID(data: chunk) else {
-                assertionFailure()
+                NSLog("Retrieved malformed peer ID. Disconnecting peer \(peripheral).")
+                disconnect(peripheral)
+                if #available(iOS 10.0, *) {
+                    // does not work yet
+                    malformedTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
+                        self.malformedTimer = nil
+                        self.centralManager?.connect(peripheral, options: nil)
+                    })
+                } else {
+                    // Not supported on earlier versions
+                }
                 return
             }
             _availablePeripherals[peripheral] = peerID
             peripheralPeerIDs[peerID] = peripheral
             if cachedPeers[peerID] == nil {
                 peersMet = peersMet + 1
-                guard let characteristics = peripheral.peerInfoService?.characteristics else { break }
+                guard let characteristics = peripheral.peereeService?.getCharacteristics(withIDs: [CBUUID.AggregateCharacteristicID, CBUUID.LastChangedCharacteristicID, CBUUID.NicknameCharacteristicID]) else { break }
                 peripheral.readValues(for: characteristics)
+            } else {
+                // we discovered this one earlier but he went offline in between (modified services to nil or empty, resp.) but now he is back online again
+                delegate?.peerAppeared(peerID, again: true)
             }
             // always send pin on new connect to be absolutely sure that the other really got that
             if delegate?.isPinned(peerID) ?? false {
-                guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == pinnedCharacteristic.uuid }) else {
+                guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == CBUUID.PinnedCharacteristicID }) else {
                     assertionFailure("could not find pinned characteristic in services")
                     return
                 }
                 peripheral.writeValue(pinnedData(true), for: characteristic, type: .withoutResponse)
             }
         case CBUUID.PortraitCharacteristicID:
-            var size: Int32 = 0
-            var offset: Int32 = 0
-            for byte in chunk {
-                size += Int32(byte) << offset
-                offset += 8
+            var size: SplitCharacteristicSize = 0
+            withUnsafeMutableBytes(of: &size) { pointer in
+                pointer.copyBytes(from: chunk)
             }
             if let (progress, _) = activeTransmissions[transmission] {
                 progress.totalUnitCount = Int64(size)
@@ -448,21 +440,21 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             }
         default:
             guard let peerID = peerID(of: peripheral) else { return }
-            if let peer = cachedPeers[peerID] {
-                peer.peer.characteristicValue(for: transmission.characteristicID, to: chunk)
+            if let cachedPeer = cachedPeers[peerID] {
+                cachedPeer.peer.setCharacteristicValue(of: transmission.characteristicID, to: chunk)
             } else {
                 var peerData = peerInfoTransmissions[peerID] ?? PeerData()
                 peerData.set(data: chunk, for: transmission.characteristicID)
                 if peerData.aggregateData != nil && peerData.nicknameData != nil {
-                    guard let peer = PeerInfo(peerID: peerID, aggregateData: peerData.aggregateData!, nicknameData: peerData.nicknameData!, lastChangedData: peerData.lastChangedData) else {
+                    if let peer = PeerInfo(peerID: peerID, aggregateData: peerData.aggregateData!, nicknameData: peerData.nicknameData!, lastChangedData: peerData.lastChangedData) {
+                        cachedPeers[peerID] = LocalPeerInfo(peer: peer)
+                        peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
+                        delegate?.peerAppeared(peerID, again: false)
+                    } else {
                         NSLog("Creating peer info failed, disconnecting.")
                         // peer info is essential
                         disconnect(peripheral)
-                        return
                     }
-                    cachedPeers[peerID] = LocalPeerInfo(peer: peer)
-                    peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
-                    delegate?.peerAppeared(peerID)
                 } else {
                     peerInfoTransmissions[peerID] = peerData
                 }
@@ -500,7 +492,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     #endif
     
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-        NSLog("Transitioned from services \(invalidatedServices) to \(peripheral.services). State: \(peripheral.state.rawValue).")
+        NSLog("Transitioned from services \(invalidatedServices) to \(String(describing: peripheral.services)).")
         guard let peerID = peerID(of: peripheral) else { return }
         if peripheral.services == nil || peripheral.services!.isEmpty {
 //            disconnect(peripheral)
@@ -513,10 +505,10 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             NSLog("Did write value for \(characteristic) on peripheral with unknown Peer ID (\(error != nil ? error!.localizedDescription : "no error")).")
             return
         }
-        if characteristic.uuid == pinnedCharacteristic.uuid {
+        if characteristic.uuid == CBUUID.PinnedCharacteristicID {
             ongoingPins.remove(peerID)
             guard error == nil else {
-                NSLog("Error during pin write - \(error!.localizedDescription).")
+                NSLog("Error during pin write: \(error!.localizedDescription)")
                 delegate?.didFailPin(peerID)
                 return
             }
@@ -537,21 +529,17 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         guard peripheral.state == .connected || peripheral.state == .connecting else { return }
         
         // See if we are subscribed to a characteristic on the peripheral
-        guard peripheral.services != nil else {
-            centralManager.cancelPeripheralConnection(peripheral)
-            return
-        }
-        
-        for service in peripheral.services! {
-            guard service.characteristics != nil else { continue }
-            for characteristic in service.characteristics! {
-                if characteristic.isNotifying {
-                    peripheral.setNotifyValue(false, for: characteristic)
+        if let services = peripheral.services {
+            for service in services {
+                guard service.characteristics != nil else { continue }
+                for characteristic in service.characteristics! {
+                    if characteristic.isNotifying {
+                        peripheral.setNotifyValue(false, for: characteristic)
+                    }
                 }
             }
         }
         
-        // If we've got this far, we're connected, but we're not subscribed, so we just disconnect
         centralManager.cancelPeripheralConnection(peripheral)
     }
         

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct CharacterTrait {
+public struct CharacterTrait {
     /* From wikipedia
      Wärme (z. B. Wohlfühlen in Gesellschaft)
      logisches Schlussfolgern
@@ -138,12 +138,12 @@ class CharacterTraitCoding: NSObject, NSSecureCoding {
 	}
 	
 	@objc required init?(coder aDecoder: NSCoder) {
-        guard let rawKindValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.KindKey) as? String else { return nil }
-        guard let decodedKind = CharacterTrait.Kind(rawValue:rawKindValue) else { return nil }
+        guard let rawKindValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.KindKey) else { return nil }
+        guard let decodedKind = CharacterTrait.Kind(rawValue:rawKindValue as String) else { return nil }
         
         var applies: CharacterTrait.ApplyType = .dontKnow
-        if let rawAppliesValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.ApplKey) as? String {
-            applies = CharacterTrait.ApplyType(rawValue:rawAppliesValue) ?? CharacterTrait.ApplyType.dontKnow
+        if let rawAppliesValue = aDecoder.decodeObject(of: NSString.self, forKey: CharacterTraitCoding.ApplKey) {
+            applies = CharacterTrait.ApplyType(rawValue:rawAppliesValue as String) ?? CharacterTrait.ApplyType.dontKnow
         }
         
         characterTrait = CharacterTrait(kind: decodedKind, applies: applies)

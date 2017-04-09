@@ -42,7 +42,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
         if let personDetailVC = segue.destination as? PersonDetailViewController {
-            personDetailVC.displayedPeerID = UserPeerInfo.instance.peer.peerID
+            personDetailVC.displayedPeerInfo = UserPeerInfo.instance.peer
         } else if let charTraitVC = segue.destination as? CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerInfo.instance.peer.characterTraits
             charTraitVC.userTraits = true
@@ -55,15 +55,15 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         let today = Date()
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
-        var minComponents = (Calendar.current as NSCalendar).components([.day, .month, .year], from: today)
+        var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
         minComponents.year = minComponents.year! - PeerInfo.MaxAge
-        var maxComponents = (Calendar.current as NSCalendar).components([.day, .month, .year], from: today)
+        var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
         maxComponents.year = maxComponents.year! - PeerInfo.MinAge
         
         datePicker.minimumDate = Calendar.current.date(from: minComponents)
         datePicker.maximumDate = Calendar.current.date(from: maxComponents)
         
-        datePicker.date = UserPeerInfo.instance.dateOfBirth as Date? ?? datePicker.maximumDate ?? today
+        datePicker.date = UserPeerInfo.instance.dateOfBirth ?? datePicker.maximumDate ?? today
         datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
         
         let saveToolBar = UIToolbar()
@@ -90,7 +90,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         dateFormatter.timeStyle = .none
         dateFormatter.dateStyle = .long
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
 	}
     
     override func viewDidLayoutSubviews() {
@@ -145,6 +145,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     override func picked(image: UIImage?) {
         super.picked(image: image)
-        portraitImageButton.setImage(image ?? UIImage(named: "PortraitUnavailable"), for: UIControlState())
+        portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
     }
 }

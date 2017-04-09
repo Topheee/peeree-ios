@@ -64,9 +64,12 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
         guard error == nil else {
-            NSLog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)).")
+            NSLog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)). - Stopping advertising.")
+            stopAdvertising()
             return
         }
+        
+        peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.PeereeServiceID]])
     }
     
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
@@ -79,9 +82,24 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         case .poweredOff:
             stopAdvertising()
         case .poweredOn:
-            peripheralManager.add(peerInfoService)
+            // value: UserPeerInfo.instance.peer.idData
+            let localUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalUUIDCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+            // value: remote peer.idData
+            let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+            // value: Data(count: 1)
+            let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinnedCharacteristicID, properties: [.read, .write, .writeWithoutResponse], value: nil, permissions: [.readable, .writeable])
+            // value try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
+            let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+            // value: aggregateData
+            let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.aggregateData, permissions: [.readable])
+            // value: lastChangedData
+            let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.lastChangedData, permissions: [.readable])
+            // value nicknameData
+            let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.nicknameData, permissions: [.readable])
+            
+            let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
+            peereeService.characteristics = [localUUIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic]
             peripheralManager.add(peereeService)
-            peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.PeereeServiceID]])
         }
     }
     
@@ -99,8 +117,14 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
         switch characteristic.uuid {
         case CBUUID.PortraitCharacteristicID:
-            guard let data = try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL) else { return }
-            sendData(data: data, of: portraitCharacteristic, to: central, sendSize: true)
+            do {
+                let data = try Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
+                sendData(data: data, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
+            } catch {
+                NSLog("Failed to read user portrait: \(error.localizedDescription)")
+                NSLog("Removing picture from user info.")
+                UserPeerInfo.instance.cgPicture = nil
+            }
         default:
             break
         }
@@ -122,7 +146,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
-        if let data = UserPeerInfo.instance.peer.characteristicValue(for: request.characteristic.uuid) {
+        if let data = UserPeerInfo.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
             request.value = data
             peripheral.respond(to: request, withResult: .success)
         } else {
@@ -135,14 +159,17 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         var _peer: (PeerID, CBCentral)? = nil
         var _pin: (PeerID, Bool)? = nil
         for request in requests {
-            if request.characteristic.uuid == peerUUIDCharacteristic.uuid {
-                guard let data = request.value else { continue }
+            if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
+                guard let data = request.value else {
+                    error = .unlikelyError
+                    break
+                }
                 guard let peerID = PeerID(data: data) else {
                     error = .unlikelyError
                     break
                 }
                 _peer = (peerID, request.central)
-            } else if request.characteristic.uuid == pinnedCharacteristic.uuid {
+            } else if request.characteristic.uuid == CBUUID.PinnedCharacteristicID {
                 guard let data = request.value else {
                     error = .unlikelyError
                     break
@@ -152,7 +179,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
                     break
                 }
                 guard let peerID = _availableCentrals[request.central] else {
-                    error = .unlikelyError
+                    error = .insufficientResources
                     break
                 }
                 _pin = (peerID, pinFlag != 0)
@@ -179,12 +206,12 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     private func sendData(data: Data, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
         if sendSize {
             // send the amount of bytes in data in the first package
-            var size = Int32(data.count)
-            let sizePointer = withUnsafeMutablePointer(to: &size, { (pointer) -> UnsafeMutablePointer<Int32> in
+            var size = SplitCharacteristicSize(data.count)
+            let sizePointer = withUnsafeMutablePointer(to: &size, { (pointer) -> UnsafeMutablePointer<SplitCharacteristicSize> in
                 return pointer
             })
             
-            let sizeData = Data(bytesNoCopy: sizePointer, count: 4, deallocator: Data.Deallocator.none)
+            let sizeData = Data(bytesNoCopy: sizePointer, count: MemoryLayout<SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
             guard peripheralManager.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
                 if isAdvertising {
                     interruptedTransfers.append((data, characteristic, central, true))

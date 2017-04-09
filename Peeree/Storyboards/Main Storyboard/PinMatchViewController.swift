@@ -22,17 +22,17 @@ class PinMatchViewController: UIViewController {
     }
     
     @IBAction func showProfile(_ sender: AnyObject) {
-        guard let peerID = displayedPeer?.peerID else { return }
+        guard let peer = displayedPeer else { return }
         
         cancelMatchmaking(sender)
-        AppDelegate.shared.show(peer: peerID)
+        AppDelegate.shared.show(peer: peer)
     }
     
     @IBAction func findPeer(_ sender: AnyObject) {
-        guard let peerID = displayedPeer?.peerID else { return }
+        guard let peer = displayedPeer else { return }
         
         cancelMatchmaking(sender)
-        AppDelegate.shared.find(peer: peerID)
+        AppDelegate.shared.find(peer: peer)
     }
     
     @IBAction func cancelMatchmaking(_ sender: AnyObject) {
@@ -82,7 +82,7 @@ class PinMatchViewController: UIViewController {
         peerNameLabel?.text = displayedPeer?.nickname
         
         guard portraitView != nil else { return }
-        portraitView.image = displayedPeer?.picture ?? UIImage(named: "PortraitUnavailable")
+        portraitView.image = displayedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         portraitView.layoutIfNeeded()
         _ = CircleMaskView(maskedView: portraitView)
     }
