@@ -13,7 +13,7 @@ protocol LocalPeerManagerDelegate {
     func advertisingStarted()
     func advertisingStopped()
 //    func networkTurnedOff()
-    func receivedPin(from: PeerID)
+    func receivedPinMatchIndication(from: PeerID)
 }
 
 /// The LocalPeerManager singleton serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
@@ -25,11 +25,14 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
     
+    // unfortunenately this will grow until we go offline as we do not get any disconnection notification...
     private var _availableCentrals = SynchronizedDictionary<CBCentral, PeerID>()
     
+    private var nonces = [CBCentral : Data]()
+    
     var availablePeers: [PeerID] {
-        return _availableCentrals.accessQueue.sync {
-            _availableCentrals.dictionary.flatMap({ (_, peerID) -> PeerID? in // PERFORMANCE
+        return _availableCentrals.accessSync { (dictionary) in
+            dictionary.flatMap({ (_, peerID) -> PeerID? in // PERFORMANCE
                 return peerID
             })
         }
@@ -53,10 +56,6 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         peripheralManager.stopAdvertising()
         peripheralManager = nil
         _availableCentrals.removeAll()
-        // I think we don't have to do this here as it is done in didStartAdvertising
-//        dQueue.async {
-//            self.interruptedTransfers.removeAll()
-//        }
         delegate?.advertisingStopped()
     }
     
@@ -83,11 +82,11 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             stopAdvertising()
         case .poweredOn:
             // value: UserPeerInfo.instance.peer.idData
-            let localUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalUUIDCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+            let localUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalUUIDCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.idData, permissions: [.readable])
             // value: remote peer.idData
             let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
             // value: Data(count: 1)
-            let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinnedCharacteristicID, properties: [.read, .write, .writeWithoutResponse], value: nil, permissions: [.readable, .writeable])
+            let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.writeWithoutResponse], value: nil, permissions: [.writeable])
             // value try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
             let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
             // value: aggregateData
@@ -96,9 +95,14 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.lastChangedData, permissions: [.readable])
             // value nicknameData
             let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.nicknameData, permissions: [.readable])
+            // value UserPeerInfo.instance.peer.publicKey
+            let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.publicKeyData, permissions: [.readable])
+            // value nonce when read, signed nonce when written
+            // Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
+            let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
             
             let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-            peereeService.characteristics = [localUUIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic]
+            peereeService.characteristics = [localUUIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic]
             peripheralManager.add(peereeService)
         }
     }
@@ -106,6 +110,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
         guard let theError = error else {
             interruptedTransfers.removeAll()
+            nonces.removeAll()
             delegate?.advertisingStarted()
             return
         }
@@ -149,6 +154,18 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         if let data = UserPeerInfo.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
             request.value = data
             peripheral.respond(to: request, withResult: .success)
+        } else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
+            guard let nonce = nonces.removeValue(forKey: request.central) else {
+                peripheral.respond(to: request, withResult: .insufficientResources)
+                return
+            }
+            guard let signature = try? UserPeerInfo.instance.keyPair.sign(message: nonce) else {
+                // TODO examine sign error and send appropriate error result
+                peripheral.respond(to: request, withResult: .requestNotSupported)
+                return
+            }
+            request.value = signature
+            peripheral.respond(to: request, withResult: .success)
         } else {
             peripheral.respond(to: request, withResult: .readNotPermitted)
         }
@@ -158,31 +175,29 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         var error: CBATTError.Code = .success
         var _peer: (PeerID, CBCentral)? = nil
         var _pin: (PeerID, Bool)? = nil
+        var _nonce: (CBCentral, Data)? = nil
         for request in requests {
             if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
-                guard let data = request.value else {
-                    error = .unlikelyError
-                    break
-                }
-                guard let peerID = PeerID(data: data) else {
-                    error = .unlikelyError
-                    break
-                }
-                _peer = (peerID, request.central)
-            } else if request.characteristic.uuid == CBUUID.PinnedCharacteristicID {
-                guard let data = request.value else {
-                    error = .unlikelyError
-                    break
-                }
-                guard let pinFlag = data.first else {
-                    error = .unlikelyError
-                    break
-                }
-                guard let peerID = _availableCentrals[request.central] else {
+                guard let data = request.value, let peerID = PeerID(data: data) else {
                     error = .insufficientResources
                     break
                 }
+                
+                _peer = (peerID, request.central)
+            } else if request.characteristic.uuid == CBUUID.PinMatchIndicationCharacteristicID {
+                guard let data = request.value, let pinFlag = data.first, let peerID = _availableCentrals[request.central] else {
+                    error = .insufficientResources
+                    break
+                }
+                
                 _pin = (peerID, pinFlag != 0)
+            } else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
+                guard let nonce = request.value else {
+                    error = .insufficientResources
+                    break
+                }
+                
+                _nonce = (request.central, nonce)
             } else {
                 error = .writeNotPermitted
                 break
@@ -192,10 +207,11 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             if let peer = _peer {
                 _availableCentrals[peer.1] = peer.0
             }
-            if let pin = _pin {
-                if pin.1 {
-                    delegate?.receivedPin(from: pin.0)
-                }
+            if let pin = _pin, pin.1 {
+                delegate?.receivedPinMatchIndication(from: pin.0)
+            }
+            if let nonce = _nonce {
+                nonces[nonce.0] = nonce.1
             }
         }
         peripheral.respond(to: requests.first!, withResult: error)

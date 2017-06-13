@@ -39,7 +39,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
-	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
+    static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
+    
+    static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
+        DispatchQueue.main.async {
+            var errorMessage: String
+            if let errorResponse = networkError as? ErrorResponse {
+                switch errorResponse {
+                case .Error(let code, _, let theError):
+                    print(code)
+                    errorMessage = theError.localizedDescription
+                    //                    if (theError as NSError).code == NSURLErrorSecureConnectionFailed {
+                    //                        print("untrusted")
+                    //                    }
+                }
+            } else {
+                errorMessage = networkError.localizedDescription
+            }
+            
+            if furtherDescription != nil {
+                errorMessage += "\n\(furtherDescription!)"
+            }
+            
+            let alert = UIAlertController(title: localizedTitle, message: errorMessage, preferredStyle: .alert)
+            //                alert.addAction(UIAlertAction(title: ), style: .destructive, handler: proceedHandler))
+            alert.addAction(UIAlertAction(title: Bundle.main.localizedString(forKey: "Cancel", value: nil, table: nil), style: .cancel, handler: nil))
+            alert.present(nil)
+        }
+    }
 
     let theme = Theme(globalTint: (22/255, 145/255, 101/255), barTint: (22/255, 145/255, 101/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (255/255, 255/255, 255/255)) //white with green
     
@@ -52,11 +79,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
      *  Registers for notifications, presents onboarding on first launch and applies GUI theme
      */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-		UserDefaults.standard.register(defaults: [WalletController.PinPointPrefKey : WalletController.InitialPinPoints])
+		UserDefaults.standard.register(defaults: [InAppPurchaseController.PinPointPrefKey : InAppPurchaseController.InitialPinPoints])
         
         setupAppearance()
         
-        _ = PeeringController.NetworkNotification.peerAppeared.addObserver { notification in
+        _ = PeeringController.Notifications.peerAppeared.addObserver { notification in
             guard let again = notification.userInfo?[PeeringController.NetworkNotificationKey.again.rawValue] as? Bool else { return }
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
@@ -64,13 +91,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.peerAppeared(peer, again: again)
         }
         
-        _ = PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
+        _ = PeeringController.Notifications.peerDisappeared.addObserver { notification in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             
             self.peerDisappeared(peerID)
         }
         
-        _ = PeeringController.NetworkNotification.pinMatch.addObserver { notification in
+        _ = AccountController.Notifications.pinMatch.addObserver { notification in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
                 assertionFailure()
@@ -80,7 +107,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.pinMatchOccured(peer)
         }
         
-        _ = PeeringController.NetworkNotification.connectionChangedState.addObserver { notification in
+        _ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
             if UIApplication.instancesRespond(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
                 //only ask on iOS 8 or later
                 UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
@@ -200,6 +227,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 somePersonVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
             }
         }
+    }
+    
+    static func requestPin(of peer: PeerInfo) {
+        let title = NSLocalizedString("Spend Pin Points", comment: "Title of the alert which pops up when the user is about to spend in-app currency.")
+        var message: String
+        var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)]
+        
+        if InAppPurchaseController.availablePinPoints >= InAppPurchaseController.PinCosts {
+            message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
+            message = String(format: message, InAppPurchaseController.availablePinPoints)
+            if !peer.verified {
+                message = "\(message) \(NSLocalizedString("But be careful: the identitfy of the user is not verified! You may be pinning someone else!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"))"
+                actions.append(UIAlertAction(title: NSLocalizedString("Retry verify.", comment: "The user wants to retry verifying peer."), style: .default) { action in
+                    PeeringController.shared.remote.verify(peer.peerID)
+                })
+            }
+            let actionTitle = String(format: NSLocalizedString("Spend %d.", comment: "The user accepts to spend pin points for this action."), InAppPurchaseController.PinCosts)
+            actions.append(UIAlertAction(title: actionTitle, style: peer.verified ? .default : .destructive) { action in
+                AccountController.shared.pin(peer)
+            })
+        } else {
+            message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket.")
+            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view."), style: .default) { action in
+                guard let rootTabBarController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController else { return }
+                
+                rootTabBarController.selectedIndex = 2
+            })
+        }
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        for action in actions {
+            alertController.addAction(action)
+        }
+        alertController.present(nil)
     }
     
     // MARK: Private Methods

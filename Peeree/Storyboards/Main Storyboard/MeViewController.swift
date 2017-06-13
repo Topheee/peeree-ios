@@ -9,18 +9,61 @@
 import UIKit
 
 final class MeViewController: PortraitImagePickerController, UITextFieldDelegate {
+    @IBOutlet private weak var accountButton: UIButton!
+    @IBOutlet private weak var accountIDLabel: UILabel!
+    @IBOutlet private weak var mailTextField: UITextField!
+    @IBOutlet private weak var mailNoteLabel: UILabel!
 	@IBOutlet private weak var nameTextField: UITextField!
 	@IBOutlet private weak var portraitImageButton: UIButton!
     @IBOutlet private weak var genderControl: UISegmentedControl!
     @IBOutlet private weak var birthdayInput: UITextField!
     @IBOutlet private weak var scrollView: UIScrollView!
     
+    private var restCompletion: (_ _error: Error?) -> Void {
+        return { [weak self] (_error: Error?) in
+            guard let error = _error else { return }
+            
+            AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
+            self?.adjustAccountView()
+        }
+    }
+    
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
 		UserPeerInfo.instance.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
-        showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Removing the own portrait image."))
+        showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Button caption for removing the users portrait image"))
+    }
+    
+    private func adjustAccountView() {
+        if AccountController.shared.accountExists {
+            accountButton.setTitle(NSLocalizedString("Delete Account", comment: "Caption of button"), for: .normal)
+            accountButton.tintColor = .red
+            mailTextField.text = AccountController.shared.accountEmail
+            accountIDLabel.text = AccountController.shared.getPeerID()
+        } else {
+            accountButton.setTitle(NSLocalizedString("Create Account", comment: "Caption of button"), for: .normal)
+            accountButton.tintColor = AppDelegate.shared.theme.globalTintColor
+        }
+        mailTextField.isHidden = !AccountController.shared.accountExists
+        mailNoteLabel.isHidden = !AccountController.shared.accountExists
+        accountIDLabel.isHidden = !AccountController.shared.accountExists
+        accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
+    }
+    
+    @IBAction func createDeleteAccount(_ sender: Any) {
+        if AccountController.shared.accountExists {
+            // UIAlertController asking whether sure
+            let alertController = UIAlertController(title: NSLocalizedString("Account Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree account and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Account", comment: "Caption of button"), style: .destructive, handler: { (button) in
+                AccountController.shared.deleteAccount(completion: self.restCompletion)
+            }))
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+            present(alertController, animated: true, completion: nil)
+        } else {
+            AccountController.shared.createAccount(completion: restCompletion)
+        }
     }
     
     func agePickerChanged(_ sender: UIDatePicker) {
@@ -91,6 +134,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         dateFormatter.dateStyle = .long
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.gender) ?? 0
         portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+        adjustAccountView()
 	}
     
     override func viewDidLayoutSubviews() {
@@ -118,6 +162,14 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             }
             guard let datePicker = textField.inputView as? UIDatePicker else { return }
             UserPeerInfo.instance.dateOfBirth = datePicker.date
+        case mailTextField:
+            guard textField.text != AccountController.shared.accountEmail else { return }
+            guard let newValue = textField.text, newValue != "" else {
+                AccountController.shared.deleteEmail(completion: restCompletion)
+                return
+            }
+            
+            AccountController.shared.update(email: newValue, completion: restCompletion)
         default:
             break
         }
@@ -125,9 +177,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
 	
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        guard textField == birthdayInput else { return true }
+        guard textField == birthdayInput || textField == mailTextField else { return true }
         
-        scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: birthdayInput.inputView?.frame.height ?? 0.0, right: 0.0)
+        scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: textField.inputView?.frame.height ?? 0.0, right: 0.0)
 		return true
     }
     

@@ -80,8 +80,8 @@
 /* Class = "UINavigationItem"; title = "Remote Peer Name"; ObjectID = "OwH-Gc-YBz"; */
 "OwH-Gc-YBz.title" = "Remote Peer Name";
 
-/* Class = "UIBarButtonItem"; title = "Status"; ObjectID = "REi-En-PZP"; */
-"REi-En-PZP.title" = "Status";
+/* Class = "UIBarButtonItem"; title = "Message"; ObjectID = "REi-En-PZP"; */
+"REi-En-PZP.title" = "Message";
 
 /* Class = "UITabBarItem"; title = "Radar"; ObjectID = "T1w-OX-ryr"; */
 "T1w-OX-ryr.title" = "Radar";

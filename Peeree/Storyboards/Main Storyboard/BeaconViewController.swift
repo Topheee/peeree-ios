@@ -43,14 +43,14 @@ final class BeaconViewController: UIViewController {
             }
         }
         
-        appearedObserver = PeeringController.NetworkNotification.peerAppeared.addObserver { (notification) in
+        appearedObserver = PeeringController.Notifications.peerAppeared.addObserver { (notification) in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard self.searchedPeer?.peerID == peerID else { return }
             
             self.showPeerAvailable()
         }
         
-        disappearedObserver = PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
+        disappearedObserver = PeeringController.Notifications.peerDisappeared.addObserver { notification in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard self.searchedPeer?.peerID == peerID else { return }
             
@@ -79,6 +79,9 @@ final class BeaconViewController: UIViewController {
         let multiplier = multipliers[proximity] ?? 1.0
         portraitDistanceConstraint.constant = (distanceView.frame.height - userPortrait.frame.height) * multiplier
         portraitWidthConstraint.constant = -50 * multiplier
+        UIView.animate(withDuration: 0.5) { 
+            self.remotePortrait.layoutIfNeeded()
+        }
     }
     
     private func addDistanceViewAnimations() {

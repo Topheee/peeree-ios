@@ -19,16 +19,18 @@ extension PeerInfo {
     }
 }
 
-extension LocalPeerInfo {
-    var picture: UIImage? {
-        get { return peer.picture }
-        set { peer.picture = newValue }
-    }
-}
+//extension LocalPeerInfo {
+//    var picture: UIImage? {
+//        get { return peer.picture }
+//        set { peer.picture = newValue }
+//    }
+//}
 
 extension UserPeerInfo {
-    override var picture: UIImage? {
-        didSet {
+    /* override */ var picture: UIImage? {
+        get { return peer.picture }
+        set { peer.picture = newValue
+//        didSet {
             dirtied()
             
             if picture != nil {

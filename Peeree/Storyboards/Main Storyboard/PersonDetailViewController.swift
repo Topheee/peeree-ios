@@ -55,7 +55,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             if peer.pinned {
                 return .pinned
             } else {
-                return PeeringController.shared.remote.isPinning(peer.peerID) ? .pinning : .notPinned
+                return AccountController.shared.isPinning(peer.peerID) ? .pinning : .notPinned
             }
         }
         
@@ -77,7 +77,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         guard let peer = displayedPeerInfo else { return }
         guard !peer.pinned else { return }
         
-        PeeringController.shared.pin(peer.peerID)
+        AppDelegate.requestPin(of: peer)
         updateState()
     }
     
@@ -106,10 +106,16 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             self.updateState()
         }
         
-        let simpleHandledNotifications: [PeeringController.NetworkNotification] = [.peerAppeared, .peerDisappeared, .pinMatch, .pinned, .pinningStarted, .pinFailed]
+        let simpleHandledNotifications: [PeeringController.Notifications] = [.peerAppeared, .peerDisappeared]
         for networkNotification in simpleHandledNotifications {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
+        
+        let simpleHandledNotifications2: [AccountController.Notifications] = [.pinMatch, .pinned, .pinningStarted, .pinFailed]
+        for networkNotification in simpleHandledNotifications2 {
+            notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
+        }
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {

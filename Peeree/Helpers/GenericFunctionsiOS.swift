@@ -89,7 +89,9 @@ extension UIViewController {
         while vc.presentedViewController != nil {
             vc = vc.presentedViewController!
         }
-        vc.present(self, animated: animated, completion: completion)
+        DispatchQueue.main.async {
+            vc.present(self, animated: animated, completion: completion)
+        }
     }
 }
 

@@ -18,9 +18,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         case wallet=0, products, transactions
     }
     
-    private let inAppPurchaser = InAppPurchaseController.shared
-    
-    private var ongoingTransactions = Set<SKPaymentTransaction>()
+    private let purchaser = InAppPurchaseController.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,18 +29,13 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        inAppPurchaser.delegate = self
-        if (!inAppPurchaser.isLoadingProducts || inAppPurchaser.currentProducts == nil) && Reachability.getNetworkStatus() != .notReachable {
+        purchaser.delegate = self
+        if (!purchaser.isLoadingProducts || purchaser.currentProducts == nil) && Reachability.getNetworkStatus() != .notReachable {
             refreshControl?.beginRefreshing()
-            inAppPurchaser.requestProducts()
+            purchaser.requestProducts()
         }
         // why? i don't know
         self.tableView.backgroundColor = AppDelegate.shared.theme.globalBackgroundColor
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        inAppPurchaser.delegate = nil
     }
     
     // - MARK: UITableView Data Source
@@ -77,7 +70,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
                 return 1
             }
         case .transactions:
-            return ongoingTransactions.count
+            return SKPaymentQueue.default().transactions.count
 		}
 	}
 	
@@ -94,12 +87,12 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
                 return nil
             }
         case .transactions:
-            return ongoingTransactions.count > 0 ? NSLocalizedString("Transactions", comment: "Title for section containing in-app purchase transactions.") : nil
+            return SKPaymentQueue.default().transactions.count > 0 ? NSLocalizedString("Transactions", comment: "Title for section containing in-app purchase transactions.") : nil
 		}
 	}
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
-        return ongoingTransactions.count > 0 ? 3 : 2
+        return SKPaymentQueue.default().transactions.count > 0 ? 3 : 2
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -124,9 +117,19 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         tableView.reloadSections(IndexSet(integer: 2), with: .automatic)
     }
     
-    func productsLoaded() {
-        refreshControl?.endRefreshing()
-        tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
+    func productsLoaded(error: Error?) {
+        if error != nil {
+            AppDelegate.display(networkError: error!, localizedTitle: NSLocalizedString("Reloading Products Failed", comment: "Title of alert"))
+        }
+        DispatchQueue.main.async {
+            self.refreshControl?.endRefreshing()
+            self.tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
+        }
+    }
+    
+    func transactionFailed(error: Error) {
+        let alert = UIAlertController(title: NSLocalizedString("Store Error", comment: "Title of alert when an error with in-app purchases occurred."), message: error.localizedDescription, preferredStyle: .alert)
+        alert.present(nil)
     }
     
     @objc
@@ -138,7 +141,8 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         case .notReachable:
             refreshControl?.endRefreshing()
         case .reachableViaWiFi, .reachableViaWWAN:
-            inAppPurchaser.requestProducts()
+            purchaser.requestProducts()
+            InAppPurchaseController.refreshPinPoints()
         }
     }
     
@@ -147,7 +151,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         switch indexPath.row {
         case 0:
             ret.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency.")
-            ret.detailTextLabel?.text = String(WalletController.availablePinPoints)
+            ret.detailTextLabel?.text = String(InAppPurchaseController.availablePinPoints)
             break
         default:
             break
@@ -171,9 +175,10 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     private func createTransactionCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
         let ret = tableView.dequeueReusableCell(withIdentifier: CellID.transaction.rawValue, for: indexPath) as! TransactionTableViewCell
         
-        let transaction = ongoingTransactions[ongoingTransactions.index(ongoingTransactions.startIndex, offsetBy: indexPath.row)]
+        let ongoingTransactions = SKPaymentQueue.default().transactions
+        let transaction = ongoingTransactions[indexPath.row]
         let localizedFormat = NSLocalizedString("Buying %d x %@ Pin Points", comment: "Cell title of ongoing transaction rows.")
-        let pinPoints = String(describing: InAppPurchaseController.getPinPoints(inProduct: transaction.payment.productIdentifier))
+        let pinPoints = String(describing: InAppPurchaseController.getPinPoints(inProductID: transaction.payment.productIdentifier))
         ret.titleLabel.text = String(format: localizedFormat, transaction.payment.quantity, pinPoints)
         switch transaction.transactionState {
         case .deferred:

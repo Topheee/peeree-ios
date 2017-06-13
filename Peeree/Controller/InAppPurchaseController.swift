@@ -9,32 +9,92 @@
 import Foundation
 import StoreKit
 
+protocol InAppPurchaseDelegate: class {
+    func productsLoaded(error: Error?)
+    func updateTransactions(_ transactions: [SKPaymentTransaction])
+    func transactionFailed(error: Error)
+}
+
 /*
  *  This singleton is in charge of managing the process of all in-app purchases. Thus it is the endpoint for both incoming and outgoing messages to and from Apple's servers, provided by the StoreKit API.
+ *	It maintains the bought pin points of the user and, in future releases, the already bought premium features, as well as enabling them on the user's demand.
+ *	Every local action, that reduces the amount of the bought pin points, including transfering them to a remote p2p device with the same Apple ID, has to be requested and granted through this class.
  */
 final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver {
-    static let shared = InAppPurchaseController()
+    /* Never change this value after the first App Store release! */
+    public static let PinCosts: PinPoints = 10
+    static let InitialPinPoints: PinPoints = 50
     
-    private var currentProductsRequest: SKProductsRequest?
-    private var _currentProducts: [SKProduct]?
+    static let PinPointPrefKey = "PinPointPrefKey"
+    private static let PinPointQueueLabel = "Pin Point Queue"
+    private static let pinPointQueue = DispatchQueue(label: PinPointQueueLabel, attributes: [])
     
-    private var productIdentifiers: [String]? {
-        guard let url = Bundle.main.url(forResource: "product_ids", withExtension:"plist") else { assertionFailure(); return nil }
-        return NSArray(contentsOf: url) as? [String]
+    private static var __once: () = { () -> Void in
+        if UserDefaults.standard.value(forKey: PinPointPrefKey) == nil {
+            Singleton.points = InitialPinPoints
+        } else {
+            Singleton.points = PinPoints(UserDefaults.standard.integer(forKey: PinPointPrefKey))
+        }
+    }()
+    private struct Singleton {
+        static var points: PinPoints!
     }
     
-    var currentProducts: [SKProduct]? { return _currentProducts }
-    var isLoadingProducts: Bool { return currentProductsRequest != nil }
+    private static var _availablePinPoints: PinPoints {
+        get {
+            _ = InAppPurchaseController.__once
+            
+            return Singleton.points
+        }
+        
+        set {
+            Singleton.points = newValue
+            UserDefaults.standard.set(newValue, forKey: PinPointPrefKey)
+            UserDefaults.standard.synchronize()
+        }
+    }
     
-    weak var delegate: InAppPurchaseDelegate?
+    public static var availablePinPoints: PinPoints {
+        var result: PinPoints = 0
+        pinPointQueue.sync {
+            result = _availablePinPoints
+        }
+        return result
+    }
     
-    static func getPinPoints(inProduct id: String) -> Int? {
+    public static func decreasePinPoints(by: PinPoints = PinCosts) {
+        pinPointQueue.async {
+            _availablePinPoints -= by
+        }
+    }
+    
+    public static func increasePinPoints(by: PinPoints) {
+        pinPointQueue.async {
+            _availablePinPoints += by
+        }
+    }
+    
+    static func getPinPoints(inProductID: String) -> PinPoints? {
         let prefix = "com.peeree.pin_points_"
-        guard id.hasPrefix(prefix) else { return nil }
+        guard inProductID.hasPrefix(prefix) else { return nil }
         
         let len = prefix.characters.count
-        let pinPointsString = id.substring(from: id.characters.index(id.startIndex, offsetBy: len))
-        return Int(pinPointsString)
+        let pinPointsString = inProductID.substring(from: inProductID.characters.index(inProductID.startIndex, offsetBy: len))
+        return PinPoints(pinPointsString)
+    }
+    
+    static func refreshPinPoints() {
+        AccountController.shared.getPinPoints { (_pinPoints, _error) in
+            guard _error != nil else {
+                NSLog("could not refresh pin points: \(_error!)")
+                return
+            }
+            if let pinPoints = _pinPoints {
+                self.pinPointQueue.async {
+                    self._availablePinPoints = pinPoints
+                }
+            }
+        }
     }
     
     static func getProductPrize(of product: SKProduct) -> String {
@@ -45,23 +105,37 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         return numberFormatter.string(from: product.price)!
     }
     
+    static let shared = InAppPurchaseController()
+    
+    private var currentProductsRequest: SKProductsRequest?
+    private var _currentProducts: [SKProduct]?
+    
+    var currentProducts: [SKProduct]? { return _currentProducts }
+    var isLoadingProducts: Bool { return currentProductsRequest != nil }
+    
+    weak var delegate: InAppPurchaseDelegate?
+    
     /// Make a product request at Apple's servers.
     func requestProducts() {
-        guard let productIDs = productIdentifiers else { assertionFailure(); return }
-
-        let productsRequest = SKProductsRequest(productIdentifiers: Set<String>(productIDs))
-        
-        // Keep a strong reference to the request to prevent ARC from deallocating it while it's doing its job.
-        currentProductsRequest = productsRequest
-        productsRequest.delegate = self
-        productsRequest.start()
+        AccountController.shared.getProductIDs { (_productIDs, _error) in
+            if let productIDs = _productIDs {
+                let productsRequest = SKProductsRequest(productIdentifiers: Set<String>(productIDs))
+                
+                // Keep a strong reference to the request to prevent ARC from deallocating it while it's doing its job.
+                self.currentProductsRequest = productsRequest
+                productsRequest.delegate = self
+                productsRequest.start()
+            }
+            
+            self.delegate?.productsLoaded(error: _error)
+        }
     }
     
     /// Make a payment request at Apple's servers for the specified product.
     func makePaymentRequest(for product: SKProduct) {
         let payment = SKMutablePayment(product: product)
         payment.quantity = 1
-//        payment.applicationUsername = UIDevice.currentDevice().identifierForVendor
+        // TODO payment.applicationUsername = encrypted UserPeerInfo.instance.peer.peerID.uuidString with our private key
         SKPaymentQueue.default().add(payment)
     }
     
@@ -69,7 +143,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         _currentProducts = nil
         if currentProductsRequest != nil {
             currentProductsRequest = nil
-            delegate?.productsLoaded()
+            delegate?.productsLoaded(error: nil)
         }
     }
     
@@ -83,7 +157,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
             NSLog("Invalid product identifier \(invalidIdentifier)")
         }
     
-        delegate?.productsLoaded()
+        delegate?.productsLoaded(error: nil)
     }
     
     // MARK: SKPaymentTransactionObserver
@@ -101,10 +175,10 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
             switch (transaction.transactionState) {
             // Call the appropriate custom method for the transaction state.
             case .purchasing:
-                // TODO Update UI to reflect the in-progress status, and wait to be called again.
+                // Update UI to reflect the in-progress status, and wait to be called again.
                 break
             case .deferred:
-                // TODO Update UI to reflect the deferred status, and wait to be called again.
+                // Update UI to reflect the deferred status, and wait to be called again.
                 break
             case .failed:
                 // Use the value of the error property to present a message to the user.
@@ -130,48 +204,35 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     }
     
     private func complete(transaction: SKPaymentTransaction) {
-        // TODO handle the cases of the assertionFailure
-        guard let pinPoints = InAppPurchaseController.getPinPoints(inProduct: transaction.payment.productIdentifier) else { assertionFailure(); return }
+        // TODO error handling
+        guard let url = Bundle.main.appStoreReceiptURL, let receiptData = try? Data(contentsOf: url) else { assertionFailure(); return }
         
-        WalletController.increasePinPoints(by: pinPoints)
-        
-        SKPaymentQueue.default().finishTransaction(transaction)
+        AccountController.shared.redeem(receipts: receiptData) { (_pinPoints, _error) in
+            guard _error != nil else {
+                NSLog("could not redeem pin points: \(_error!)")
+                return
+            }
+            if let pinPoints = _pinPoints {
+                InAppPurchaseController.pinPointQueue.async {
+                    InAppPurchaseController._availablePinPoints = pinPoints
+                }
+            } else {
+                NSLog("server did not send pin points along, trying to retrieve them")
+                InAppPurchaseController.refreshPinPoints()
+            }
+            SKPaymentQueue.default().finishTransaction(transaction)
+        }
     }
     
     private func fail(transaction: SKPaymentTransaction) {
-        // TODO evaluate the error code
+        if let error = transaction.error {
+            delegate?.transactionFailed(error: error)
+        }
         SKPaymentQueue.default().finishTransaction(transaction)
     }
-    
-//    - (void)fetchProductIdentifiersFromURL:(NSURL *)url delegate:(id)delegate
-//    {
-//    dispatch_queue_t global_queue =
-//    dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-//    dispatch_async(global_queue, ^{
-//    NSError *err;
-//    NSData *jsonData = [NSData dataWithContentsOfURL:url
-//    options:NULL
-//    error:&err];
-//    if (!jsonData) { /* Handle the error */ }
-//    
-//    NSArray *productIdentifiers = [NSJSONSerialization
-//    JSONObjectWithData:jsonData options:NULL error:&err];
-//    if (!productIdentifiers) { /* Handle the error */ }
-//    
-//    dispatch_queue_t main_queue = dispatch_get_main_queue();
-//    dispatch_async(main_queue, ^{
-//    [delegate displayProducts:productIdentifiers]; // Custom method
-//    });
-//    });
-//    }
     
     private override init() {
         super.init()
         SKPaymentQueue.default().add(self)
     }
-}
-
-protocol InAppPurchaseDelegate: class {
-    func productsLoaded()
-    func updateTransactions(_ transactions: [SKPaymentTransaction])
 }

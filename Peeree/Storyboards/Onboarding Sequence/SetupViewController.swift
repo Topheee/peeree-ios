@@ -20,6 +20,12 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         guard let chosenName = nameTextField.text else { return }
         guard chosenName != "" else { return }
         
+        AccountController.shared.createAccount { (_error) in
+            if let error = _error {
+                NSLog("Error creating account: \(error)")
+            }
+        }
+        
         UserPeerInfo.instance.nickname = chosenName
         UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         

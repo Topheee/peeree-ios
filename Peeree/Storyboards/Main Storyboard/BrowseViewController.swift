@@ -72,7 +72,17 @@ final class BrowseViewController: UITableViewController {
 	}
 	
     @IBAction func toggleNetwork(_ sender: AnyObject) {
-        PeeringController.shared.peering = !PeeringController.shared.peering
+        if !AccountController.shared.accountExists && !PeeringController.shared.peering {
+            AccountController.shared.createAccount { (_error) in
+                if let error = _error {
+                    AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), furtherDescription: NSLocalizedString("You need a Peeree account to go online.", comment: "The user lacks a Peeree account"))
+                } else {
+                    PeeringController.shared.peering = true
+                }
+            }
+        } else {
+            PeeringController.shared.peering = !PeeringController.shared.peering
+        }
     }
     
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -90,31 +100,43 @@ final class BrowseViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        notificationObservers.append(PeeringController.NetworkNotification.peerAppeared.addObserver { (notification) in
+        notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver { (notification) in
             if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.peerAppeared(peerID)
             }
         })
         
-        notificationObservers.append(PeeringController.NetworkNotification.peerDisappeared.addObserver { notification in
+        notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver { notification in
             if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.peerDisappeared(peerID)
             }
         })
         
-        notificationObservers.append(PeeringController.NetworkNotification.connectionChangedState.addObserver { notification in
+        notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { notification in
             self.connectionChangedState(PeeringController.shared.peering)
         })
         
-        notificationObservers.append(PeeringController.NetworkNotification.pinMatch.addObserver { notification in
+        notificationObservers.append(AccountController.Notifications.pinMatch.addObserver { notification in
             if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
                 self.pinMatchOccured(PeeringController.shared.remote.getPeerInfo(of: peerID)!)
             }
         })
         
-        notificationObservers.append(PeeringController.NetworkNotification.pinned.addObserver { notification in
+        notificationObservers.append(AccountController.Notifications.pinned.addObserver { notification in
             if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
-                self.pinned(peer: peerID)
+                self.reload(peer: peerID)
+            }
+        })
+        
+        notificationObservers.append(PeeringController.Notifications.verified.addObserver { notification in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
+                self.reload(peer: peerID)
+            }
+        })
+        
+        notificationObservers.append(PeeringController.Notifications.verificationFailed.addObserver { notification in
+            if let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID {
+                self.reload(peer: peerID)
             }
         })
     }
@@ -249,6 +271,8 @@ final class BrowseViewController: UITableViewController {
         
         let maskView = CircleMaskView(maskedView: imageView)
         maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
+        
+        cell.backgroundColor = peer.pinMatched ? AppDelegate.shared.theme.globalTintColor : nil
     }
     
     private func addPeerToView(_ peer: PeerInfo) -> Int {
@@ -331,7 +355,7 @@ final class BrowseViewController: UITableViewController {
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
-    private func pinned(peer peerID: PeerID) {
+    private func reload(peer peerID: PeerID) {
         guard let indexPath = indexPath(of: peerID) else { return }
         
         tableView.reloadRows(at: [indexPath], with: .automatic)
