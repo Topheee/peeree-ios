@@ -16,7 +16,11 @@ extension CBPeripheral {
     
     func readValues(for characteristics: [CBCharacteristic]) {
         for characteristic in characteristics {
-            readValue(for: characteristic)
+            if characteristic.properties.contains(.read) {
+                readValue(for: characteristic)
+            } else {
+                NSLog("Attempt to read unreadable characteristic \(characteristic.uuid.uuidString)")
+            }
         }
     }
 }
@@ -24,5 +28,22 @@ extension CBPeripheral {
 extension CBService {
     func getCharacteristics(withIDs characteristicIDs: [CBUUID]) -> [CBCharacteristic]? {
         return characteristics?.filter { characteristic in characteristicIDs.contains(characteristic.uuid) }
+    }
+}
+
+extension RawRepresentable where Self.RawValue == String {
+    public func addPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
+        return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
+            if let peerID = notification.userInfo?[peerIDKey] as? PeerID {
+                block(peerID, notification)
+            }
+        }
+    }
+    public func addPeerObserver(for observedPeerID: PeerID, peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
+        return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
+            if let peerID = notification.userInfo?[peerIDKey] as? PeerID, observedPeerID == peerID {
+                block(peerID, notification)
+            }
+        }
     }
 }

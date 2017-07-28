@@ -5,17 +5,9 @@
 // https://github.com/swagger-api/swagger-codegen
 //
 
-//import Alamofire
 import Foundation
 
-protocol SecurityDelegate {
-    func getSignature() -> String
-    func getPeerID() -> String
-}
-
 open class DefaultAPI: APIBase {
-    static var delegate: SecurityDelegate?
-    
     /**
      Account Deletion
      
@@ -28,7 +20,6 @@ open class DefaultAPI: APIBase {
     }
 
     
-    static let deleteAccountURL = URL(string: "/account", relativeTo: SwaggerClientAPI.baseURL)!
     /**
      Account Deletion
      - DELETE /account
@@ -39,27 +30,19 @@ open class DefaultAPI: APIBase {
      - API Key:
        - type: apiKey signature 
        - name: signature
-     - examples: [{contentType=application/json, example=true}]
 
-     - returns: RequestBuilder<Bool> 
+     - returns: RequestBuilder<Void>
      */
-    open class func deleteAccountWithRequestBuilder() -> RequestBuilder<Bool> {
+    open class func deleteAccountWithRequestBuilder() -> RequestBuilder<Void> {
+        let path = "/account"
+        let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
+        
+        let url = NSURLComponents(string: URLString)!
 
-        let requestBuilder: RequestBuilder<Bool>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        var headers = [String : String]()
-        if let d = delegate {
-            var val = d.getPeerID()
-            if !val.isEmpty {
-                headers["peerID"] = val
-            }
-            val = d.getSignature()
-            if !val.isEmpty {
-                headers["signature"] = val
-            }
-        }
-        return requestBuilder.init(method: .DELETE, url: deleteAccountURL, parameters: parameters, isBody: false, headers: headers)
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -97,7 +80,40 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters)
+    }
+    
+    /**
+     Reset Sequence Number
+     
+     - parameter completion: completion handler to receive the data and the error objects
+     */
+    open class func deleteAccountSecuritySequenceNumber(completion: @escaping ((_ data: Int32?,_ error: Error?) -> Void)) {
+        deleteAccountSecuritySequenceNumberWithRequestBuilder().execute { (response, error) -> Void in
+            completion(response?.body, error);
+        }
+    }
+    
+    
+    /**
+     Reset Sequence Number
+     - DELETE /account/security/sequence_number
+     - Generates a new random sequence number, which is a per-request incrementing integer number to prevent from replay attacks. This number has to be incremented by 1 after each request.  For this call the signature can be omitted as it should only be needed if the sequence numbers of the client and the server do not match any more and therefore the client anyway cannot compute the correct signature.
+     - examples: [{contentType=application/json, example="aeiou"}]
+     
+     - returns: RequestBuilder<String>
+     */
+    open class func deleteAccountSecuritySequenceNumberWithRequestBuilder() -> RequestBuilder<Int32> {
+        let path = "/account/security/sequence_number"
+        let URLString = SwaggerClientAPI.basePath + path
+        let parameters: [String:Any]? = nil
+        
+        let url = NSURLComponents(string: URLString)!
+        
+        
+        let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -115,7 +131,7 @@ open class DefaultAPI: APIBase {
     /**
      Request Public Key Reset
      - DELETE /account/security/public_key
-     - Sends a random number to the user's e-mail address, which has then to be passed along when resetting the public key in the PUT variant of this request. The key is only 15 minutes valid. 
+     - Sends a random number to the user's e-mail address, which has then to be passed along when resetting the public key in the PUT variant of this request. The key is only valid for 30 minutes. 
      - API Key:
        - type: apiKey peerID 
        - name: peerID
@@ -135,7 +151,7 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -162,7 +178,7 @@ open class DefaultAPI: APIBase {
        - name: signature
      - examples: [{contentType=application/json, example=123}]
 
-     - returns: RequestBuilder<Int32> 
+     - returns: RequestBuilder<PinPoints> 
      */
     open class func getAccountPinPointsWithRequestBuilder() -> RequestBuilder<PinPoints> {
         let path = "/account/pin_points"
@@ -174,7 +190,7 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<PinPoints>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -182,7 +198,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getAccountPins(completion: @escaping ((_ data: InlineResponse200?,_ error: Error?) -> Void)) {
+    open class func getAccountPins(completion: @escaping ((_ data: [Pin]?,_ error: Error?) -> Void)) {
         getAccountPinsWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -199,16 +215,15 @@ open class DefaultAPI: APIBase {
      - API Key:
        - type: apiKey signature 
        - name: signature
-     - examples: [{contentType=application/json, example={
-  "data" : [ {
-    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "pin_publicKey" : "aeiou"
-  } ]
-}}]
+     - examples: [{contentType=application/json, example=[ {
+  "peerID" : { },
+  "match" : true,
+  "publicKey" : { }
+} ]}]
 
-     - returns: RequestBuilder<InlineResponse200> 
+     - returns: RequestBuilder<[Pin]> 
      */
-    open class func getAccountPinsWithRequestBuilder() -> RequestBuilder<InlineResponse200> {
+    open class func getAccountPinsWithRequestBuilder() -> RequestBuilder<[Pin]> {
         let path = "/account/pins"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
@@ -216,42 +231,9 @@ open class DefaultAPI: APIBase {
         let url = NSURLComponents(string: URLString)!
 
 
-        let requestBuilder: RequestBuilder<InlineResponse200>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        let requestBuilder: RequestBuilder<[Pin]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
-    }
-
-    /**
-     Reset Sequence Number
-     
-     - parameter completion: completion handler to receive the data and the error objects
-     */
-    open class func deleteAccountSecuritySequenceNumber(completion: @escaping ((_ data: Data?,_ error: Error?) -> Void)) {
-        deleteAccountSecuritySequenceNumberWithRequestBuilder().execute { (response, error) -> Void in
-            completion(response?.body, error);
-        }
-    }
-
-
-    /**
-     Reset Sequence Number
-     - DELETE /account/security/sequence_number
-     - Generates a new random sequence number, which is a per-request incrementing integer number to prevent from replay attacks. This number has to be incremented by 1 after each request.  For this call the signature can be omitted as it should only be needed if the sequence numbers of the client and the server do not match any more and therefore the client anyway cannot compute the correct signature. 
-     - examples: [{contentType=application/json, example="aeiou"}]
-
-     - returns: RequestBuilder<String> 
-     */
-    open class func deleteAccountSecuritySequenceNumberWithRequestBuilder() -> RequestBuilder<Data> {
-        let path = "/account/security/sequence_number"
-        let URLString = SwaggerClientAPI.basePath + path
-        let parameters: [String:Any]? = nil
-
-        let url = NSURLComponents(string: URLString)!
-
-
-        let requestBuilder: RequestBuilder<Data>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-
-        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -259,8 +241,8 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getAppInAppPurchaseIosProductIds(completion: @escaping ((_ data: InlineResponse2001?,_ error: Error?) -> Void)) {
-        getAppInAppPurchaseIosProductIdsWithRequestBuilder().execute { (response, error) -> Void in
+    open class func getInAppPurchaseIosProductIds(completion: @escaping ((_ data: [String]?,_ error: Error?) -> Void)) {
+        getInAppPurchaseIosProductIdsWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
     }
@@ -268,42 +250,40 @@ open class DefaultAPI: APIBase {
 
     /**
      Retrieve In-App Purchase Product Identifiers
-     - GET /app/in-app-purchase/ios/product_ids
-     - Returns list of all product IDs. 
+     - GET /in-app-purchase/ios/product_ids
+     - Returns list of all product IDs. Note that at the moment neither peerID nor signature are being evaluated. 
      - API Key:
        - type: apiKey peerID 
        - name: peerID
      - API Key:
        - type: apiKey signature 
        - name: signature
-     - examples: [{contentType=application/json, example={
-  "data" : [ "aeiou" ]
-}}]
+     - examples: [{contentType=application/json, example=[ "aeiou" ]}]
 
-     - returns: RequestBuilder<InlineResponse2001> 
+     - returns: RequestBuilder<[String]> 
      */
-    open class func getAppInAppPurchaseIosProductIdsWithRequestBuilder() -> RequestBuilder<InlineResponse2001> {
-        let path = "/app/in-app-purchase/ios/product_ids"
+    open class func getInAppPurchaseIosProductIdsWithRequestBuilder() -> RequestBuilder<[String]> {
+        let path = "/in-app-purchase/ios/product_ids"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
 
         let url = NSURLComponents(string: URLString)!
 
 
-        let requestBuilder: RequestBuilder<InlineResponse2001>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        let requestBuilder: RequestBuilder<[String]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
     }
     
     /**
      Pin Status Query
      
-     - parameter peerID: (query) See PeerID in Definitions.
-     - parameter publicKey: (query) See PublicKey in Definitions.
+     - parameter pinnedID: (query) The PeerID of the opposite user.  
+     - parameter pinnedKey: (query) See PublicKey in Definitions.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getPin(peerID: UUID, publicKey: Data, completion: @escaping ((_ data: Bool?,_ error: Error?) -> Void)) {
-        getPinWithRequestBuilder(peerID: peerID, publicKey: publicKey).execute { (response, error) -> Void in
+    open class func getPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Int32?,_ error: Error?) -> Void)) {
+        getPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
     }
@@ -312,46 +292,45 @@ open class DefaultAPI: APIBase {
     /**
      Pin Status Query
      - GET /pin
-     - Returns, wether a pin match with the other peer occured.
+     - Returns, whether a the requested peer is pinnend and a pin match occured.
      - API Key:
      - type: apiKey peerID
      - name: peerID
      - API Key:
      - type: apiKey signature
      - name: signature
-     - examples: [{contentType=application/json, example=true}]
+     - examples: [{contentType=application/json, example=0}]
      
-     - parameter peerID: (query) See PeerID in Definitions.
-     - parameter publicKey: (query) See PublicKey in Definitions.
+     - parameter pinnedID: (query) The PeerID of the opposite user.  
+     - parameter pinnedKey: (query) See PublicKey in Definitions.  
      
-     - returns: RequestBuilder<Bool>
+     - returns: RequestBuilder<Int32>
      */
-    open class func getPinWithRequestBuilder(peerID: UUID, publicKey: Data) -> RequestBuilder<Bool> {
+    open class func getPinWithRequestBuilder(pinnedID: UUID, pinnedKey: Data) -> RequestBuilder<Int32> {
         let path = "/pin"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
         
         let url = NSURLComponents(string: URLString)!
         url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "peerID": peerID,
-            "publicKey": publicKey
+            "pinnedID": pinnedID, 
+            "pinnedKey": pinnedKey
             ])
         
         
-        let requestBuilder: RequestBuilder<Bool>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
         
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
     }
     
     /**
      Account Creation
      
-     - parameter publicKey: (query) See PublicKey in Definitions.
      - parameter email: (query) E-Mail for identity reset. The user may request to reset his/her credentials, resulting in a code sent to him to this address, which he must pass along when sending his new public key.  (optional)
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putAccount(publicKey: Data, email: String? = nil, completion: @escaping ((_ data: Account?,_ error: Error?) -> Void)) {
-        putAccountWithRequestBuilder(publicKey: publicKey, email: email).execute { (response, error) -> Void in
+    open class func putAccount(email: String? = nil, completion: @escaping ((_ data: Account?,_ error: Error?) -> Void)) {
+        putAccountWithRequestBuilder(email: email).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
     }
@@ -360,38 +339,36 @@ open class DefaultAPI: APIBase {
     /**
      Account Creation
      - PUT /account
-     - Creates a new user account with the provided public key and email address. The signature is at the moment ignored here.
+     - Creates a new user account with the provided public key and email address. The signature is the public key in this call! 
      - examples: [{contentType=application/json, example={
      "peerID" : { },
-     "sequenceNumber" : ""
+  "sequenceNumber" : 123
      }}]
      
-     - parameter publicKey: (query) See PublicKey in Definitions.
      - parameter email: (query) E-Mail for identity reset. The user may request to reset his/her credentials, resulting in a code sent to him to this address, which he must pass along when sending his new public key.  (optional)
      
      - returns: RequestBuilder<Account>
      */
-    open class func putAccountWithRequestBuilder(publicKey: Data, email: String? = nil) -> RequestBuilder<Account> {
+    open class func putAccountWithRequestBuilder(email: String? = nil) -> RequestBuilder<Account> {
         let path = "/account"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
         
         let url = NSURLComponents(string: URLString)!
         url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "publicKey": publicKey,
             "email": email
         ])
         
         
         let requestBuilder: RequestBuilder<Account>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
         
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
     }
 
     /**
      Set New E-Mail of Account
      
-     - parameter email: (query) See description in account creation.  
+     - parameter email: (query) See description in account creation. If parameter is empty, this has same behavior as the DELETE operation.  
      - parameter completion: completion handler to receive the data and the error objects
      */
     open class func putAccountEmail(email: String, completion: @escaping ((_ error: Error?) -> Void)) {
@@ -412,7 +389,7 @@ open class DefaultAPI: APIBase {
        - type: apiKey signature 
        - name: signature
      
-     - parameter email: (query) See description in account creation.  
+     - parameter email: (query) See description in account creation. If parameter is empty, this has same behavior as the DELETE operation.  
 
      - returns: RequestBuilder<Void> 
      */
@@ -429,17 +406,17 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
     }
 
     /**
      Cash iOS In-App Purchase
      
-     - parameter receiptData: (query) Base64 encoded data of the iOS In-App purchase receipt.  
+     - parameter receiptData: (body) Data of the iOS In-App purchase receipt.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putAppInAppPurchaseIosReceiptsRedeem(receiptData: Data, completion: @escaping ((_ data: Int32?,_ error: Error?) -> Void)) {
-        putAppInAppPurchaseIosReceiptsRedeemWithRequestBuilder(receiptData: receiptData).execute { (response, error) -> Void in
+    open class func putInAppPurchaseIosReceipt(receiptData: Data, completion: @escaping ((_ data: PinPoints?,_ error: Error?) -> Void)) {
+        putInAppPurchaseIosReceiptWithRequestBuilder(receiptData: receiptData).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
     }
@@ -447,7 +424,7 @@ open class DefaultAPI: APIBase {
 
     /**
      Cash iOS In-App Purchase
-     - PUT /app/in-app-purchase/ios/receipts/redeem
+     - PUT /in-app-purchase/ios/receipt
      - Transforms the iOS in-app purchase product into pin points. 
      - API Key:
        - type: apiKey peerID 
@@ -457,12 +434,12 @@ open class DefaultAPI: APIBase {
        - name: signature
      - examples: [{contentType=application/json, example=123}]
      
-     - parameter receiptData: (query) Base64 encoded data of the iOS In-App purchase receipt.  
+     - parameter receiptData: (body) Data of the iOS In-App purchase receipt.  
 
-     - returns: RequestBuilder<Int32> 
+     - returns: RequestBuilder<PinPoints> 
      */
-    open class func putAppInAppPurchaseIosReceiptsRedeemWithRequestBuilder(receiptData: Data) -> RequestBuilder<Int32> {
-        let path = "/app/in-app-purchase/ios/receipts/redeem"
+    open class func putInAppPurchaseIosReceiptWithRequestBuilder(receiptData: Data) -> RequestBuilder<Int32> {
+        let path = "/in-app-purchase/ios/receipt"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
 
@@ -474,18 +451,18 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
     }
 
     /**
      Pin Another User
      
-     - parameter pinId: (query) Unique identifier of to be pinned user.  
-     - parameter pinPublicKey: (query) Public key of to be pinned user.  
+     - parameter pinnedID: (query) The PeerID of the opposite user.  
+     - parameter pinnedKey: (query) See PublicKey in Definitions.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putPin(peerID: UUID, publicKey: Data, completion: @escaping ((_ data: Bool?,_ error: Error?) -> Void)) {
-        putPinWithRequestBuilder(peerID: peerID, publicKey: publicKey).execute { (response, error) -> Void in
+    open class func putPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Bool?,_ error: Error?) -> Void)) {
+        putPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
     }
@@ -503,26 +480,26 @@ open class DefaultAPI: APIBase {
      - name: signature
      - examples: [{contentType=application/json, example=true}]
      
-     - parameter peerID: (query) See PeerID in Definitions.
-     - parameter publicKey: (query) See PublicKey in Definitions.
+     - parameter pinnedID: (query) The PeerID of the opposite user.  
+     - parameter pinnedKey: (query) See PublicKey in Definitions.  
      
      - returns: RequestBuilder<Bool>
      */
-    open class func putPinWithRequestBuilder(peerID: UUID, publicKey: Data) -> RequestBuilder<Bool> {
+    open class func putPinWithRequestBuilder(pinnedID: UUID, pinnedKey: Data) -> RequestBuilder<Bool> {
         let path = "/pin"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
 
         let url = NSURLComponents(string: URLString)!
         url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "pin_id": peerID,
-            "pin_publicKey": publicKey
+            "pinnedID": pinnedID, 
+            "pinnedKey": pinnedKey
         ])
         
 
         let requestBuilder: RequestBuilder<Bool>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
     }
 
     /**
@@ -570,7 +547,7 @@ open class DefaultAPI: APIBase {
         
         let requestBuilder: RequestBuilder<String>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
         
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
     }
 
 }

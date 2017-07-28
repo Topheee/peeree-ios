@@ -230,26 +230,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     static func requestPin(of peer: PeerInfo) {
-        let title = NSLocalizedString("Spend Pin Points", comment: "Title of the alert which pops up when the user is about to spend in-app currency.")
+        let title = NSLocalizedString("Spend Pin Points", comment: "Title of the alert which pops up when the user is about to spend in-app currency")
         var message: String
         var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)]
         
         if InAppPurchaseController.availablePinPoints >= InAppPurchaseController.PinCosts {
-            message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket.")
+            message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket")
             message = String(format: message, InAppPurchaseController.availablePinPoints)
             if !peer.verified {
                 message = "\(message) \(NSLocalizedString("But be careful: the identitfy of the user is not verified! You may be pinning someone else!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"))"
-                actions.append(UIAlertAction(title: NSLocalizedString("Retry verify.", comment: "The user wants to retry verifying peer."), style: .default) { action in
+                actions.append(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .default) { action in
                     PeeringController.shared.remote.verify(peer.peerID)
                 })
             }
-            let actionTitle = String(format: NSLocalizedString("Spend %d.", comment: "The user accepts to spend pin points for this action."), InAppPurchaseController.PinCosts)
+            let actionTitle = String(format: NSLocalizedString("Spend %d", comment: "The user accepts to spend pin points for this action"), InAppPurchaseController.PinCosts)
             actions.append(UIAlertAction(title: actionTitle, style: peer.verified ? .default : .destructive) { action in
                 AccountController.shared.pin(peer)
             })
         } else {
-            message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket.")
-            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view."), style: .default) { action in
+            message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket")
+            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view"), style: .default) { action in
                 guard let rootTabBarController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController else { return }
                 
                 rootTabBarController.selectedIndex = 2
@@ -327,6 +327,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         UINavigationBar.appearance().tintColor = theme.barBackgroundColor
         UINavigationBar.appearance().barTintColor = theme.barTintColor
+        UINavigationBar.appearance().barStyle = .black
 //        UINavigationBar.appearance().backgroundColor = theme.barBackgroundColor
         
         UITabBar.appearance().tintColor = theme.barTintColor

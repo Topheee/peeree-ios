@@ -6,9 +6,16 @@
 
 import Foundation
 
+public protocol SecurityDataSource {
+    func getSignature() -> String
+    func getPeerID() -> String
+}
+
 open class SwaggerClientAPI {
+    open static var dataSource: SecurityDataSource?
+    
     open static let `protocol` = "https"
-    open static let host = "192.168.12.190" // "www.peeree.com"
+    open static let host = "131.234.244.1" // "172.20.10.2" // "127.0.0.1" //"rest.peeree.com" // "192.168.12.190" // "www.peeree.com"
     open static let basePath = "\(`protocol`)://\(host)/v1"
     open static let baseURL = URL(string: basePath)!
     open static var credential: URLCredential?
@@ -40,7 +47,7 @@ open class RequestBuilder<T> {
     var credential: URLCredential?
     var headers: [String:String]
     let parameters: [String:Any]?
-    let isBody: Bool
+    let body: Data?
     let method: HTTPMethod
     let url: URL
     var URLString: String {
@@ -50,11 +57,11 @@ open class RequestBuilder<T> {
     /// Optional block to obtain a reference to the request's progress instance when available.
 //    public var onProgressReady: ((Progress) -> ())?
 
-    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, isBody: Bool, headers: [String:String] = [:]) {
+    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, headers: [String:String] = [:], body: Data? = nil) {
         self.method = method
         self.url = url
         self.parameters = parameters
-        self.isBody = isBody
+        self.body = body
         self.headers = headers
         self.credential = nil
         

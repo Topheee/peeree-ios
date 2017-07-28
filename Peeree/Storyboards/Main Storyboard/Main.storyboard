@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="la9-Lf-5c4">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="la9-Lf-5c4">
     <device id="retina3_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -102,19 +102,19 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Offline Mode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="geS-Ue-hzN">
-                                            <rect key="frame" x="96.5" y="8" width="127" height="26.5"/>
+                                            <rect key="frame" x="96.5" y="16" width="127" height="26.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You are invisible – and blind." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
-                                            <rect key="frame" x="63.5" y="34.5" width="193" height="18"/>
+                                            <rect key="frame" x="63.5" y="42.5" width="193" height="18"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Peers Met" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xdp-HW-ags">
-                                            <rect key="frame" x="125.5" y="142" width="69" height="18"/>
+                                            <rect key="frame" x="125.5" y="142" width="69.5" height="18"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -142,7 +142,7 @@
                                         <constraint firstItem="geS-Ue-hzN" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="W7w-lW-yZk"/>
                                         <constraint firstItem="Oar-8r-xH3" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" constant="8" id="bjG-jZ-HK3"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="Oar-8r-xH3" secondAttribute="trailing" constant="8" id="qwX-1R-JQd"/>
-                                        <constraint firstItem="geS-Ue-hzN" firstAttribute="top" secondItem="daC-My-itZ" secondAttribute="topMargin" id="v1j-n7-pnt"/>
+                                        <constraint firstItem="geS-Ue-hzN" firstAttribute="top" secondItem="daC-My-itZ" secondAttribute="topMargin" constant="8" id="v1j-n7-pnt"/>
                                         <constraint firstItem="xdp-HW-ags" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="yap-tK-Thf"/>
                                     </constraints>
                                 </tableViewCellContentView>
@@ -183,7 +183,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xco-ft-52g" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1392.8" y="-40.029985007496258"/>
+            <point key="canvasLocation" x="1391.25" y="-41.25"/>
         </scene>
         <!--Person Detail-->
         <scene sceneID="MsX-Xf-3X7">
@@ -221,10 +221,8 @@
                                             <constraint firstAttribute="width" constant="50" id="nOo-is-Hmz"/>
                                             <constraint firstAttribute="width" constant="50" id="y5Z-mn-9cx"/>
                                         </constraints>
-                                        <state key="normal" image="PinTemplate">
-                                            <color key="titleShadowColor" red="0.0" green="0.50196081400000003" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <state key="selected" image="PinTemplatePressed"/>
+                                        <state key="normal" image="PinButtonTemplate"/>
+                                        <state key="selected" image="PinButtonTemplatePressed"/>
                                         <variation key="default">
                                             <mask key="constraints">
                                                 <exclude reference="2d0-P5-dX2"/>
@@ -542,7 +540,7 @@
                                         </connections>
                                     </textField>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
-                                        <rect key="frame" x="104.5" y="99" width="111" height="30"/>
+                                        <rect key="frame" x="104.5" y="115" width="111" height="30"/>
                                         <state key="normal" title="Character Traits">
                                             <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
@@ -551,7 +549,7 @@
                                         </connections>
                                     </button>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jMl-1T-kkd">
-                                        <rect key="frame" x="72" y="175" width="176" height="29"/>
+                                        <rect key="frame" x="72" y="191" width="176" height="29"/>
                                         <segments>
                                             <segment title="Male"/>
                                             <segment title="Female"/>
@@ -584,7 +582,7 @@
                                         </connections>
                                     </button>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Birthday" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="KtY-qD-KuZ">
-                                        <rect key="frame" x="117.5" y="137" width="85.5" height="30"/>
+                                        <rect key="frame" x="117.5" y="153" width="85.5" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="150" id="aJ5-d5-J0w"/>
                                         </constraints>
@@ -597,7 +595,7 @@
                                         </variation>
                                     </textField>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Mail" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYx-2Y-uq3">
-                                        <rect key="frame" x="72" y="225" width="176" height="30"/>
+                                        <rect key="frame" x="72" y="241" width="176" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="150" id="lTz-wg-k5e"/>
                                         </constraints>
@@ -613,20 +611,20 @@
                                         </connections>
                                     </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i05-bg-dKb">
-                                        <rect key="frame" x="106.5" y="321" width="107" height="30"/>
-                                        <state key="normal" title="Create Account"/>
+                                        <rect key="frame" x="109.5" y="337" width="101" height="30"/>
+                                        <state key="normal" title="Create Identity"/>
                                         <connections>
                                             <action selector="createDeleteAccount:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gM0-WR-JPH"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Account ID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
-                                        <rect key="frame" x="129.5" y="306.5" width="62" height="14.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
+                                        <rect key="frame" x="139" y="322.5" width="43" height="15"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" text="Your email is necessary to recover your account on a new device!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yg9-L6-t2V">
-                                        <rect key="frame" x="32" y="262" width="256" height="30.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" text="Your email is necessary to recover your identity and purchases on a new device" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yg9-L6-t2V">
+                                        <rect key="frame" x="32" y="278" width="256" height="30.5"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -646,7 +644,7 @@
                                     <constraint firstItem="7DY-yh-Oap" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="R36-Fo-ZM4"/>
                                     <constraint firstItem="KtY-qD-KuZ" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="VZS-E8-Lt4"/>
                                     <constraint firstItem="7cg-KF-1BD" firstAttribute="top" secondItem="yg9-L6-t2V" secondAttribute="bottom" constant="14" id="YNE-pd-YHL"/>
-                                    <constraint firstItem="7DY-yh-Oap" firstAttribute="top" secondItem="b8E-hE-Mnd" secondAttribute="bottom" id="Ye7-Xx-cZs"/>
+                                    <constraint firstItem="7DY-yh-Oap" firstAttribute="top" secondItem="b8E-hE-Mnd" secondAttribute="bottom" constant="16" id="Ye7-Xx-cZs"/>
                                     <constraint firstItem="i05-bg-dKb" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="Zbg-T3-T0v"/>
                                     <constraint firstItem="gYx-2Y-uq3" firstAttribute="top" secondItem="jMl-1T-kkd" secondAttribute="bottom" constant="22" id="Zci-eb-Vr0"/>
                                     <constraint firstItem="sNx-nf-ozM" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="a3G-Z1-gl4"/>
@@ -960,7 +958,7 @@
                                     <constraint firstItem="RNY-qo-bXL" firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="width" id="rSX-Yr-vtm"/>
                                 </constraints>
                             </view>
-                            <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZQ2-LK-I9f">
+                            <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZQ2-LK-I9f">
                                 <rect key="frame" x="0.0" y="323" width="320" height="44"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <items>
@@ -1214,6 +1212,8 @@ To enable In-App Purchase for this app, go to settings of this iPhone and remove
         <image name="Gradient" width="1024" height="1024"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
+        <image name="PinButtonTemplate" width="180" height="180"/>
+        <image name="PinButtonTemplatePressed" width="180" height="180"/>
         <image name="PinTemplate" width="30" height="30"/>
         <image name="PinTemplatePressed" width="30" height="30"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>
@@ -1221,8 +1221,8 @@ To enable In-App Purchase for this app, go to settings of this iPhone and remove
         <image name="RadarTemplate" width="40" height="40"/>
     </resources>
     <inferredMetricsTieBreakers>
+        <segue reference="EzW-Ik-xrC"/>
         <segue reference="D5d-oe-2jg"/>
-        <segue reference="7Nf-9B-BLi"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

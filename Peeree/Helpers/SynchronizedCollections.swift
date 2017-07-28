@@ -14,13 +14,12 @@ import Foundation
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
 final public class SynchronizedArray<T> {
-    private var array: [T] = []
-    private let accessQueue = DispatchQueue(label: "com.peeree.sync_arr_q", attributes: [])
+    private var array: [T]
+    private let accessQueue: DispatchQueue
     
-    init() { }
-    
-    init(array: [T]) {
+    init(queueLabel: String, array: [T] = [], qos: DispatchQoS = .default) {
         self.array = array
+        self.accessQueue = DispatchQueue(label: queueLabel, qos: qos, attributes: [])
     }
     
     /// runs the passed block synchronized and gives direct access to the array
@@ -63,13 +62,12 @@ final public class SynchronizedArray<T> {
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
 final public class SynchronizedDictionary<Key: Hashable, Value> {
-    private var dictionary = [Key : Value]()
-    private let accessQueue = DispatchQueue(label: "com.peeree.sync_dic_q", attributes: [])
+    private var dictionary: [Key : Value]
+    private let accessQueue: DispatchQueue
     
-    init() { }
-    
-    init(dictionary: [Key : Value]) {
+    init(queueLabel: String, dictionary: [Key : Value] = [:], qos: DispatchQoS = .default) {
         self.dictionary = dictionary
+        self.accessQueue = DispatchQueue(label: queueLabel, qos: qos, attributes: [])
     }
     
     /// runs the passed block synchronized and gives direct access to the dictionary
@@ -126,14 +124,13 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
 
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
-final public class SynchronizedSet<T : Hashable> {
-    private var set = Set<T>()
-    private let accessQueue = DispatchQueue(label: "com.peeree.sync_set_q", attributes: [])
+open class SynchronizedSet<T : Hashable> {
+    private var set: Set<T>
+    private let accessQueue: DispatchQueue
     
-    init() { }
-    
-    init(set: Set<T>) {
+    init(queueLabel: String, set: Set<T> = Set<T>(), qos: DispatchQoS = .default) {
         self.set = set
+        self.accessQueue = DispatchQueue(label: queueLabel, qos: qos, attributes: [])
     }
     
     /// runs the passed block synchronized and gives direct access to the set

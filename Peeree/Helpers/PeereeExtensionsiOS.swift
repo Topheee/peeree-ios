@@ -29,8 +29,11 @@ extension PeerInfo {
 extension UserPeerInfo {
     /* override */ var picture: UIImage? {
         get { return peer.picture }
-        set { peer.picture = newValue
-//        didSet {
+        set {
+            let oldValue = picture
+            guard newValue != oldValue else { return }
+            
+            peer.picture = newValue
             dirtied()
             
             if picture != nil {
@@ -40,8 +43,10 @@ extension UserPeerInfo {
                     do {
                         try UIImageJPEGRepresentation(self.picture!, 0.0)?.write(to: self.pictureResourceURL, options: .atomic)
                     } catch let error as NSError {
-                        // TODO error handling
-                        print(error.debugDescription)
+                        NSLog(error.debugDescription)
+                        DispatchQueue.main.async {
+                            self.picture = oldValue
+                        }
                     }
                 }
             } else {
@@ -51,8 +56,10 @@ extension UserPeerInfo {
                         try fileManager.removeItem(at: pictureResourceURL)
                     }
                 } catch let error as NSError {
-                    // TODO error handling
-                    print(error.debugDescription)
+                    NSLog(error.debugDescription)
+                    DispatchQueue.main.async {
+                        self.picture = oldValue
+                    }
                 }
             }
         }

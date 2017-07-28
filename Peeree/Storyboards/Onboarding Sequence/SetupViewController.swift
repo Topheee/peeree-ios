@@ -17,19 +17,19 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     @IBOutlet private weak var pickPicButton: UIButton!
     
 	@IBAction func finishIntroduction(_ sender: AnyObject) {
-        guard let chosenName = nameTextField.text else { return }
-        guard chosenName != "" else { return }
+        guard let chosenName = nameTextField.text, chosenName != "" else { return }
         
         AccountController.shared.createAccount { (_error) in
             if let error = _error {
+                // we do not inform the user about this as we initiated it silently
                 NSLog("Error creating account: \(error)")
             }
         }
         
-        UserPeerInfo.instance.nickname = chosenName
-        UserPeerInfo.instance.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
+        UserPeerInfo.instance.peer.nickname = chosenName
+        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
         
-        switch UserPeerInfo.instance.gender {
+        switch UserPeerInfo.instance.peer.gender {
         case .female:
             BrowseFilterSettings.shared.gender = .male
         case .male:
@@ -39,6 +39,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
         
         AppDelegate.shared.finishIntroduction()
+        dismiss(animated: true, completion: nil)
 	}
 	
 	@IBAction func takePic(_ sender: UIButton) {

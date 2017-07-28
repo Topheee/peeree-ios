@@ -11,7 +11,7 @@ import Foundation
 open class Account: JSONEncodable {
     public var peerID: PeerID?
     /** Random sequence number encrypted with the public key of the user.  */
-    public var sequenceNumber: Data?
+    public var sequenceNumber: Int32?
 
     public init() {}
 

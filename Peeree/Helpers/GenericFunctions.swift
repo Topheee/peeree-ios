@@ -110,13 +110,14 @@ extension NotificationCenter {
 extension String {
     /// stores the encoding along the serialization of the string to let decoders know which it is
     func data(prefixedEncoding encoding: String.Encoding) -> Data? {
-        // TODO performance: let size = MemoryLayout<String.Encoding>.size + nickname.lengthOfBytes(using: encoding)
-        var encodingRawValue = encoding.rawValue
-        let encodingPointer = withUnsafeMutablePointer(to: &encodingRawValue, { (pointer) -> UnsafeMutablePointer<String.Encoding.RawValue> in
+        // NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
+        // PERFORMANCE: let size = MemoryLayout<UInt32>.size + nickname.lengthOfBytes(using: encoding)
+        var encodingRawValue = UInt32(encoding.rawValue)
+        let encodingPointer = withUnsafeMutablePointer(to: &encodingRawValue, { (pointer) -> UnsafeMutablePointer<UInt32> in
             return pointer
         })
         
-        var data = Data(bytesNoCopy: encodingPointer, count: MemoryLayout<String.Encoding.RawValue>.size, deallocator: Data.Deallocator.none)
+        var data = Data(bytesNoCopy: encodingPointer, count: MemoryLayout<UInt32>.size, deallocator: Data.Deallocator.none)
         
         guard let payload = self.data(using: encoding) else { return nil }
         data.append(payload)
@@ -125,15 +126,45 @@ extension String {
     
     /// takes data encoded with <code>data(prefixedEncoding:)</code> and constructs a string with the serialized encoding
     init?(dataPrefixedEncoding data: Data) {
-        // TODO performance
-        let encodingData = data.subdata(in: 0..<MemoryLayout<String.Encoding.RawValue>.size)
-        var encodingRawValue: String.Encoding.RawValue = String.Encoding.utf8.rawValue
+        // NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
+        // PEFORMANCE
+        let encodingData = data.subdata(in: 0..<MemoryLayout<UInt32>.size)
+//        var encodingRawValue: String.Encoding.RawValue = String.Encoding.utf8.rawValue
+//        withUnsafeMutableBytes(of: &encodingRawValue) { pointer in
+//            pointer.copyBytes(from: encodingData)
+//        }
+        
+        var encodingRawValue: UInt32 = UInt32(String.Encoding.utf8.rawValue)
         withUnsafeMutableBytes(of: &encodingRawValue) { pointer in
             pointer.copyBytes(from: encodingData)
         }
-        let encoding = String.Encoding(rawValue: encodingRawValue)
-        let suffix = data.suffix(from: MemoryLayout<String.Encoding.RawValue>.size)
+        
+        let encoding = String.Encoding(rawValue: String.Encoding.RawValue(encodingRawValue))
+        let suffix = data.suffix(from: MemoryLayout<UInt32>.size)
         self.init(data: data.subdata(in: suffix.startIndex..<suffix.endIndex), encoding: encoding)
+    }
+    
+    /// returns first count characters
+    func left(_ count: String.IndexDistance) -> String {
+        let endIndex = self.index(self.startIndex, offsetBy: count)
+        return self.substring(to: endIndex)
+    }
+    
+    /// returns last count characters
+    func right(_ count: String.IndexDistance) -> String {
+        let endIndex = self.index(self.endIndex, offsetBy: -count)
+        return self.substring(from: endIndex)
+    }
+}
+
+extension Data {
+    func hexString() -> String {
+        var hex = ""
+        for byte in self {
+            hex += String(format: "%02x", byte)
+        }
+        
+        return hex
     }
 }
 

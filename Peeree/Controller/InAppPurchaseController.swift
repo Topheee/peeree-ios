@@ -13,6 +13,8 @@ protocol InAppPurchaseDelegate: class {
     func productsLoaded(error: Error?)
     func updateTransactions(_ transactions: [SKPaymentTransaction])
     func transactionFailed(error: Error)
+    func readingReceiptFailed()
+    func peereeServerRedeemFailed(error: Error)
 }
 
 /*
@@ -26,8 +28,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     static let InitialPinPoints: PinPoints = 50
     
     static let PinPointPrefKey = "PinPointPrefKey"
-    private static let PinPointQueueLabel = "Pin Point Queue"
-    private static let pinPointQueue = DispatchQueue(label: PinPointQueueLabel, attributes: [])
+    private static let pinPointQueue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).pinpoints", attributes: [])
     
     private static var __once: () = { () -> Void in
         if UserDefaults.standard.value(forKey: PinPointPrefKey) == nil {
@@ -55,11 +56,9 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     }
     
     public static var availablePinPoints: PinPoints {
-        var result: PinPoints = 0
-        pinPointQueue.sync {
-            result = _availablePinPoints
+        return pinPointQueue.sync {
+            return _availablePinPoints
         }
-        return result
     }
     
     public static func decreasePinPoints(by: PinPoints = PinCosts) {
@@ -85,7 +84,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     
     static func refreshPinPoints() {
         AccountController.shared.getPinPoints { (_pinPoints, _error) in
-            guard _error != nil else {
+            guard _error == nil else {
                 NSLog("could not refresh pin points: \(_error!)")
                 return
             }
@@ -135,7 +134,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     func makePaymentRequest(for product: SKProduct) {
         let payment = SKMutablePayment(product: product)
         payment.quantity = 1
-        // TODO payment.applicationUsername = encrypted UserPeerInfo.instance.peer.peerID.uuidString with our private key
+        // TODO payment.applicationUsername = encrypted UserPeerInfo.instance.peer.peerID.uuidString with SHA
         SKPaymentQueue.default().add(payment)
     }
     
@@ -153,7 +152,7 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         _currentProducts = response.products
         currentProductsRequest = nil
         
-        for invalidIdentifier:String in response.invalidProductIdentifiers {
+        for invalidIdentifier in response.invalidProductIdentifiers {
             NSLog("Invalid product identifier \(invalidIdentifier)")
         }
     
@@ -204,12 +203,15 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     }
     
     private func complete(transaction: SKPaymentTransaction) {
-        // TODO error handling
-        guard let url = Bundle.main.appStoreReceiptURL, let receiptData = try? Data(contentsOf: url) else { assertionFailure(); return }
+        guard let url = Bundle.main.appStoreReceiptURL, let receiptData = try? Data(contentsOf: url) else {
+            delegate?.readingReceiptFailed()
+            return
+        }
         
         AccountController.shared.redeem(receipts: receiptData) { (_pinPoints, _error) in
             guard _error != nil else {
                 NSLog("could not redeem pin points: \(_error!)")
+                self.delegate?.peereeServerRedeemFailed(error: _error!)
                 return
             }
             if let pinPoints = _pinPoints {

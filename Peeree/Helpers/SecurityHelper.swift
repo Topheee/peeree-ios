@@ -7,8 +7,22 @@
 //
 
 import Foundation
+import Security
+import CommonCrypto
 
-// MARK: - Security
+extension Data {
+    func sha256() -> Data {
+        let digestLength = Int(CC_SHA256_DIGEST_LENGTH)
+        var digest = Data(count: digestLength)
+        _ = digest.withUnsafeMutableBytes({ (digestMutableBytes) in
+            self.withUnsafeBytes({ (plainTextBytes) in
+                CC_SHA256(plainTextBytes, CC_LONG(self.count), digestMutableBytes)
+            })
+        })
+        
+        return digest
+    }
+}
 
 public class AsymmetricKey {
     public static func keyFromKeychain(tag: Data, keyType: String) throws -> Data {
@@ -25,8 +39,8 @@ public class AsymmetricKey {
     fileprivate let key: SecKey
     private var _tag: Data?
     fileprivate let type: CFString, size: Int
-    fileprivate let signaturePadding: SecPadding = [] /* SecPadding.PKCS1SHA256 */
-    fileprivate let encryptionPadding: SecPadding = [] /* SecPadding.PKCS1SHA256 */
+    fileprivate let signaturePadding: SecPadding = [] // .PKCS1SHA256
+    fileprivate let encryptionPadding: SecPadding = .PKCS1SHA256
     
     public func removeFromKeychain() throws {
         guard let tag = _tag else { return }
@@ -38,13 +52,14 @@ public class AsymmetricKey {
         _tag = nil
     }
     
-    public func addToKeychain(tag: Data) throws -> Data {
+    public func addToKeychain(tag: Data, keyClass: CFString) throws -> Data {
         assert(_tag == nil, "If this occurs, decide whether it should be allowed to add the key (with a different) tag again")
         let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
+                                       kSecAttrKeyClass as String: keyClass,
                                        kSecAttrKeyType as String: type,
                                        kSecAttrApplicationTag as String: tag,
-                                       kSecAttrKeySizeInBits as String: size as AnyObject,
-                                       kSecValueRef as String: self,
+                                       kSecAttrKeySizeInBits as String: size,
+                                       kSecValueRef as String: key,
                                        kSecReturnData as String: NSNumber(value: true)]
         var item: CFTypeRef?
         try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
@@ -53,16 +68,33 @@ public class AsymmetricKey {
         return (item as! CFData) as Data
     }
     
-    public func addToKeychain(tag: Data) throws {
+    public func addToKeychain(tag: Data, keyClass: CFString) throws {
         assert(_tag == nil, "If this occurs, decide whether it should be allowed to add the key (with a different) tag again")
         let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
+                                       kSecAttrKeyClass as String: keyClass,
                                        kSecAttrKeyType as String: type,
                                        kSecAttrApplicationTag as String: tag,
                                        kSecAttrKeySizeInBits as String: size,
-                                       kSecValueRef as String: self]
+                                       kSecValueRef as String: key]
+        try SecKey.check(status: SecItemAdd(addquery as CFDictionary, nil), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
+        self._tag = tag
+    }
+    
+    public static func addToKeychain(key: SecKey, tag: Data) throws -> Data {
+        let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
+                                       kSecValueRef as String: key,
+                                       kSecAttrApplicationTag as String: tag,
+                                       kSecReturnData as String: NSNumber(value: true)]
         var item: CFTypeRef?
         try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
-        self._tag = tag
+        
+        return (item as! CFData) as Data
+    }
+    
+    public static func removeFromKeychain(tag: Data) throws {
+        let remquery: [String: Any] = [kSecClass as String: kSecClassKey,
+                                       kSecAttrApplicationTag as String: tag]
+        try SecKey.check(status: SecItemDelete(remquery as CFDictionary), localizedError: NSLocalizedString("Deleting keychain item failed.", comment: "Removing an item from the keychain produced an error."))
     }
     
     public func externalRepresentation() throws -> Data {
@@ -73,29 +105,30 @@ public class AsymmetricKey {
             }
             return data
         } else {
-            let tag = "de.kobusch.tempkey2".data(using: .utf8)!
+            let temporaryTag = "de.kobusch.tempkey2".data(using: .utf8)!
             
             defer {
                 // always try to remove key from keychain
                 do {
-                    try removeFromKeychain()
+                    try AsymmetricKey.removeFromKeychain(tag: temporaryTag)
                 } catch {
                     // only log this
                     NSLog("\(error)")
                 }
             }
             
-            return try addToKeychain(tag: tag)
+            return try AsymmetricKey.addToKeychain(key: key, tag: temporaryTag)
         }
     }
     
-    public init(from data: Data, type: CFString, size: Int) throws {
+    public init(from data: Data, type: CFString, size: Int, keyClass: CFString) throws {
         self.type = type
         self.size = size
         if #available(macOS 10.12.1, iOS 10.0, *) {
-            let attributes: [String : AnyObject] = [
-                kSecAttrKeyType as String:            type as AnyObject,
-                kSecAttrKeySizeInBits as String:      size as AnyObject]
+            let attributes: [String : Any] = [
+                kSecAttrKeyType as String:            type,
+                kSecAttrKeySizeInBits as String:      size,
+                kSecAttrKeyClass as String:           keyClass]
             var error: Unmanaged<CFError>?
             guard let key = SecKeyCreateWithData(data as CFData, attributes as CFDictionary, &error) else {
                 throw error!.takeRetainedValue()
@@ -105,35 +138,42 @@ public class AsymmetricKey {
         } else {
             let tag = "de.kobusch.tempkey".data(using: .utf8)!
             
+            // always try to remove key from keychain before we add it again
+            try? AsymmetricKey.removeFromKeychain(tag: tag)
+            
+            defer {
+                // always try to remove key from keychain when we added it
+                do {
+                    try AsymmetricKey.removeFromKeychain(tag: tag)
+                } catch {
+                    // only log this
+                    NSLog("\(error)")
+                }
+            }
+            
             let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
                                            kSecAttrKeyType as String: type,
                                            kSecAttrApplicationTag as String: tag,
                                            kSecValueData as String: data,
-                                           kSecReturnPersistentRef as String: NSNumber(value: true)]
+                                           kSecAttrKeyClass as String: keyClass,
+                                           kSecReturnRef as String: NSNumber(value: true)]
             var item: CFTypeRef?
             try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
             
             self.key = item as! SecKey
-            self._tag = tag
-            
-            // always try to remove key from keychain
-            do {
-                try removeFromKeychain()
-            } catch {
-                // only log this
-                NSLog("\(error)")
-            }
         }
     }
     
-    public init(from data: Data, type: CFString, size: Int, tag: Data) throws {
+    public init(from data: Data, type: CFString, size: Int, keyClass: CFString, tag: Data) throws {
+        self._tag = tag
         self.type = type
         self.size = size
         let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
+                                       kSecAttrKeyClass as String: keyClass,
                                        kSecAttrKeyType as String: type,
                                        kSecAttrApplicationTag as String: tag,
                                        kSecValueData as String: data,
-                                       kSecReturnPersistentRef as String: NSNumber(value: true)]
+                                       kSecReturnRef as String: NSNumber(value: true)]
         var item: CFTypeRef?
         try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
         
@@ -171,6 +211,7 @@ public class AsymmetricKey {
 public class AsymmetricPublicKey: AsymmetricKey {
     public func verify(message data: Data, signature: Data) throws {
         if #available(macOS 10.12.1, iOS 10.0, *) {
+            NSLog("Verify signature size: \(signature.count), block size: \(SecKeyGetBlockSize(key))")
             let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
             guard SecKeyIsAlgorithmSupported(key, .verify, algorithm) else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm \(SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256) does not support verifying", comment: "Error description for verifying exception, which should never actually occur.")])
@@ -178,15 +219,19 @@ public class AsymmetricPublicKey: AsymmetricKey {
             
             var error: Unmanaged<CFError>?
             guard SecKeyVerifySignature(key, algorithm, data as CFData, signature as CFData, &error) else {
-                throw error!.takeRetainedValue() as Error
+                throw error!.takeUnretainedValue() as Error
             }
         } else {
             #if os(iOS)
+                let digest = data.sha256()
+                NSLog("Verify signature size: \(signature.count), digest size: \(digest.count), block size: \(SecKeyGetBlockSize(key))")
+                
                 let status = signature.withUnsafeBytes { (signatureBytes: UnsafePointer<UInt8>) in
-                    return data.withUnsafeBytes { (dataBytes: UnsafePointer<UInt8>) in
-                        SecKeyRawVerify(key, signaturePadding, dataBytes, data.count, signatureBytes, signature.count)
+                    return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
+                        SecKeyRawVerify(key, signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
                     }
                 }
+                
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Verifying signature failed.", comment: "Cryptographically verifying a message failed."))
             #else
                 throw NSError(domain: "unsupported", code: -1, userInfo: nil)
@@ -226,7 +271,7 @@ public class AsymmetricPublicKey: AsymmetricKey {
                 var cipherSize = SecKeyGetBlockSize(key)
                 var cipher = Data(count: cipherSize)
                 let status = cipher.withUnsafeMutableBytes { (cipherBytes: UnsafeMutablePointer<UInt8>) in
-                    return plainText.withUnsafeBytes { (plainTextBytes: UnsafePointer<UInt8>) in
+                    return plainText.withUnsafeBytes { ( plainTextBytes: UnsafePointer<UInt8>) in
                         SecKeyEncrypt(key, encryptionPadding, plainTextBytes, plainText.count, cipherBytes, &cipherSize)
                     }
                 }
@@ -246,7 +291,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
         if #available(macOS 10.12.1, iOS 10.0, *) {
             let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
             guard SecKeyIsAlgorithmSupported(key, .sign, algorithm) else {
-                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm \(SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256) does not support signing", comment: "Error description for signing exception, which should never actually occur.")])
+                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm does not support signing", comment: "Error description for signing exception, which should never actually occur.")])
             }
             
             var error: Unmanaged<CFError>?
@@ -254,14 +299,19 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 throw error!.takeRetainedValue() as Error
             }
             
+            NSLog("Sign signatureSize: \(signature.count), block size: \(SecKeyGetBlockSize(key))")
             return signature
         } else {
             #if os(iOS)
+                let digest = data.sha256()
+                
                 var signatureSize = SecKeyGetBlockSize(key)
+                NSLog("Sign digest size: \(digest.count), signatureSize (block size): \(signatureSize)")
                 var signature = Data(count: signatureSize)
+                
                 let status = signature.withUnsafeMutableBytes { (signatureBytes: UnsafeMutablePointer<UInt8>) in
-                    return data.withUnsafeBytes { (dataBytes: UnsafePointer<UInt8>) in
-                        SecKeyRawSign(key, signaturePadding, dataBytes, data.count, signatureBytes, &signatureSize)
+                    return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
+                        SecKeyRawSign(key, signaturePadding, digestBytes, digest.count, signatureBytes, &signatureSize)
                     }
                 }
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Cryptographically signing failed.", comment: "Cryptographically signing a message failed."))
@@ -318,7 +368,7 @@ extension SecKey {
             #else
                 let msg = localizedError
             #endif
-            
+            NSLog("OSStatus \(status) check failed: \(localizedError)")
             throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
         }
     }
@@ -327,6 +377,8 @@ extension SecKey {
 public class KeyPair {
     private let privateKey: AsymmetricPrivateKey
     public let publicKey: AsymmetricPublicKey
+    
+    public var blockSize: Int { return SecKeyGetBlockSize(privateKey.key) }
     
     public init(privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool) throws {
         var error: Unmanaged<CFError>?
@@ -345,18 +397,18 @@ public class KeyPair {
                     kSecPrivateKeyAttrs as String: [
                         kSecAttrIsPermanent as String:    persistent,
                         kSecAttrApplicationTag as String: privateTag
-                        ] as CFDictionary,
+                        ] as CFDictionary/*,
                     kSecPublicKeyAttrs as String: [
                         kSecAttrIsPermanent as String:    persistent,
                         kSecAttrApplicationTag as String: publicTag
-                        ] as CFDictionary
+                        ] as CFDictionary*/
                 ]
             #else
-                guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
-                    throw error!.takeRetainedValue() as Error
-                }
                 
-//                if #available(iOS 10.0, *) {
+                if #available(iOS 10.0, *) {
+                    guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
+                        throw error!.takeRetainedValue() as Error
+                    }
                 attributes = [
                     kSecAttrKeyType as String:            type,
                     kSecAttrKeySizeInBits as String:      size,
@@ -367,22 +419,23 @@ public class KeyPair {
                         kSecAttrAccessControl as String:  access
                         ] as CFDictionary
                     ]
-//                } else {
-//                    attributes = [
-//                        kSecAttrKeyType as String:            kSecAttrKeyTypeEC,
-//                        kSecAttrKeySizeInBits as String:      size as AnyObject,
-//                        kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-//                        kSecPrivateKeyAttrs as String: [
-//                            kSecAttrIsPermanent as String:    persistent,
-//                            kSecAttrApplicationTag as String: tag as AnyObject,
-//                            kSecAttrAccessControl as String:  access
-//                            ] as CFDictionary
-//                    ]
-//                }
+                } else {
+                    // we do not use the Secure Enclave on iOS 9!
+                    attributes = [
+                        kSecAttrKeyType as String:            type,
+                        kSecAttrKeySizeInBits as String:      size,
+                        kSecPrivateKeyAttrs as String: [
+                            kSecAttrIsPermanent as String:    persistent,
+                            kSecAttrApplicationTag as String: privateTag
+                            ] as CFDictionary
+                    ]
+                }
             #endif
         
         var _publicKey, _privateKey: SecKey?
         try SecKey.check(status: SecKeyGeneratePair(attributes as CFDictionary, &_publicKey, &_privateKey), localizedError: NSLocalizedString("Generating cryptographic key pair failed.", comment: "Low level crypto error."))
+        
+        NSLog("Created key pair with block sizes \(SecKeyGetBlockSize(_privateKey!)), \(SecKeyGetBlockSize(_publicKey!))")
         
         privateKey = AsymmetricPrivateKey(key: _privateKey!, type: type, size: size, tag: privateTag)
         
@@ -393,7 +446,7 @@ public class KeyPair {
                 publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size, tag: nil)
             } else {
                 publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size, tag: nil)
-                try publicKey.addToKeychain(tag: publicTag) as Void
+                try publicKey.addToKeychain(tag: publicTag, keyClass: kSecAttrKeyClassPublic) as Void
             }
         #endif
     }
@@ -412,6 +465,11 @@ public class KeyPair {
             publicKey = try AsymmetricPublicKey(tag: publicTag)
         }
         #endif
+    }
+    
+    public func removeFromKeychain() throws {
+        try publicKey.removeFromKeychain()
+        try privateKey.removeFromKeychain()
     }
     
     public func externalPublicKey() throws -> Data {
@@ -454,10 +512,10 @@ public class KeyPair {
  throw error!.takeRetainedValue() as Error
  }
  
- let attributes: [String : AnyObject] = [
+ let attributes: [String : Any] = [
  kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
- kSecAttrKeySizeInBits as String:      256 as AnyObject,
- //            kSecAttrKeySizeInBits as String: SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
+ kSecAttrKeySizeInBits as String:      256,
+ //            kSecAttrKeySizeInBits as String: SecKeySizes.secp256r1.rawValue, only available on macOS...
  //            kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
  kSecPrivateKeyAttrs as String: [
  kSecAttrIsPermanent as String:    NSNumber(value: persistent),

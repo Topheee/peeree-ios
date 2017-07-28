@@ -19,17 +19,22 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     @IBOutlet private weak var birthdayInput: UITextField!
     @IBOutlet private weak var scrollView: UIScrollView!
     
+    private var activeField: UITextField! = nil
+    
     private var restCompletion: (_ _error: Error?) -> Void {
         return { [weak self] (_error: Error?) in
+            DispatchQueue.main.async {
+                self?.adjustAccountView()
+            }
+            
             guard let error = _error else { return }
             
             AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
-            self?.adjustAccountView()
         }
     }
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
-		UserPeerInfo.instance.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
+		UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
@@ -38,12 +43,12 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     private func adjustAccountView() {
         if AccountController.shared.accountExists {
-            accountButton.setTitle(NSLocalizedString("Delete Account", comment: "Caption of button"), for: .normal)
+            accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
             accountButton.tintColor = .red
             mailTextField.text = AccountController.shared.accountEmail
             accountIDLabel.text = AccountController.shared.getPeerID()
         } else {
-            accountButton.setTitle(NSLocalizedString("Create Account", comment: "Caption of button"), for: .normal)
+            accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
             accountButton.tintColor = AppDelegate.shared.theme.globalTintColor
         }
         mailTextField.isHidden = !AccountController.shared.accountExists
@@ -55,22 +60,34 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     @IBAction func createDeleteAccount(_ sender: Any) {
         if AccountController.shared.accountExists {
             // UIAlertController asking whether sure
-            let alertController = UIAlertController(title: NSLocalizedString("Account Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree account and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Account", comment: "Caption of button"), style: .destructive, handler: { (button) in
-                AccountController.shared.deleteAccount(completion: self.restCompletion)
+            let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
+                AccountController.shared.deleteAccount { (_ _error: Error?) in
+                    self.restCompletion(_error)
+                    guard _error == nil else { return }
+                    DispatchQueue.main.async {
+                        self.loadUserPeerInfo()
+                    }
+                }
+                self.adjustAccountView()
             }))
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
             present(alertController, animated: true, completion: nil)
         } else {
             AccountController.shared.createAccount(completion: restCompletion)
+            adjustAccountView()
         }
     }
     
-    func agePickerChanged(_ sender: UIDatePicker) {
+    private func fillBirthdayInput(with date: Date) {
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .none
         dateFormatter.dateStyle = .long
-        birthdayInput.text = dateFormatter.string(from: sender.date)
+        birthdayInput.text = dateFormatter.string(from: date)
+    }
+    
+    func agePickerChanged(_ sender: UIDatePicker) {
+        fillBirthdayInput(with: sender.date)
     }
     
     func ageConfirmed(_ sender: UIBarButtonItem) {
@@ -124,22 +141,23 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         birthdayInput.inputView = datePicker
         birthdayInput.inputAccessoryView = saveToolBar
         birthdayInput.delegate = self
+        
+        registerForKeyboardNotifications()
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-		nameTextField.text = UserPeerInfo.instance.nickname
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeStyle = .none
-        dateFormatter.dateStyle = .long
-		genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.gender) ?? 0
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+		loadUserPeerInfo()
         adjustAccountView()
 	}
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         _ = CircleMaskView(maskedView: portraitImageButton.imageView!)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 	
 	// MARK: UITextFieldDelegate
@@ -150,12 +168,17 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
     
     func textFieldDidEndEditing(_ textField: UITextField) {
+        activeField = nil
         switch textField {
         case nameTextField:
-            guard let newValue = textField.text else { return }
-            UserPeerInfo.instance.nickname = newValue
+            guard let newValue = textField.text, newValue != "" else {
+                textField.text = UserPeerInfo.instance.peer.nickname
+                return
+            }
+            let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
+            UserPeerInfo.instance.peer.nickname = newValue.substring(to: endIndex)
         case birthdayInput:
-            scrollView.contentInset = UIEdgeInsets.zero
+//            scrollView.contentInset = UIEdgeInsets.zero
             guard textField.text != nil && textField.text != "" else {
                 UserPeerInfo.instance.dateOfBirth = nil
                 return
@@ -169,7 +192,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
                 return
             }
             
-            AccountController.shared.update(email: newValue, completion: restCompletion)
+            let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
+            AccountController.shared.update(email: newValue.substring(to: endIndex), completion: restCompletion)
         default:
             break
         }
@@ -179,24 +203,70 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         guard textField == birthdayInput || textField == mailTextField else { return true }
         
-        scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: textField.inputView?.frame.height ?? 0.0, right: 0.0)
+//        scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: textField.inputView?.frame.height ?? 0.0, right: 0.0)
 		return true
     }
     
-    // TODO do we need this anymore? or should we restrict it still but allow more characters?
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard textField == nameTextField else { return true }
+        guard textField == nameTextField || textField == mailTextField else { return true }
         
         if (range.length + range.location > textField.text!.characters.count) {
             return false
         }
         
         let newLength = textField.text!.characters.count + string.characters.count - range.length
-        return newLength <= 63
+        return textField == nameTextField ? newLength <= PeerInfo.MaxNicknameSize : newLength <= PeerInfo.MaxEmailSize
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        activeField = textField
     }
     
     override func picked(image: UIImage?) {
         super.picked(image: image)
         portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+    }
+    
+    private func loadUserPeerInfo() {
+        nameTextField.text = UserPeerInfo.instance.peer.nickname
+        genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.peer.gender) ?? 0
+        if let date = UserPeerInfo.instance.dateOfBirth {
+            fillBirthdayInput(with: date)
+        } else {
+            birthdayInput.text = nil
+        }
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+    }
+    
+    // Call this method somewhere in your view controller setup code.
+    func registerForKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: NSNotification.Name.UIKeyboardDidShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+    }
+    
+    // Called when the UIKeyboardDidShowNotification is sent.
+    @objc func keyboardWasShown(aNotification: Notification) {
+        guard let info = aNotification.userInfo else { return }
+        
+        let kbSize = (info[UIKeyboardFrameBeginUserInfoKey] as! CGRect).size
+        
+        let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: kbSize.height, right: 0.0)
+        scrollView.contentInset = contentInsets
+        scrollView.scrollIndicatorInsets = contentInsets
+        
+        // If active text field is hidden by keyboard, scroll it so it's visible
+        // Your app might not need or want this behavior.
+        var aRect = self.view.frame
+        aRect.size.height -= kbSize.height
+        if (!aRect.contains(activeField.frame.origin) ) {
+            scrollView.scrollRectToVisible(activeField.frame, animated: true)
+        }
+    }
+    
+    // Called when the UIKeyboardWillHideNotification is sent
+    func keyboardWillBeHidden(aNotification: Notification) {
+        let contentInsets = UIEdgeInsets.zero
+        scrollView.contentInset = contentInsets
+        scrollView.scrollIndicatorInsets = contentInsets
     }
 }

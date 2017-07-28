@@ -41,6 +41,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
         case connectionChangedState
         case peerAppeared, peerDisappeared
         case verified, verificationFailed
+        case pictureLoaded
         
         func post(_ peerID: PeerID?, again: Bool? = nil) {
             var userInfo: [AnyHashable: Any]? = nil
@@ -124,7 +125,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     }
     
     func receivedPinMatchIndication(from peerID: PeerID) {
-       AccountController.shared.validatePinMatch(with: peerID)
+       AccountController.shared.updatePinStatus(of: peerID)
     }
     
     // MARK: RemotePeerManagerDelegate
@@ -142,6 +143,10 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     func peerDisappeared(_ peerID: PeerID) {
         Notifications.peerDisappeared.post(peerID)
+    }
+    
+    func pictureLoaded(of peerID: PeerID) {
+        Notifications.pictureLoaded.post(peerID)
     }
     
     func shouldIndicatePinMatch(to peer: PeerInfo) -> Bool {

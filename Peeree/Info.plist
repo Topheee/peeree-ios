@@ -22,8 +22,18 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<false/>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Media Library Usage Description soll hier hin</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>131.234.241.90</key>
+			<string></string>
+			<key>172.20.10.2</key>
+			<string></string>
+			<key>192.168.12.190</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Bluetooth is used to connect to other Peeree users around you. Nothing is shared when you are offline.</string>
 	<key>NSCameraUsageDescription</key>

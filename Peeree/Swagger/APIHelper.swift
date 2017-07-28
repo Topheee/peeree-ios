@@ -54,7 +54,11 @@ class APIHelper {
         let returnValues = values
             .filter { $0.1 != nil }
             .map { (item: (_key: String, _value: Any?)) -> URLQueryItem in
-                URLQueryItem(name: item._key, value:"\(item._value!)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+                if let data = item._value as? Data {
+                    return URLQueryItem(name: item._key, value: String(data: data, encoding: .utf8)!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+                } else {
+                    return URLQueryItem(name: item._key, value: "\(item._value!)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+                }
             }
         if returnValues.count == 0 {
             return nil

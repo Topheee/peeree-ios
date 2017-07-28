@@ -6,143 +6,6 @@
 
 import Foundation
 
-typealias CompletionHandler = () -> Void
-
-open class MySessionDelegate : NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate, URLSessionDownloadDelegate, URLSessionStreamDelegate {
-    var completionHandlers: [String: CompletionHandler] = [:]
-    
-    static var cred: URLCredential?
-    static var space: URLProtectionSpace?
-    
-    open func createAndConfigureSession() {
-        // Creating session configurations
-        let defaultConfiguration = URLSessionConfiguration.default
-        defaultConfiguration.httpShouldUsePipelining = true
-        defaultConfiguration.tlsMinimumSupportedProtocol = .tlsProtocol12
-        defaultConfiguration.tlsMaximumSupportedProtocol = .tlsProtocol12
-        defaultConfiguration.timeoutIntervalForRequest = 1.0 // TODO make bigger, only for testing so low
-        if let credential = MySessionDelegate.cred, let space = MySessionDelegate.space {
-            defaultConfiguration.urlCredentialStorage!.setDefaultCredential(credential, for: space)
-        }
-//        let ephemeralConfiguration = URLSessionConfiguration.ephemeral
-//        let backgroundConfiguration = URLSessionConfiguration.backgroundSessionConfiguration("com.peeree.networking.background")
-        
-//        // Configuring caching behavior for the default session
-//        let cachesDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-//        let cacheURL = try! cachesDirectoryURL.appendingPathComponent("MyCache")
-//        var diskPath = cacheURL.path
-//        
-//        /* Note:
-//         iOS requires the cache path to be
-//         a path relative to the ~/Library/Caches directory,
-//         but OS X expects an absolute path.
-//         */
-//        #if os(OSX)
-//            diskPath = cacheURL.absoluteString
-//        #endif
-//        
-//        let cache = URLCache(memoryCapacity:16384, diskCapacity: 268435456, diskPath: diskPath)
-//        defaultConfiguration.urlCache = cache
-//        defaultConfiguration.requestCachePolicy = .useProtocolCachePolicy
-        // Creating sessions
-        let delegate = self
-        let operationQueue = OperationQueue.main
-        
-        let defaultSession = URLSession(configuration: defaultConfiguration, delegate: delegate, delegateQueue: operationQueue)
-//        let ephemeralSession = URLSession(configuration: ephemeralConfiguration, delegate: delegate, delegateQueue: operationQueue)
-//        let backgroundSession = URLSession(configuration: backgroundConfiguration, delegate: delegate, delegateQueue: operationQueue)
-        
-//        ephemeralConfiguration.allowsCellularAccess = false
-//        let ephemeralSessionWiFiOnly = URLSession(configuration: ephemeralConfiguration, delegate: delegate, delegateQueue: operationQueue)
-//        
-//        let sessionWithoutADelegate = URLSession(configuration: defaultConfiguration)
-        if let url = URL(string: "\(SwaggerClientAPI.basePath)/account?publicKey=Public%20Key") {
-            (defaultSession.dataTask(with: url) { (data, response, error) in
-                if let error = error {
-                    print("Error: \(error)")
-                } else if let response = response,
-                    let data = data,
-                    let string = String(data: data, encoding: .utf8) {
-                    print("Response: \(response)")
-                    print("DATA:\n\(string)\nEND DATA\n")
-                }
-            }).resume()
-        }
-    }
-    
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard challenge.previousFailureCount == 0 else {
-            challenge.sender?.cancel(challenge)
-            // Inform the user that something failed
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-        
-        guard let trust = challenge.protectionSpace.serverTrust else {
-            NSLog("no server trust found")
-            challenge.sender?.cancel(challenge)
-            // Inform the user that something failed
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-        
-        guard let url = Bundle.main.url(forResource: "cacert", withExtension: "der") else {
-            NSLog("could not find server certificate file in bundle.")
-            return
-        }
-        var data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            NSLog("unable to read certificate file: \(error.localizedDescription)")
-            return
-        }
-        
-        guard let certificate = SecCertificateCreateWithData(kCFAllocatorDefault, data as CFData) else {
-            NSLog("server certificate data is not in DER format.")
-            return
-        }
-        
-        var status = SecTrustSetAnchorCertificates(trust, [certificate] as CFArray)
-        guard status == errSecSuccess else {
-            NSLog("adding anchor certificate failed with code \(status).")
-            return
-        }
-        
-        var result: SecTrustResultType = .otherError
-        status = SecTrustEvaluate(trust, &result)
-        guard status == errSecSuccess else {
-            NSLog("evaluating trust failed with code \(status).")
-            challenge.sender?.cancel(challenge)
-            // Inform the user that something failed
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-        
-        guard result == .proceed else {
-            NSLog("server certificate not trusted, result code: \(result.rawValue).")
-            challenge.sender?.cancel(challenge)
-            // Inform the user that something failed
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-        
-        let credential = URLCredential(trust: trust)
-        challenge.sender?.use(credential, for: challenge)
-        
-        completionHandler(.useCredential, credential)
-        
-//        URLCredentialStorage.shared.setDefaultCredential(credential, for: challenge.protectionSpace)
-//        MySessionDelegate.cred = credential
-//        MySessionDelegate.space = challenge.protectionSpace
-//        completionHandler(.performDefaultHandling,nil)
-    }
-    
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        
-    }
-}
-
 class AlamofireRequestBuilderFactory: RequestBuilderFactory {
     func getBuilder<T>() -> RequestBuilder<T>.Type {
         return AlamofireRequestBuilder<T>.self
@@ -152,7 +15,7 @@ class AlamofireRequestBuilderFactory: RequestBuilderFactory {
 // Store manager to retain its reference
 private var managerStore: [String: URLSession] = [:]
 
-class DebugCredentialAcceptor : NSObject, URLSessionDelegate {
+final class CredentialAcceptor : NSObject, URLSessionDelegate {
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard challenge.previousFailureCount == 0 else {
             challenge.sender?.cancel(challenge)
@@ -162,9 +25,8 @@ class DebugCredentialAcceptor : NSObject, URLSessionDelegate {
         }
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if challenge.protectionSpace.host == "192.168.12.190" {
+            if challenge.protectionSpace.host == "172.20.10.2" || challenge.protectionSpace.host == "127.0.0.1" || challenge.protectionSpace.host == "131.234.244.1" {
                 // for debug only!
-                
                 guard let trust = challenge.protectionSpace.serverTrust else {
                     NSLog("no server trust found")
                     challenge.sender?.cancel(challenge)
@@ -173,15 +35,82 @@ class DebugCredentialAcceptor : NSObject, URLSessionDelegate {
                     return
                 }
                 let cred = URLCredential(trust: trust)
-                completionHandler(.useCredential, cred);
+                challenge.sender?.use(cred, for: challenge)
+                completionHandler(.useCredential, cred)
+            } else {
+                enum CertError : Error {
+                    case FailureCount, NoTrust, NoCA, DataIO(Error), BadFormat, Anchor(OSStatus), Evaluate(OSStatus)
+                }
+                do {
+                    guard challenge.previousFailureCount == 0 else { throw CertError.FailureCount }
+                    guard let trust = challenge.protectionSpace.serverTrust else { throw CertError.NoTrust }
+                    guard let caUrl = Bundle.main.url(forResource: "cacert", withExtension: "der") else { throw CertError.NoCA }
+                    
+                    var data: Data
+                    do {
+                        data = try Data(contentsOf: caUrl)
+                    } catch {
+                        throw CertError.DataIO(error)
+                    }
+                    
+                    guard let certificate = SecCertificateCreateWithData(kCFAllocatorDefault, data as CFData) else { throw CertError.BadFormat }
+                    
+                    var status = SecTrustSetAnchorCertificates(trust, [certificate] as CFArray)
+                    guard status == errSecSuccess else { throw CertError.Anchor(status) }
+                    
+                    var result: SecTrustResultType = .otherError
+                    status = SecTrustEvaluate(trust, &result)
+                    guard status == errSecSuccess else { throw CertError.Evaluate(status) }
+                    
+                    guard result == .proceed || result == .unspecified else {
+                        NSLog("server certificate not trusted, result: \(result).")
+                        completionHandler(.rejectProtectionSpace, nil)
+                        return
+                    }
+                    
+                    let credential = URLCredential(trust: trust)
+                    challenge.sender?.use(credential, for: challenge)
+                    
+                    completionHandler(.useCredential, credential)
+                    
+                } catch {
+                    let certError = error as! CertError
+                    
+                    switch certError {
+                    case .DataIO(let ioError):
+                        NSLog("reading certificate failed: \(ioError.localizedDescription)")
+                    case .Anchor(let status):
+                        NSLog("setting anchor cert failed with code \(status).")
+                    case .Evaluate(let status):
+                        NSLog("evaluating trust failed with code \(status).")
+                    default:
+                        NSLog("Aborting URL connection: \(error.localizedDescription)")
+                    }
+                    challenge.sender?.cancel(challenge)
+                    // Inform the user that something failed
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
             }
+        } else {
+            completionHandler(.performDefaultHandling, nil)
         }
     }
 }
 
 open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
-    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, isBody: Bool, headers: [String : String] = [:]) {
-        super.init(method: method, url: url, parameters: parameters, isBody: isBody, headers: headers)
+    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, headers: [String : String] = [:], body: Data? = nil) {
+        var headers = headers
+        if let d = SwaggerClientAPI.dataSource {
+            var val = d.getPeerID()
+            if !val.isEmpty {
+                headers["peerID"] = val
+            }
+            val = d.getSignature()
+            if !val.isEmpty {
+                headers["signature"] = val
+            }
+        }
+        super.init(method: method, url: url, parameters: parameters, headers: headers)
     }
 
     /**
@@ -192,22 +121,8 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = buildHeaders()
         configuration.httpShouldUsePipelining = true
-        configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
-        configuration.tlsMaximumSupportedProtocol = .tlsProtocol12
-        configuration.timeoutIntervalForRequest = 1.0 // TODO make bigger, only for testing so low
-//        configuration.urlCredentialStorage = URLCredentialStorage.shared
-        if let t = configuration.urlCredentialStorage {
-            let s = URLProtectionSpace(host: SwaggerClientAPI.host, port: 0, protocol: SwaggerClientAPI.`protocol`, realm: nil, authenticationMethod: NSURLAuthenticationMethodServerTrust)
-            if let c = t.defaultCredential(for: s) {
-                print("\(c)")
-            }
-        }
-        
-        #if true // adfs
-        return URLSession(configuration: configuration, delegate: DebugCredentialAcceptor(), delegateQueue: nil)
-        #else
-        return URLSession(configuration: configuration)
-        #endif
+        configuration.timeoutIntervalForRequest = 5.0
+        return URLSession(configuration: configuration, delegate: CredentialAcceptor(), delegateQueue: nil)
     }
 
     /**
@@ -242,50 +157,10 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         let manager = createSessionManager()
         managerStore[managerId] = manager
 
-        let fileKeys = parameters == nil ? [] : parameters!.filter { $1 is NSURL } .map { $0.0 }
-
-        if fileKeys.count > 0 {
-//            manager.upload(multipartFormData: { mpForm in
-//                for (k, v) in self.parameters! {
-//                    switch v {
-//                    case let fileURL as URL:
-//                        if let mimeType = self.contentTypeForFormPart(fileURL: fileURL) {
-//                            mpForm.append(fileURL, withName: k, fileName: fileURL.lastPathComponent, mimeType: mimeType)
-//                        }
-//                        else {
-//                            mpForm.append(fileURL, withName: k)
-//                        }
-//                        break
-//                    case let string as String:
-//                        mpForm.append(string.data(using: String.Encoding.utf8)!, withName: k)
-//                        break
-//                    case let number as NSNumber:
-//                        mpForm.append(number.stringValue.data(using: String.Encoding.utf8)!, withName: k)
-//                        break
-//                    default:
-//                        fatalError("Unprocessable value \(v) with key \(k)")
-//                        break
-//                    }
-//                }
-//                }, to: URLString, method: method, headers: nil, encodingCompletion: { encodingResult in
-//                switch encodingResult {
-//                case .success(let upload, _, _):
-//                    if let onProgressReady = self.onProgressReady {
-//                        onProgressReady(upload.progress)
-//                    }
-//                    self.processRequest(request: upload, managerId, completion)
-//                case .failure(let encodingError):
-//                    completion(nil, ErrorResponse.Error(415, nil, encodingError))
-//                }
-//            })
-        } else {
-            let request = makeRequest(manager: manager, method: method)
-//            if let onProgressReady = self.onProgressReady {
-//                onProgressReady(request.progress)
-//            }
-            processRequest(manager: manager, request: request, managerId, completion)
-        }
-
+        // NOTE: at this point, swagger handled the parameters, but used some crappy Alamofire stuff.
+        // If you want to recover it, generate code again and reverse engineer it
+        
+        processRequest(manager: manager, request: makeRequest(manager: manager, method: method), managerId, completion)
     }
 
     private func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: Error?) -> Void) {
@@ -297,17 +172,16 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
             _ = managerStore.removeValue(forKey: managerId)
         }
         
-//        let validatedRequest = request.validate()
-        
         let invalidResponseError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Invalid response.", comment: "The Peeree Server sent invalid response data.")])
-        let httpStatusError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("HTTP error.", comment: "The Peeree Server sent a response with code 4xx or 5xx.")])
         
-        (manager.dataTask(with: request) { (data, response, error) in
+        let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
             cleanupRequest()
             if let error = error {
                 completion(nil, ErrorResponse.Error((response as? HTTPURLResponse)?.statusCode ?? -1, data, error))
             } else if let httpResponse = response as? HTTPURLResponse {
                 guard !httpResponse.isFailure else {
+                    let errorString = String(format: NSLocalizedString("HTTP error %d.", comment: "The Peeree Server sent a response with code 4xx or 5xx."), httpResponse.statusCode)
+                    let httpStatusError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : errorString])
                     completion(nil, ErrorResponse.Error(httpResponse.statusCode, data, httpStatusError))
                     return
                 }
@@ -354,7 +228,13 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
             } else {
                 completion(nil, ErrorResponse.Error(-1, data, invalidResponseError))
             }
-        }).resume()
+        }
+        
+        if let body = self.body {
+            (manager.uploadTask(with: request, from: body, completionHandler: taskCompletionHandler)).resume()
+        } else {
+            (manager.dataTask(with: request, completionHandler: taskCompletionHandler)).resume()
+        }
     }
     
     private func buildHeaders() -> [String: String] {

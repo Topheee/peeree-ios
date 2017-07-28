@@ -75,7 +75,10 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     
 	@IBAction func pinPeer(_ sender: UIButton) {
         guard let peer = displayedPeerInfo else { return }
-        guard !peer.pinned else { return }
+        guard !peer.pinned else {
+            AccountController.shared.updatePinStatus(of: peer.peerID)
+            return
+        }
         
         AppDelegate.requestPin(of: peer)
         updateState()
@@ -111,11 +114,15 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
         
-        let simpleHandledNotifications2: [AccountController.Notifications] = [.pinMatch, .pinned, .pinningStarted, .pinFailed]
+        let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed]
         for networkNotification in simpleHandledNotifications2 {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
         
+        notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { (notification) in
+            simpleStateUpdate(notification)
+            self.animateGradient()
+        }))
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -136,9 +143,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             let circlePath: UIBezierPath
             let size = portraitImageView.frame.size
             if clockwiseProgress {
-                circlePath = UIBezierPath(arcCenter: CGPoint(x: size.width / 2.0, y: size.height / 2.0), radius: (size.width - 30)/2, startAngle: .pi * CGFloat(0.5), endAngle: .pi * CGFloat(2.5), clockwise: clockwiseProgress)
+                circlePath = UIBezierPath(arcCenter: CGPoint(x: size.width / 2.0, y: size.height / 2.0 - 42.0), radius: 42 /* (size.width - 35)/2 */, startAngle: .pi * CGFloat(0.5), endAngle: .pi * CGFloat(2.5), clockwise: clockwiseProgress)
             } else {
-                circlePath = UIBezierPath(arcCenter: CGPoint(x: size.width / 2.0, y: size.height / 2.0), radius: (size.width - 30)/2, startAngle: .pi * CGFloat(2.5), endAngle: .pi * CGFloat(0.5), clockwise: clockwiseProgress)
+                circlePath = UIBezierPath(arcCenter: CGPoint(x: size.width / 2.0, y: size.height / 2.0 - 42.0), radius: 42 /* (size.width - 35)/2 */, startAngle: .pi * CGFloat(2.5), endAngle: .pi * CGFloat(0.5), clockwise: clockwiseProgress)
             }
             
             // Setup the CAShapeLayer with the path, colors, and line width
@@ -146,7 +153,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             circleLayer.frame = CGRect(origin: CGPoint.zero, size: size)
             circleLayer.path = circlePath.cgPath
             circleLayer.fillColor = UIColor.clear.cgColor
-            circleLayer.strokeColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
+            circleLayer.strokeColor = AppDelegate.shared.theme.globalTintColor.cgColor
             circleLayer.lineWidth = 5.0
             circleLayer.lineCap = kCALineCapRound
             circleLayer.shadowColor = UIColor.gray.cgColor
@@ -156,6 +163,12 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             portraitImageView.layer.addSublayer(circleLayer)
         }
         
+        if peer.pinMatched {
+            animateGradient()
+        }
+    }
+    
+    private func animateGradient() {
         UIView.animate(withDuration: 1.5, delay: 0.0, usingSpringWithDamping: 2.0, initialSpringVelocity: 1.2, options: [.repeat, .autoreverse], animations: {
             self.gradientView.alpha = 0.5
         }, completion: nil)
@@ -176,12 +189,14 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             NotificationCenter.default.removeObserver(observer)
         }
         notificationObservers.removeAll()
+        gradientView.layer.removeAllAnimations()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        portraitImageView.image = nil
+        pictureProgressManager = nil
         circleLayer = nil
+        portraitImageView.image = nil
     }
     
     // MARK: ProgressDelegate
@@ -242,13 +257,14 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         pinIndicator.isHidden = state.pinState != .pinning
         findButtonItem.isEnabled = state.pinMatch
         
+        title = peer.nickname
         if state.isLocalPeer || state.isAvailable {
             navigationItem.titleView = nil
             navigationItem.title = peer.nickname
         } else {
             let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
             titleLable.text = peer.nickname
-            titleLable.textColor = UIColor(white: 0.5, alpha: 1.0)
+            titleLable.textColor = UIColor.lightGray
             titleLable.textAlignment = .center
             titleLable.lineBreakMode = .byTruncatingTail
             navigationItem.titleView = titleLable

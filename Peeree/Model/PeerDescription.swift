@@ -31,9 +31,12 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         return Singleton.sharedInstance
     }
     
-    @objc public static var supportsSecureCoding : Bool {
-        return true
+    public static func delete() {
+        UserDefaults.standard.removeObject(forKey: PrefKey)
+        Singleton.sharedInstance = UserPeerInfo()
     }
+    
+    @objc public static var supportsSecureCoding : Bool { return true }
     
     public var pictureResourceURL: URL {
         // Create a file path to our documents directory
@@ -43,7 +46,7 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
     
     public /* override */ var peer: PeerInfo {
         didSet {
-            assert(peer == oldValue)
+//            assert(peer == oldValue) cannot assert here as we override this from AccountController
             dirtied()
         }
     }
@@ -53,17 +56,11 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         get { return _keyPair }
     }
     
-    /* override */ var cgPicture: CGImage? {
-        get { return peer.cgPicture }
-        set { peer.cgPicture = newValue; dirtied() }
-    }
-    
     /// must only be done by AccountController when new account is created
     public var peerID: PeerID {
         get { return peer.peerID }
         set {
             peer = peer.copy(to: newValue)
-            dirtied()
         }
     }
 	
@@ -75,33 +72,14 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
                 } else {
                     peer.age = nil
                 }
-                
-				dirtied()
 			}
 		}
-    }
-    
-    public var nickname: String {
-        get { return peer.nickname }
-        set {
-            guard newValue != "" && newValue != peer.nickname else { return }
-            
-            peer.nickname = newValue
-            dirtied()
-        }
-    }
-	public var age: Int? { return peer.age }
-	public var gender: PeerInfo.Gender {
-        get { return peer.gender }
-        set { if newValue != peer.gender { peer.gender = newValue; dirtied() } }
-    }
-    public var characterTraits: [CharacterTrait] {
-        get { return peer.characterTraits }
-        set { peer.characterTraits = newValue; dirtied() }
     }
 	
 	private override init() {
 		dateOfBirth = nil
+        try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag)
+        try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag)
         self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self.peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
 //        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
@@ -141,7 +119,7 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         if let image = peer.cgPicture {
             let data = NSMutableData()
             if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
-                CGImageDestinationAddImage(dest, image, nil) // TODO use options
+                CGImageDestinationAddImage(dest, image, nil)
                 if CGImageDestinationFinalize(dest) {
                     aCoder.encode(data, forKey: PeerInfo.CodingKey.picture.rawValue)
                 }
@@ -153,13 +131,6 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         //            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
         //        }
     }
-	
-//	private func warnIdentityChange(_ proceedHandler: ((UIAlertAction) -> Void)?, cancelHandler: ((UIAlertAction) -> Void)?, completionHandler: (() -> Void)?) {
-//		let alertController = UIAlertController(title: NSLocalizedString("Change of Identity", comment: "Title message of alerting the user that he is about to change the unambigous representation of himself in the Peeree world."), message: NSLocalizedString("You are about to change your identification. If you continue others, even those who pinned you, won't recognize you any more. This is also the case if you again reset your name to the original one. However, your pins all keep being valid!", comment: "Description of 'Change of Identity'"), preferredStyle: .actionSheet)
-//		alertController.addAction(UIAlertAction(title: NSLocalizedString("Change Identity", comment: "Button text for choosing a new Peeree identity."), style: .destructive, handler: proceedHandler))
-//		alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: cancelHandler))
-//        alertController.present(completionHandler)
-//	}
 	
 	public func dirtied() {
 		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
@@ -225,7 +196,7 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
         if let image = peer.cgPicture {
             let data = NSMutableData()
             if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
-                CGImageDestinationAddImage(dest, image, nil) // TODO use options
+                CGImageDestinationAddImage(dest, image, nil)
                 if CGImageDestinationFinalize(dest) {
                     aCoder.encode(data, forKey: PeerInfo.CodingKey.picture.rawValue)
                 }
@@ -244,6 +215,8 @@ public struct PeerInfo: Equatable {
     }
     
     public static let MinAge = 13, MaxAge = 100
+    /// postgres can store strings up to this length very efficiently and this size fits into one single BLE packet
+    public static let MaxNicknameSize = 126, MaxEmailSize = 126
     public static let KeyType = kSecAttrKeyTypeEC // kSecAttrKeyTypeECSECPrimeRandom
     public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
     
@@ -342,7 +315,7 @@ public struct PeerInfo: Equatable {
     
     public var summary: String {
         if age != nil {
-            let format = NSLocalizedString("%d years old, %@ - %@ (%@)", comment: "Text describing the peers age, gender, pin and verification status")
+            let format = NSLocalizedString("%d, %@ - %@ (%@)", comment: "Text describing the peers age, gender, pin and verification status")
             return String(format: format, age!, gender.localizedRawValue, pinStatus, verificationStatus)
         } else {
             let format = NSLocalizedString("%@ - %@ (%@)", comment: "Text describing the peers gender, pin and verification status")
@@ -469,7 +442,7 @@ public struct PeerInfo: Equatable {
     
     init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
         do {
-            let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize)
+            let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize, keyClass: kSecAttrKeyClassPublic)
             self.init(peerID: peerID, publicKey: publicKey, aggregateData: aggregateData, nicknameData: nicknameData, lastChangedData: lastChangedData)
         } catch {
             NSLog("\(error)")

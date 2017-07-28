@@ -128,7 +128,19 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     }
     
     func transactionFailed(error: Error) {
-        let alert = UIAlertController(title: NSLocalizedString("Store Error", comment: "Title of alert when an error with in-app purchases occurred."), message: error.localizedDescription, preferredStyle: .alert)
+        presentStoreError(message: error.localizedDescription)
+    }
+    
+    func readingReceiptFailed() {
+        presentStoreError(message: NSLocalizedString("The Peeree server was unable to redeem your purchases.", comment: "Alert message when the server was unable to parse the receipt"))
+    }
+    
+    func peereeServerRedeemFailed(error: Error) {
+        presentStoreError(message: error.localizedDescription)
+    }
+    
+    private func presentStoreError(message: String) {
+        let alert = UIAlertController(title: NSLocalizedString("Store Error", comment: "Title of alert when an error with in-app purchases occurred."), message: message, preferredStyle: .alert)
         alert.present(nil)
     }
     
@@ -147,16 +159,17 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
     }
     
     private func createWalletInfoCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        let ret = tableView.dequeueReusableCell(withIdentifier: CellID.walletInfo.rawValue, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: CellID.walletInfo.rawValue, for: indexPath)
         switch indexPath.row {
         case 0:
-            ret.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency.")
-            ret.detailTextLabel?.text = String(InAppPurchaseController.availablePinPoints)
+            cell.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency.")
+            cell.detailTextLabel?.text = String(InAppPurchaseController.availablePinPoints)
+            cell.imageView?.image = #imageLiteral(resourceName: "PinTemplatePressed")
             break
         default:
             break
         }
-        return ret
+        return cell
     }
     
     private func createPinPointOfferingCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {

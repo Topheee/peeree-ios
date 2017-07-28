@@ -36,7 +36,7 @@ extension CBUUID {
     static let PublicKeyCharacteristicID = CBUUID(string: "2EC65417-7DE7-459B-A9CC-67AD01842A4F")
     static let AuthenticationCharacteristicID = CBUUID(string: "79427315-3071-4EA1-AD76-3FF04FCD51CF")
     
-    static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalUUIDCharacteristicID, PortraitCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, AuthenticationCharacteristicID] // TODO make sure public key and authentication always fits into one single message
+    static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalUUIDCharacteristicID, PortraitCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, AuthenticationCharacteristicID]
     static let SplitCharacteristicIDs = [PortraitCharacteristicID]
 }
 

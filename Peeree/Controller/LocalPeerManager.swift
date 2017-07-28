@@ -26,7 +26,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
     
     // unfortunenately this will grow until we go offline as we do not get any disconnection notification...
-    private var _availableCentrals = SynchronizedDictionary<CBCentral, PeerID>()
+    private var _availableCentrals = SynchronizedDictionary<CBCentral, PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).availableCentrals")
     
     private var nonces = [CBCentral : Data]()
     
@@ -53,6 +53,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     func stopAdvertising() {
         guard isAdvertising else { return }
         
+        peripheralManager.removeAllServices()
         peripheralManager.stopAdvertising()
         peripheralManager = nil
         _availableCentrals.removeAll()
@@ -86,7 +87,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             // value: remote peer.idData
             let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
             // value: Data(count: 1)
-            let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.writeWithoutResponse], value: nil, permissions: [.writeable])
+            let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
             // value try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
             let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
             // value: aggregateData
@@ -120,6 +121,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
+        NSLog("Central read size: \(central.maximumUpdateValueLength)")
         switch characteristic.uuid {
         case CBUUID.PortraitCharacteristicID:
             do {
@@ -128,7 +130,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             } catch {
                 NSLog("Failed to read user portrait: \(error.localizedDescription)")
                 NSLog("Removing picture from user info.")
-                UserPeerInfo.instance.cgPicture = nil
+                UserPeerInfo.instance.peer.cgPicture = nil
             }
         default:
             break
@@ -144,7 +146,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
         // Start sending again
         let transfers = interruptedTransfers
-        interruptedTransfers.removeAll() // TEST does this keep the elements in transfers?
+        interruptedTransfers.removeAll() // this keeps the elements in transfers
         for (data, characteristic, central, sendSize) in transfers {
             sendData(data: data, of: characteristic, to: central, sendSize: sendSize)
         }
@@ -152,8 +154,12 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         if let data = UserPeerInfo.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
-            request.value = data
-            peripheral.respond(to: request, withResult: .success)
+            if (request.offset > data.count) {
+                peripheral.respond(to: request, withResult: .invalidOffset)
+            } else {
+                request.value = data.subdata(in: request.offset..<data.count - request.offset)
+                peripheral.respond(to: request, withResult: .success)
+            }
         } else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
             guard let nonce = nonces.removeValue(forKey: request.central) else {
                 peripheral.respond(to: request, withResult: .insufficientResources)
@@ -164,8 +170,12 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
                 peripheral.respond(to: request, withResult: .requestNotSupported)
                 return
             }
-            request.value = signature
-            peripheral.respond(to: request, withResult: .success)
+            if (request.offset > signature.count) {
+                peripheral.respond(to: request, withResult: .invalidOffset)
+            } else {
+                request.value = signature.subdata(in: request.offset..<signature.count - request.offset)
+                peripheral.respond(to: request, withResult: .success)
+            }
         } else {
             peripheral.respond(to: request, withResult: .readNotPermitted)
         }

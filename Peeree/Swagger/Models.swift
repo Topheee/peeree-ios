@@ -73,7 +73,7 @@ class Decoders {
             return (source as! NSNumber).int32Value as! T;
         }
         if T.self is Int64.Type && source is NSNumber {
-            return (source as! NSNumber).int64Value as! T;
+            return source.int64Value as! T;
         }
         if T.self is UUID.Type && source is String {
             return UUID(uuidString: source as! String) as! T
@@ -159,35 +159,7 @@ class Decoders {
 
             let instance = Account()
             instance.peerID = Decoders.decodeOptional(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject?)
-            instance.sequenceNumber = Decoders.decodeOptional(clazz: Data.self, source: sourceDictionary["sequenceNumber"] as AnyObject?)
-            return instance
-        }
-
-
-        // Decoder for [InlineResponse200]
-        Decoders.addDecoder(clazz: [InlineResponse200].self) { (source: AnyObject) -> [InlineResponse200] in
-            return Decoders.decode(clazz: [InlineResponse200].self, source: source)
-        }
-        // Decoder for InlineResponse200
-        Decoders.addDecoder(clazz: InlineResponse200.self) { (source: AnyObject) -> InlineResponse200 in
-            let sourceDictionary = source as! [AnyHashable: Any]
-
-            let instance = InlineResponse200()
-            instance.data = Decoders.decodeOptional(clazz: Array.self, source: sourceDictionary["data"] as AnyObject?)
-            return instance
-        }
-
-
-        // Decoder for [InlineResponse2001]
-        Decoders.addDecoder(clazz: [InlineResponse2001].self) { (source: AnyObject) -> [InlineResponse2001] in
-            return Decoders.decode(clazz: [InlineResponse2001].self, source: source)
-        }
-        // Decoder for InlineResponse2001
-        Decoders.addDecoder(clazz: InlineResponse2001.self) { (source: AnyObject) -> InlineResponse2001 in
-            let sourceDictionary = source as! [AnyHashable: Any]
-
-            let instance = InlineResponse2001()
-            instance.data = Decoders.decodeOptional(clazz: Array.self, source: sourceDictionary["data"] as AnyObject?)
+            instance.sequenceNumber = Decoders.decodeOptional(clazz: Int32.self, source: sourceDictionary["sequenceNumber"] as AnyObject?)
             return instance
         }
 
@@ -218,6 +190,19 @@ class Decoders {
             instance.publicKey = Decoders.decodeOptional(clazz: PublicKey.self, source: sourceDictionary["publicKey"] as AnyObject?)
             instance.match = Decoders.decodeOptional(clazz: Bool.self, source: sourceDictionary["match"] as AnyObject?)
             return instance
+        }
+
+
+        // Decoder for [PinPoints]
+        Decoders.addDecoder(clazz: [PinPoints].self) { (source: AnyObject) -> [PinPoints] in
+            return Decoders.decode(clazz: [PinPoints].self, source: source)
+        }
+        // Decoder for PinPoints
+        Decoders.addDecoder(clazz: PinPoints.self) { (source: AnyObject) -> PinPoints in
+            if let source = source as? Int32 {
+                return source
+            }
+            fatalError("Source \(source) is not convertible to typealias PinPoints: Maybe swagger file is insufficient")
         }
 
 
