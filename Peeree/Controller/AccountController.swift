@@ -59,6 +59,7 @@ public class AccountController: SecurityDataSource {
     /// stores acknowledged pinned peers and their public keys
     private var pinnedPeers: SynchronizedDictionary<PeerID, Data>
     // maybe encrypt these on disk so no one can read out their display names
+    /// stores acknowledged pin matched peers
     private var pinnedByPeers: SynchronizedSet<PeerID>
     
     private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).pinningPeers")
@@ -104,8 +105,19 @@ public class AccountController: SecurityDataSource {
     private var _isDeletingAccount = false
     public var isDeletingAccount: Bool { return _isDeletingAccount }
     
+    /// Returns whether we have a pin match with that specific PeerID, that is, the global Peeree identifier. Note, that this does NOT imply we have a match with a concrete PeerInfo with that PeerID, as that PeerInfo may be a malicious peer
+    public func hasPinMatch(_ peerID: PeerID) -> Bool {
+        // it is enough to check whether we are pinned by peerID, as we only know that if we matched
+        return pinnedByPeers.contains(peerID)
+    }
+    
+    /**
+     * Returns whether we have a pin match with that specific peer.
+     * Note that this does NOT ultimately mean we have a pin match as long as the peer is not verified!
+     */
     public func hasPinMatch(_ peer: PeerInfo) -> Bool {
-        return isPinned(peer) && pinnedByPeers.contains(peer.peerID)
+        // it is NOT enough to check whether we are pinned by peer, as we also need to check whether the peer is really the person behind it's peerID (that is, it's public key matches the one we pinned)
+        return pinnedByPeers.contains(peer.peerID) && isPinned(peer)
     }
     
     public func isPinned(_ peer: PeerInfo) -> Bool {
@@ -121,14 +133,12 @@ public class AccountController: SecurityDataSource {
         let peerID = peer.peerID
         guard !isPinned(peer) && PeeringController.shared.remote.availablePeers.contains(peerID) && !(pinningPeers.contains(peerID)) else { return }
         
-        let pinPublicKey = peer.publicKeyData.base64EncodedData()
-        
         self.pinningPeers.insert(peerID)
         Notifications.pinningStarted.post(peerID)
-        DefaultAPI.putPin(pinnedID: peerID, pinnedKey: pinPublicKey) { (_isPinMatch, _error) in
+        DefaultAPI.putPin(pinnedID: peerID, pinnedKey: peer.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
             self.pinningPeers.remove(peerID)
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
                 Notifications.pinFailed.post(peerID)
             } else if let isPinMatch = _isPinMatch  {
                 self.pin(peer: peer, isPinMatch: isPinMatch)
@@ -148,7 +158,7 @@ public class AccountController: SecurityDataSource {
                 archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
                 
                 DispatchQueue.main.async {
-                    InAppPurchaseController.decreasePinPoints()
+                    InAppPurchaseController.shared.decreasePinPoints()
                     Notifications.pinned.post(peerID)
                 }
             }
@@ -187,21 +197,19 @@ public class AccountController: SecurityDataSource {
         }
     }
 
-    public func updatePinStatus(of peerID: PeerID) {
+    public func updatePinStatus(of peer: PeerInfo) {
         guard accountExists else { return }
         // attack scenario: Eve sends pin match indication to Alice, but Alice only asks server, if she pinned Eve in the first place => Eve can observe Alice's internet communication and can figure out, whether Alice pinned her, depending on whether Alice' asked the server after the indication.
         // thus, we (Alice) have to at least once validate with the server, even if we know, that we did not pin Eve
-        // TODO if flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
-//        guard !pinnedByPeers.contains(peerID) else { return }
-        guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
+        // This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive an pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
         // we can savely ignore this if we already know we have a pin match
         guard !hasPinMatch(peer) else { return }
         
         let pinPublicKey = peer.publicKeyData.base64EncodedData()
         
-        DefaultAPI.getPin(pinnedID: peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
+        DefaultAPI.getPin(pinnedID: peer.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
             guard _error == nil else {
-                self.handleStandardErrors(error: _error!)
+                self.standardHandle(error: _error!)
                 return
             }
             if let pinStatus = _pinStatus {
@@ -236,14 +244,13 @@ public class AccountController: SecurityDataSource {
             
             guard let account = _account else {
                 if let error = _error {
-                    self.handleStandardErrors(error: error)
+                    self.standardHandle(error: error)
                 }
                 completionError = _error
                 return
             }
             guard let sequenceNumberDataCipher = account.sequenceNumber, let newPeerID = account.peerID else {
-                NSLog("no sequence number or peer ID in account")
-                completionError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server Error 1", comment: "Server sent wrong data.")])
+                completionError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server Error: no sequence number or peer ID in account.", comment: "Server sent wrong data.")])
                 return
             }
             self._sequenceNumber = sequenceNumberDataCipher
@@ -251,7 +258,7 @@ public class AccountController: SecurityDataSource {
                 // UserPeerInfo has to be modified on the main queue
                 UserPeerInfo.instance.peerID = newPeerID
                 // further requests need peerID in UserPeerInfo to be set
-                InAppPurchaseController.refreshPinPoints()
+                InAppPurchaseController.shared.refreshPinPoints()
             }
             completionError = nil
         }
@@ -264,7 +271,7 @@ public class AccountController: SecurityDataSource {
         PeeringController.shared.peering = false
         DefaultAPI.deleteAccount { (_error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             } else {
                 PeeringController.shared.peering = false
                 self._accountEmail = nil
@@ -283,7 +290,7 @@ public class AccountController: SecurityDataSource {
         guard email != "" else { deleteEmail(completion: completion); return }
         DefaultAPI.putAccountEmail(email: email) { (_error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             } else {
                 self._accountEmail = email
             }
@@ -295,7 +302,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.deleteAccountEmail { (_error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             } else {
                 self._accountEmail = nil
             }
@@ -307,7 +314,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.getAccountPinPoints { (_pinPoints, _error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             }
             completion(_pinPoints, _error)
         }
@@ -317,7 +324,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.putInAppPurchaseIosReceipt(receiptData: receipts) { (_pinPoints, _error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             }
             completion(_pinPoints, _error)
         }
@@ -330,7 +337,7 @@ public class AccountController: SecurityDataSource {
         }
         DefaultAPI.getInAppPurchaseIosProductIds { (_response, _error) in
             if let error = _error {
-                self.handleStandardErrors(error: error)
+                self.standardHandle(error: error)
             }
             completion(_response, _error)
         }
@@ -352,12 +359,12 @@ public class AccountController: SecurityDataSource {
         let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
         pinnedByPeers = SynchronizedSet(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
         let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
-        pinnedPeers = SynchronizedDictionary(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedByPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
+        pinnedPeers = SynchronizedDictionary(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
         _accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
         _sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
     }
     
-    private func handleStandardErrors(error: Error) {
+    private func standardHandle(error: Error) {
         guard let errorResponse = error as? ErrorResponse else {
             NSLog("Unknown network error occured: \(error)")
             return

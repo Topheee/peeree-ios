@@ -9,6 +9,11 @@
 import Foundation
 import CoreGraphics
 
+// TODO use this in the swagger completion blocks as argument, to eliminate the case that both error and data are nil
+enum OperationResult<T> {
+    case good(T), bad(Error)
+}
+
 // MARK: - Functions
 
 func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
@@ -174,116 +179,19 @@ extension HTTPURLResponse {
 
 extension Bool {
     /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: UInt32) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: UInt64) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: UInt16) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: UInt8) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Int32) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Double) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Int8) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Int16) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Float) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: UInt) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Int64) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: Int) {
-        self.init(value != 0)
-    }
-    /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init(_ value: CGFloat) {
+    init<T: Integer>(_ value: T) {
         self.init(value != 0)
     }
 }
 
-extension UInt32 {
+extension SignedInteger {
     /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
     init(_ value: Bool) {
         self.init(value ? 1 : 0)
     }
 }
 
-extension UInt64 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension UInt16 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension UInt8 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension Int32 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension Int64 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension Int16 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension Int8 {
-    /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
-    init(_ value: Bool) {
-        self.init(value ? 1 : 0)
-    }
-}
-
-extension Int {
+extension UnsignedInteger {
     /// Create an instance initialized to zero, if <code>value</code> is false, and 1 otherwise.
     init(_ value: Bool) {
         self.init(value ? 1 : 0)

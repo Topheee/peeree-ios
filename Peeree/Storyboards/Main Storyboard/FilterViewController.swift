@@ -9,6 +9,8 @@
 import UIKit
 
 final class FilterViewController: UITableViewController {
+    @IBOutlet private weak var ageMinTextLabel: UILabel!
+    @IBOutlet private weak var ageMaxTextLabel: UILabel!
 	@IBOutlet private weak var ageMaxLabel: UILabel!
 	@IBOutlet private weak var ageMaxSlider: UISlider!
 	@IBOutlet private weak var ageMinLabel: UILabel!
@@ -41,7 +43,10 @@ final class FilterViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        ageMaxLabel.widthAnchor.constraint(equalTo: ageMinLabel.widthAnchor, multiplier: 1.0)
+        DispatchQueue.main.async {
+            self.ageMaxLabel.widthAnchor.constraint(equalTo: self.ageMinLabel.widthAnchor).isActive = true
+            self.ageMaxTextLabel.widthAnchor.constraint(equalTo: self.ageMinTextLabel.widthAnchor).isActive = true
+        }
         ageMaxSlider.maximumValue = Float(PeerInfo.MaxAge + 1)
         ageMaxSlider.minimumValue = Float(PeerInfo.MinAge)
         ageMinSlider.maximumValue = Float(PeerInfo.MaxAge)

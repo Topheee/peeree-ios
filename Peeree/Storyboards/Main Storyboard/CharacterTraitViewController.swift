@@ -31,7 +31,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
         UserPeerInfo.instance.peer.characterTraits = traits
     }
     
-    // - MARK: UITableView Data Source
+    // MARK: UITableViewDataSource
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCell(withIdentifier: CharacterTraitViewController.cellID)!
@@ -49,7 +49,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 		selectedTrait = indexPath
 	}
     
-    // - MARK: SingleSelViewController Data Source
+    // MARK: SingleSelViewControllerDataSource
     
     func selectionEditable(in pickerView: UIPickerView) -> Bool {
         return characterTraits != nil && userTraits

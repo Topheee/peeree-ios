@@ -61,9 +61,6 @@ class PinMatchViewController: UIViewController {
         
         superView.drawHierarchy(in: superView.bounds, afterScreenUpdates: false)
         
-//        let image = autoreleasepool {
-//            return UIGraphicsGetImageFromCurrentImageContext()
-//        }
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
@@ -74,7 +71,6 @@ class PinMatchViewController: UIViewController {
             backgroundImageView.image = image
         }
         backgroundImageView.isOpaque = true
-        // TEST is the image and the image view really opaque?
         backgroundImageView.isHidden = false
     }
     

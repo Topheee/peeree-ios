@@ -11,8 +11,7 @@ import CoreBluetooth
 import CoreLocation
 
 final class BeaconViewController: UIViewController {
-    static private let OwnBeaconRegionID = "own"
-    static private let PeerBeaconRegionID = "remote"
+    static let storyboardID = "BeaconViewController"
 
     @IBOutlet private weak var distanceView: DistanceView!
     @IBOutlet private weak var remotePortrait: UIImageView!
@@ -22,6 +21,8 @@ final class BeaconViewController: UIViewController {
     
     private var appearedObserver: NSObjectProtocol!
     private var disappearedObserver: NSObjectProtocol!
+    
+    private var currentDistance = PeerDistance.unknown
     
     var searchedPeer: PeerInfo?
     
@@ -34,7 +35,7 @@ final class BeaconViewController: UIViewController {
         super.viewWillAppear(animated)
         userPortrait.image = UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         remotePortrait.image = searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
-        updateDistance(.unknown)
+        updateDistance(.unknown, animated: false)
         if let peer = searchedPeer {
             if PeeringController.shared.remote.availablePeers.contains(peer.peerID) {
                 showPeerAvailable()
@@ -73,14 +74,25 @@ final class BeaconViewController: UIViewController {
         _ = CircleMaskView(maskedView: userPortrait)
         _ = CircleMaskView(maskedView: remotePortrait)
     }
-
-    private func updateDistance(_ proximity: PeerDistance) {
+    
+    private func updateDistance(_ proximity: PeerDistance, animated: Bool) {
+        guard proximity != currentDistance else { return }
+        
+        currentDistance = proximity
         let multipliers: [PeerDistance : CGFloat] = [.close : 0.0, .nearby : 0.3, .far : 0.6, .unknown : 0.85]
         let multiplier = multipliers[proximity] ?? 1.0
+        let oldFrame = remotePortrait.frame
         portraitDistanceConstraint.constant = (distanceView.frame.height - userPortrait.frame.height) * multiplier
-        portraitWidthConstraint.constant = -50 * multiplier
-        UIView.animate(withDuration: 0.5) { 
-            self.remotePortrait.layoutIfNeeded()
+//        portraitWidthConstraint.constant = -50 * multiplier not working and not necessary
+        if animated {
+            remotePortrait.setNeedsLayout()
+            view.layoutIfNeeded()
+            let newFrame = remotePortrait.frame
+            remotePortrait.frame = oldFrame
+            // duration has to be lower than the smallest range interval in PeeringController!
+            UIView.animate(withDuration: 2.0) {
+                self.remotePortrait.frame = newFrame
+            }
         }
     }
     
@@ -120,7 +132,7 @@ final class BeaconViewController: UIViewController {
         guard let peer = searchedPeer else { return }
         PeeringController.shared.range(peer.peerID) { [weak self] (_, distance) in
             DispatchQueue.main.async {
-                self?.updateDistance(distance)
+                self?.updateDistance(distance, animated: true)
             }
         }
         distanceView.pulsing = true

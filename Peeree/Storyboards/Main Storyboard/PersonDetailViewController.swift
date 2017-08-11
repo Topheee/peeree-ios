@@ -18,6 +18,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     @IBOutlet private weak var findButtonItem: UIBarButtonItem!
     
     private static let unwindSegueID = "unwindToBrowseViewController"
+    static let storyboardID = "PersonDetailViewController"
     static let beaconSegueID = "beaconSegue"
     
     private struct PeerState {
@@ -65,18 +66,19 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     }
     
     private var notificationObservers: [NSObjectProtocol] = []
+    
     private var circleLayer: CAShapeLayer!
     
-    var displayedPeerInfo: PeerInfo?
+    private var pictureProgressManager: ProgressManager?
     
-    var pictureProgressManager: ProgressManager?
+    var displayedPeerInfo: PeerInfo?
     
     @IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
     
 	@IBAction func pinPeer(_ sender: UIButton) {
         guard let peer = displayedPeerInfo else { return }
         guard !peer.pinned else {
-            AccountController.shared.updatePinStatus(of: peer.peerID)
+            AccountController.shared.updatePinStatus(of: peer)
             return
         }
         
@@ -95,7 +97,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        pinButton.setImage(#imageLiteral(resourceName: "PinTemplatePressed"), for: [.disabled, .selected])
+        pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
     }
     
 	override func viewWillAppear(_ animated: Bool) {
@@ -106,6 +108,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         let simpleStateUpdate = { (notification: Notification) in
             guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
             guard self.displayedPeerInfo?.peerID == peerID else { return }
+            // as we have value semantics, our cached peer info does not change, so we have to get the updated one
+            self.displayedPeerInfo = PeeringController.shared.remote.getPeerInfo(of: peerID) ?? self.displayedPeerInfo
             self.updateState()
         }
         
@@ -169,8 +173,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     }
     
     private func animateGradient() {
+        gradientView.alpha = 0.5
         UIView.animate(withDuration: 1.5, delay: 0.0, usingSpringWithDamping: 2.0, initialSpringVelocity: 1.2, options: [.repeat, .autoreverse], animations: {
-            self.gradientView.alpha = 0.5
+            self.gradientView.alpha = 1.0
         }, completion: nil)
     }
     
@@ -207,12 +212,11 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     
     func progress(didCancel progress: Progress, peerID: PeerID) {
         if progress === pictureProgressManager?.progress {
+            pictureProgressManager = nil
             removePictureLoadLayer()
-            //            UIView.animate(withDuration: 1.0, delay: 0.0, options: [.autoreverse], animations: {
-            //                self.portraitImageView.backgroundColor = UIColor.red
-            //            }) { (completed) in
-            //                    self.portraitImageView.backgroundColor = nil
-            //            }
+//            UIView.animate(withDuration: 1.0, delay: 0.0, options: [.autoreverse], animations: {
+//                self.portraitImageView.backgroundColor = UIColor.red
+//            })
             // as above is not working...
             UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                 self.portraitImageView.backgroundColor = UIColor.red
@@ -221,7 +225,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
                     self.portraitImageView.backgroundColor = nil
                 }, completion: nil)
             }
-            pictureProgressManager = nil
         }
     }
     
@@ -275,7 +278,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     }
     
     private func removePictureLoadLayer() {
-//        portraitImageView.layer.sublayers?.last?.removeFromSuperlayer()
         circleLayer?.removeFromSuperlayer()
         circleLayer = nil
     }

@@ -9,8 +9,6 @@
 
 import Foundation
 
-// MARK: - Synchronized Collections
-
 // we could implement CollectionType, SequenceType here, but nope
 // we could use struct, but it does not work and as long as class is working out, nope
 final public class SynchronizedArray<T> {

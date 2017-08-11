@@ -47,6 +47,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         
         showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
 	}
+    
 	@IBAction func filledFirstname(_ sender: UITextField) {
 		UIView.animate(withDuration: 1.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 			self.launchAppButton.alpha = 1.0
@@ -117,7 +118,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK - UITextFieldDelegate
+    // MARK: UITextFieldDelegate
 	
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: NSNotification.Name.UIKeyboardDidShow, object: nil)

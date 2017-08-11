@@ -1,6 +1,6 @@
 //
-//  RootViewController.swift
-//  UITests
+//  FirstLaunchViewController.swift
+//  Peeree
 //
 //  Created by Christopher Kobusch on 24.07.15.
 //  Copyright (c) 2015 Kobusch. All rights reserved.
@@ -9,23 +9,20 @@
 import UIKit
 
 final class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
-    private static let kFirstViewControllerID = "FirstViewController"
-    private static let kSecondViewControllerID = "SecondViewController"
+    private static let FirstViewControllerID = "FirstViewController"
+    private static let SecondViewControllerID = "SecondViewController"
     
-    private var firstViewController: UIViewController!
-    private var secondViewController: UIViewController!
+    private var firstViewController, secondViewController: UIViewController!
 	
-	@IBAction func unwindToOnboardingViewController(_ segue: UIStoryboardSegue) {
-		
-	}
+	@IBAction func unwindToOnboardingViewController(_ segue: UIStoryboardSegue) { }
 	
 	var pageViewController: UIPageViewController!
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
         
-        firstViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.kFirstViewControllerID)
-        secondViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.kSecondViewControllerID)
+        firstViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.FirstViewControllerID)
+        secondViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.SecondViewControllerID)
         
 		// Configure the page view controller and add it as a child view controller.
 		pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
@@ -55,13 +52,13 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
         return true
     }
 	
-	// MARK: - UIPageViewController delegate methods
+	// MARK: - UIPageViewControllerDelegate
 	
 	func pageViewController(_ pageViewController: UIPageViewController, spineLocationFor orientation: UIInterfaceOrientation) -> UIPageViewControllerSpineLocation {
 		return UIPageViewControllerSpineLocation.none
 	}
 	
-	// MARK: - Page View Controller Data Source
+	// MARK: - UIPageViewControllerDataSource
 	
 	func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
 		var ret: UIViewController?

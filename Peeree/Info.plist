@@ -26,11 +26,7 @@
 	<dict>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>131.234.241.90</key>
-			<string></string>
 			<key>172.20.10.2</key>
-			<string></string>
-			<key>192.168.12.190</key>
 			<string></string>
 		</dict>
 	</dict>
@@ -41,7 +37,7 @@
 	<key>NSMotionUsageDescription</key>
 	<string>The accelerator sensor is used to improve location calculations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Your photo library is used to let you choose a picture of you to display it to other users.</string>
+	<string>Your photo library is used to let you choose a picture of you to display it to other users and to store your portrait image.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-peripheral</string>
@@ -60,7 +56,7 @@
 		<key>UINavigationBar</key>
 		<dict>
 			<key>Style</key>
-			<string>UIBarStyleDefault</string>
+			<string>UIBarStyleBlack</string>
 			<key>Translucent</key>
 			<false/>
 		</dict>

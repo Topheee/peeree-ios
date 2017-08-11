@@ -38,7 +38,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         self.tableView.backgroundColor = AppDelegate.shared.theme.globalBackgroundColor
     }
     
-    // - MARK: UITableView Data Source
+    // MARK: UITableViewDataSource
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let sectionID = SectionID(rawValue: indexPath.section) else { return UITableViewCell() }
@@ -103,7 +103,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         let title = String(format: localizedTitleFormat, product.localizedTitle, InAppPurchaseController.getProductPrize(of: product))
         
         let alertController = UIAlertController(title: title, message: product.localizedDescription, preferredStyle: .actionSheet)
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Verb."), style: .cancel, handler: nil))
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Buy", comment: "Verb."), style: .default, handler: { (action) in
             InAppPurchaseController.shared.makePaymentRequest(for: product)
         }))
@@ -127,6 +127,12 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         }
     }
     
+    func refreshedPinPoints(error: Error?) {
+        if error != nil {
+            AppDelegate.display(networkError: error!, localizedTitle: NSLocalizedString("Refreshing Pin Points Failed", comment: "Title of alert"))
+        }
+    }
+    
     func transactionFailed(error: Error) {
         presentStoreError(message: error.localizedDescription)
     }
@@ -139,22 +145,20 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         presentStoreError(message: error.localizedDescription)
     }
     
+    // MARK: Private Methods
+    
     private func presentStoreError(message: String) {
-        let alert = UIAlertController(title: NSLocalizedString("Store Error", comment: "Title of alert when an error with in-app purchases occurred."), message: message, preferredStyle: .alert)
-        alert.present(nil)
+        InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Store Error", comment: "Title of alert when an error with in-app purchases occurred."), message: message)
     }
     
     @objc
     private func refreshTable(_ sender: AnyObject?) {
-//        guard let reachability = Reachability() else { refreshControl?.endRefreshing(); return }
-//        reachability.startNotifier()
-        
         switch Reachability.getNetworkStatus() {
         case .notReachable:
             refreshControl?.endRefreshing()
         case .reachableViaWiFi, .reachableViaWWAN:
             purchaser.requestProducts()
-            InAppPurchaseController.refreshPinPoints()
+            InAppPurchaseController.shared.refreshPinPoints()
         }
     }
     
@@ -163,7 +167,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = NSLocalizedString("Pin Points", comment: "Plural form of the in-app currency.")
-            cell.detailTextLabel?.text = String(InAppPurchaseController.availablePinPoints)
+            cell.detailTextLabel?.text = String(InAppPurchaseController.shared.availablePinPoints)
             cell.imageView?.image = #imageLiteral(resourceName: "PinTemplatePressed")
             break
         default:
@@ -191,7 +195,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         let ongoingTransactions = SKPaymentQueue.default().transactions
         let transaction = ongoingTransactions[indexPath.row]
         let localizedFormat = NSLocalizedString("Buying %d x %@ Pin Points", comment: "Cell title of ongoing transaction rows.")
-        let pinPoints = String(describing: InAppPurchaseController.getPinPoints(inProductID: transaction.payment.productIdentifier))
+        let pinPoints = String(describing: InAppPurchaseController.shared.getPinPoints(inProductID: transaction.payment.productIdentifier))
         ret.titleLabel.text = String(format: localizedFormat, transaction.payment.quantity, pinPoints)
         switch transaction.transactionState {
         case .deferred:

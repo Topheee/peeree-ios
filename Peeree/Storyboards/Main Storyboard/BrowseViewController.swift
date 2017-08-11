@@ -102,7 +102,7 @@ final class BrowseViewController: UITableViewController {
         }
     }
     
-    // MARK: UITableView Data Source
+    // MARK: UITableViewDataSource
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
         return !placeholderCellActive ? peerCache.count : 1
@@ -196,18 +196,11 @@ final class BrowseViewController: UITableViewController {
         AppDelegate.shared.theme.globalBackgroundColor.setFill()
         UIRectFill(imageRect)
         croppedImage.draw(in: imageRect)
-//        imageView.image = autoreleasepool {
-//            return UIGraphicsGetImageFromCurrentImageContext()
-//        }
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
         let maskView = CircleMaskView(maskedView: imageView)
         maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
-        
-//        cell.backgroundColor = peer.pinMatched ? AppDelegate.shared.theme.globalTintColor : nil
-//        cell.textLabel?.textColor = peer.pinMatched ? UIColor.lightText : UIColor.darkText
-//        cell.detailTextLabel?.textColor = peer.pinMatched ? UIColor.lightText : UIColor.darkText
     }
     
     private func addPeerToView(_ peer: PeerInfo) -> Int {

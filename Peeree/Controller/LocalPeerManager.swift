@@ -26,17 +26,10 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
     
     // unfortunenately this will grow until we go offline as we do not get any disconnection notification...
+    // also, we CAN NOT rely on that the central really is the peer behind that PeerID, as we have no mechanism to prove it
     private var _availableCentrals = SynchronizedDictionary<CBCentral, PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).availableCentrals")
     
     private var nonces = [CBCentral : Data]()
-    
-    var availablePeers: [PeerID] {
-        return _availableCentrals.accessSync { (dictionary) in
-            dictionary.flatMap({ (_, peerID) -> PeerID? in // PERFORMANCE
-                return peerID
-            })
-        }
-    }
     
     var delegate: LocalPeerManagerDelegate?
     
@@ -154,6 +147,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         if let data = UserPeerInfo.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
+            // dead code, as we provided those values when we created the mutable characteristics
             if (request.offset > data.count) {
                 peripheral.respond(to: request, withResult: .invalidOffset)
             } else {
@@ -166,7 +160,6 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
                 return
             }
             guard let signature = try? UserPeerInfo.instance.keyPair.sign(message: nonce) else {
-                // TODO examine sign error and send appropriate error result
                 peripheral.respond(to: request, withResult: .requestNotSupported)
                 return
             }
@@ -218,6 +211,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
                 _availableCentrals[peer.1] = peer.0
             }
             if let pin = _pin, pin.1 {
+                // attack scenario: Eve sends us an indication with her or Bob's PeerID => we always validate with the server, and as we do not react to Eve directly, so Eve cannot derive sensitive information
                 delegate?.receivedPinMatchIndication(from: pin.0)
             }
             if let nonce = _nonce {

@@ -9,8 +9,9 @@
 import Foundation
 import StoreKit
 
-protocol InAppPurchaseDelegate: class {
+public protocol InAppPurchaseDelegate: class {
     func productsLoaded(error: Error?)
+    func refreshedPinPoints(error: Error?)
     func updateTransactions(_ transactions: [SKPaymentTransaction])
     func transactionFailed(error: Error)
     func readingReceiptFailed()
@@ -28,7 +29,16 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     static let InitialPinPoints: PinPoints = 50
     
     static let PinPointPrefKey = "PinPointPrefKey"
-    private static let pinPointQueue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).pinpoints", attributes: [])
+    
+    static let shared = InAppPurchaseController()
+    
+    static func getProductPrize(of product: SKProduct) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.formatterBehavior = .behavior10_4
+        numberFormatter.numberStyle = .currency
+        numberFormatter.locale = product.priceLocale
+        return numberFormatter.string(from: product.price)!
+    }
     
     private static var __once: () = { () -> Void in
         if UserDefaults.standard.value(forKey: PinPointPrefKey) == nil {
@@ -41,7 +51,9 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         static var points: PinPoints!
     }
     
-    private static var _availablePinPoints: PinPoints {
+    private let pinPointQueue = DispatchQueue(label: "\(Bundle.main.bundleIdentifier!).pinpoints", attributes: [])
+    
+    private var _availablePinPoints: PinPoints {
         get {
             _ = InAppPurchaseController.__once
             
@@ -50,61 +62,10 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         
         set {
             Singleton.points = newValue
-            UserDefaults.standard.set(newValue, forKey: PinPointPrefKey)
+            UserDefaults.standard.set(newValue, forKey: InAppPurchaseController.PinPointPrefKey)
             UserDefaults.standard.synchronize()
         }
     }
-    
-    public static var availablePinPoints: PinPoints {
-        return pinPointQueue.sync {
-            return _availablePinPoints
-        }
-    }
-    
-    public static func decreasePinPoints(by: PinPoints = PinCosts) {
-        pinPointQueue.async {
-            _availablePinPoints -= by
-        }
-    }
-    
-    public static func increasePinPoints(by: PinPoints) {
-        pinPointQueue.async {
-            _availablePinPoints += by
-        }
-    }
-    
-    static func getPinPoints(inProductID: String) -> PinPoints? {
-        let prefix = "com.peeree.pin_points_"
-        guard inProductID.hasPrefix(prefix) else { return nil }
-        
-        let len = prefix.characters.count
-        let pinPointsString = inProductID.substring(from: inProductID.characters.index(inProductID.startIndex, offsetBy: len))
-        return PinPoints(pinPointsString)
-    }
-    
-    static func refreshPinPoints() {
-        AccountController.shared.getPinPoints { (_pinPoints, _error) in
-            guard _error == nil else {
-                NSLog("could not refresh pin points: \(_error!)")
-                return
-            }
-            if let pinPoints = _pinPoints {
-                self.pinPointQueue.async {
-                    self._availablePinPoints = pinPoints
-                }
-            }
-        }
-    }
-    
-    static func getProductPrize(of product: SKProduct) -> String {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.formatterBehavior = .behavior10_4
-        numberFormatter.numberStyle = .currency
-        numberFormatter.locale = product.priceLocale
-        return numberFormatter.string(from: product.price)!
-    }
-    
-    static let shared = InAppPurchaseController()
     
     private var currentProductsRequest: SKProductsRequest?
     private var _currentProducts: [SKProduct]?
@@ -113,6 +74,44 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     var isLoadingProducts: Bool { return currentProductsRequest != nil }
     
     weak var delegate: InAppPurchaseDelegate?
+    
+    public var availablePinPoints: PinPoints {
+        return pinPointQueue.sync {
+            return _availablePinPoints
+        }
+    }
+    
+    public func decreasePinPoints(by: PinPoints = PinCosts) {
+        pinPointQueue.async {
+            self._availablePinPoints -= by
+        }
+    }
+    
+    public func increasePinPoints(by: PinPoints) {
+        pinPointQueue.async {
+            self._availablePinPoints += by
+        }
+    }
+    
+    func getPinPoints(inProductID: String) -> PinPoints? {
+        let prefix = "com.peeree.pin_points_"
+        guard inProductID.hasPrefix(prefix) else { return nil }
+        
+        let len = prefix.characters.count
+        let pinPointsString = inProductID.substring(from: inProductID.characters.index(inProductID.startIndex, offsetBy: len))
+        return PinPoints(pinPointsString)
+    }
+    
+    func refreshPinPoints() {
+        AccountController.shared.getPinPoints { (_pinPoints, _error) in
+            if _error != nil, let pinPoints = _pinPoints {
+                self.pinPointQueue.async {
+                    self._availablePinPoints = pinPoints
+                }
+            }
+            self.delegate?.refreshedPinPoints(error: _error)
+        }
+    }
     
     /// Make a product request at Apple's servers.
     func requestProducts() {
@@ -134,7 +133,10 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
     func makePaymentRequest(for product: SKProduct) {
         let payment = SKMutablePayment(product: product)
         payment.quantity = 1
-        // TODO payment.applicationUsername = encrypted UserPeerInfo.instance.peer.peerID.uuidString with SHA
+        if let appNameSha = UserPeerInfo.instance.peer.peerID.uuidString.data(using: .utf8)?.sha256(),
+            let appName = String(data: appNameSha, encoding: .utf8)?.addingPercentEncoding(withAllowedCharacters: .alphanumerics) {
+            payment.applicationUsername = appName
+        }
         SKPaymentQueue.default().add(payment)
     }
     
@@ -202,6 +204,8 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         // we have no non-consumable content yet
     }
     
+    // MARK: Private Methods
+    
     private func complete(transaction: SKPaymentTransaction) {
         guard let url = Bundle.main.appStoreReceiptURL, let receiptData = try? Data(contentsOf: url) else {
             delegate?.readingReceiptFailed()
@@ -215,12 +219,12 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
                 return
             }
             if let pinPoints = _pinPoints {
-                InAppPurchaseController.pinPointQueue.async {
-                    InAppPurchaseController._availablePinPoints = pinPoints
+                self.pinPointQueue.async {
+                    self._availablePinPoints = pinPoints
                 }
             } else {
                 NSLog("server did not send pin points along, trying to retrieve them")
-                InAppPurchaseController.refreshPinPoints()
+                self.refreshPinPoints()
             }
             SKPaymentQueue.default().finishTransaction(transaction)
         }

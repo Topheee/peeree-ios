@@ -55,6 +55,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         }
     }
     
+//    private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", qos: .utility, attributes: [])
     private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
     
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
@@ -166,8 +167,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func isPeerInfoLoading(of peerID: PeerID) -> Progress? {
-        guard let transmission = peerInfoTransmissions[peerID] else { return nil /* we load it anyway, so do not read again */ }
-        return transmission.progress
+        return peerInfoTransmissions[peerID]?.progress
     }
     
     func getPeerInfo(of peerID: PeerID) -> PeerInfo? {
@@ -175,16 +175,15 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func indicatePinMatch(to peer: PeerInfo) {
-        guard delegate?.shouldIndicatePinMatch(to: peer) ?? false else { return }
-        guard let peripheral = peripheralPeerIDs[peer.peerID] else { return }
-        guard let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == CBUUID.PinMatchIndicationCharacteristicID }) else { return }
+        guard delegate?.shouldIndicatePinMatch(to: peer) ?? false,
+            let peripheral = peripheralPeerIDs[peer.peerID],
+            let characteristic = (peripheral.peereeService?.characteristics?.first { $0.uuid == CBUUID.PinMatchIndicationCharacteristicID }) else { return }
         
         peripheral.writeValue(pinnedData(true), for: characteristic, type: .withResponse)
     }
     
     func range(_ peerID: PeerID) {
-        guard let peripheral = peripheralPeerIDs[peerID] else { return }
-        peripheral.readRSSI()
+        peripheralPeerIDs[peerID]?.readRSSI()
     }
     
     func verify(_ peerID: PeerID) {
@@ -483,7 +482,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             return
         }
         peripheral.readValues(for: characteristics)
-        delegate?.peerAppeared(peerID, again: true)
+        delegate?.peerAppeared(peerID, again: again)
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {

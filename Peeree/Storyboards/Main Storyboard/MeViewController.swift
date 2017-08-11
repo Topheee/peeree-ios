@@ -34,7 +34,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
-		UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
+        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
@@ -59,7 +59,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     @IBAction func createDeleteAccount(_ sender: Any) {
         if AccountController.shared.accountExists {
-            // UIAlertController asking whether sure
             let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
                 AccountController.shared.deleteAccount { (_ _error: Error?) in
@@ -178,7 +177,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
             UserPeerInfo.instance.peer.nickname = newValue.substring(to: endIndex)
         case birthdayInput:
-//            scrollView.contentInset = UIEdgeInsets.zero
             guard textField.text != nil && textField.text != "" else {
                 UserPeerInfo.instance.dateOfBirth = nil
                 return
@@ -198,13 +196,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             break
         }
         
-    }
-	
-	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        guard textField == birthdayInput || textField == mailTextField else { return true }
-        
-//        scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: textField.inputView?.frame.height ?? 0.0, right: 0.0)
-		return true
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -238,13 +229,12 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
     }
     
-    // Call this method somewhere in your view controller setup code.
     func registerForKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: NSNotification.Name.UIKeyboardDidShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
-    // Called when the UIKeyboardDidShowNotification is sent.
+    /// Called when the UIKeyboardDidShowNotification is sent.
     @objc func keyboardWasShown(aNotification: Notification) {
         guard let info = aNotification.userInfo else { return }
         
@@ -255,7 +245,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         scrollView.scrollIndicatorInsets = contentInsets
         
         // If active text field is hidden by keyboard, scroll it so it's visible
-        // Your app might not need or want this behavior.
         var aRect = self.view.frame
         aRect.size.height -= kbSize.height
         if (!aRect.contains(activeField.frame.origin) ) {
@@ -263,7 +252,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         }
     }
     
-    // Called when the UIKeyboardWillHideNotification is sent
+    /// Called when the UIKeyboardWillHideNotification is sent
     func keyboardWillBeHidden(aNotification: Notification) {
         let contentInsets = UIEdgeInsets.zero
         scrollView.contentInset = contentInsets

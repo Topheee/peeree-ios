@@ -305,15 +305,17 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             #if os(iOS)
                 let digest = data.sha256()
                 
-                var signatureSize = SecKeyGetBlockSize(key)
-                NSLog("Sign digest size: \(digest.count), signatureSize (block size): \(signatureSize)")
+                var signatureSize = 256 // in CryptoExercise it is SecKeyGetBlockSize(key), but on the internet it's some magic number like this
+                NSLog("Sign digest size: \(digest.count) (should be \(CC_SHA256_DIGEST_LENGTH)), signatureSize (block size): \(signatureSize)")
                 var signature = Data(count: signatureSize)
                 
                 let status = signature.withUnsafeMutableBytes { (signatureBytes: UnsafeMutablePointer<UInt8>) in
                     return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
-                        SecKeyRawSign(key, signaturePadding, digestBytes, digest.count, signatureBytes, &signatureSize)
+                        SecKeyRawSign(key, signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
                     }
                 }
+                NSLog("\t actual signatureSize: \(signatureSize)")
+                
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Cryptographically signing failed.", comment: "Cryptographically signing a message failed."))
                 
                 return signature.subdata(in: 0..<signatureSize)
@@ -383,54 +385,52 @@ public class KeyPair {
     public init(privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool) throws {
         var error: Unmanaged<CFError>?
         var attributes: [String : Any]
-            #if os(OSX)
-                attributes = [
-                    kSecAttrKeyType as String:            type,
-                    kSecAttrKeySizeInBits as String:      size,
+        #if os(macOS)
+            attributes = [
+                kSecAttrKeyType as String:            type,
+                kSecAttrKeySizeInBits as String:      size,
+                kSecPrivateKeyAttrs as String: [
                     kSecAttrIsPermanent as String:    persistent,
                     kSecAttrApplicationTag as String: privateTag
+                    ] as CFDictionary
+            ]
+        #elseif os(iOS) && (arch(x86_64) || arch(i386)) //iPhone Simulator
+            attributes = [
+                kSecAttrKeyType as String:            type,
+                kSecAttrKeySizeInBits as String:      size,
+                kSecPrivateKeyAttrs as String: [
+                    kSecAttrIsPermanent as String:    persistent,
+                    kSecAttrApplicationTag as String: privateTag
+                    ] as CFDictionary
+            ]
+        #else
+            
+            if #available(iOS 10.0, *) {
+                guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
+                    throw error!.takeRetainedValue() as Error
+                }
+            attributes = [
+                kSecAttrKeyType as String:            type,
+                kSecAttrKeySizeInBits as String:      size,
+                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
+                kSecPrivateKeyAttrs as String: [
+                    kSecAttrIsPermanent as String:    persistent,
+                    kSecAttrApplicationTag as String: privateTag,
+                    kSecAttrAccessControl as String:  access
+                    ] as CFDictionary
                 ]
-            #elseif TARGET_IPHONE_SIMULATOR
+            } else {
+                // we do not use the Secure Enclave on iOS 9!
                 attributes = [
                     kSecAttrKeyType as String:            type,
                     kSecAttrKeySizeInBits as String:      size,
                     kSecPrivateKeyAttrs as String: [
                         kSecAttrIsPermanent as String:    persistent,
                         kSecAttrApplicationTag as String: privateTag
-                        ] as CFDictionary/*,
-                    kSecPublicKeyAttrs as String: [
-                        kSecAttrIsPermanent as String:    persistent,
-                        kSecAttrApplicationTag as String: publicTag
-                        ] as CFDictionary*/
-                ]
-            #else
-                
-                if #available(iOS 10.0, *) {
-                    guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
-                        throw error!.takeRetainedValue() as Error
-                    }
-                attributes = [
-                    kSecAttrKeyType as String:            type,
-                    kSecAttrKeySizeInBits as String:      size,
-                    kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-                    kSecPrivateKeyAttrs as String: [
-                        kSecAttrIsPermanent as String:    persistent,
-                        kSecAttrApplicationTag as String: privateTag,
-                        kSecAttrAccessControl as String:  access
                         ] as CFDictionary
-                    ]
-                } else {
-                    // we do not use the Secure Enclave on iOS 9!
-                    attributes = [
-                        kSecAttrKeyType as String:            type,
-                        kSecAttrKeySizeInBits as String:      size,
-                        kSecPrivateKeyAttrs as String: [
-                            kSecAttrIsPermanent as String:    persistent,
-                            kSecAttrApplicationTag as String: privateTag
-                            ] as CFDictionary
-                    ]
-                }
-            #endif
+                ]
+            }
+        #endif
         
         var _publicKey, _privateKey: SecKey?
         try SecKey.check(status: SecKeyGeneratePair(attributes as CFDictionary, &_publicKey, &_privateKey), localizedError: NSLocalizedString("Generating cryptographic key pair failed.", comment: "Low level crypto error."))
@@ -439,7 +439,7 @@ public class KeyPair {
         
         privateKey = AsymmetricPrivateKey(key: _privateKey!, type: type, size: size, tag: privateTag)
         
-        #if TARGET_IPHONE_SIMULATOR || os(OSX)
+        #if os(iOS) && (arch(x86_64) || arch(i386)) || os(macOS) // iPhone Simulator or macOS
             publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size, tag: publicTag)
         #else
             if #available(iOS 10.0, *) {
@@ -453,7 +453,7 @@ public class KeyPair {
     
     public init(fromKeychainWith privateTag: Data, publicTag: Data) throws {
         privateKey = try AsymmetricPrivateKey(tag: privateTag)
-        #if TARGET_IPHONE_SIMULATOR || os(OSX)
+        #if os(iOS) && (arch(x86_64) || arch(i386)) || os(macOS) // iPhone Simulator or macOS
             publicKey = try AsymmetricPublicKey(tag: publicTag)
         #else
         if #available(iOS 10.0, *) {
@@ -492,161 +492,3 @@ public class KeyPair {
         return try privateKey.decrypt(message: cipherText)
     }
 }
-/*
- @available(OSX 10.12.1, iOS 10.0, *)
- public struct SecureEnclaveKeyPair {
- private let privateKey: SecKey
- private let publicKey: SecKey
- 
- public func externalPublicKey() throws -> Data {
- var error: Unmanaged<CFError>?
- guard let data = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
- throw error!.takeRetainedValue() as Error
- }
- return data
- }
- 
- public init(tag: Data, persistent: Bool) throws {
- var error: Unmanaged<CFError>?
- guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
- throw error!.takeRetainedValue() as Error
- }
- 
- let attributes: [String : Any] = [
- kSecAttrKeyType as String:            kSecAttrKeyTypeECSECPrimeRandom,
- kSecAttrKeySizeInBits as String:      256,
- //            kSecAttrKeySizeInBits as String: SecKeySizes.secp256r1.rawValue, only available on macOS...
- //            kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
- kSecPrivateKeyAttrs as String: [
- kSecAttrIsPermanent as String:    NSNumber(value: persistent),
- kSecAttrApplicationTag as String: tag,
- kSecAttrAccessControl as String:  access
- ] as CFDictionary
- ]
- 
- guard let key = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
- throw error!.takeRetainedValue() as Error
- }
- 
- privateKey = key
- 
- guard let pKey = SecKeyCopyPublicKey(privateKey) else {
- throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("no public key derivable", comment: "Low level error.")])
- }
- 
- publicKey = pKey
- 
- if let attrs = SecKeyCopyAttributes(publicKey) {
- print("Attributes: \(attrs)")
- }
- 
- guard persistent else { return }
- 
- //        let tag = tag.data(using: .utf8)!
- let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
- kSecAttrApplicationTag as String: tag,
- kSecValueRef as String: key]
- let status = SecItemAdd(addquery as CFDictionary, nil)
- guard status == errSecSuccess else {
- #if os(OSX)
- let msg = SecCopyErrorMessageString(status, nil) ?? "Adding key to keychain failed" as CFString
- #else
- let msg = NSLocalizedString("Adding key to keychain failed.", comment: "Low level error.")
- #endif
- 
- throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
- }
- }
- 
- public init(fromKeychainWith tag: Data) throws {
- let getquery: [String: Any] = [kSecClass as String: kSecClassKey,
- kSecAttrApplicationTag as String: tag,
- kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
- kSecReturnRef as String: NSNumber(value: true)]
- var item: CFTypeRef?
- let status = SecItemCopyMatching(getquery as CFDictionary, &item)
- guard status == errSecSuccess else {
- #if os(OSX)
- let msg = SecCopyErrorMessageString(status, nil) ?? "Reading key from keychain failed" as CFString
- #else
- let msg = NSLocalizedString("Reading key from failed.", comment: "Low level error.")
- #endif
- 
- throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
- }
- 
- privateKey = item as! SecKey
- 
- guard let pKey = SecKeyCopyPublicKey(privateKey) else {
- throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("no public key derivable", comment: "Low level error.")])
- }
- 
- publicKey = pKey
- }
- 
- public func sign(message data: Data) throws -> Data {
- let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
- guard SecKeyIsAlgorithmSupported(privateKey, .sign, algorithm) else {
- throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("Elliptic curve algorithm \(SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256) does not support signing", comment: "Error description for signing exception, which should never actually occur.")])
- }
- 
- var error: Unmanaged<CFError>?
- guard let signature = SecKeyCreateSignature(privateKey, algorithm, data as CFData, &error) as Data? else {
- throw error!.takeRetainedValue() as Error
- }
- 
- return signature
- }
- 
- public func verify(message data: Data, signature: Data) throws -> Bool {
- let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
- guard SecKeyIsAlgorithmSupported(publicKey, .verify, algorithm) else {
- throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("Elliptic curve algorithm \(SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256) does not support verifying", comment: "Error description for verifying exception, which should never actually occur.")])
- }
- 
- var error: Unmanaged<CFError>?
- guard SecKeyVerifySignature(publicKey, algorithm, data as CFData, signature as CFData, &error) else {
- throw error!.takeRetainedValue() as Error
- }
- 
- return true
- }
- 
- public func encrypt(message plainText: Data) throws -> Data {
- let algorithm = SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM // does not work: ecdhKeyExchangeStandardX963SHA256, ecdhKeyExchangeCofactor
- guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, algorithm) else {
- throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("Elliptic curve algorithm \(SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM) does not support encryption", comment: "Error description for encryption exception, which should never actually occur.")])
- }
- 
- let padding = 0 // TODO find out how much it is for ECDH
- guard plainText.count < (SecKeyGetBlockSize(publicKey)-padding) else {
- throw NSError(domain: NSCocoaErrorDomain, code: NSValidationErrorMaximum, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Plain text length (\(plainText.count)) exceeds block size \(SecKeyGetBlockSize(publicKey)-padding)", comment: "Exception when trying to encrypt too-big data.")])
- }
- 
- var error: Unmanaged<CFError>?
- guard let cipherText = SecKeyCreateEncryptedData(publicKey, algorithm, plainText as CFData, &error) as Data? else {
- throw error!.takeRetainedValue() as Error
- }
- 
- return cipherText
- }
- 
- public func decrypt(message cipherText: Data) throws -> Data {
- let algorithm = SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM
- guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, algorithm) else {
- throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("Elliptic curve algorithm \(SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM) does not support decryption", comment: "Error description for decryption exception, which should never actually occur.")])
- }
- 
- //        guard cipherText.count == SecKeyGetBlockSize(privateKey) else {
- //            throw NSError(domain: NSCocoaErrorDomain, code: NSValidationErrorMaximum, userInfo: [NSLocalizedDescriptionKey : NSLocalizedsString("Cipher text length (\(cipherText.count)) not match block size \(SecKeyGetBlockSize(privateKey))", comment: "Exception when trying to decrypt data of wrong length.")])
- //        }
- 
- var error: Unmanaged<CFError>?
- guard let clearText = SecKeyCreateDecryptedData(privateKey, algorithm, cipherText as CFData, &error) as Data? else {
- throw error!.takeRetainedValue() as Error
- }
- 
- return clearText
- }
- }
- */

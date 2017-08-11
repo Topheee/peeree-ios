@@ -186,7 +186,7 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PlR-6f-0M3" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <exit id="hfq-X5-JCR" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="1416" y="649"/>
+            <point key="canvasLocation" x="1800" y="721"/>
         </scene>
         <!--First Launch View Controller-->
         <scene sceneID="rAT-7j-YZI">
@@ -205,7 +205,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fcg-dv-bWf" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="593" y="649"/>
+            <point key="canvasLocation" x="257" y="720"/>
         </scene>
         <!--First-->
         <scene sceneID="qqt-6g-vCs">
@@ -220,9 +220,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
-                                <rect key="frame" x="16" y="198" width="288" height="55"/>
+                                <rect key="frame" x="16" y="197.5" width="288" height="55"/>
                                 <string key="text">This is Peeree, 
-the first Social P2P App</string>
+a Social Peer-to-Peer App</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -234,27 +234,47 @@ the first Social P2P App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
-                                <rect key="frame" x="83.5" y="261" width="153" height="30"/>
+                                <rect key="frame" x="83.5" y="252" width="153" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="What does that mean?"/>
                                 <connections>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="2du-D3-2eY"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
+                                <rect key="frame" x="16" y="445.5" width="288" height="15"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
+                                <rect key="frame" x="135" y="395.5" width="50" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="50" id="0b9-3r-uf6"/>
+                                    <constraint firstAttribute="width" secondItem="53c-Ja-yW0" secondAttribute="height" multiplier="1:1" id="1L7-UW-3SU"/>
+                                </constraints>
+                                <state key="normal" image="PinButtonTemplate"/>
+                                <state key="selected" image="PinButtonTemplatePressed"/>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" constant="-15" id="95G-wi-9h6"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
+                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" id="GgE-NJ-lQL"/>
                             <constraint firstAttribute="centerX" secondItem="rNF-0l-DWJ" secondAttribute="centerX" id="J51-TC-smp"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="JHQ-V2-gUb"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
+                            <constraint firstItem="NTY-bS-98x" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="OCq-bq-ySI"/>
                             <constraint firstAttribute="centerX" secondItem="XwS-Db-Ixl" secondAttribute="centerX" id="UJy-zS-4xz"/>
-                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" constant="8" id="Whm-4j-UaB"/>
+                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" id="Whm-4j-UaB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rNF-0l-DWJ" secondAttribute="trailing" id="fJU-DB-Kod"/>
+                            <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" constant="20" id="gSo-hC-glu"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="NTY-bS-98x" secondAttribute="trailing" id="ihi-an-ghz"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="mE9-QB-jIc"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="40" id="mQq-Dp-Szr"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
+                            <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="bRA-E3-VRs" secondAttribute="centerX" id="ymi-3N-siT"/>
                         </constraints>
                     </view>
                     <connections>
@@ -263,7 +283,7 @@ the first Social P2P App</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mCM-H7-tKi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="981" y="374"/>
+            <point key="canvasLocation" x="980.625" y="373.75"/>
         </scene>
         <!--Second-->
         <scene sceneID="K22-Vn-XDY">
@@ -278,7 +298,7 @@ the first Social P2P App</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="66" y="147" width="188" height="188"/>
+                                <rect key="frame" x="62" y="139" width="196" height="196"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
@@ -301,20 +321,20 @@ the first Social P2P App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRI-ar-stS">
-                                <rect key="frame" x="145" y="226" width="30" height="30"/>
+                                <rect key="frame" x="145" y="222" width="30" height="30"/>
                                 <state key="normal" title="Pick"/>
                                 <connections>
                                     <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="Yhr-TB-Qec"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setup basic data" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
-                                <rect key="frame" x="58.5" y="60" width="203.5" height="33"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setup Basic Data" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
+                                <rect key="frame" x="57" y="60" width="207" height="33"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="91.5" y="101" width="137" height="30"/>
+                                <rect key="frame" x="91.5" y="93" width="137" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="Who can see these?"/>
                                 <connections>
@@ -356,7 +376,7 @@ the first Social P2P App</string>
                             <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
-                            <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" id="94p-Kz-qxS"/>
+                            <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" id="94p-Kz-qxS"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
@@ -396,10 +416,12 @@ the first Social P2P App</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zM0-44-3Vw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="981" y="929"/>
+            <point key="canvasLocation" x="981" y="1084"/>
         </scene>
     </scenes>
     <resources>
+        <image name="PinButtonTemplate" width="180" height="180"/>
+        <image name="PinButtonTemplatePressed" width="180" height="180"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>
         <image name="PortraitUnavailable" width="512" height="512"/>
         <image name="ReadIconBenefits" width="30" height="30"/>
@@ -407,7 +429,7 @@ the first Social P2P App</string>
         <image name="ReadIconSocial" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="zJZ-DL-UQZ"/>
+        <segue reference="2du-D3-2eY"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

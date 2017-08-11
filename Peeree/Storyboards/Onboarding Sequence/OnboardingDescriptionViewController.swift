@@ -67,7 +67,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
         return true
     }
 
-    // MARK: - Table view data source
+    // MARK: UITableViewDataSource
 
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -81,18 +81,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
         return createDescriptionParagraphCell(for: tableView, indexPath: indexPath)
     }
     
-//    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-//        if headerView.arrangedSubviews[indexPath.row].alpha != 1.0 {
-//            UIView.animateWithDuration(1.0, delay: 2.0, options: [], animations: {
-//                self.headerView.arrangedSubviews[indexPath.row].alpha = 1.0
-//                }, completion: nil)
-//        }
-//    }
-    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        //        let cellBottom = cell.frame.origin.y + cell.frame.height
-        //        let tableBottom = tableView.frame.origin.y + tableView.frame.height
-        //        if cellBottom <= tableBottom {
         for cell in tableView.visibleCells {
             guard let indexPath = tableView.indexPath(for: cell) else { continue }
             

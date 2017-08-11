@@ -214,9 +214,11 @@ public struct PeerInfo: Equatable {
         case peerID, nickname, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged, publicKey
     }
     
-    public static let MinAge = 13, MaxAge = 100
-    /// postgres can store strings up to this length very efficiently and this size fits into one single BLE packet
-    public static let MaxNicknameSize = 126, MaxEmailSize = 126
+    public static let MinAge = 13, MaxAge = 80
+    /// postgres can store strings up to this length very efficiently
+    public static let MaxEmailSize = 126
+    /// 4 BLE packets
+    public static let MaxNicknameSize = 80
     public static let KeyType = kSecAttrKeyTypeEC // kSecAttrKeyTypeECSECPrimeRandom
     public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
     

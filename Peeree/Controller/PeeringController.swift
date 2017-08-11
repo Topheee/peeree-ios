@@ -61,6 +61,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     private var rangeBlock: ((PeerID, PeerDistance) -> Void)?
     
+    private var pinMatchIndications = Set<PeerID>()
+    
     public let remote: RemotePeering
 //    public let local: LocalPeering
     
@@ -122,10 +124,16 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     func advertisingStopped() {
         _remote.stopScan()
         connectionChangedState()
+        pinMatchIndications.removeAll()
     }
     
     func receivedPinMatchIndication(from peerID: PeerID) {
-       AccountController.shared.updatePinStatus(of: peerID)
+        guard let peer = _remote.getPeerInfo(of: peerID) else {
+            pinMatchIndications.insert(peerID)
+            return
+        }
+        
+        AccountController.shared.updatePinStatus(of: peer)
     }
     
     // MARK: RemotePeerManagerDelegate
@@ -150,7 +158,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     }
     
     func shouldIndicatePinMatch(to peer: PeerInfo) -> Bool {
-        return AccountController.shared.hasPinMatch(peer)
+        return peer.pinMatched
     }
     
     func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
@@ -177,6 +185,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     func didVerify(_ peerID: PeerID) {
         Notifications.verified.post(peerID)
+        if let indication = pinMatchIndications.remove(peerID) {
+            receivedPinMatchIndication(from: indication)
+        }
     }
     
     // MARK: Private Methods
