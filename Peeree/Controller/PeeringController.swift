@@ -33,7 +33,7 @@ public enum PeerDistance {
 public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate {
     public static let shared = PeeringController()
     
-    public enum NetworkNotificationKey: String {
+    public enum NotificationInfoKey: String {
         case peerID, again
     }
     
@@ -47,12 +47,12 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
             var userInfo: [AnyHashable: Any]? = nil
             if let id = peerID {
                 if let a = again {
-                    userInfo = [NetworkNotificationKey.peerID.rawValue : id, NetworkNotificationKey.again.rawValue : a]
+                    userInfo = [NotificationInfoKey.peerID.rawValue : id, NotificationInfoKey.again.rawValue : a]
                 } else {
-                    userInfo = [NetworkNotificationKey.peerID.rawValue : id]
+                    userInfo = [NotificationInfoKey.peerID.rawValue : id]
                 }
             }
-            NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: PeeringController.shared, userInfo: userInfo)
+            postAsNotification(object: PeeringController.shared, userInfo: userInfo)
         }
     }
     
@@ -117,12 +117,12 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     // MARK: LocalPeerManagerDelegate
     
     func advertisingStarted() {
-        _remote.scan()
+//        _remote.scan() TEST do we need this?
         connectionChangedState()
     }
     
     func advertisingStopped() {
-        _remote.stopScan()
+//        _remote.stopScan() TEST do we need this?
         connectionChangedState()
         pinMatchIndications.removeAll()
     }
@@ -149,7 +149,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
         Notifications.peerAppeared.post(peerID, again: again)
     }
     
-    func peerDisappeared(_ peerID: PeerID) {
+    func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
+        _local.disconnect(cbPeerID)
         Notifications.peerDisappeared.post(peerID)
     }
     
@@ -185,8 +186,10 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     func didVerify(_ peerID: PeerID) {
         Notifications.verified.post(peerID)
-        if let indication = pinMatchIndications.remove(peerID) {
-            receivedPinMatchIndication(from: indication)
+        _local.dQueue.async {
+            if let indication = self.pinMatchIndications.remove(peerID) {
+                self.receivedPinMatchIndication(from: indication)
+            }
         }
     }
     

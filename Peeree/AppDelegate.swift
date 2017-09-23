@@ -35,7 +35,7 @@ struct Theme {
 }
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
     static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
@@ -45,12 +45,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var errorMessage: String
         if let errorResponse = networkError as? ErrorResponse {
             switch errorResponse {
-            case .Error(let code, _, let theError):
-                print(code)
-                errorMessage = theError.localizedDescription
-                //                    if (theError as NSError).code == NSURLErrorSecureConnectionFailed {
-                //                        print("untrusted")
-                //                    }
+            case .parseError(_):
+                errorMessage = NSLocalizedString("Malformed server response.", comment: "Message of network error")
+            case .httpError(let code, _):
+                errorMessage = "HTTP error \(code)"
+            case .sessionTaskError(let code, _, let theError):
+                errorMessage = "HTTP error \(code ?? -1): \(theError.localizedDescription)"
             }
         } else {
             errorMessage = networkError.localizedDescription
@@ -78,22 +78,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         setupAppearance()
         
+        AccountController.shared.delegate = self
+        
         _ = PeeringController.Notifications.peerAppeared.addObserver { notification in
-            guard let again = notification.userInfo?[PeeringController.NetworkNotificationKey.again.rawValue] as? Bool else { return }
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool else { return }
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
 
             self.peerAppeared(peer, again: again)
         }
         
         _ = PeeringController.Notifications.peerDisappeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             
             self.peerDisappeared(peerID)
         }
         
         _ = AccountController.Notifications.pinMatch.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
                 assertionFailure()
                 return
@@ -114,12 +116,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             browseItem.image = PeeringController.shared.peering ? #imageLiteral(resourceName: "RadarTemplateFilled") : #imageLiteral(resourceName: "RadarTemplate")
             browseItem.selectedImage = browseItem.image
         }
-		
+
+        // reinstantiate CBManagers if there where some
+        // TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
+        let restoredCentralManagerIDs = launchOptions?[UIApplicationLaunchOptionsKey.bluetoothCentrals] as? [String]
+        let restoredPeripheralManagerIDs = launchOptions?[UIApplicationLaunchOptionsKey.bluetoothPeripherals] as? [String]
+        if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
+            PeeringController.shared.peering = true
+        }
+        
 		return true
 	}
 
 	func applicationWillResignActive(_ application: UIApplication) {
-		// TODO e.g., when in find view, stop reading rssi
+		// TODO e.g., when in find view, stop reading rssi (if it doesn't already get stop by viewWillDisappear)
 	}
 
 	func applicationDidEnterBackground(_ application: UIApplication) {
@@ -217,15 +227,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             browseNavVC.pushViewController(personVC, animated: false)
             findVC.searchedPeer = peer
             browseNavVC.pushViewController(findVC, animated: false)
-            
-            // this does not work as the new PersonDetailVC is not immediately available after the performSegue
-//            browseVC.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peer)
-//            for vc in browseNavVC.viewControllers {
-//                guard let somePersonVC = vc as? PersonDetailViewController else { continue }
-//                guard somePersonVC.displayedPeerInfo == peer else { continue }
-//                
-//                somePersonVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
-//            }
         }
     }
     
@@ -238,7 +239,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket")
             message = String(format: message, InAppPurchaseController.shared.availablePinPoints)
             if !peer.verified {
-                message = "\(message) \(NSLocalizedString("But be careful: the identitfy of the user is not verified! You may be pinning someone else!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"))"
+                message = "\(message) \(NSLocalizedString("But be careful: the identity of the user is not verified, ou may be pinning someone else!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"))"
                 actions.append(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .default) { action in
                     PeeringController.shared.remote.verify(peer.peerID)
                 })
@@ -261,6 +262,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             alertController.addAction(action)
         }
         alertController.present(nil)
+    }
+    
+    // MARK: AccountControllerDelegate
+    
+    func publicKeyMismatch(of peerID: PeerID) {
+        let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possibly Malicious Peer alert"), peerID.uuidString)
+        InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Possibly Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
+    }
+    
+    func sequenceNumberResetFailed(error: ErrorResponse) {
+        AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
     }
     
     // MARK: Private Methods
@@ -318,7 +330,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             newBadgeValue += oldValue
         }
         
-        tabBarItem.badgeValue = String(newBadgeValue < 0 ? 0 : newBadgeValue)
+        tabBarItem.badgeValue = newBadgeValue <= 0 ? nil : String(newBadgeValue)
     }
     
     private func setupAppearance() {

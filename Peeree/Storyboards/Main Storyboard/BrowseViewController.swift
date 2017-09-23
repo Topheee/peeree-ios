@@ -48,7 +48,11 @@ final class BrowseViewController: UITableViewController {
                 }
             }
         } else {
-            PeeringController.shared.peering = !PeeringController.shared.peering
+            if PeeringController.shared.remote.isBluetoothOn {
+                PeeringController.shared.peering = !PeeringController.shared.peering
+            } else {
+                UIApplication.shared.openURL(URL(string: "App-Prefs:root=Bluetooth")!)
+            }
         }
     }
     
@@ -75,11 +79,26 @@ final class BrowseViewController: UITableViewController {
             self?.connectionChangedState(PeeringController.shared.peering)
         })
         
-        notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] in self?.pinMatchOccured(PeeringController.shared.remote.getPeerInfo(of: $0.0)!) })
+        notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] in self?.pinMatchOccurred(PeeringController.shared.remote.getPeerInfo(of: $0.0)!) })
         notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
         notificationObservers.append(PeeringController.Notifications.verified.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
         notificationObservers.append(PeeringController.Notifications.verificationFailed.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
         notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
+        
+        notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
+            guard let strongSelf = self else { return }
+            
+            let cacheCount = strongSelf.peerCache.count
+            for i in 0..<cacheCount {
+                strongSelf.peerCache[i].removeAll()
+            }
+            
+            let peerManager = PeeringController.shared.remote
+            for peerID in peerManager.availablePeers {
+                strongSelf.addToView(peerID: peerID, updateTable: false)
+            }
+            strongSelf.tableView.reloadData()
+        })
     }
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -123,17 +142,23 @@ final class BrowseViewController: UITableViewController {
                 return UITableViewCell()
             }
             
+//            cell.frame.size.height = tableView.contentSize.height + tableView.contentInset.bottom
+            cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
             cell.peersMetLabel.text = String(PeeringController.shared.remote.peersMet)
             if PeeringController.shared.peering {
                 cell.headLabel.text = NSLocalizedString("Nobody here...", comment: "Heading of the placeholder shown in browse view if no peers are around.")
                 cell.subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
+                cell.subheadLabel.textColor = .black
+                cell.shoutoutLabel.text = NSLocalizedString("Visit a crowded place to find other Peeree users!", comment: "Bottom text of the placeholder shown in browse view if no peers are around")
             } else {
                 cell.headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
                 if PeeringController.shared.remote.isBluetoothOn {
-                    cell.subheadLabel.text = NSLocalizedString("You are invisible – and blind.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
+                    cell.subheadLabel.text = NSLocalizedString("Tap to go online", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
                 } else {
                     cell.subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
                 }
+                cell.subheadLabel.textColor = AppDelegate.shared.theme.globalTintColor
+                cell.shoutoutLabel.text = NSLocalizedString("Visit a crowded place and go online to find new people!", comment: "Bottom text of the offline mode placeholder shown in browse view")
             }
             return cell
         }
@@ -203,7 +228,7 @@ final class BrowseViewController: UITableViewController {
         maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
     }
     
-    private func addPeerToView(_ peer: PeerInfo) -> Int {
+    private func addPeerToCache(_ peer: PeerInfo) -> Int {
         if peer.pinMatched {
             peerCache[PeersSection.matched.rawValue].insert(peer, at: 0)
             return PeersSection.matched.rawValue
@@ -223,7 +248,7 @@ final class BrowseViewController: UITableViewController {
         }
         
         let placeHolderWasActive = placeholderCellActive
-        let section = addPeerToView(peer)
+        let section = addPeerToCache(peer)
         
         if updateTable {
             if placeHolderWasActive && !placeholderCellActive {
@@ -285,7 +310,7 @@ final class BrowseViewController: UITableViewController {
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
-    private func pinMatchOccured(_ peer: PeerInfo) {
+    private func pinMatchOccurred(_ peer: PeerInfo) {
         assert(peerCache[PeersSection.matched.rawValue].index(of: peer) == nil, "The following code assumes it is executed only once for one peer at maximum. If this is not correct any more, a guard check of this assertion would be enough here (since then nothing has to be done).")
         
         var _row: Int? = nil
@@ -305,7 +330,7 @@ final class BrowseViewController: UITableViewController {
         guard let row = _row else { return }
         
         let oldPath = IndexPath(row: row, section: _sec!)
-        let newPath = IndexPath(row: 0, section: addPeerToView(peer))
+        let newPath = IndexPath(row: 0, section: addPeerToCache(peer))
         tableView.moveRow(at: oldPath, to: newPath)
         tableView.scrollToRow(at: newPath, at: .none, animated: true)
         tableView.reloadRows(at: [newPath], with: .automatic)
@@ -319,4 +344,5 @@ final class OfflineTableViewCell: UITableViewCell {
     @IBOutlet weak var headLabel: UILabel!
     @IBOutlet weak var subheadLabel: UILabel!
     @IBOutlet weak var peersMetLabel: UILabel!
+    @IBOutlet weak var shoutoutLabel: UILabel!
 }

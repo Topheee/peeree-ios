@@ -13,7 +13,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func deleteAccount(completion: @escaping ((_ error: Error?) -> Void)) {
+    open class func deleteAccount(completion: @escaping ((_ error: ErrorResponse?) -> Void)) {
         deleteAccountWithRequestBuilder().execute { (response, error) -> Void in
             completion(error);
         }
@@ -50,7 +50,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func deleteAccountEmail(completion: @escaping ((_ error: Error?) -> Void)) {
+    open class func deleteAccountEmail(completion: @escaping ((_ error: ErrorResponse?) -> Void)) {
         deleteAccountEmailWithRequestBuilder().execute { (response, error) -> Void in
             completion(error);
         }
@@ -88,7 +88,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func deleteAccountSecuritySequenceNumber(completion: @escaping ((_ data: Int32?,_ error: Error?) -> Void)) {
+    open class func deleteAccountSecuritySequenceNumber(completion: @escaping ((_ data: Int32?,_ error: ErrorResponse?) -> Void)) {
         deleteAccountSecuritySequenceNumberWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -113,7 +113,7 @@ open class DefaultAPI: APIBase {
         
         let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
         
-        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters)
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isValidated: false)
     }
 
     /**
@@ -121,8 +121,8 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func deleteSecurityPublicKey(completion: @escaping ((_ error: Error?) -> Void)) {
-        deleteSecurityPublicKeyWithRequestBuilder().execute { (response, error) -> Void in
+    open class func deleteAccountSecurityPublicKey(completion: @escaping ((_ error: ErrorResponse?) -> Void)) {
+        deleteAccountSecurityPublicKeyWithRequestBuilder().execute { (response, error) -> Void in
             completion(error);
         }
     }
@@ -141,7 +141,7 @@ open class DefaultAPI: APIBase {
 
      - returns: RequestBuilder<Void> 
      */
-    open class func deleteSecurityPublicKeyWithRequestBuilder() -> RequestBuilder<Void> {
+    open class func deleteAccountSecurityPublicKeyWithRequestBuilder() -> RequestBuilder<Void> {
         let path = "/account/security/public_key"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
@@ -159,7 +159,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getAccountPinPoints(completion: @escaping ((_ data: PinPoints?,_ error: Error?) -> Void)) {
+    open class func getAccountPinPoints(completion: @escaping ((_ data: PinPoints?,_ error: ErrorResponse?) -> Void)) {
         getAccountPinPointsWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -198,7 +198,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getAccountPins(completion: @escaping ((_ data: [Pin]?,_ error: Error?) -> Void)) {
+    open class func getAccountPins(completion: @escaping ((_ data: [Pin]?,_ error: ErrorResponse?) -> Void)) {
         getAccountPinsWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -241,7 +241,7 @@ open class DefaultAPI: APIBase {
      
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getInAppPurchaseIosProductIds(completion: @escaping ((_ data: [String]?,_ error: Error?) -> Void)) {
+    open class func getInAppPurchaseIosProductIds(completion: @escaping ((_ data: [String]?,_ error: ErrorResponse?) -> Void)) {
         getInAppPurchaseIosProductIdsWithRequestBuilder().execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -272,7 +272,7 @@ open class DefaultAPI: APIBase {
 
         let requestBuilder: RequestBuilder<[String]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isValidated: false)
     }
     
     /**
@@ -282,7 +282,7 @@ open class DefaultAPI: APIBase {
      - parameter pinnedKey: (query) See PublicKey in Definitions.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Int32?,_ error: Error?) -> Void)) {
+    open class func getPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Int32?,_ error: ErrorResponse?) -> Void)) {
         getPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -329,7 +329,7 @@ open class DefaultAPI: APIBase {
      - parameter email: (query) E-Mail for identity reset. The user may request to reset his/her credentials, resulting in a code sent to him to this address, which he must pass along when sending his new public key.  (optional)
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putAccount(email: String? = nil, completion: @escaping ((_ data: Account?,_ error: Error?) -> Void)) {
+    open class func putAccount(email: String? = nil, completion: @escaping ((_ data: Account?,_ error: ErrorResponse?) -> Void)) {
         putAccountWithRequestBuilder(email: email).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -371,7 +371,7 @@ open class DefaultAPI: APIBase {
      - parameter email: (query) See description in account creation. If parameter is empty, this has same behavior as the DELETE operation.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putAccountEmail(email: String, completion: @escaping ((_ error: Error?) -> Void)) {
+    open class func putAccountEmail(email: String, completion: @escaping ((_ error: ErrorResponse?) -> Void)) {
         putAccountEmailWithRequestBuilder(email: email).execute { (response, error) -> Void in
             completion(error);
         }
@@ -415,7 +415,7 @@ open class DefaultAPI: APIBase {
      - parameter receiptData: (body) Data of the iOS In-App purchase receipt.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putInAppPurchaseIosReceipt(receiptData: Data, completion: @escaping ((_ data: PinPoints?,_ error: Error?) -> Void)) {
+    open class func putInAppPurchaseIosReceipt(receiptData: Data, completion: @escaping ((_ data: PinPoints?,_ error: ErrorResponse?) -> Void)) {
         putInAppPurchaseIosReceiptWithRequestBuilder(receiptData: receiptData).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -461,7 +461,7 @@ open class DefaultAPI: APIBase {
      - parameter pinnedKey: (query) See PublicKey in Definitions.  
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Bool?,_ error: Error?) -> Void)) {
+    open class func putPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Bool?,_ error: ErrorResponse?) -> Void)) {
         putPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
             completion(response?.body, error);
         }
@@ -509,7 +509,7 @@ open class DefaultAPI: APIBase {
      - parameter randomNumber: (query) The number sent to the user&#39;s e-mail in the delete variant of this request.
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func putSecurityPublicKey(publicKey: Data, randomNumber: String, completion: @escaping ((_ data: String?,_ error: Error?) -> Void)) {
+    open class func putSecurityPublicKey(publicKey: Data, randomNumber: String, completion: @escaping ((_ data: String?,_ error: ErrorResponse?) -> Void)) {
         putSecurityPublicKeyWithRequestBuilder(publicKey: publicKey, randomNumber: randomNumber).execute { (response, error) -> Void in
             completion(response?.body, error);
         }

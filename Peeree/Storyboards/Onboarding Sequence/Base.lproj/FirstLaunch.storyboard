@@ -248,7 +248,7 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
-                                <rect key="frame" x="135" y="395.5" width="50" height="50"/>
+                                <rect key="frame" x="135" y="387.5" width="50" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="50" id="0b9-3r-uf6"/>
                                     <constraint firstAttribute="width" secondItem="53c-Ja-yW0" secondAttribute="height" multiplier="1:1" id="1L7-UW-3SU"/>
@@ -261,7 +261,7 @@ a Social Peer-to-Peer App</string>
                         <constraints>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" constant="-15" id="95G-wi-9h6"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
-                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" id="GgE-NJ-lQL"/>
+                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" id="GgE-NJ-lQL"/>
                             <constraint firstAttribute="centerX" secondItem="rNF-0l-DWJ" secondAttribute="centerX" id="J51-TC-smp"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="JHQ-V2-gUb"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>

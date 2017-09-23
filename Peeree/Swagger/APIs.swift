@@ -57,7 +57,7 @@ open class RequestBuilder<T> {
     /// Optional block to obtain a reference to the request's progress instance when available.
 //    public var onProgressReady: ((Progress) -> ())?
 
-    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, headers: [String:String] = [:], body: Data? = nil) {
+    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, headers: [String:String] = [:], body: Data? = nil, isValidated: Bool = true) {
         self.method = method
         self.url = url
         self.parameters = parameters
@@ -74,7 +74,7 @@ open class RequestBuilder<T> {
         }
     }
     
-    open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: Error?) -> Void) { }
+    open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) { }
 
     public func addHeader(name: String, value: String) -> Self {
         if !value.isEmpty {

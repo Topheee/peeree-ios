@@ -15,6 +15,12 @@ final public class SynchronizedArray<T> {
     private var array: [T]
     private let accessQueue: DispatchQueue
     
+    var count: Int {
+        return accessQueue.sync {
+            return array.count
+        }
+    }
+    
     init(queueLabel: String, array: [T] = [], qos: DispatchQoS = .default) {
         self.array = array
         self.accessQueue = DispatchQueue(label: queueLabel, qos: qos, attributes: [])
@@ -62,6 +68,12 @@ final public class SynchronizedArray<T> {
 final public class SynchronizedDictionary<Key: Hashable, Value> {
     private var dictionary: [Key : Value]
     private let accessQueue: DispatchQueue
+    
+    var count: Int {
+        return accessQueue.sync {
+            return dictionary.count
+        }
+    }
     
     init(queueLabel: String, dictionary: [Key : Value] = [:], qos: DispatchQoS = .default) {
         self.dictionary = dictionary
@@ -125,6 +137,12 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
 open class SynchronizedSet<T : Hashable> {
     private var set: Set<T>
     private let accessQueue: DispatchQueue
+    
+    var count: Int {
+        return accessQueue.sync {
+            return set.count
+        }
+    }
     
     init(queueLabel: String, set: Set<T> = Set<T>(), qos: DispatchQoS = .default) {
         self.set = set

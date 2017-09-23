@@ -32,6 +32,10 @@ extension CBService {
 }
 
 extension RawRepresentable where Self.RawValue == String {
+    func postAsNotification(object: Any?, userInfo: [AnyHashable : Any]? = nil) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: object, userInfo: userInfo)
+    }
+    
     public func addPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
         return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
             if let peerID = notification.userInfo?[peerIDKey] as? PeerID {

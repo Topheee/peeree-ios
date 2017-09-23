@@ -12,10 +12,12 @@ class AlamofireRequestBuilderFactory: RequestBuilderFactory {
     }
 }
 
-// Store manager to retain its reference
+// Store manager to retain its reference (WARNING: not thread-safe!)
 private var managerStore: [String: URLSession] = [:]
 
 final class CredentialAcceptor : NSObject, URLSessionDelegate {
+    static let shared = CredentialAcceptor()
+    
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard challenge.previousFailureCount == 0 else {
             challenge.sender?.cancel(challenge)
@@ -25,7 +27,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
         }
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if challenge.protectionSpace.host == "172.20.10.2" || challenge.protectionSpace.host == "127.0.0.1" || challenge.protectionSpace.host == "131.234.244.1" {
+            if ["172.20.10.2", "192.168.12.166", "192.168.12.177", "127.0.0.1", "131.234.241.136"].contains(challenge.protectionSpace.host) {
                 // for debug only!
                 guard let trust = challenge.protectionSpace.serverTrust else {
                     NSLog("no server trust found")
@@ -98,16 +100,18 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
 }
 
 open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
-    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, headers: [String : String] = [:], body: Data? = nil) {
+    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, headers: [String : String] = [:], body: Data? = nil, isValidated: Bool = true) {
         var headers = headers
         if let d = SwaggerClientAPI.dataSource {
             var val = d.getPeerID()
             if !val.isEmpty {
                 headers["peerID"] = val
             }
-            val = d.getSignature()
-            if !val.isEmpty {
-                headers["signature"] = val
+            if isValidated {
+                val = d.getSignature()
+                if !val.isEmpty {
+                    headers["signature"] = val
+                }
             }
         }
         super.init(method: method, url: url, parameters: parameters, headers: headers)
@@ -122,7 +126,8 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         configuration.httpAdditionalHeaders = buildHeaders()
         configuration.httpShouldUsePipelining = true
         configuration.timeoutIntervalForRequest = 5.0
-        return URLSession(configuration: configuration, delegate: CredentialAcceptor(), delegateQueue: nil)
+        configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
+        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
     }
 
     /**
@@ -151,7 +156,7 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         return request
     }
 
-    override open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: Error?) -> Void) {
+    override open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
         let managerId:String = UUID().uuidString
         // Create a new manager for each request to customize its request header
         let manager = createSessionManager()
@@ -163,26 +168,18 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         processRequest(manager: manager, request: makeRequest(manager: manager, method: method), managerId, completion)
     }
 
-    private func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: Error?) -> Void) {
-//        if let credential = self.credential {
-//            request.authenticate(usingCredential: credential)
-//        }
-
+    private func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
         let cleanupRequest = {
             _ = managerStore.removeValue(forKey: managerId)
         }
         
-        let invalidResponseError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Invalid response.", comment: "The Peeree Server sent invalid response data.")])
-        
         let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
             cleanupRequest()
             if let error = error {
-                completion(nil, ErrorResponse.Error((response as? HTTPURLResponse)?.statusCode ?? -1, data, error))
+                completion(nil, ErrorResponse.sessionTaskError((response as? HTTPURLResponse)?.statusCode, data, error))
             } else if let httpResponse = response as? HTTPURLResponse {
                 guard !httpResponse.isFailure else {
-                    let errorString = String(format: NSLocalizedString("HTTP error %d.", comment: "The Peeree Server sent a response with code 4xx or 5xx."), httpResponse.statusCode)
-                    let httpStatusError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : errorString])
-                    completion(nil, ErrorResponse.Error(httpResponse.statusCode, data, httpStatusError))
+                    completion(nil, ErrorResponse.httpError(httpResponse.statusCode, data))
                     return
                 }
                 
@@ -221,12 +218,12 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
                             // https://github.com/swagger-api/swagger-parser/pull/34
                             completion(Response(response: httpResponse, body: ("" as! T)), nil)
                         } else {
-                            completion(nil, ErrorResponse.Error(-1, data, invalidResponseError))
+                            completion(nil, ErrorResponse.parseError(data))
                         }
                     }
                 }
             } else {
-                completion(nil, ErrorResponse.Error(-1, data, invalidResponseError))
+                completion(nil, ErrorResponse.parseError(data))
             }
         }
         

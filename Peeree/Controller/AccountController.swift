@@ -8,6 +8,11 @@
 
 import Foundation
 
+public protocol AccountControllerDelegate {
+    func publicKeyMismatch(of peerID: PeerID)
+    func sequenceNumberResetFailed(error: ErrorResponse)
+}
+
 /**
  * Central singleton for managing all actions according to communication with the Peeree server.
  * Do NOT use the network calls in DefaultAPI directly, as then the sequence number won't be updated appropriately
@@ -65,11 +70,11 @@ public class AccountController: SecurityDataSource {
     private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).pinningPeers")
     
     private func resetSequenceNumber() {
+        NSLog("WARN: resetting sequence number")
         DefaultAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
             guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
                 if let error = _error {
-                    // TODO inform delegate about this
-                    NSLog("deleteAccountSecuritySequenceNumber failed: \(error)")
+                    self.delegate?.sequenceNumberResetFailed(error: error)
                 }
                 return
             }
@@ -105,6 +110,8 @@ public class AccountController: SecurityDataSource {
     private var _isDeletingAccount = false
     public var isDeletingAccount: Bool { return _isDeletingAccount }
     
+    public var delegate: AccountControllerDelegate?
+    
     /// Returns whether we have a pin match with that specific PeerID, that is, the global Peeree identifier. Note, that this does NOT imply we have a match with a concrete PeerInfo with that PeerID, as that PeerInfo may be a malicious peer
     public func hasPinMatch(_ peerID: PeerID) -> Bool {
         // it is enough to check whether we are pinned by peerID, as we only know that if we matched
@@ -138,7 +145,19 @@ public class AccountController: SecurityDataSource {
         DefaultAPI.putPin(pinnedID: peerID, pinnedKey: peer.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
             self.pinningPeers.remove(peerID)
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
+                // possible HTTP errors:
+                // 402: not enough pin points
+                // 409: non-matching public key
+                //
+                switch error {
+                case .httpError(402, _), .sessionTaskError(402?, _, _):
+                    InAppPurchaseController.shared.refreshPinPoints()
+                case .httpError(409, _), .sessionTaskError(409?, _, _):
+                    self.delegate?.publicKeyMismatch(of: peerID)
+                default:
+                    break
+                }
                 Notifications.pinFailed.post(peerID)
             } else if let isPinMatch = _isPinMatch  {
                 self.pin(peer: peer, isPinMatch: isPinMatch)
@@ -209,7 +228,7 @@ public class AccountController: SecurityDataSource {
         
         DefaultAPI.getPin(pinnedID: peer.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
             guard _error == nil else {
-                self.standardHandle(error: _error!)
+                self.preprocessAuthenticatedRequestError(_error!)
                 return
             }
             if let pinStatus = _pinStatus {
@@ -242,25 +261,19 @@ public class AccountController: SecurityDataSource {
                 }
             }
             
-            guard let account = _account else {
-                if let error = _error {
-                    self.standardHandle(error: error)
-                }
-                completionError = _error
+            guard let account = _account, let sequenceNumberDataCipher = account.sequenceNumber, let newPeerID = account.peerID else {
+                completionError = _error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")])
                 return
             }
-            guard let sequenceNumberDataCipher = account.sequenceNumber, let newPeerID = account.peerID else {
-                completionError = NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server Error: no sequence number or peer ID in account.", comment: "Server sent wrong data.")])
-                return
-            }
+
             self._sequenceNumber = sequenceNumberDataCipher
+            completionError = nil
             DispatchQueue.main.sync {
                 // UserPeerInfo has to be modified on the main queue
                 UserPeerInfo.instance.peerID = newPeerID
                 // further requests need peerID in UserPeerInfo to be set
                 InAppPurchaseController.shared.refreshPinPoints()
             }
-            completionError = nil
         }
     }
     
@@ -271,12 +284,12 @@ public class AccountController: SecurityDataSource {
         PeeringController.shared.peering = false
         DefaultAPI.deleteAccount { (_error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             } else {
                 PeeringController.shared.peering = false
                 self._accountEmail = nil
                 self._sequenceNumber = nil
-                DispatchQueue.main.async {
+                DispatchQueue.main.sync {
                     UserPeerInfo.delete()
                 }
             }
@@ -290,7 +303,7 @@ public class AccountController: SecurityDataSource {
         guard email != "" else { deleteEmail(completion: completion); return }
         DefaultAPI.putAccountEmail(email: email) { (_error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             } else {
                 self._accountEmail = email
             }
@@ -302,7 +315,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.deleteAccountEmail { (_error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             } else {
                 self._accountEmail = nil
             }
@@ -314,7 +327,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.getAccountPinPoints { (_pinPoints, _error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             }
             completion(_pinPoints, _error)
         }
@@ -324,7 +337,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         DefaultAPI.putInAppPurchaseIosReceipt(receiptData: receipts) { (_pinPoints, _error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             }
             completion(_pinPoints, _error)
         }
@@ -337,7 +350,7 @@ public class AccountController: SecurityDataSource {
         }
         DefaultAPI.getInAppPurchaseIosProductIds { (_response, _error) in
             if let error = _error {
-                self.standardHandle(error: error)
+                self.preprocessAuthenticatedRequestError(error)
             }
             completion(_response, _error)
         }
@@ -364,16 +377,17 @@ public class AccountController: SecurityDataSource {
         _sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
     }
     
-    private func standardHandle(error: Error) {
-        guard let errorResponse = error as? ErrorResponse else {
-            NSLog("Unknown network error occured: \(error)")
-            return
-        }
-        
+    /// resets sequence number to state before request if the request did not reach the server
+    private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
         switch errorResponse {
-        case .Error(let statusCode, _, let theError):
-            NSLog("Network error \(statusCode) occurred: \(theError.localizedDescription)")
-            if (theError as NSError).domain == NSURLErrorDomain {
+        case .httpError(403, _): // TODO well this should only handle 403 errors and thus the switch should not be exhaustive...
+            self.resetSequenceNumber()
+        case .parseError(_):
+            NSLog("ERR: Response could not be parsed.")
+            break
+        case .sessionTaskError(let statusCode, _, let error):
+            NSLog("ERR: Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
+            if (error as NSError).domain == NSURLErrorDomain {
                 if let sequenceNumber = _sequenceNumber {
                     // we did not even reach the server, so we have to decrement our sequenceNumber again
                     _sequenceNumber = Int32.subtractWithOverflow(sequenceNumber, 1).0
@@ -383,6 +397,8 @@ public class AccountController: SecurityDataSource {
                 // the signature was invalid, so request a new sequenceNumber
                 self.resetSequenceNumber()
             }
+        default:
+            break
         }
     }
     
@@ -391,7 +407,6 @@ public class AccountController: SecurityDataSource {
             throw NSError(domain: "Peeree", code: -2, userInfo: nil)
         }
         
-        print("sequence number: \(_sequenceNumber!)")
         _sequenceNumber = Int32.addWithOverflow(_sequenceNumber!, 1).0
         return try UserPeerInfo.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
     }

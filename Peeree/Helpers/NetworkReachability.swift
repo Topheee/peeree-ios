@@ -54,9 +54,7 @@ class Reachability {
     
     init?(hostAddress: sockaddr) {
         var mutableAddress = hostAddress
-        guard let tmp = (withUnsafePointer(to: &mutableAddress) { (unsafePointer) -> SCNetworkReachability? in
-            return SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, unsafePointer)
-        }) else { return nil }
+        guard let tmp = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, &mutableAddress) else { return nil }
         reachabilityRef = tmp
     }
     
@@ -78,9 +76,7 @@ class Reachability {
     func startNotifier() -> Bool {
         var returnValue = false
         var selfptr = bridge(obj: self)
-        var context = withUnsafeMutablePointer(to: &selfptr) { (unsafePointer) -> SCNetworkReachabilityContext in
-            return SCNetworkReachabilityContext(version: 0, info: unsafePointer, retain: nil, release: nil, copyDescription: nil)
-        }
+        var context = SCNetworkReachabilityContext(version: 0, info: &selfptr, retain: nil, release: nil, copyDescription: nil)
         
         if (SCNetworkReachabilitySetCallback(reachabilityRef, ({(target: SCNetworkReachability, flags: SCNetworkReachabilityFlags, info: UnsafeMutableRawPointer?) in
             assert(info != nil, "info was NULL in ReachabilityCallback")

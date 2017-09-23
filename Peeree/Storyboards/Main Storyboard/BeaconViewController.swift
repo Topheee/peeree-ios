@@ -19,8 +19,7 @@ final class BeaconViewController: UIViewController {
     @IBOutlet private weak var userPortrait: UIImageView!
     @IBOutlet private weak var portraitWidthConstraint: NSLayoutConstraint!
     
-    private var appearedObserver: NSObjectProtocol!
-    private var disappearedObserver: NSObjectProtocol!
+    private var notificationObservers: [NSObjectProtocol] = []
     
     private var currentDistance = PeerDistance.unknown
     
@@ -44,19 +43,25 @@ final class BeaconViewController: UIViewController {
             }
         }
         
-        appearedObserver = PeeringController.Notifications.peerAppeared.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+        notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver { (notification) in
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             guard self.searchedPeer?.peerID == peerID else { return }
             
             self.showPeerAvailable()
-        }
+        })
         
-        disappearedObserver = PeeringController.Notifications.peerDisappeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+        notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver { notification in
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             guard self.searchedPeer?.peerID == peerID else { return }
             
             self.showPeerUnavailable()
-        }
+        })
+        
+        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.searchedPeer = PeeringController.shared.remote.getPeerInfo(of: $0.0) ?? strongSelf.searchedPeer
+            strongSelf.remotePortrait.image = strongSelf.searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+        })
         
         startBeacon()
     }
@@ -64,8 +69,9 @@ final class BeaconViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         stopBeacon()
-        NotificationCenter.default.removeObserver(appearedObserver)
-        NotificationCenter.default.removeObserver(disappearedObserver)
+        for observer in notificationObservers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     // MARK: Private Methods

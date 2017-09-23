@@ -67,7 +67,6 @@ final class FilterViewController: UITableViewController {
     }
     
     private func updatePrefs() {
-        let filterSettings = BrowseFilterSettings.shared
         filterSettings.ageMax = ageMaxSlider.value == ageMaxSlider.maximumValue ? 0 : ageMaxSlider.value
         filterSettings.ageMin = ageMinSlider.value
         filterSettings.gender = BrowseFilterSettings.GenderType(rawValue: genderSeg.selectedSegmentIndex)!

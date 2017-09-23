@@ -9,6 +9,7 @@
 import UIKit
 
 final class MeViewController: PortraitImagePickerController, UITextFieldDelegate {
+    @IBOutlet private weak var connectionNoteLabel: UILabel!
     @IBOutlet private weak var accountButton: UIButton!
     @IBOutlet private weak var accountIDLabel: UILabel!
     @IBOutlet private weak var mailTextField: UITextField!
@@ -21,18 +22,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     private var activeField: UITextField! = nil
     
-    private var restCompletion: (_ _error: Error?) -> Void {
-        return { [weak self] (_error: Error?) in
-            DispatchQueue.main.async {
-                self?.adjustAccountView()
-            }
-            
-            guard let error = _error else { return }
-            
-            AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
-        }
-    }
-    
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
         UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
 	}
@@ -41,30 +30,12 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Button caption for removing the users portrait image"))
     }
     
-    private func adjustAccountView() {
-        if AccountController.shared.accountExists {
-            accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
-            accountButton.tintColor = .red
-            mailTextField.text = AccountController.shared.accountEmail
-            accountIDLabel.text = AccountController.shared.getPeerID()
-        } else {
-            accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
-            accountButton.tintColor = AppDelegate.shared.theme.globalTintColor
-        }
-        mailTextField.isHidden = !AccountController.shared.accountExists
-        mailNoteLabel.isHidden = !AccountController.shared.accountExists
-        accountIDLabel.isHidden = !AccountController.shared.accountExists
-        accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
-    }
-    
     @IBAction func createDeleteAccount(_ sender: Any) {
         if AccountController.shared.accountExists {
             let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
                 AccountController.shared.deleteAccount { (_ _error: Error?) in
-                    self.restCompletion(_error)
-                    guard _error == nil else { return }
-                    DispatchQueue.main.async {
+                    self.restCompletion(_error) {
                         self.loadUserPeerInfo()
                     }
                 }
@@ -73,7 +44,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
             present(alertController, animated: true, completion: nil)
         } else {
-            AccountController.shared.createAccount(completion: restCompletion)
+            AccountController.shared.createAccount { (_ _error: Error?) in
+                self.restCompletion(_error) {
+                    PeeringController.shared.peering = true
+                }
+            }
             adjustAccountView()
         }
     }
@@ -142,6 +117,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         birthdayInput.delegate = self
         
         registerForKeyboardNotifications()
+        
+        // TODO remove observer in deinit
+        _ = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+            self?.lockView()
+        }
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -149,6 +129,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		loadUserPeerInfo()
         adjustAccountView()
 	}
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        lockView()
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -186,12 +171,16 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         case mailTextField:
             guard textField.text != AccountController.shared.accountEmail else { return }
             guard let newValue = textField.text, newValue != "" else {
-                AccountController.shared.deleteEmail(completion: restCompletion)
+                AccountController.shared.deleteEmail { _error in
+                    self.restCompletion(_error) {}
+                }
                 return
             }
             
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            AccountController.shared.update(email: newValue.substring(to: endIndex), completion: restCompletion)
+            AccountController.shared.update(email: newValue.substring(to: endIndex)) { _error in
+                self.restCompletion(_error) {}
+            }
         default:
             break
         }
@@ -229,13 +218,13 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
     }
     
-    func registerForKeyboardNotifications() {
+    private func registerForKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: NSNotification.Name.UIKeyboardDidShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
     /// Called when the UIKeyboardDidShowNotification is sent.
-    @objc func keyboardWasShown(aNotification: Notification) {
+    @objc private func keyboardWasShown(aNotification: Notification) {
         guard let info = aNotification.userInfo else { return }
         
         let kbSize = (info[UIKeyboardFrameBeginUserInfoKey] as! CGRect).size
@@ -253,9 +242,45 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
     
     /// Called when the UIKeyboardWillHideNotification is sent
-    func keyboardWillBeHidden(aNotification: Notification) {
+    @objc private func keyboardWillBeHidden(aNotification: Notification) {
         let contentInsets = UIEdgeInsets.zero
         scrollView.contentInset = contentInsets
         scrollView.scrollIndicatorInsets = contentInsets
+    }
+    
+    private func restCompletion(_ _error: Error?, noErrorAction: @escaping () -> Void) {
+        DispatchQueue.main.async {
+            self.adjustAccountView()
+            
+            if let error = _error {
+                AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
+            } else {
+                noErrorAction()
+            }
+        }
+    }
+    
+    private func adjustAccountView() {
+        if AccountController.shared.accountExists {
+            accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
+            accountButton.tintColor = .red
+            mailTextField.text = AccountController.shared.accountEmail
+            accountIDLabel.text = AccountController.shared.getPeerID()
+        } else {
+            accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
+            accountButton.tintColor = AppDelegate.shared.theme.globalTintColor
+        }
+        mailTextField.isHidden = !AccountController.shared.accountExists
+        mailNoteLabel.isHidden = !AccountController.shared.accountExists
+        accountIDLabel.isHidden = !AccountController.shared.accountExists
+        accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
+    }
+    
+    // do not allow changes to UserPeerInfo while peering
+    private func lockView() {
+        for control: UIControl in [nameTextField, portraitImageButton, genderControl, birthdayInput] {
+            control.isEnabled = !PeeringController.shared.peering
+        }
+        connectionNoteLabel.isHidden = !PeeringController.shared.peering
     }
 }

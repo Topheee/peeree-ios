@@ -36,6 +36,14 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
     static var supportsSecureCoding : Bool {
         return true
     }
+    
+    public enum Notifications: String {
+        case filterChanged
+        
+        func post() {
+            postAsNotification(object: BrowseFilterSettings.shared)
+        }
+    }
 	
 	enum GenderType: Int {
 		case unspecified = 0, male, female, queer
@@ -71,6 +79,7 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	
 	func writeToDefaults() {
 		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
+        Notifications.filterChanged.post()
 	}
 	
 	func check(peer: PeerInfo) -> Bool {

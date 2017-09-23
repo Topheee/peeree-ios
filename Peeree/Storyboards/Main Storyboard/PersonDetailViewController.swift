@@ -103,17 +103,22 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        // make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
+        if let peerID = displayedPeerInfo?.peerID {
+            displayedPeerInfo = PeeringController.shared.remote.getPeerInfo(of: peerID) ?? displayedPeerInfo
+        }
+        
         updateState()
         
         let simpleStateUpdate = { (notification: Notification) in
-            guard let peerID = notification.userInfo?[PeeringController.NetworkNotificationKey.peerID.rawValue] as? PeerID else { return }
+            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
             guard self.displayedPeerInfo?.peerID == peerID else { return }
             // as we have value semantics, our cached peer info does not change, so we have to get the updated one
             self.displayedPeerInfo = PeeringController.shared.remote.getPeerInfo(of: peerID) ?? self.displayedPeerInfo
             self.updateState()
         }
         
-        let simpleHandledNotifications: [PeeringController.Notifications] = [.peerAppeared, .peerDisappeared]
+        let simpleHandledNotifications: [PeeringController.Notifications] = [.peerAppeared, .peerDisappeared, .verified]
         for networkNotification in simpleHandledNotifications {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
@@ -200,7 +205,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         pictureProgressManager = nil
-        circleLayer = nil
+        removePictureLoadLayer()
         portraitImageView.image = nil
     }
     

@@ -44,9 +44,14 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeerInfo.PortraitFileName)
     }
     
+    private var _peer: PeerInfo
+    
     public /* override */ var peer: PeerInfo {
-        didSet {
+        get { return _peer }
+        set {
 //            assert(peer == oldValue) cannot assert here as we override this from AccountController
+            _peer = newValue
+            _peer.lastChanged = Date()
             dirtied()
         }
     }
@@ -81,7 +86,7 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag)
         try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag)
         self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
-        self.peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
+        self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
 //        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
 	}
 
@@ -101,13 +106,13 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         //            characterTraits = CharacterTrait.standardTraits
         //        }
         
-        guard let _peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
-        peer = _peer
+        guard let __peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
+        _peer = __peer
         _keyPair = keyPair
         
         let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
         let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
-        peer.cgPicture = picture
+        _peer.cgPicture = picture
     }
     
     @objc public func encode(with aCoder: NSCoder) {
@@ -133,7 +138,13 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
     }
 	
 	public func dirtied() {
-		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
+        archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
+        // TODO turn it off and on again to make others reload our data
+        // this is actually too dirty and error-prone to do from here
+//        if PeeringController.shared.peering {
+//            PeeringController.shared.peering = false
+//            PeeringController.shared.peering = true
+//        }
 	}
 }
 

@@ -118,11 +118,7 @@ extension String {
         // NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
         // PERFORMANCE: let size = MemoryLayout<UInt32>.size + nickname.lengthOfBytes(using: encoding)
         var encodingRawValue = UInt32(encoding.rawValue)
-        let encodingPointer = withUnsafeMutablePointer(to: &encodingRawValue, { (pointer) -> UnsafeMutablePointer<UInt32> in
-            return pointer
-        })
-        
-        var data = Data(bytesNoCopy: encodingPointer, count: MemoryLayout<UInt32>.size, deallocator: Data.Deallocator.none)
+        var data = Data(bytesNoCopy: &encodingRawValue, count: MemoryLayout<UInt32>.size, deallocator: Data.Deallocator.none)
         
         guard let payload = self.data(using: encoding) else { return nil }
         data.append(payload)

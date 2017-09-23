@@ -11,7 +11,12 @@ protocol JSONEncodable {
 }
 
 public enum ErrorResponse : Error {
-    case Error(Int, Data?, Error)
+    /// HTTP status code, response data and error
+    case httpError(Int, Data?)
+    /// HTTP status code, response data and URLSession provided error
+    case sessionTaskError(Int?, Data?, Error)
+    /// response data and parse error
+    case parseError(Data?)
 }
 
 open class Response<T> {
