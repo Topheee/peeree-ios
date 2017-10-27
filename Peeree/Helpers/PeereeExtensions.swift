@@ -26,8 +26,11 @@ extension CBPeripheral {
 }
 
 extension CBService {
-    func getCharacteristics(withIDs characteristicIDs: [CBUUID]) -> [CBCharacteristic]? {
-        return characteristics?.filter { characteristic in characteristicIDs.contains(characteristic.uuid) }
+    func get(characteristic id: CBUUID) -> CBCharacteristic? {
+        return characteristics?.first { $0.uuid == id }
+    }
+    func get(characteristics ids: [CBUUID]) -> [CBCharacteristic]? {
+        return characteristics?.filter { characteristic in ids.contains(characteristic.uuid) }
     }
 }
 

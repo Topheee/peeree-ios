@@ -96,7 +96,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         pickPicButton.isHidden = true
     }
     
-    func keyboardWillShow(_ notification: Notification) {
+    @objc func keyboardWillShow(_ notification: Notification) {
         guard let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue else { return }
         
         let keyboardFrameRect = keyboardFrame.cgRectValue
@@ -114,7 +114,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
     }
     
-    func keyboardWillHide(_ notification: Notification) {
+    @objc func keyboardWillHide(_ notification: Notification) {
         NotificationCenter.default.removeObserver(self)
     }
     

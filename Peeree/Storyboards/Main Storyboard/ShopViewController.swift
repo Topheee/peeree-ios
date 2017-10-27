@@ -195,7 +195,7 @@ final class ShopViewController: UITableViewController, InAppPurchaseDelegate {
         let ongoingTransactions = SKPaymentQueue.default().transactions
         let transaction = ongoingTransactions[indexPath.row]
         let localizedFormat = NSLocalizedString("Buying %d x %@ Pin Points", comment: "Cell title of ongoing transaction rows.")
-        let pinPoints = String(describing: InAppPurchaseController.shared.getPinPoints(inProductID: transaction.payment.productIdentifier))
+        let pinPoints = String(describing: InAppPurchaseController.shared.parsePinPoints(in: transaction.payment.productIdentifier))
         ret.titleLabel.text = String(format: localizedFormat, transaction.payment.quantity, pinPoints)
         switch transaction.transactionState {
         case .deferred:

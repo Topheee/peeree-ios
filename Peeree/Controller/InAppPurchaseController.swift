@@ -93,13 +93,13 @@ final class InAppPurchaseController: NSObject, SKProductsRequestDelegate, SKPaym
         }
     }
     
-    func getPinPoints(inProductID: String) -> PinPoints? {
+    func parsePinPoints(in productID: String) -> PinPoints? { // TEST
         let prefix = "com.peeree.pin_points_"
-        guard inProductID.hasPrefix(prefix) else { return nil }
+        guard productID.hasPrefix(prefix) else { return nil }
         
-        let len = prefix.characters.count
-        let pinPointsString = inProductID.substring(from: inProductID.characters.index(inProductID.startIndex, offsetBy: len))
-        return PinPoints(pinPointsString)
+        let len = prefix.count
+        let pinPointsSubstring = productID[productID.index(productID.startIndex, offsetBy: len)...]
+        return PinPoints(pinPointsSubstring)
     }
     
     func refreshPinPoints() {

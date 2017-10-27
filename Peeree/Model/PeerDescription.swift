@@ -83,8 +83,8 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
 	
 	private override init() {
 		dateOfBirth = nil
-        try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag)
-        try? AsymmetricKey.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag)
+        try? AsymmetricPublicKey.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag, keyType: PeerInfo.KeyType, size: PeerInfo.KeySize)
+        try? AsymmetricPrivateKey.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag, keyType: PeerInfo.KeyType, size: PeerInfo.KeySize)
         self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
 //        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
@@ -92,10 +92,10 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
 
     @objc required public init?(coder aDecoder: NSCoder) {
         dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as Date?
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString) else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
-        guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag) else { return nil }
+        guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
         let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
         
         //        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
@@ -116,7 +116,7 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
     }
     
     @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString)
+        aCoder.encode(peer.peerID, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString)
         for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
             guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
             encodeIt(aCoder, characteristicID: characteristicID, data: data)
@@ -177,7 +177,7 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
     }
     
     @objc required public init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString) else { return nil }
+        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
         let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
@@ -199,7 +199,7 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
     }
     
     @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: CBUUID.LocalUUIDCharacteristicID.uuidString)
+        aCoder.encode(peer.peerID, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString)
         for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
             guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
             encodeIt(aCoder, characteristicID: characteristicID, data: data)
@@ -401,7 +401,7 @@ public struct PeerInfo: Equatable {
     
     func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
         switch characteristicID {
-        case CBUUID.LocalUUIDCharacteristicID:
+        case CBUUID.LocalPeerIDCharacteristicID:
             return idData
         case CBUUID.AggregateCharacteristicID:
             return aggregateData
@@ -455,10 +455,10 @@ public struct PeerInfo: Equatable {
     
     init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
         do {
-            let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize, keyClass: kSecAttrKeyClassPublic)
+            let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize)
             self.init(peerID: peerID, publicKey: publicKey, aggregateData: aggregateData, nicknameData: nicknameData, lastChangedData: lastChangedData)
         } catch {
-            NSLog("\(error)")
+            NSLog("ERR: creating public key from data: \(error)")
             return nil
         }
     }

@@ -57,9 +57,9 @@ final class BeaconViewController: UIViewController {
             self.showPeerUnavailable()
         })
         
-        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] in
+        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in
             guard let strongSelf = self else { return }
-            strongSelf.searchedPeer = PeeringController.shared.remote.getPeerInfo(of: $0.0) ?? strongSelf.searchedPeer
+            strongSelf.searchedPeer = PeeringController.shared.remote.getPeerInfo(of: peerID) ?? strongSelf.searchedPeer
             strongSelf.remotePortrait.image = strongSelf.searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         })
         
@@ -211,7 +211,7 @@ final class DistanceView: UIView {
         }
     }
     
-    func pulse(_ sender: Timer) {
+    @objc func pulse(_ sender: Timer) {
         guard let pulseIndex = sender.userInfo as? PulseIndex else { sender.invalidate(); return }
         guard let previousLayer = layer.sublayers?[pulseIndex.index] else { sender.invalidate(); return }
         

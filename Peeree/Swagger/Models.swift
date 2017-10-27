@@ -63,7 +63,7 @@ class Decoders {
         return array.map { Decoders.decode(clazz: T.self, source: $0) }
     }
 
-    static func decode<T, Key: Hashable>(clazz: [Key:T].Type, source: AnyObject) -> [Key:T] {
+    static func decode<T, Key>(clazz: [Key:T].Type, source: AnyObject) -> [Key:T] {
         let sourceDictionary = source as! [Key: AnyObject]
         var dictionary = [Key:T]()
         for (key, value) in sourceDictionary {
@@ -116,7 +116,7 @@ class Decoders {
         }
     }
 
-    static func decodeOptional<T, Key: Hashable>(clazz: [Key:T].Type, source: AnyObject?) -> [Key:T]? {
+    static func decodeOptional<T, Key>(clazz: [Key:T].Type, source: AnyObject?) -> [Key:T]? {
         if source is NSNull {
             return nil
         }

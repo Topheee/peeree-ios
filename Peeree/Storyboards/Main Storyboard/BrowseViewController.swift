@@ -73,17 +73,17 @@ final class BrowseViewController: UITableViewController {
         
         connectionChangedState(PeeringController.shared.peering)
         
-        notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { [weak self] in self?.peerAppeared($0.0) })
-        notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver { [weak self] in self?.peerDisappeared($0.0) })
+        notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { [weak self] (peerID, _) in self?.peerAppeared(peerID) })
+        notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
         notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
             self?.connectionChangedState(PeeringController.shared.peering)
         })
         
-        notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] in self?.pinMatchOccurred(PeeringController.shared.remote.getPeerInfo(of: $0.0)!) })
-        notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
-        notificationObservers.append(PeeringController.Notifications.verified.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
-        notificationObservers.append(PeeringController.Notifications.verificationFailed.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
-        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] in self?.reload(peerID: $0.0) })
+        notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] (peerID, _) in self?.pinMatchOccurred(PeeringController.shared.remote.getPeerInfo(of: peerID)!) })
+        notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeeringController.Notifications.verified.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeeringController.Notifications.verificationFailed.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
         
         notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
             guard let strongSelf = self else { return }

@@ -390,7 +390,7 @@ public class AccountController: SecurityDataSource {
             if (error as NSError).domain == NSURLErrorDomain {
                 if let sequenceNumber = _sequenceNumber {
                     // we did not even reach the server, so we have to decrement our sequenceNumber again
-                    _sequenceNumber = Int32.subtractWithOverflow(sequenceNumber, 1).0
+                    _sequenceNumber = sequenceNumber.subtractingReportingOverflow(1).partialValue
                 }
             }
             if statusCode == 403 { // forbidden
@@ -407,7 +407,7 @@ public class AccountController: SecurityDataSource {
             throw NSError(domain: "Peeree", code: -2, userInfo: nil)
         }
         
-        _sequenceNumber = Int32.addWithOverflow(_sequenceNumber!, 1).0
+        _sequenceNumber = _sequenceNumber!.addingReportingOverflow(1).partialValue
         return try UserPeerInfo.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
     }
 }

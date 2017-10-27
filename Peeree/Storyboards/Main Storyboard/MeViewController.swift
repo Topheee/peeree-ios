@@ -60,15 +60,15 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         birthdayInput.text = dateFormatter.string(from: date)
     }
     
-    func agePickerChanged(_ sender: UIDatePicker) {
+    @objc func agePickerChanged(_ sender: UIDatePicker) {
         fillBirthdayInput(with: sender.date)
     }
     
-    func ageConfirmed(_ sender: UIBarButtonItem) {
+    @objc func ageConfirmed(_ sender: UIBarButtonItem) {
         birthdayInput.resignFirstResponder()
     }
     
-    func ageOmitted(_ sender: UIBarButtonItem) {
+    @objc func ageOmitted(_ sender: UIBarButtonItem) {
         birthdayInput.text = nil
         birthdayInput.resignFirstResponder()
     }
@@ -160,7 +160,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
                 return
             }
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            UserPeerInfo.instance.peer.nickname = newValue.substring(to: endIndex)
+            UserPeerInfo.instance.peer.nickname = String(newValue[...endIndex])
         case birthdayInput:
             guard textField.text != nil && textField.text != "" else {
                 UserPeerInfo.instance.dateOfBirth = nil
@@ -178,7 +178,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             }
             
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            AccountController.shared.update(email: newValue.substring(to: endIndex)) { _error in
+            AccountController.shared.update(email: String(newValue[...endIndex])) { _error in
                 self.restCompletion(_error) {}
             }
         default:

@@ -147,14 +147,14 @@ extension String {
     
     /// returns first count characters
     func left(_ count: String.IndexDistance) -> String {
-        let endIndex = self.index(self.startIndex, offsetBy: count)
-        return self.substring(to: endIndex)
+        let rightEnd = index(startIndex, offsetBy: count, limitedBy: endIndex) ?? endIndex
+        return String(self[..<rightEnd])
     }
     
     /// returns last count characters
     func right(_ count: String.IndexDistance) -> String {
-        let endIndex = self.index(self.endIndex, offsetBy: -count)
-        return self.substring(from: endIndex)
+        let leftEnd = index(endIndex, offsetBy: -count, limitedBy: startIndex) ?? startIndex
+        return String(self[leftEnd...])
     }
 }
 
@@ -175,7 +175,7 @@ extension HTTPURLResponse {
 
 extension Bool {
     /// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
-    init<T: Integer>(_ value: T) {
+    init<T: BinaryInteger>(_ value: T) {
         self.init(value != 0)
     }
 }

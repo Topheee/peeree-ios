@@ -337,7 +337,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         RootView.appearance().tintColor = theme.globalTintColor
         RootView.appearance().backgroundColor = theme.globalBackgroundColor
         
-        UINavigationBar.appearance().tintColor = theme.barBackgroundColor
+        // iOS 11 UINavigationBar ButtonItem Fix
+        UIButton.appearance(whenContainedInInstancesOf: [UINavigationBar.self]).tintColor = theme.barBackgroundColor
+        
+        UINavigationBar.appearance().tintColor = theme.barTintColor // theme.barBackgroundColor
         UINavigationBar.appearance().barTintColor = theme.barTintColor
         UINavigationBar.appearance().barStyle = .black
         
