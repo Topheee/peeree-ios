@@ -108,6 +108,12 @@ final class BrowseViewController: UITableViewController {
 		
         tabBarController?.tabBar.items?[0].badgeValue = nil
         UIApplication.shared.applicationIconBadgeNumber = 0
+        
+        networkButton.layer.cornerRadius = networkButton.bounds.height / 2.0
+        networkButton.tintColor = AppDelegate.shared.theme.globalTintColor
+//        if !#available(iOS 11, *) {
+            networkButton.backgroundColor = UIColor.white
+//        }
 	}
 	
 	override func viewDidDisappear(_ animated: Bool) {
@@ -142,8 +148,11 @@ final class BrowseViewController: UITableViewController {
                 return UITableViewCell()
             }
             
-//            cell.frame.size.height = tableView.contentSize.height + tableView.contentInset.bottom
-            cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
+            if #available(iOS 11.0, *) {
+                cell.frame.size.height = tableView.bounds.height - tableView.adjustedContentInset.bottom
+            } else {
+                cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
+            }
             cell.peersMetLabel.text = String(PeeringController.shared.remote.peersMet)
             if PeeringController.shared.peering {
                 cell.headLabel.text = NSLocalizedString("Nobody here...", comment: "Heading of the placeholder shown in browse view if no peers are around.")
@@ -183,7 +192,11 @@ final class BrowseViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.frame.height - (self.tabBarController?.tabBar.frame.height ?? 49) - (self.navigationController?.navigationBar.frame.height ?? 44) - UIApplication.shared.statusBarFrame.height
+        if #available(iOS 11.0, *) {
+            return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.bounds.height - tableView.adjustedContentInset.bottom
+        } else {
+            return !placeholderCellActive ? super.tableView(tableView, heightForRowAt: indexPath) : tableView.bounds.height - tableView.contentInset.bottom
+        }
     }
     
     func indexPath(of peerID: PeerID) -> IndexPath? {
@@ -226,6 +239,9 @@ final class BrowseViewController: UITableViewController {
         
         let maskView = CircleMaskView(maskedView: imageView)
         maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
+        if #available(iOS 11.0, *) {
+            imageView.accessibilityIgnoresInvertColors = peer.picture != nil
+        }
     }
     
     private func addPeerToCache(_ peer: PeerInfo) -> Int {
@@ -273,7 +289,9 @@ final class BrowseViewController: UITableViewController {
 	
     private func peerDisappeared(_ peerID: PeerID) {
         guard let peerPath = indexPath(of: peerID) else {
-            NSLog("Unknown peer \(peerID.uuidString) disappeared")
+            if PeeringController.shared.peering {
+                NSLog("WARNING: Unknown peer \(peerID.uuidString) disappeared")
+            }
             return
         }
         
@@ -290,9 +308,10 @@ final class BrowseViewController: UITableViewController {
     private func connectionChangedState(_ nowOnline: Bool) {
         tableView.reloadData()
         if nowOnline {
-            networkButton.setTitle(NSLocalizedString("Go Offline", comment: "Toggle to offline mode. Also title in browse view."), for: UIControlState())
+            networkButton.setTitle(NSLocalizedString("Go Offline", comment: "Toggle to offline mode. Also title in browse view."), for: [])
         } else {
-            networkButton.setTitle(NSLocalizedString("Go Online", comment: "Toggle to online mode. Also title in browse view."), for: UIControlState())
+            networkButton.setTitle(NSLocalizedString("Go Online", comment: "Toggle to online mode. Also title in browse view."), for: [])
+            
             for i in 0..<peerCache.count {
                 peerCache[i].removeAll()
             }

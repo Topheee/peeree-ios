@@ -225,7 +225,7 @@ public struct PeerInfo: Equatable {
         case peerID, nickname, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged, publicKey
     }
     
-    public static let MinAge = 13, MaxAge = 80
+    public static let MinAge = 18, MaxAge = 80
     /// postgres can store strings up to this length very efficiently
     public static let MaxEmailSize = 126
     /// 4 BLE packets

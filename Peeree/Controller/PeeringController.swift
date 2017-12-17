@@ -117,12 +117,12 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     // MARK: LocalPeerManagerDelegate
     
     func advertisingStarted() {
-//        _remote.scan() TEST do we need this?
+        _remote.scan()
         connectionChangedState()
     }
     
     func advertisingStopped() {
-//        _remote.stopScan() TEST do we need this?
+        _remote.stopScan() // stop scanning when we where de-authorized
         connectionChangedState()
         pinMatchIndications.removeAll()
     }

@@ -2,17 +2,20 @@
 /* Class = "UILabel"; text = "Headline"; ObjectID = "2uW-xz-nDp"; */
 "2uW-xz-nDp.text" = "Headline";
 
+/* Class = "UIButton"; accessibilityLabel = "Pin Button"; ObjectID = "53c-Ja-yW0"; */
+"53c-Ja-yW0.accessibilityLabel" = "Pin Button";
+
 /* Class = "UIViewController"; title = "First"; ObjectID = "9TP-2c-bIB"; */
 "9TP-2c-bIB.title" = "First";
-
-/* Class = "UILabel"; text = "< Swipe to continue"; ObjectID = "All-J7-11I"; */
-"All-J7-11I.text" = "< Swipe to continue";
 
 /* Class = "UIViewController"; title = "Second"; ObjectID = "BiV-OX-JbO"; */
 "BiV-OX-JbO.title" = "Second";
 
-/* Class = "UILabel"; text = "Setup basic data"; ObjectID = "JLo-5M-7YM"; */
-"JLo-5M-7YM.text" = "Setup basic data";
+/* Class = "UILabel"; text = "Setup Basic Data"; ObjectID = "JLo-5M-7YM"; */
+"JLo-5M-7YM.text" = "Setup Basic Data";
+
+/* Class = "UILabel"; text = "Pin people to show your interest"; ObjectID = "NTY-bS-98x"; */
+"NTY-bS-98x.text" = "Pin people to show your interest";
 
 /* Class = "UILabel"; text = "Hello and Welcome!"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.text" = "Hello and Welcome!";
@@ -29,6 +32,9 @@
 /* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
 "b8Y-IF-X4f.normalTitle" = "Sounds great!";
 
+/* Class = "UILabel"; text = "Use this button to pin people:"; ObjectID = "fFz-HS-CaO"; */
+"fFz-HS-CaO.text" = "Use this button to pin people:";
+
 /* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[0] = "Male"; ObjectID = "g3H-jE-mTR"; */
 "g3H-jE-mTR.segmentTitles[0]" = "Male";
 
@@ -44,8 +50,8 @@
 /* Class = "UITextField"; placeholder = "Name"; ObjectID = "maF-ir-g9C"; */
 "maF-ir-g9C.placeholder" = "Name";
 
-/* Class = "UILabel"; text = "This is Peeree, \nthe first Social P2P App"; ObjectID = "rNF-0l-DWJ"; */
-"rNF-0l-DWJ.text" = "This is Peeree, \nthe first Social P2P App";
+/* Class = "UILabel"; text = "This is Peeree, \na Social Peer-to-Peer App"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "This is Peeree, \na Social Peer-to-Peer App";
 
 /* Class = "UIViewController"; title = "First Info"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "First Info";

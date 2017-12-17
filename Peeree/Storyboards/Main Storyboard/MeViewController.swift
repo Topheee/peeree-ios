@@ -169,7 +169,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             guard let datePicker = textField.inputView as? UIDatePicker else { return }
             UserPeerInfo.instance.dateOfBirth = datePicker.date
         case mailTextField:
-            guard textField.text != AccountController.shared.accountEmail else { return }
+            guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
             guard let newValue = textField.text, newValue != "" else {
                 AccountController.shared.deleteEmail { _error in
                     self.restCompletion(_error) {}
@@ -190,11 +190,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard textField == nameTextField || textField == mailTextField else { return true }
         
-        if (range.length + range.location > textField.text!.characters.count) {
+        if (range.length + range.location > textField.text!.utf8.count) {
             return false
         }
         
-        let newLength = textField.text!.characters.count + string.characters.count - range.length
+        let newLength = textField.text!.utf8.count + string.utf8.count - range.length
         return textField == nameTextField ? newLength <= PeerInfo.MaxNicknameSize : newLength <= PeerInfo.MaxEmailSize
     }
     
@@ -204,7 +204,10 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     override func picked(image: UIImage?) {
         super.picked(image: image)
-        portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+        portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
+        if #available(iOS 11.0, *) {
+            portraitImageButton.accessibilityIgnoresInvertColors = image != nil
+        }
     }
     
     private func loadUserPeerInfo() {
@@ -215,7 +218,10 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         } else {
             birthdayInput.text = nil
         }
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: UIControlState())
+        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
+        if #available(iOS 11.0, *) {
+            portraitImageButton.accessibilityIgnoresInvertColors = UserPeerInfo.instance.picture != nil
+        }
     }
     
     private func registerForKeyboardNotifications() {

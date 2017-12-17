@@ -389,7 +389,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 
                 return signature.subdata(in: 0..<signatureSize)
             #else
-                throw NSError(domain: "unsupported", code: -1, userInfo: nil)
+                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("macOS below 10.12.1 is not supported", comment: "Error description for signing exception, which should never actually occur.")])
             #endif
         }
     }
@@ -398,7 +398,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
         if #available(macOS 10.12.1, iOS 10.0, *) {
             let algorithm = SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM
             guard SecKeyIsAlgorithmSupported(key, .decrypt, algorithm) else {
-                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm \(SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM) does not support decryption", comment: "Error description for decryption exception, which should never actually occur.")])
+                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM does not support decryption", comment: "Error description for decryption exception, which should never actually occur.")])
             }
             
             //        guard cipherText.count == SecKeyGetBlockSize(privateKey) else {
@@ -424,7 +424,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 
                 return plainText.subdata(in: 0..<plainTextSize)
             #else
-                throw NSError(domain: "unsupported", code: -1, userInfo: nil)
+                throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("macOS below 10.12.1 is not supported", comment: "Error description for decrypting exception, which should never actually occur.")])
             #endif
         }
     }
@@ -451,19 +451,10 @@ public class KeyPair {
     
     public var blockSize: Int { return SecKeyGetBlockSize(privateKey.key) }
     
-    public init(privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool) throws {
+    public init(privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool, useEnclave: Bool = false) throws {
         var error: Unmanaged<CFError>?
         var attributes: [String : Any]
-        #if os(macOS)
-            attributes = [
-                kSecAttrKeyType as String:            type,
-                kSecAttrKeySizeInBits as String:      size,
-                kSecPrivateKeyAttrs as String: [
-                    kSecAttrIsPermanent as String:    persistent,
-                    kSecAttrApplicationTag as String: privateTag
-                    ] as CFDictionary
-            ]
-        #elseif os(iOS) && (arch(x86_64) || arch(i386)) //iPhone Simulator
+        #if os(macOS) || (os(iOS) && (arch(x86_64) || arch(i386))) //iPhone Simulator
             attributes = [
                 kSecAttrKeyType as String:            type,
                 kSecAttrKeySizeInBits as String:      size,
@@ -473,8 +464,7 @@ public class KeyPair {
                     ] as CFDictionary
             ]
         #else
-            
-            if #available(iOS 10.0, *) {
+            if useEnclave {
                 guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
                     throw error!.takeRetainedValue() as Error
                 }
@@ -489,7 +479,6 @@ public class KeyPair {
                     ] as CFDictionary
                 ]
             } else {
-                // we do not use the Secure Enclave on iOS 9!
                 attributes = [
                     kSecAttrKeyType as String:            type,
                     kSecAttrKeySizeInBits as String:      size,
@@ -527,7 +516,7 @@ public class KeyPair {
         #else
         if #available(iOS 10.0, *) {
             guard let pubKey = SecKeyCopyPublicKey(privateKey.key) else {
-                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("no public key derivable", comment: "Low level error.")])
+                throw NSError(domain: NSOSStatusErrorDomain, code: Int(errSecInvalidAttributePrivateKeyFormat), userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("No public key derivable.", comment: "Low level error.")])
             }
             publicKey = AsymmetricPublicKey(key: pubKey, type: type, size: size, tag: nil)
         } else {

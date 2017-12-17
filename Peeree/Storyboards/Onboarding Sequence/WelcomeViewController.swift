@@ -10,23 +10,55 @@ import UIKit
 
 final class WelcomeViewController: UIViewController {
 	@IBOutlet private weak var infoButton: UIButton!
+    @IBOutlet private weak var pinButton: UIButton!
+    
+    private var timer: Timer?
+    
+    @IBAction func pressPin(_ sender: Any) {
+        pinButton.layer.removeAllAnimations()
+        pinButton.isSelected = !pinButton.isSelected
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
         
         vc.infoType = .general
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if #available(iOS 11, *) {
+            // reset it's frame on iOS 11 as the view is not layed out there every time it gets active again
+            pinButton.superview!.setNeedsLayout()
+        }
+    }
 	
 	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         infoButton.tintColor = AppDelegate.shared.theme.globalTintColor // for whatever reason we have to do that here...
-		if !animated {
-			//at the very first showing, the view appears unanimated, so only here we want to show the animation
-			self.view.flyInSubviews([infoButton], duration: 2.0, delay: 0.5, damping: 1.0, velocity: 1.0)
-		}
+        
+        // somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
+        timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        // reset position from animation, if the user slides back in
+        timer?.invalidate()
+        timer = nil
+        pinButton.layer.removeAllAnimations()
     }
     
     override var prefersStatusBarHidden : Bool {
         return true
+    }
+    
+    @objc func animatePinButton(timer: Timer?) {
+        UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.autoreverse, .repeat, .allowUserInteraction], animations: {
+            self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -3.0)
+        }, completion: nil)
+        self.timer = nil
     }
 }

@@ -83,6 +83,7 @@ public class AccountController: SecurityDataSource {
         }
     }
     
+    private static let SequenceNumberIncrement: Int32 = 13
     private var _sequenceNumber: Int32? {
         didSet {
             if let sequenceNumber = _sequenceNumber {
@@ -407,7 +408,7 @@ public class AccountController: SecurityDataSource {
             throw NSError(domain: "Peeree", code: -2, userInfo: nil)
         }
         
-        _sequenceNumber = _sequenceNumber!.addingReportingOverflow(1).partialValue
+        _sequenceNumber = _sequenceNumber!.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
         return try UserPeerInfo.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
     }
 }

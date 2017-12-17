@@ -83,7 +83,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             return
         }
         
-        peripheralManager.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.PeereeServiceID]])
+        peripheral.startAdvertising([CBAdvertisementDataServiceUUIDsKey : [CBUUID.PeereeServiceID]])
     }
     
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
@@ -137,7 +137,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             
             let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
             peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic]
-            peripheralManager.add(peereeService)
+            peripheral.add(peereeService)
         }
     }
     
@@ -157,7 +157,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         case CBUUID.PortraitCharacteristicID:
             do {
                 let data = try Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
-                sendData(data: data, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
+                send(data: data, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
             } catch {
                 NSLog("ERR: Failed to read user portrait: \(error.localizedDescription)")
                 NSLog("Removing picture from user info.")
@@ -179,7 +179,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         let transfers = interruptedTransfers
         interruptedTransfers.removeAll() // this keeps the elements in transfers
         for (data, characteristic, central, sendSize) in transfers {
-            sendData(data: data, of: characteristic, to: central, sendSize: sendSize)
+            send(data: data, via: peripheral, of: characteristic, to: central, sendSize: sendSize)
         }
     }
     
@@ -268,13 +268,13 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     // MARK: Private Methods
     
-    private func sendData(data: Data, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
+    private func send(data: Data, via peripheral: CBPeripheralManager, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
         if sendSize {
             // send the amount of bytes in data in the first package
             var size = SplitCharacteristicSize(data.count)
             
             let sizeData = Data(bytesNoCopy: &size, count: MemoryLayout<SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
-            guard peripheralManager.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
+            guard peripheral.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
                 if isAdvertising {
                     interruptedTransfers.append((data, characteristic, central, true))
                 }
@@ -296,7 +296,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             let chunk = data.subdata(in: fromIndex..<toIndex)
             
             // Send it
-            send = peripheralManager.updateValue(chunk, for: characteristic, onSubscribedCentrals: [central])
+            send = peripheral.updateValue(chunk, for: characteristic, onSubscribedCentrals: [central])
             
             // If it didn't work, drop out and wait for the callback
             guard send else {

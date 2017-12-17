@@ -95,12 +95,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9D0214341FD2C7B10086D23E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9D08E2D71C4030B30045388A /* BasicDescription.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BasicDescription.storyboard; path = Peeree/Storyboards/BasicDescription/BasicDescription.storyboard; sourceTree = "<group>"; };
 		9D08E2D91C4031050045388A /* BasicDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicDescriptionViewController.swift; path = Peeree/Storyboards/BasicDescription/BasicDescriptionViewController.swift; sourceTree = "<group>"; };
 		9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensions.swift; path = Peeree/Helpers/PeereeExtensions.swift; sourceTree = "<group>"; };
 		9D0EA9F21E44DB9000C71312 /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
 		9D1E680E1F1CFBFA00BF633E /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = "Storyboards/Main Storyboard/Main.storyboard"; sourceTree = "<group>"; };
-		9D1FF7B91DD5055E00405CCC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FirstLaunchViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/FirstLaunchViewController.swift"; sourceTree = "<group>"; };
 		9D2923261B91E50B00B5B622 /* SetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupViewController.swift"; sourceTree = "<group>"; };
 		9D2A76B91DC63E9D004E6386 /* PeereeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeUITests.swift; sourceTree = "<group>"; };
@@ -662,7 +662,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9D33E8F11D418839001CECAB /* Base */,
-				9D1FF7B91DD5055E00405CCC /* en */,
+				9D0214341FD2C7B10086D23E /* en */,
 			);
 			name = FirstLaunch.storyboard;
 			path = "Peeree/Storyboards/Onboarding Sequence";
@@ -851,9 +851,11 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LLVM_LTO = YES_THIN;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -877,10 +879,12 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LLVM_LTO = YES_THIN;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";

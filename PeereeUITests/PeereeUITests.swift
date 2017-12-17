@@ -35,10 +35,10 @@ class PeereeUITests: XCTestCase {
         app.buttons["What do you want with my data?"].tap()
         
         let app2 = app
-        app2.tables.staticTexts["Information Locality"].tap()
+        app2.tables.staticTexts["Decentralized Information"].tap()
         
         let tablesQuery = app.tables
-        tablesQuery.cells.containing(.staticText, identifier:"Information Locality").children(matching: .textView).element.swipeUp()
+        tablesQuery.cells.containing(.staticText, identifier:"Decentralized Information").children(matching: .textView).element.swipeUp()
         tablesQuery.cells.containing(.staticText, identifier:"Temporary").children(matching: .textView).element.swipeUp()
         app.buttons["Sounds great!"].tap()
         app.buttons["PortraitPlaceholder"].tap()

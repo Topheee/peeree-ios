@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
     <device id="retina3_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -35,16 +35,16 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Headline" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2uW-xz-nDp">
-                                                    <rect key="frame" x="20" y="18" width="254" height="27"/>
+                                                    <rect key="frame" x="27" y="22.5" width="240" height="24"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ReadIconP2P" translatesAutoresizingMaskIntoConstraints="NO" id="mX9-d0-6ok">
-                                                    <rect key="frame" x="274" y="16" width="30" height="30"/>
+                                                    <rect key="frame" x="267" y="19" width="30" height="30"/>
                                                 </imageView>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ith-Hl-trz">
-                                                    <rect key="frame" x="20" y="45" width="284" height="77"/>
+                                                    <rect key="frame" x="27" y="46.5" width="270" height="72.5"/>
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
@@ -85,12 +85,21 @@
                                             <subviews>
                                                 <imageView opaque="NO" userInteractionEnabled="NO" alpha="0.29999999999999999" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ReadIconP2P" translatesAutoresizingMaskIntoConstraints="NO" id="50U-xu-mqQ">
                                                     <rect key="frame" x="0.0" y="0.0" width="106.5" height="48"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                 </imageView>
                                                 <imageView opaque="NO" userInteractionEnabled="NO" alpha="0.29999999999999999" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ReadIconSocial" translatesAutoresizingMaskIntoConstraints="NO" id="oNN-tE-WOZ">
                                                     <rect key="frame" x="106.5" y="0.0" width="107" height="48"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                 </imageView>
                                                 <imageView opaque="NO" userInteractionEnabled="NO" alpha="0.29999999999999999" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ReadIconBenefits" highlightedImage="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="0bS-2C-rGq">
                                                     <rect key="frame" x="213.5" y="0.0" width="106.5" height="48"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                 </imageView>
                                             </subviews>
                                             <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -220,7 +229,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
-                                <rect key="frame" x="16" y="197.5" width="288" height="55"/>
+                                <rect key="frame" x="16" y="200.5" width="288" height="49"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                </accessibility>
                                 <string key="text">This is Peeree, 
 a Social Peer-to-Peer App</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
@@ -228,57 +240,81 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello and Welcome!" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TFv-dL-32n">
-                                <rect key="frame" x="16" y="60" width="288" height="34"/>
+                                <rect key="frame" x="16" y="60" width="288" height="31.5"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
+                                </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
-                                <rect key="frame" x="83.5" y="252" width="153" height="30"/>
+                                <rect key="frame" x="16" y="249" width="288" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="What does that mean?"/>
                                 <connections>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="2du-D3-2eY"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
-                                <rect key="frame" x="16" y="445.5" width="288" height="15"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                <nil key="textColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
+                                <rect key="frame" x="16" y="444.5" width="288" height="16"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                </accessibility>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
-                                <rect key="frame" x="135" y="387.5" width="50" height="50"/>
+                                <rect key="frame" x="135" y="386.5" width="50" height="50"/>
+                                <accessibility key="accessibilityConfiguration" label="Pin Button">
+                                    <accessibilityTraits key="traits" button="YES" image="YES"/>
+                                </accessibility>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="50" id="0b9-3r-uf6"/>
                                     <constraint firstAttribute="width" secondItem="53c-Ja-yW0" secondAttribute="height" multiplier="1:1" id="1L7-UW-3SU"/>
                                 </constraints>
                                 <state key="normal" image="PinButtonTemplate"/>
                                 <state key="selected" image="PinButtonTemplatePressed"/>
+                                <state key="highlighted" image="PinButtonTemplatePressed"/>
+                                <connections>
+                                    <action selector="pressPin:" destination="9TP-2c-bIB" eventType="touchUpInside" id="Ze5-aK-zQh"/>
+                                </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
+                                <rect key="frame" x="16" y="358.5" width="288" height="19.5"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                </accessibility>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" constant="-15" id="95G-wi-9h6"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
                             <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" id="GgE-NJ-lQL"/>
-                            <constraint firstAttribute="centerX" secondItem="rNF-0l-DWJ" secondAttribute="centerX" id="J51-TC-smp"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="JHQ-V2-gUb"/>
-                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
+                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
                             <constraint firstItem="NTY-bS-98x" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="OCq-bq-ySI"/>
-                            <constraint firstAttribute="centerX" secondItem="XwS-Db-Ixl" secondAttribute="centerX" id="UJy-zS-4xz"/>
+                            <constraint firstItem="fFz-HS-CaO" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="Pg8-dM-E2i"/>
+                            <constraint firstItem="53c-Ja-yW0" firstAttribute="top" secondItem="fFz-HS-CaO" secondAttribute="bottom" constant="8.5" id="RiJ-ya-yCn"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" id="Whm-4j-UaB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rNF-0l-DWJ" secondAttribute="trailing" id="fJU-DB-Kod"/>
                             <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" constant="20" id="gSo-hC-glu"/>
                             <constraint firstAttribute="trailingMargin" secondItem="NTY-bS-98x" secondAttribute="trailing" id="ihi-an-ghz"/>
+                            <constraint firstItem="fFz-HS-CaO" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="jOd-fJ-VsJ"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="mE9-QB-jIc"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="40" id="mQq-Dp-Szr"/>
-                            <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
                             <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="bRA-E3-VRs" secondAttribute="centerX" id="ymi-3N-siT"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="infoButton" destination="XwS-Db-Ixl" id="mjg-2n-5uh"/>
+                        <outlet property="pinButton" destination="53c-Ja-yW0" id="xhr-SX-xgV"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mCM-H7-tKi" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -298,7 +334,7 @@ a Social Peer-to-Peer App</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="62" y="139" width="196" height="196"/>
+                                <rect key="frame" x="61.5" y="137.5" width="197.5" height="197.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
@@ -321,20 +357,23 @@ a Social Peer-to-Peer App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRI-ar-stS">
-                                <rect key="frame" x="145" y="222" width="30" height="30"/>
+                                <rect key="frame" x="145" y="221.5" width="30" height="30"/>
                                 <state key="normal" title="Pick"/>
                                 <connections>
                                     <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="Yhr-TB-Qec"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setup Basic Data" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
-                                <rect key="frame" x="57" y="60" width="207" height="33"/>
+                                <rect key="frame" x="16" y="60" width="288" height="31.5"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
+                                </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="91.5" y="93" width="137" height="30"/>
+                                <rect key="frame" x="16" y="91.5" width="288" height="30"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
                                 <state key="normal" title="Who can see these?"/>
                                 <connections>
@@ -359,7 +398,7 @@ a Social Peer-to-Peer App</string>
                                     <segment title="Queer"/>
                                 </segments>
                             </segmentedControl>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
+                            <textField autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
                                 <rect key="frame" x="72" y="351" width="176" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
@@ -373,30 +412,28 @@ a Social Peer-to-Peer App</string>
                         <constraints>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerY" secondItem="bd8-Ey-isT" secondAttribute="centerY" id="4uk-QG-Tpd"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
-                            <constraint firstAttribute="centerX" secondItem="yag-kE-4K4" secondAttribute="centerX" id="7Vg-1x-Jd8"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
                             <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" id="94p-Kz-qxS"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
-                            <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
+                            <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
                             <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
-                            <constraint firstAttribute="centerX" secondItem="JLo-5M-7YM" secondAttribute="centerX" id="PC3-oH-0Lt"/>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerX" secondItem="bd8-Ey-isT" secondAttribute="centerX" id="PL3-Bo-awe"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="top" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="RE1-yz-tPI"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="trailing" id="RwY-PN-x7Y"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="TZh-su-XOJ"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="g3H-jE-mTR" secondAttribute="width" id="ZNU-Qu-aPB"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="top" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="13" id="ahF-p9-f2k"/>
-                            <constraint firstItem="yag-kE-4K4" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="cqw-l7-zQe"/>
-                            <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="JLo-5M-7YM" secondAttribute="trailing" id="dHH-AR-cJy"/>
+                            <constraint firstItem="yag-kE-4K4" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="cqw-l7-zQe"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="JLo-5M-7YM" secondAttribute="trailing" id="dHH-AR-cJy"/>
                             <constraint firstItem="WkH-8i-IuH" firstAttribute="top" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="bottom" constant="20" id="e73-Si-90P"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="eL9-MV-34L"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="pfv-hO-exC"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="tBV-A5-65e"/>
                             <constraint firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="aJo-bN-TNl" secondAttribute="bottom" constant="40" id="v9p-sf-Eqm"/>
-                            <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="yag-kE-4K4" secondAttribute="trailing" id="xl0-86-x9b"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="yag-kE-4K4" secondAttribute="trailing" id="xl0-86-x9b"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -429,7 +466,7 @@ a Social Peer-to-Peer App</string>
         <image name="ReadIconSocial" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="2du-D3-2eY"/>
+        <segue reference="zJZ-DL-UQZ"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

@@ -21,7 +21,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
          (NSLocalizedString("Benefits", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Benefits content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconBenefits"))]
     static private let DataInfoContent =
         [(NSLocalizedString("Your Data", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Your Data content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconData")),
-         (NSLocalizedString("Information Locality", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Information Locality content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconLocalInfo")),
+         (NSLocalizedString("Decentralized Information", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Decentralized Information content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconLocalInfo")),
          (NSLocalizedString("Temporary", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Temporary content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconTemporary"))]
     
     enum InfoType { case general, data }

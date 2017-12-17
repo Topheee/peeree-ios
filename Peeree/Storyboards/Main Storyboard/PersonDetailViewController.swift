@@ -280,6 +280,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         
         ageGenderLabel.text = peer.summary
         portraitImageView.image = peer.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+        if #available(iOS 11.0, *) {
+            portraitImageView.accessibilityIgnoresInvertColors = peer.picture != nil
+        }
     }
     
     private func removePictureLoadLayer() {

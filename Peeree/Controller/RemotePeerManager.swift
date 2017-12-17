@@ -143,7 +143,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     func stopScan() {
         guard isScanning else { return }
         
-        dQueue.async {
+        dQueue.sync {
             for (_, (progress, _)) in self.activeTransmissions {
                 progress.cancel()
             }

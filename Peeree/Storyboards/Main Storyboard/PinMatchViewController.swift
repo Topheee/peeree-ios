@@ -81,5 +81,8 @@ class PinMatchViewController: UIViewController {
         portraitView.image = displayedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         portraitView.layoutIfNeeded()
         _ = CircleMaskView(maskedView: portraitView)
+        if #available(iOS 11.0, *) {
+            portraitView.accessibilityIgnoresInvertColors = displayedPeer?.picture != nil
+        }
     }
 }
