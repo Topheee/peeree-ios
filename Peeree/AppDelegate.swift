@@ -74,8 +74,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
      *  Registers for notifications, presents onboarding on first launch and applies GUI theme
      */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-		UserDefaults.standard.register(defaults: [InAppPurchaseController.PinPointPrefKey : InAppPurchaseController.InitialPinPoints])
-        
         setupAppearance()
         
         AccountController.shared.delegate = self
@@ -109,12 +107,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
                 //only ask on iOS 8 or later
                 UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
             }
-            
-            guard let topVC = self.window?.rootViewController as? UITabBarController else { return }
-            guard let browseItem = topVC.tabBar.items?.first else { return }
-            
-            browseItem.image = PeeringController.shared.peering ? #imageLiteral(resourceName: "RadarTemplateFilled") : #imageLiteral(resourceName: "RadarTemplate")
-            browseItem.selectedImage = browseItem.image
         }
 
         // reinstantiate CBManagers if there where some
@@ -175,7 +167,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         PeeringController.shared.peering = false
-        InAppPurchaseController.shared.clearCache()
     }
     
     func finishIntroduction() {
@@ -183,10 +174,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
     
     func show(peer: PeerInfo) {
-        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
-        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
         
-        rootTabBarController.selectedIndex = 0
+        browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+        
         var browseVC: BrowseViewController? = nil
         for vc in browseNavVC.viewControllers {
             if vc is BrowseViewController {
@@ -199,10 +190,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
     
     func find(peer: PeerInfo) {
-        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
-        guard let browseNavVC = rootTabBarController.viewControllers?[0] as? UINavigationController else { return }
+        guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
         
-        rootTabBarController.selectedIndex = 0
+        browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
         
         var _browseVC: BrowseViewController? = nil
         var _personVC: PersonDetailViewController? = nil
@@ -231,37 +221,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
     
     static func requestPin(of peer: PeerInfo) {
-        let title = NSLocalizedString("Spend Pin Points", comment: "Title of the alert which pops up when the user is about to spend in-app currency")
-        var message: String
-        var actions: [UIAlertAction] = [UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)]
-        
-        if InAppPurchaseController.shared.availablePinPoints >= InAppPurchaseController.PinCosts {
-            message = NSLocalizedString("You have %d pin points available.", comment: "Alert message if the user is about to spend in-app currency and has enough of it in his pocket")
-            message = String(format: message, InAppPurchaseController.shared.availablePinPoints)
-            if !peer.verified {
-                message = "\(message) \(NSLocalizedString("But be careful: the identity of the user is not verified, ou may be pinning someone else!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"))"
-                actions.append(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .default) { action in
-                    PeeringController.shared.remote.verify(peer.peerID)
-                })
-            }
-            let actionTitle = String(format: NSLocalizedString("Spend %d", comment: "The user accepts to spend pin points for this action"), InAppPurchaseController.PinCosts)
-            actions.append(UIAlertAction(title: actionTitle, style: peer.verified ? .default : .destructive) { action in
+        if !peer.verified {
+            let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of the user is not verified, you may attempt to pin a malicious person!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
+                PeeringController.shared.remote.verify(peer.peerID)
+            })
+            let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), peer.nickname)
+            alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
                 AccountController.shared.pin(peer)
             })
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+            
+            alertController.present(nil)
         } else {
-            message = NSLocalizedString("You do not have enough pin points available.", comment: "Alert message if the user is about to buy something and has not enough of in-app money in his pocket")
-            actions.append(UIAlertAction(title: NSLocalizedString("Visit Shop", comment: "Title of action which opens the shop view"), style: .default) { action in
-                guard let rootTabBarController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController else { return }
-                
-                rootTabBarController.selectedIndex = 2
-            })
+            AccountController.shared.pin(peer)
         }
-        
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
-        for action in actions {
-            alertController.addAction(action)
-        }
-        alertController.present(nil)
     }
     
     // MARK: AccountControllerDelegate
@@ -287,50 +261,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			note.alertBody = String(format: alertBodyFormat, peer.nickname)
             note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
 			UIApplication.shared.presentLocalNotificationNow(note)
-        } else if BrowseViewController.instance == nil {
-            updateNewPeerBadge(by: 1)
 		}
 	}
 	
 	private func peerDisappeared(_ peerID: PeerID) {
-        updateNewPeerBadge(by: -1)
+        // ignored
 	}
     
     private func pinMatchOccured(_ peer: PeerInfo) {
         if isActive {
-            setPinMatchBadge()
             let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
             pinMatchVC.displayedPeer = peer
             DispatchQueue.main.async {
-                (self.window?.rootViewController as? UITabBarController)?.selectedViewController?.present(pinMatchVC, animated: true, completion: nil)
+                if let presentingVC = self.window?.rootViewController?.presentedViewController {
+                    // if Me screen is currently presented
+                    presentingVC.present(pinMatchVC, animated: true, completion: nil)
+                } else {
+                    self.window?.rootViewController?.present(pinMatchVC, animated: true, completion: nil)
+                }
             }
         } else {
             let note = UILocalNotification()
-            let alertBodyFormat = NSLocalizedString("Pin match with %@!", comment: "Notification alert body when a pin match occured.")
+            let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
             note.alertBody = String(format: alertBodyFormat, peer.nickname)
             note.applicationIconBadgeNumber = UIApplication.shared.applicationIconBadgeNumber + 1
             note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
             UIApplication.shared.presentLocalNotificationNow(note)
         }
-    }
-    
-    private func setPinMatchBadge() {
-        guard let rootTabBarController = window?.rootViewController as? UITabBarController else { return }
-        
-        rootTabBarController.tabBar.items?[0].badgeValue = NSLocalizedString("Pin Match", comment: "The name of the event when two peers pinned each other.")
-    }
-    
-    private func updateNewPeerBadge(by: Int) {
-        guard let tabBarItem = (window?.rootViewController as? UITabBarController)?.tabBar.items?[0] else { return }
-        
-        var newBadgeValue: Int = by
-        if let oldBadgeValue = tabBarItem.badgeValue,
-            let oldValue = Int(oldBadgeValue) {
-            
-            newBadgeValue += oldValue
-        }
-        
-        tabBarItem.badgeValue = newBadgeValue <= 0 ? nil : String(newBadgeValue)
     }
     
     private func setupAppearance() {
@@ -345,9 +302,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         UINavigationBar.appearance().tintColor = theme.barBackgroundColor // theme.barTintColor
         UINavigationBar.appearance().barTintColor = theme.barTintColor
         UINavigationBar.appearance().barStyle = .black
-        
-        UITabBar.appearance().tintColor = theme.barTintColor
-        UITabBar.appearance().backgroundColor = theme.barBackgroundColor
         
         UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
         UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)

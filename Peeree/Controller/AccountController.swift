@@ -152,8 +152,6 @@ public class AccountController: SecurityDataSource {
                 // 409: non-matching public key
                 //
                 switch error {
-                case .httpError(402, _), .sessionTaskError(402?, _, _):
-                    InAppPurchaseController.shared.refreshPinPoints()
                 case .httpError(409, _), .sessionTaskError(409?, _, _):
                     self.delegate?.publicKeyMismatch(of: peerID)
                 default:
@@ -177,10 +175,7 @@ public class AccountController: SecurityDataSource {
                 // access the set on the queue to ensure the last peerID is also included
                 archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
                 
-                DispatchQueue.main.async {
-                    InAppPurchaseController.shared.decreasePinPoints()
-                    Notifications.pinned.post(peerID)
-                }
+                Notifications.pinned.post(peerID)
             }
             
             if isPinMatch {
@@ -272,8 +267,6 @@ public class AccountController: SecurityDataSource {
             DispatchQueue.main.sync {
                 // UserPeerInfo has to be modified on the main queue
                 UserPeerInfo.instance.peerID = newPeerID
-                // further requests need peerID in UserPeerInfo to be set
-                InAppPurchaseController.shared.refreshPinPoints()
             }
         }
     }

@@ -95,14 +95,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let rootTabBarController = segue.destination as? UITabBarController else {
-            guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
-            
-            vc.infoType = .data
-            return
-        }
-        
-        rootTabBarController.selectedIndex = 1
+        (segue.destination as? OnboardingDescriptionViewController)?.infoType = .data
     }
     
     override var prefersStatusBarHidden : Bool {

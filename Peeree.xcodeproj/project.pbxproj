@@ -20,7 +20,6 @@
 		9D41E11E1D5E903A0042FB63 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D41E11D1D5E903A0042FB63 /* Localizable.strings */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
-		9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */; };
 		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
 		9D6993551F1DE6B50009BF81 /* cacert.der in Resources */ = {isa = PBXBuildFile; fileRef = 9D6993541F1DE67C0009BF81 /* cacert.der */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
@@ -40,7 +39,6 @@
 		9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
 		9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
 		9D9D02051F2609DA00DC5FC6 /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
-		9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA039811C1B21EE003D1624 /* ShopViewController.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
@@ -111,7 +109,6 @@
 		9D41E11D1D5E903A0042FB63 /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Peeree/Storyboards/Launch/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
-		9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InAppPurchaseController.swift; path = Controller/InAppPurchaseController.swift; sourceTree = "<group>"; };
 		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
 		9D6993541F1DE67C0009BF81 /* cacert.der */ = {isa = PBXFileReference; lastKnownFileType = file; name = cacert.der; path = Ressources/cacert.der; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
@@ -136,7 +133,6 @@
 		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeerManager.swift; path = Controller/PeerManager.swift; sourceTree = "<group>"; };
 		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeeringController.swift; path = Controller/PeeringController.swift; sourceTree = "<group>"; };
 		9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
-		9DA039811C1B21EE003D1624 /* ShopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShopViewController.swift; path = "Storyboards/Main Storyboard/ShopViewController.swift"; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -198,7 +194,6 @@
 			isa = PBXGroup;
 			children = (
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
-				9D6431111D5FB47200D81CB7 /* InAppPurchaseController.swift */,
 				9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */,
 				9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */,
 				9D9BC64F1E1C633600D031C5 /* PeerManager.swift */,
@@ -218,7 +213,6 @@
 				9D8A592F1B92EC4500164C9F /* MeViewController.swift */,
 				9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */,
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
-				9DA039811C1B21EE003D1624 /* ShopViewController.swift */,
 				9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */,
 				9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */,
 			);
@@ -633,10 +627,8 @@
 				9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
 				9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */,
-				9DA039821C1B21EE003D1624 /* ShopViewController.swift in Sources */,
 				9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
-				9D6431121D5FB47200D81CB7 /* InAppPurchaseController.swift in Sources */,
 				9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
