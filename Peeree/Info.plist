@@ -41,13 +41,13 @@
 		</dict>
 	</dict>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used to connect to other Peeree users around you. Nothing is shared when you are offline.</string>
+	<string>Bluetooth is used to connect to other Peeree users around you. Nothing is shared while you are offline.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Your camera is used to create a picture of you to display it to other users.</string>
+	<string>Take a picture of you to be better recognizable.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>The accelerator sensor is used to improve location calculations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Your photo library is used to let you choose a picture of you to display it to other users and to store your portrait image.</string>
+	<string>Your photo library is used to choose a portrait of you and to store it, if you took it within the app.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-peripheral</string>

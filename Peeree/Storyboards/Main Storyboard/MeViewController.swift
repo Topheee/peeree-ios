@@ -32,7 +32,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     @IBAction func createDeleteAccount(_ sender: Any) {
         if AccountController.shared.accountExists {
-            let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins and purchases will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
+            let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
                 AccountController.shared.deleteAccount { (_ _error: Error?) in
                     self.restCompletion(_error) {
@@ -85,40 +85,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	
 	override func viewDidLoad() {
         super.viewDidLoad()
-
-        let today = Date()
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .date
-        var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
-        minComponents.year = minComponents.year! - PeerInfo.MaxAge
-        var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
-        maxComponents.year = maxComponents.year! - PeerInfo.MinAge
-        
-        datePicker.minimumDate = Calendar.current.date(from: minComponents)
-        datePicker.maximumDate = Calendar.current.date(from: maxComponents)
-        
-        datePicker.date = UserPeerInfo.instance.dateOfBirth ?? datePicker.maximumDate ?? today
-        datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
-        
-        let saveToolBar = UIToolbar()
-        let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .plain, target: self, action: #selector(ageOmitted))
-        let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .done, target: self, action: #selector(ageConfirmed))
-
-        spaceButton.title = birthdayInput.placeholder
-        omitButton.tintColor = UIColor.red
-        saveToolBar.isTranslucent = true
-        saveToolBar.sizeToFit()
-        saveToolBar.setItems([omitButton,spaceButton,doneButton], animated: false)
-        saveToolBar.isUserInteractionEnabled = true
-        
-        birthdayInput.inputView = datePicker
-        birthdayInput.inputAccessoryView = saveToolBar
-        birthdayInput.delegate = self
-        
         registerForKeyboardNotifications()
-        
-        // TODO remove observer in deinit
         _ = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
             self?.lockView()
         }
@@ -128,12 +95,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         super.viewWillAppear(animated)
 		loadUserPeerInfo()
         adjustAccountView()
+		lockView()
 	}
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        lockView()
-    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -145,6 +108,41 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
 	
 	// MARK: UITextFieldDelegate
+	
+	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+		guard textField == birthdayInput else { return true }
+		
+		let today = Date()
+		let datePicker = UIDatePicker()
+		datePicker.datePickerMode = .date
+		var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		minComponents.year = minComponents.year! - PeerInfo.MaxAge
+		var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		maxComponents.year = maxComponents.year! - PeerInfo.MinAge
+		
+		datePicker.minimumDate = Calendar.current.date(from: minComponents)
+		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
+		
+		datePicker.date = UserPeerInfo.instance.dateOfBirth ?? datePicker.maximumDate ?? today
+		datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
+		
+		let saveToolBar = UIToolbar()
+		let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .plain, target: self, action: #selector(ageOmitted))
+		let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .done, target: self, action: #selector(ageConfirmed))
+		
+		spaceButton.title = birthdayInput.placeholder
+		omitButton.tintColor = UIColor.red
+		saveToolBar.isTranslucent = true
+		saveToolBar.sizeToFit()
+		saveToolBar.setItems([omitButton,spaceButton,doneButton], animated: false)
+		saveToolBar.isUserInteractionEnabled = true
+		
+		birthdayInput.inputView = datePicker
+		birthdayInput.inputAccessoryView = saveToolBar
+		
+		return true
+	}
 	
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
@@ -201,6 +199,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     func textFieldDidBeginEditing(_ textField: UITextField) {
         activeField = textField
     }
+	
+	// MARK: Private Methods
     
     override func picked(image: UIImage?) {
         super.picked(image: image)
@@ -282,7 +282,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
     }
     
-    // do not allow changes to UserPeerInfo while peering
+    /// do not allow changes to UserPeerInfo while peering
     private func lockView() {
         for control: UIControl in [nameTextField, portraitImageButton, genderControl, birthdayInput] {
             control.isEnabled = !PeeringController.shared.peering

@@ -148,7 +148,6 @@ public class AccountController: SecurityDataSource {
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
                 // possible HTTP errors:
-                // 402: not enough pin points
                 // 409: non-matching public key
                 //
                 switch error {
@@ -314,39 +313,6 @@ public class AccountController: SecurityDataSource {
                 self._accountEmail = nil
             }
             completion(_error)
-        }
-    }
-    
-    public func getPinPoints(completion: @escaping (PinPoints?, Error?) -> Void) {
-        guard accountExists else { return }
-        DefaultAPI.getAccountPinPoints { (_pinPoints, _error) in
-            if let error = _error {
-                self.preprocessAuthenticatedRequestError(error)
-            }
-            completion(_pinPoints, _error)
-        }
-    }
-    
-    public func redeem(receipts: Data, completion: @escaping (PinPoints?, Error?) -> Void) {
-        guard accountExists else { return }
-        DefaultAPI.putInAppPurchaseIosReceipt(receiptData: receipts) { (_pinPoints, _error) in
-            if let error = _error {
-                self.preprocessAuthenticatedRequestError(error)
-            }
-            completion(_pinPoints, _error)
-        }
-    }
-    
-    public func getProductIDs(completion: @escaping ([String]?, Error?) -> Void) {
-        guard accountExists else {
-            completion(nil, NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("A Peeree identity is needed to retrieve products.", comment: "The user tried to refresh the product IDs but has no account yet.")]))
-            return
-        }
-        DefaultAPI.getInAppPurchaseIosProductIds { (_response, _error) in
-            if let error = _error {
-                self.preprocessAuthenticatedRequestError(error)
-            }
-            completion(_response, _error)
         }
     }
     

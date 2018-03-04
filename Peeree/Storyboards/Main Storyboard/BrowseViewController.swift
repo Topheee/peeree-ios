@@ -42,7 +42,7 @@ final class BrowseViewController: UITableViewController {
         if !AccountController.shared.accountExists && !PeeringController.shared.peering {
             AccountController.shared.createAccount { (_error) in
                 if let error = _error {
-                    AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Identity Creation Failed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), furtherDescription: NSLocalizedString("You need a unique Peeree identity to communicate.", comment: "The user lacks a Peeree account"))
+                    AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Identity Creation Failed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), furtherDescription: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account"))
                 } else {
                     PeeringController.shared.peering = true
                 }
@@ -183,7 +183,7 @@ final class BrowseViewController: UITableViewController {
         
         switch peerSection {
         case .matched:
-            return peerCache[0].count > 0 ? NSLocalizedString("Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
+            return peerCache[0].count > 0 ? NSLocalizedString("Pin Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
         case .inFilter:
             return peerCache[1].count > 0 ? NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are nere around).") : nil
         case .outFilter:

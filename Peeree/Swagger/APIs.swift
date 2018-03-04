@@ -15,7 +15,8 @@ open class SwaggerClientAPI {
     open static var dataSource: SecurityDataSource?
     
     open static let `protocol` = "https"
-    open static let host = "131.234.244.1" // "172.20.10.2" // "127.0.0.1" //"rest.peeree.com" // "192.168.12.190" // "www.peeree.com"
+	open static let testHost = "peeree-test.ddns.net" // 192.168.178.51" // "127.0.0.1" // "172.20.10.2" // "192.168.12.177" // "131.234.241.136" // "192.168.12.190"
+    open static let host = testHost // "rest.peeree.de"
     open static let basePath = "\(`protocol`)://\(host)/v1"
     open static let baseURL = URL(string: basePath)!
     open static var credential: URLCredential?

@@ -10,7 +10,7 @@ import UIKit
 
 final class WelcomeViewController: UIViewController {
 	@IBOutlet private weak var infoButton: UIButton!
-    @IBOutlet private weak var pinButton: UIButton!
+	@IBOutlet private weak var pinButton: UIButton!
     
     private var timer: Timer?
     
@@ -22,7 +22,7 @@ final class WelcomeViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
         
-        vc.infoType = .general
+		vc.infoType = (sender as? UIButton == infoButton) ? .general : .data
     }
     
     override func viewWillAppear(_ animated: Bool) {

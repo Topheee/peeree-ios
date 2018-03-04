@@ -155,45 +155,6 @@ open class DefaultAPI: APIBase {
     }
 
     /**
-     Pin Points of an User Account
-     
-     - parameter completion: completion handler to receive the data and the error objects
-     */
-    open class func getAccountPinPoints(completion: @escaping ((_ data: PinPoints?,_ error: ErrorResponse?) -> Void)) {
-        getAccountPinPointsWithRequestBuilder().execute { (response, error) -> Void in
-            completion(response?.body, error);
-        }
-    }
-
-
-    /**
-     Pin Points of an User Account
-     - GET /account/pin_points
-     - Retrieves the amount of Pin Points a user has available. 
-     - API Key:
-       - type: apiKey peerID 
-       - name: peerID
-     - API Key:
-       - type: apiKey signature 
-       - name: signature
-     - examples: [{contentType=application/json, example=123}]
-
-     - returns: RequestBuilder<PinPoints> 
-     */
-    open class func getAccountPinPointsWithRequestBuilder() -> RequestBuilder<PinPoints> {
-        let path = "/account/pin_points"
-        let URLString = SwaggerClientAPI.basePath + path
-        let parameters: [String:Any]? = nil
-
-        let url = NSURLComponents(string: URLString)!
-
-
-        let requestBuilder: RequestBuilder<PinPoints>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
-    }
-
-    /**
      Retrieve All Pinned Users
      
      - parameter completion: completion handler to receive the data and the error objects
@@ -234,45 +195,6 @@ open class DefaultAPI: APIBase {
         let requestBuilder: RequestBuilder<[Pin]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
         return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
-    }
-
-    /**
-     Retrieve In-App Purchase Product Identifiers
-     
-     - parameter completion: completion handler to receive the data and the error objects
-     */
-    open class func getInAppPurchaseIosProductIds(completion: @escaping ((_ data: [String]?,_ error: ErrorResponse?) -> Void)) {
-        getInAppPurchaseIosProductIdsWithRequestBuilder().execute { (response, error) -> Void in
-            completion(response?.body, error);
-        }
-    }
-
-
-    /**
-     Retrieve In-App Purchase Product Identifiers
-     - GET /in-app-purchase/ios/product_ids
-     - Returns list of all product IDs. Note that at the moment neither peerID nor signature are being evaluated. 
-     - API Key:
-       - type: apiKey peerID 
-       - name: peerID
-     - API Key:
-       - type: apiKey signature 
-       - name: signature
-     - examples: [{contentType=application/json, example=[ "aeiou" ]}]
-
-     - returns: RequestBuilder<[String]> 
-     */
-    open class func getInAppPurchaseIosProductIdsWithRequestBuilder() -> RequestBuilder<[String]> {
-        let path = "/in-app-purchase/ios/product_ids"
-        let URLString = SwaggerClientAPI.basePath + path
-        let parameters: [String:Any]? = nil
-
-        let url = NSURLComponents(string: URLString)!
-
-
-        let requestBuilder: RequestBuilder<[String]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isValidated: false)
     }
     
     /**
@@ -410,51 +332,6 @@ open class DefaultAPI: APIBase {
     }
 
     /**
-     Cash iOS In-App Purchase
-     
-     - parameter receiptData: (body) Data of the iOS In-App purchase receipt.  
-     - parameter completion: completion handler to receive the data and the error objects
-     */
-    open class func putInAppPurchaseIosReceipt(receiptData: Data, completion: @escaping ((_ data: PinPoints?,_ error: ErrorResponse?) -> Void)) {
-        putInAppPurchaseIosReceiptWithRequestBuilder(receiptData: receiptData).execute { (response, error) -> Void in
-            completion(response?.body, error);
-        }
-    }
-
-
-    /**
-     Cash iOS In-App Purchase
-     - PUT /in-app-purchase/ios/receipt
-     - Transforms the iOS in-app purchase product into pin points. 
-     - API Key:
-       - type: apiKey peerID 
-       - name: peerID
-     - API Key:
-       - type: apiKey signature 
-       - name: signature
-     - examples: [{contentType=application/json, example=123}]
-     
-     - parameter receiptData: (body) Data of the iOS In-App purchase receipt.  
-
-     - returns: RequestBuilder<PinPoints> 
-     */
-    open class func putInAppPurchaseIosReceiptWithRequestBuilder(receiptData: Data) -> RequestBuilder<Int32> {
-        let path = "/in-app-purchase/ios/receipt"
-        let URLString = SwaggerClientAPI.basePath + path
-        let parameters: [String:Any]? = nil
-
-        let url = NSURLComponents(string: URLString)!
-        url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "receiptData": receiptData
-        ])
-        
-
-        let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
-    }
-
-    /**
      Pin Another User
      
      - parameter pinnedID: (query) The PeerID of the opposite user.  
@@ -471,7 +348,7 @@ open class DefaultAPI: APIBase {
     /**
      Pin Another User
      - PUT /pin
-     - Requests a *Pin*, reducing available pin points and notifies both parties, if a *Pin Match* occurred.
+     - Requests a *Pin*. Notifies both parties, if a *Pin Match* occurred.
      - API Key:
      - type: apiKey peerID
      - name: peerID

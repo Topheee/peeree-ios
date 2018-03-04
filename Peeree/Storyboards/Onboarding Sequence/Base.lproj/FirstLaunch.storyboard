@@ -11,10 +11,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--First Info-->
+        <!--Details-->
         <scene sceneID="5Js-Xy-AcI">
             <objects>
-                <viewController title="First Info" id="u4v-7y-Tsp" customClass="OnboardingDescriptionViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Details" id="u4v-7y-Tsp" customClass="OnboardingDescriptionViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="luJ-S4-VDb"/>
                         <viewControllerLayoutGuide type="bottom" id="oYr-FL-zLy"/>
@@ -34,18 +34,27 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="130"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Headline" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2uW-xz-nDp">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Headline" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2uW-xz-nDp">
                                                     <rect key="frame" x="27" y="22.5" width="240" height="24"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
+                                                    </accessibility>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ReadIconP2P" translatesAutoresizingMaskIntoConstraints="NO" id="mX9-d0-6ok">
                                                     <rect key="frame" x="267" y="19" width="30" height="30"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                 </imageView>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ith-Hl-trz">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Content" adjustsFontForContentSizeCategory="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ith-Hl-trz">
                                                     <rect key="frame" x="27" y="46.5" width="270" height="72.5"/>
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" staticText="YES" summaryElement="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                                                 </textView>
@@ -216,10 +225,10 @@
             </objects>
             <point key="canvasLocation" x="257" y="720"/>
         </scene>
-        <!--First-->
+        <!--Welcome Page-->
         <scene sceneID="qqt-6g-vCs">
             <objects>
-                <viewController storyboardIdentifier="FirstViewController" title="First" id="9TP-2c-bIB" customClass="WelcomeViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="FirstViewController" title="Welcome Page" id="9TP-2c-bIB" customClass="WelcomeViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ykf-X6-JqU"/>
                         <viewControllerLayoutGuide type="bottom" id="Y2O-gr-2jl"/>
@@ -228,8 +237,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
-                                <rect key="frame" x="16" y="200.5" width="288" height="49"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
+                                <rect key="frame" x="16" y="112" width="288" height="49"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
@@ -239,9 +248,9 @@ a Social Peer-to-Peer App</string>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello and Welcome!" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TFv-dL-32n">
-                                <rect key="frame" x="16" y="60" width="288" height="31.5"/>
-                                <accessibility key="accessibilityConfiguration">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hello and Welcome!" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TFv-dL-32n">
+                                <rect key="frame" x="16" y="60" width="288" height="32"/>
+                                <accessibility key="accessibilityConfiguration" label="Greeting">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
                                 </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
@@ -249,15 +258,33 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
-                                <rect key="frame" x="16" y="249" width="288" height="30"/>
+                                <rect key="frame" x="16" y="161" width="288" height="44"/>
+                                <accessibility key="accessibilityConfiguration" hint="Read details about P2P" label="Describte Peer-to-Peer">
+                                    <accessibilityTraits key="traits" button="YES"/>
+                                </accessibility>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="sno-Ut-OF0"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
-                                <state key="normal" title="What does that mean?"/>
+                                <state key="normal" title="Learn more about Peer-to-Peer"/>
                                 <connections>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="2du-D3-2eY"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
-                                <rect key="frame" x="16" y="444.5" width="288" height="16"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qr9-Ho-2bg">
+                                <rect key="frame" x="16" y="428" width="288" height="44"/>
+                                <accessibility key="accessibilityConfiguration" hint="Display information about personal data usage" label="Privacy Info"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="1Nq-h4-7Ke"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
+                                <state key="normal" title="Peeree and Your Data"/>
+                                <connections>
+                                    <segue destination="u4v-7y-Tsp" kind="show" action="showDetailViewController:sender:" id="eIi-gS-zjY"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
+                                <rect key="frame" x="16" y="232" width="288" height="16"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
@@ -266,8 +293,8 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
-                                <rect key="frame" x="135" y="386.5" width="50" height="50"/>
-                                <accessibility key="accessibilityConfiguration" label="Pin Button">
+                                <rect key="frame" x="135" y="276" width="50" height="50"/>
+                                <accessibility key="accessibilityConfiguration" hint="Pin a peer and mark him or her as interesting (sample)" label="Pin">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
                                 <constraints>
@@ -281,35 +308,51 @@ a Social Peer-to-Peer App</string>
                                     <action selector="pressPin:" destination="9TP-2c-bIB" eventType="touchUpInside" id="Ze5-aK-zQh"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
-                                <rect key="frame" x="16" y="358.5" width="288" height="19.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
+                                <rect key="frame" x="16" y="248" width="288" height="19.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
-                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Learn more about how Peeree works:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skT-uK-VEP">
+                                <rect key="frame" x="16" y="412" width="288" height="16"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                </accessibility>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" constant="-15" id="95G-wi-9h6"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
-                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" id="GgE-NJ-lQL"/>
+                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" constant="20" id="Eii-xs-pTo"/>
+                            <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="qr9-Ho-2bg" secondAttribute="bottom" constant="8" id="Exs-pl-PgT"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="JHQ-V2-gUb"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
+                            <constraint firstItem="NTY-bS-98x" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" id="MZf-UA-Uhc"/>
                             <constraint firstItem="NTY-bS-98x" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="OCq-bq-ySI"/>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="Pg8-dM-E2i"/>
                             <constraint firstItem="53c-Ja-yW0" firstAttribute="top" secondItem="fFz-HS-CaO" secondAttribute="bottom" constant="8.5" id="RiJ-ya-yCn"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" id="Whm-4j-UaB"/>
+                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" relation="greaterThanOrEqual" secondItem="XwS-Db-Ixl" secondAttribute="bottom" constant="8" id="bFf-pg-VM9"/>
+                            <constraint firstItem="qr9-Ho-2bg" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="eQf-Q4-VxB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rNF-0l-DWJ" secondAttribute="trailing" id="fJU-DB-Kod"/>
-                            <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" constant="20" id="gSo-hC-glu"/>
                             <constraint firstAttribute="trailingMargin" secondItem="NTY-bS-98x" secondAttribute="trailing" id="ihi-an-ghz"/>
+                            <constraint firstItem="qr9-Ho-2bg" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="j9r-4M-GPA"/>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="jOd-fJ-VsJ"/>
+                            <constraint firstItem="fFz-HS-CaO" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" id="joA-Kk-Vhz"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="mE9-QB-jIc"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="40" id="mQq-Dp-Szr"/>
+                            <constraint firstItem="qr9-Ho-2bg" firstAttribute="top" secondItem="skT-uK-VEP" secondAttribute="bottom" id="op9-Gr-JL0"/>
+                            <constraint firstItem="skT-uK-VEP" firstAttribute="top" relation="greaterThanOrEqual" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" id="sxf-wP-9pz"/>
                             <constraint firstAttribute="trailingMargin" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
+                            <constraint firstItem="skT-uK-VEP" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="wWU-Zb-3mw"/>
                             <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="bRA-E3-VRs" secondAttribute="centerX" id="ymi-3N-siT"/>
+                            <constraint firstItem="skT-uK-VEP" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="zCY-4b-hTp"/>
                         </constraints>
                     </view>
                     <connections>
@@ -321,10 +364,10 @@ a Social Peer-to-Peer App</string>
             </objects>
             <point key="canvasLocation" x="980.625" y="373.75"/>
         </scene>
-        <!--Second-->
+        <!--Setup Page-->
         <scene sceneID="K22-Vn-XDY">
             <objects>
-                <viewController storyboardIdentifier="SecondViewController" title="Second" id="BiV-OX-JbO" customClass="SetupViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SecondViewController" title="Setup Page" id="BiV-OX-JbO" customClass="SetupViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="aJo-bN-TNl"/>
                         <viewControllerLayoutGuide type="bottom" id="Mhf-wI-av8"/>
@@ -334,8 +377,8 @@ a Social Peer-to-Peer App</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bd8-Ey-isT">
-                                <rect key="frame" x="61.5" y="137.5" width="197.5" height="197.5"/>
-                                <accessibility key="accessibilityConfiguration">
+                                <rect key="frame" x="65.5" y="145.5" width="189.5" height="189.5"/>
+                                <accessibility key="accessibilityConfiguration" hint="Selects your portrait picture" label="Choose portrait">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
                                 <constraints>
@@ -357,13 +400,17 @@ a Social Peer-to-Peer App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRI-ar-stS">
-                                <rect key="frame" x="145" y="221.5" width="30" height="30"/>
-                                <state key="normal" title="Pick"/>
+                                <rect key="frame" x="133" y="224.5" width="54" height="32"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <bool key="isElement" value="NO"/>
+                                </accessibility>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                <state key="normal" title="Portrait"/>
                                 <connections>
                                     <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="Yhr-TB-Qec"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Setup Basic Data" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Profile" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
                                 <rect key="frame" x="16" y="60" width="288" height="31.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
@@ -372,16 +419,9 @@ a Social Peer-to-Peer App</string>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="yag-kE-4K4">
-                                <rect key="frame" x="16" y="91.5" width="288" height="30"/>
-                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
-                                <state key="normal" title="Who can see these?"/>
-                                <connections>
-                                    <segue destination="u4v-7y-Tsp" kind="show" id="zJZ-DL-UQZ"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
                                 <rect key="frame" x="119.5" y="442" width="85" height="30"/>
+                                <accessibility key="accessibilityConfiguration" hint="Finishes introduction" label="Launch app"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Get Started">
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -390,50 +430,94 @@ a Social Peer-to-Peer App</string>
                                     <action selector="finishIntroduction:" destination="BiV-OX-JbO" eventType="touchUpInside" id="CKQ-vV-94V"/>
                                 </connections>
                             </button>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
-                                <rect key="frame" x="72" y="394" width="176" height="29"/>
+                            <textField autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
+                                <rect key="frame" x="90.5" y="99.5" width="139.5" height="30"/>
+                                <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                <connections>
+                                    <action selector="updateLaunchButton:" destination="BiV-OX-JbO" eventType="editingDidEnd" id="feI-Ch-f0y"/>
+                                    <outlet property="delegate" destination="BiV-OX-JbO" id="Hhu-jd-DPH"/>
+                                </connections>
+                            </textField>
+                            <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="HgF-aZ-Tke">
+                                <rect key="frame" x="38.5" y="399" width="243" height="31"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CIc-zF-Z6d">
+                                        <rect key="frame" x="0.0" y="0.0" width="186" height="31"/>
+                                        <accessibility key="accessibilityConfiguration" hint="Opens webpage" label="View terms of use">
+                                            <accessibilityTraits key="traits" button="YES" link="YES"/>
+                                        </accessibility>
+                                        <state key="normal">
+                                            <attributedString key="attributedTitle">
+                                                <fragment content="I agree to the">
+                                                    <attributes>
+                                                        <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <font key="NSFont" metaFont="system" size="15"/>
+                                                    </attributes>
+                                                </fragment>
+                                                <fragment content=" Terms of Use">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="system" size="15"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="titleLabel.numberOfLines">
+                                                <integer key="value" value="0"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="takePic:" destination="BiV-OX-JbO" eventType="touchUpInside" id="xnA-lq-bQO"/>
+                                            <action selector="viewTerms:" destination="BiV-OX-JbO" eventType="touchUpInside" id="oYf-D2-1ZJ"/>
+                                        </connections>
+                                    </button>
+                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="PJj-hH-ACO">
+                                        <rect key="frame" x="194" y="0.0" width="51" height="31"/>
+                                        <accessibility key="accessibilityConfiguration" hint="Agrees to terms of use" label="Accept terms of use"/>
+                                        <connections>
+                                            <action selector="updateLaunchButton:" destination="BiV-OX-JbO" eventType="valueChanged" id="ChQ-Kq-o4i"/>
+                                        </connections>
+                                    </switch>
+                                </subviews>
+                            </stackView>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="g3H-jE-mTR">
+                                <rect key="frame" x="72" y="351" width="176" height="29"/>
                                 <segments>
                                     <segment title="Male"/>
                                     <segment title="Female"/>
                                     <segment title="Queer"/>
                                 </segments>
                             </segmentedControl>
-                            <textField autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
-                                <rect key="frame" x="72" y="351" width="176" height="30"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
-                                <connections>
-                                    <action selector="filledFirstname:" destination="BiV-OX-JbO" eventType="editingDidEnd" id="Ncx-MW-Nwc"/>
-                                    <outlet property="delegate" destination="BiV-OX-JbO" id="Hhu-jd-DPH"/>
-                                </connections>
-                            </textField>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerY" secondItem="bd8-Ey-isT" secondAttribute="centerY" id="4uk-QG-Tpd"/>
+                            <constraint firstItem="HgF-aZ-Tke" firstAttribute="top" secondItem="g3H-jE-mTR" secondAttribute="bottom" constant="20" id="68Q-1Z-Jgz"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="yag-kE-4K4" secondAttribute="bottom" constant="16" id="89h-zP-vHQ"/>
                             <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
-                            <constraint firstItem="yag-kE-4K4" firstAttribute="top" secondItem="JLo-5M-7YM" secondAttribute="bottom" id="94p-Kz-qxS"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
+                            <constraint firstItem="HgF-aZ-Tke" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="Hz6-yg-6t0"/>
                             <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerX" secondItem="bd8-Ey-isT" secondAttribute="centerX" id="PL3-Bo-awe"/>
-                            <constraint firstItem="maF-ir-g9C" firstAttribute="top" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="RE1-yz-tPI"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="trailing" id="RwY-PN-x7Y"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="TZh-su-XOJ"/>
-                            <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="g3H-jE-mTR" secondAttribute="width" id="ZNU-Qu-aPB"/>
-                            <constraint firstItem="g3H-jE-mTR" firstAttribute="top" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="13" id="ahF-p9-f2k"/>
-                            <constraint firstItem="yag-kE-4K4" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="cqw-l7-zQe"/>
+                            <constraint firstItem="g3H-jE-mTR" firstAttribute="top" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="VpL-50-qLZ"/>
+                            <constraint firstItem="WkH-8i-IuH" firstAttribute="top" secondItem="HgF-aZ-Tke" secondAttribute="bottom" constant="12" id="YGO-eO-aUq"/>
                             <constraint firstAttribute="trailingMargin" secondItem="JLo-5M-7YM" secondAttribute="trailing" id="dHH-AR-cJy"/>
-                            <constraint firstItem="WkH-8i-IuH" firstAttribute="top" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="bottom" constant="20" id="e73-Si-90P"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="eL9-MV-34L"/>
+                            <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="bd8-Ey-isT" secondAttribute="width" constant="-50" id="hln-fm-ROY"/>
+                            <constraint firstItem="HgF-aZ-Tke" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="mEq-r6-req"/>
+                            <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="HgF-aZ-Tke" secondAttribute="trailing" id="mN6-Li-hb4"/>
+                            <constraint firstItem="maF-ir-g9C" firstAttribute="top" relation="greaterThanOrEqual" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" symbolic="YES" id="ndA-Nq-naC"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="16" id="obN-JR-SHm"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="pfv-hO-exC"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="tBV-A5-65e"/>
                             <constraint firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="aJo-bN-TNl" secondAttribute="bottom" constant="40" id="v9p-sf-Eqm"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="yag-kE-4K4" secondAttribute="trailing" id="xl0-86-x9b"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -444,16 +528,17 @@ a Social Peer-to-Peer App</string>
                     </view>
                     <connections>
                         <outlet property="genderPicker" destination="g3H-jE-mTR" id="Eg6-dD-7vi"/>
-                        <outlet property="infoButton" destination="yag-kE-4K4" id="aqF-QY-2gM"/>
                         <outlet property="launchAppButton" destination="WkH-8i-IuH" id="1wU-Ld-ktE"/>
                         <outlet property="nameTextField" destination="maF-ir-g9C" id="xh2-zG-6AQ"/>
                         <outlet property="picButton" destination="bd8-Ey-isT" id="8PK-y8-tbX"/>
                         <outlet property="pickPicButton" destination="YRI-ar-stS" id="o6U-Eu-bMF"/>
+                        <outlet property="termsLinkButton" destination="CIc-zF-Z6d" id="07c-sf-op3"/>
+                        <outlet property="termsSwitch" destination="PJj-hH-ACO" id="hQi-ye-xJQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zM0-44-3Vw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="981" y="1084"/>
+            <point key="canvasLocation" x="980.625" y="1083.75"/>
         </scene>
     </scenes>
     <resources>
@@ -466,7 +551,7 @@ a Social Peer-to-Peer App</string>
         <image name="ReadIconSocial" width="30" height="30"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="zJZ-DL-UQZ"/>
+        <segue reference="eIi-gS-zjY"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

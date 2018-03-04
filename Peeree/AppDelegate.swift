@@ -222,7 +222,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     
     static func requestPin(of peer: PeerInfo) {
         if !peer.verified {
-            let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of the user is not verified, you may attempt to pin a malicious person!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
+            let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
                 PeeringController.shared.remote.verify(peer.peerID)
             })
