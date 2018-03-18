@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SafariServices
 
 struct Theme {
     let globalTintRed: CGFloat
@@ -62,6 +63,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         
         InAppNotificationViewController.shared.presentGlobally(title: localizedTitle, message: errorMessage)
     }
+	
+	static func viewTerms(in viewController: UIViewController) {
+		// TODO localize URL, store URL in global constant
+		guard let termsURL = URL(string: "https://www.peeree.de/terms.html") else { return }
+		let safariController = SFSafariViewController(url: termsURL)
+		if #available(iOS 10.0, *) {
+			safariController.preferredBarTintColor = AppDelegate.shared.theme.barTintColor
+			safariController.preferredControlTintColor = AppDelegate.shared.theme.barBackgroundColor
+		}
+		if #available(iOS 11.0, *) {
+			safariController.dismissButtonStyle = .done
+		}
+		viewController.present(safariController, animated: true, completion: nil)
+	}
     
     let theme = Theme(globalTint: (22/255, 145/255, 101/255), barTint: (22/255, 145/255, 101/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (255/255, 255/255, 255/255)) //white with green
     
@@ -223,15 +238,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     static func requestPin(of peer: PeerInfo) {
         if !peer.verified {
             let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
+            let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
                 PeeringController.shared.remote.verify(peer.peerID)
-            })
+            }
+			alertController.addAction(retryVerifyAction)
             let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), peer.nickname)
             alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
                 AccountController.shared.pin(peer)
             })
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
-            
+            alertController.preferredAction = retryVerifyAction
             alertController.present(nil)
         } else {
             AccountController.shared.pin(peer)

@@ -6,7 +6,9 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Alignment constraints to the first baseline" minToolsVersion="6.0"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Baseline standard spacing" minToolsVersion="9.0"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -283,7 +285,7 @@ a Social Peer-to-Peer App</string>
                                     <segue destination="u4v-7y-Tsp" kind="show" action="showDetailViewController:sender:" id="eIi-gS-zjY"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
                                 <rect key="frame" x="16" y="232" width="288" height="16"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
@@ -293,7 +295,7 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
-                                <rect key="frame" x="135" y="276" width="50" height="50"/>
+                                <rect key="frame" x="135" y="277.5" width="50" height="50"/>
                                 <accessibility key="accessibilityConfiguration" hint="Pin a peer and mark him or her as interesting (sample)" label="Pin">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
@@ -308,15 +310,15 @@ a Social Peer-to-Peer App</string>
                                     <action selector="pressPin:" destination="9TP-2c-bIB" eventType="touchUpInside" id="Ze5-aK-zQh"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
-                                <rect key="frame" x="16" y="248" width="288" height="19.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
+                                <rect key="frame" x="16" y="249.5" width="288" height="19.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Learn more about how Peeree works:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skT-uK-VEP">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Learn more about how Peeree works:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skT-uK-VEP">
                                 <rect key="frame" x="16" y="412" width="288" height="16"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
@@ -328,6 +330,7 @@ a Social Peer-to-Peer App</string>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="fFz-HS-CaO" firstAttribute="firstBaseline" secondItem="NTY-bS-98x" secondAttribute="baseline" constant="20" symbolType="layoutAnchor" id="74f-sU-0xu"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" constant="20" id="Eii-xs-pTo"/>
                             <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="qr9-Ho-2bg" secondAttribute="bottom" constant="8" id="Exs-pl-PgT"/>
@@ -344,7 +347,6 @@ a Social Peer-to-Peer App</string>
                             <constraint firstAttribute="trailingMargin" secondItem="NTY-bS-98x" secondAttribute="trailing" id="ihi-an-ghz"/>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="j9r-4M-GPA"/>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="jOd-fJ-VsJ"/>
-                            <constraint firstItem="fFz-HS-CaO" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" id="joA-Kk-Vhz"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="mE9-QB-jIc"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="40" id="mQq-Dp-Szr"/>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="top" secondItem="skT-uK-VEP" secondAttribute="bottom" id="op9-Gr-JL0"/>

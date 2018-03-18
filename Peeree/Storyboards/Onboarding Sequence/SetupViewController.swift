@@ -7,9 +7,8 @@
 //
 
 import UIKit
-import SafariServices
 
-final class SetupViewController: PortraitImagePickerController, UITextFieldDelegate, SFSafariViewControllerDelegate {
+final class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
 	@IBOutlet private weak var picButton: UIButton!
 	@IBOutlet private weak var launchAppButton: UIButton!
 	@IBOutlet private weak var nameTextField: UITextField!
@@ -51,18 +50,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	}
 	
 	@IBAction func viewTerms(_ sender: UIButton) {
-		// TODO localize URL, store URL in global constant
-		guard let termsURL = URL(string: "https://www.peeree.de/terms.html") else { return }
-		let safariController = SFSafariViewController(url: termsURL)
-		safariController.delegate = self
-		if #available(iOS 10.0, *) {
-			safariController.preferredBarTintColor = AppDelegate.shared.theme.barTintColor
-			safariController.preferredControlTintColor = AppDelegate.shared.theme.barBackgroundColor
-		}
-		if #available(iOS 11.0, *) {
-			safariController.dismissButtonStyle = .done
-		}
-		self.present(safariController, animated: true, completion: nil)
+		AppDelegate.viewTerms(in: self)
 	}
 	
 	@IBAction func updateLaunchButton(_ sender: Any) {

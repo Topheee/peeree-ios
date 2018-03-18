@@ -39,21 +39,15 @@ final class BrowseViewController: UITableViewController {
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
 	
     @IBAction func toggleNetwork(_ sender: AnyObject) {
-        if !AccountController.shared.accountExists && !PeeringController.shared.peering {
-            AccountController.shared.createAccount { (_error) in
-                if let error = _error {
-                    AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Identity Creation Failed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), furtherDescription: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account"))
-                } else {
-                    PeeringController.shared.peering = true
-                }
-            }
-        } else {
-            if PeeringController.shared.remote.isBluetoothOn {
-                PeeringController.shared.peering = !PeeringController.shared.peering
-            } else {
-                UIApplication.shared.openURL(URL(string: "App-Prefs:root=Bluetooth")!)
-            }
-        }
+        guard AccountController.shared.accountExists else {
+			InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account"))
+			return
+		}
+		if PeeringController.shared.remote.isBluetoothOn {
+			PeeringController.shared.peering = !PeeringController.shared.peering
+		} else {
+			UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
+		}
     }
     
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

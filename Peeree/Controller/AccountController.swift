@@ -210,6 +210,22 @@ public class AccountController: SecurityDataSource {
             }
         }
     }
+	
+	private func clearPins() {
+		self.pinningPeers.removeAll()
+		
+		self.pinnedPeers.accessAsync { (dictionary) in
+			dictionary.removeAll()
+			// access the set on the queue to ensure the last peerID is also included
+			archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
+		}
+		
+		self.pinnedByPeers.accessAsync { (set) in
+			set.removeAll()
+			// access the set on the queue to ensure the last peerID is also included
+			archiveObjectInUserDefs(set as NSSet, forKey: AccountController.PinnedByPeersKey)
+		}
+	}
 
     public func updatePinStatus(of peer: PeerInfo) {
         guard accountExists else { return }
@@ -282,6 +298,7 @@ public class AccountController: SecurityDataSource {
                 PeeringController.shared.peering = false
                 self._accountEmail = nil
                 self._sequenceNumber = nil
+				self.clearPins()
                 DispatchQueue.main.sync {
                     UserPeerInfo.delete()
                 }

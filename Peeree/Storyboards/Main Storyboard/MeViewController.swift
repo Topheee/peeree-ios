@@ -41,15 +41,32 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
                 }
                 self.adjustAccountView()
             }))
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+			alertController.addAction(cancelAction)
+			alertController.preferredAction = cancelAction
             present(alertController, animated: true, completion: nil)
         } else {
-            AccountController.shared.createAccount { (_ _error: Error?) in
-                self.restCompletion(_error) {
-                    PeeringController.shared.peering = true
-                }
-            }
-            adjustAccountView()
+			let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
+			let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
+			let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
+				AccountController.shared.createAccount { (_ _error: Error?) in
+					self.restCompletion(_error) {
+						// we cannot go online immediately by now, as Me view would need to reload and probably for other reasons, too
+						//                    PeeringController.shared.peering = true
+					}
+				}
+				DispatchQueue.main.async {
+					self.adjustAccountView()
+				}
+			}
+			alertController.addAction(createAction)
+			let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
+				AppDelegate.viewTerms(in: self)
+			}
+			alertController.addAction(viewTermsAction)
+			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+			alertController.preferredAction = createAction
+			alertController.present(nil)
         }
     }
     
@@ -158,7 +175,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
                 return
             }
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            UserPeerInfo.instance.peer.nickname = String(newValue[...endIndex])
+            UserPeerInfo.instance.peer.nickname = String(newValue[..<endIndex])
         case birthdayInput:
             guard textField.text != nil && textField.text != "" else {
                 UserPeerInfo.instance.dateOfBirth = nil
@@ -176,7 +193,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             }
             
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            AccountController.shared.update(email: String(newValue[...endIndex])) { _error in
+            AccountController.shared.update(email: String(newValue[..<endIndex])) { _error in
                 self.restCompletion(_error) {}
             }
         default:
@@ -232,16 +249,20 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     /// Called when the UIKeyboardDidShowNotification is sent.
     @objc private func keyboardWasShown(aNotification: Notification) {
         guard let info = aNotification.userInfo else { return }
-        
-        let kbSize = (info[UIKeyboardFrameBeginUserInfoKey] as! CGRect).size
-        
-        let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: kbSize.height, right: 0.0)
+		
+		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
+		// TEST with iOS < 11
+		let accessoryHeight = activeField.inputView?.inputAccessoryView?.frame.height ?? 0.0
+        let inputHeight = (info[UIKeyboardFrameBeginUserInfoKey] as! CGRect).height
+		let keyboardHeight = accessoryHeight + inputHeight
+
+        let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardHeight, right: 0.0)
         scrollView.contentInset = contentInsets
         scrollView.scrollIndicatorInsets = contentInsets
         
         // If active text field is hidden by keyboard, scroll it so it's visible
         var aRect = self.view.frame
-        aRect.size.height -= kbSize.height
+        aRect.size.height -= keyboardHeight
         if (!aRect.contains(activeField.frame.origin) ) {
             scrollView.scrollRectToVisible(activeField.frame, animated: true)
         }

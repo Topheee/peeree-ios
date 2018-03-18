@@ -35,12 +35,17 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         }
         
         let alertController = UIAlertController()
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .default, handler: cameraHandler))
-        }
-        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .default, handler: photoLibraryHandler))
-        }
+		let cameraAction = UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .`default`, handler: cameraHandler)
+		cameraAction.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
+		alertController.addAction(cameraAction)
+		let photoLibraryAction = UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Photo Library on the device."), style: .`default`, handler: photoLibraryHandler)
+		photoLibraryAction.isEnabled = UIImagePickerController.isSourceTypeAvailable(.photoLibrary)
+		alertController.addAction(photoLibraryAction)
+		if cameraAction.isEnabled {
+			alertController.preferredAction = cameraAction
+		} else if photoLibraryAction.isEnabled {
+			alertController.preferredAction = photoLibraryAction
+		}
         alertController.addAction(UIAlertAction(title: destructiveActionName, style: .destructive) { (action) in
             self.picked(image: nil)
         })
