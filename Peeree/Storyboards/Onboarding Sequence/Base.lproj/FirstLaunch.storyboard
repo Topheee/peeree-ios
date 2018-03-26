@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
     <device id="retina3_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -10,6 +10,7 @@
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Baseline standard spacing" minToolsVersion="9.0"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -17,10 +18,6 @@
         <scene sceneID="5Js-Xy-AcI">
             <objects>
                 <viewController title="Details" id="u4v-7y-Tsp" customClass="OnboardingDescriptionViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="luJ-S4-VDb"/>
-                        <viewControllerLayoutGuide type="bottom" id="oYr-FL-zLy"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="GM2-V1-SU7" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -178,18 +175,19 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="nDm-jF-iKj" firstAttribute="leading" secondItem="GM2-V1-SU7" secondAttribute="leading" id="3Bj-zf-kGj"/>
-                            <constraint firstAttribute="trailing" secondItem="4lW-Us-5R6" secondAttribute="trailing" id="CaW-D9-d21"/>
-                            <constraint firstAttribute="trailing" secondItem="nDm-jF-iKj" secondAttribute="trailing" id="SFs-Af-jLS"/>
-                            <constraint firstItem="oYr-FL-zLy" firstAttribute="top" secondItem="nDm-jF-iKj" secondAttribute="bottom" id="W8M-vm-WS2"/>
-                            <constraint firstItem="4lW-Us-5R6" firstAttribute="top" secondItem="luJ-S4-VDb" secondAttribute="bottom" id="apl-rK-nOD"/>
-                            <constraint firstAttribute="trailing" secondItem="PEg-cg-nW0" secondAttribute="trailing" id="cMb-x1-LuY"/>
+                            <constraint firstItem="nDm-jF-iKj" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="3Bj-zf-kGj"/>
+                            <constraint firstItem="NvT-Xi-xEL" firstAttribute="trailing" secondItem="4lW-Us-5R6" secondAttribute="trailing" id="CaW-D9-d21"/>
+                            <constraint firstItem="NvT-Xi-xEL" firstAttribute="trailing" secondItem="nDm-jF-iKj" secondAttribute="trailing" id="SFs-Af-jLS"/>
+                            <constraint firstItem="NvT-Xi-xEL" firstAttribute="bottom" secondItem="nDm-jF-iKj" secondAttribute="bottom" id="W8M-vm-WS2"/>
+                            <constraint firstItem="4lW-Us-5R6" firstAttribute="top" secondItem="NvT-Xi-xEL" secondAttribute="top" id="apl-rK-nOD"/>
+                            <constraint firstItem="NvT-Xi-xEL" firstAttribute="trailing" secondItem="PEg-cg-nW0" secondAttribute="trailing" id="cMb-x1-LuY"/>
                             <constraint firstItem="nDm-jF-iKj" firstAttribute="top" secondItem="4lW-Us-5R6" secondAttribute="bottom" id="eEk-Gd-udB"/>
-                            <constraint firstItem="PEg-cg-nW0" firstAttribute="top" secondItem="luJ-S4-VDb" secondAttribute="bottom" id="erM-lH-aOO"/>
-                            <constraint firstItem="oYr-FL-zLy" firstAttribute="top" secondItem="4lW-Us-5R6" secondAttribute="bottom" id="eud-cm-9Ki"/>
-                            <constraint firstItem="PEg-cg-nW0" firstAttribute="leading" secondItem="GM2-V1-SU7" secondAttribute="leading" id="jhA-qs-me3"/>
-                            <constraint firstItem="4lW-Us-5R6" firstAttribute="leading" secondItem="GM2-V1-SU7" secondAttribute="leading" id="tyq-cg-FED"/>
+                            <constraint firstItem="PEg-cg-nW0" firstAttribute="top" secondItem="NvT-Xi-xEL" secondAttribute="top" id="erM-lH-aOO"/>
+                            <constraint firstItem="NvT-Xi-xEL" firstAttribute="bottom" secondItem="4lW-Us-5R6" secondAttribute="bottom" id="eud-cm-9Ki"/>
+                            <constraint firstItem="PEg-cg-nW0" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="jhA-qs-me3"/>
+                            <constraint firstItem="4lW-Us-5R6" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="tyq-cg-FED"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="NvT-Xi-xEL"/>
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="eEk-Gd-udB"/>
@@ -212,14 +210,11 @@
         <scene sceneID="rAT-7j-YZI">
             <objects>
                 <viewController id="76G-gL-j3x" customClass="FirstLaunchViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="nML-by-ZMu"/>
-                        <viewControllerLayoutGuide type="bottom" id="kWS-QZ-uzq"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Mhb-QC-SA2" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <viewLayoutGuide key="safeArea" id="XGZ-Ba-9aM"/>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
                 </viewController>
@@ -231,10 +226,6 @@
         <scene sceneID="qqt-6g-vCs">
             <objects>
                 <viewController storyboardIdentifier="FirstViewController" title="Welcome Page" id="9TP-2c-bIB" customClass="WelcomeViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="ykf-X6-JqU"/>
-                        <viewControllerLayoutGuide type="bottom" id="Y2O-gr-2jl"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="bRA-E3-VRs" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -333,7 +324,7 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="firstBaseline" secondItem="NTY-bS-98x" secondAttribute="baseline" constant="20" symbolType="layoutAnchor" id="74f-sU-0xu"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="AIF-ce-Tez"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" constant="20" id="Eii-xs-pTo"/>
-                            <constraint firstItem="Y2O-gr-2jl" firstAttribute="top" secondItem="qr9-Ho-2bg" secondAttribute="bottom" constant="8" id="Exs-pl-PgT"/>
+                            <constraint firstItem="hua-4t-hNt" firstAttribute="bottom" secondItem="qr9-Ho-2bg" secondAttribute="bottom" constant="8" id="Exs-pl-PgT"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="JHQ-V2-gUb"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
                             <constraint firstItem="NTY-bS-98x" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" id="MZf-UA-Uhc"/>
@@ -348,14 +339,15 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="j9r-4M-GPA"/>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="jOd-fJ-VsJ"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="mE9-QB-jIc"/>
-                            <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="ykf-X6-JqU" secondAttribute="bottom" constant="40" id="mQq-Dp-Szr"/>
+                            <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="hua-4t-hNt" secondAttribute="top" constant="40" id="mQq-Dp-Szr"/>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="top" secondItem="skT-uK-VEP" secondAttribute="bottom" id="op9-Gr-JL0"/>
                             <constraint firstItem="skT-uK-VEP" firstAttribute="top" relation="greaterThanOrEqual" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" id="sxf-wP-9pz"/>
                             <constraint firstAttribute="trailingMargin" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
                             <constraint firstItem="skT-uK-VEP" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" id="wWU-Zb-3mw"/>
-                            <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="bRA-E3-VRs" secondAttribute="centerX" id="ymi-3N-siT"/>
+                            <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="hua-4t-hNt" secondAttribute="centerX" id="ymi-3N-siT"/>
                             <constraint firstItem="skT-uK-VEP" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="zCY-4b-hTp"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="hua-4t-hNt"/>
                     </view>
                     <connections>
                         <outlet property="infoButton" destination="XwS-Db-Ixl" id="mjg-2n-5uh"/>
@@ -370,10 +362,6 @@ a Social Peer-to-Peer App</string>
         <scene sceneID="K22-Vn-XDY">
             <objects>
                 <viewController storyboardIdentifier="SecondViewController" title="Setup Page" id="BiV-OX-JbO" customClass="SetupViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="aJo-bN-TNl"/>
-                        <viewControllerLayoutGuide type="bottom" id="Mhf-wI-av8"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="m34-t7-ma0" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -436,7 +424,7 @@ a Social Peer-to-Peer App</string>
                                 <rect key="frame" x="90.5" y="99.5" width="139.5" height="30"/>
                                 <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES" textContentType="nickname"/>
                                 <connections>
                                     <action selector="updateLaunchButton:" destination="BiV-OX-JbO" eventType="editingDidEnd" id="feI-Ch-f0y"/>
                                     <outlet property="delegate" destination="BiV-OX-JbO" id="Hhu-jd-DPH"/>
@@ -498,29 +486,30 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerY" secondItem="bd8-Ey-isT" secondAttribute="centerY" id="4uk-QG-Tpd"/>
                             <constraint firstItem="HgF-aZ-Tke" firstAttribute="top" secondItem="g3H-jE-mTR" secondAttribute="bottom" constant="20" id="68Q-1Z-Jgz"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="centerY" secondItem="m34-t7-ma0" secondAttribute="centerY" constant="-10" id="7JS-hr-BGG"/>
-                            <constraint firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="FMP-9B-5Vx"/>
+                            <constraint firstItem="Uph-Zc-IOq" firstAttribute="centerX" secondItem="g3H-jE-mTR" secondAttribute="centerX" id="8z6-sn-B11"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="Uph-Zc-IOq" secondAttribute="centerX" id="FMP-9B-5Vx"/>
                             <constraint firstItem="JLo-5M-7YM" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="G5v-7p-9Np"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="g3H-jE-mTR" secondAttribute="trailing" id="Gin-jQ-AXy"/>
                             <constraint firstItem="HgF-aZ-Tke" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="Hz6-yg-6t0"/>
-                            <constraint firstItem="Mhf-wI-av8" firstAttribute="top" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
+                            <constraint firstItem="Uph-Zc-IOq" firstAttribute="bottom" secondItem="WkH-8i-IuH" secondAttribute="bottom" constant="8" id="OFo-82-Vic"/>
                             <constraint firstItem="YRI-ar-stS" firstAttribute="centerX" secondItem="bd8-Ey-isT" secondAttribute="centerX" id="PL3-Bo-awe"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="trailing" id="RwY-PN-x7Y"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="TZh-su-XOJ"/>
                             <constraint firstItem="g3H-jE-mTR" firstAttribute="top" relation="greaterThanOrEqual" secondItem="bd8-Ey-isT" secondAttribute="bottom" constant="16" id="VpL-50-qLZ"/>
                             <constraint firstItem="WkH-8i-IuH" firstAttribute="top" secondItem="HgF-aZ-Tke" secondAttribute="bottom" constant="12" id="YGO-eO-aUq"/>
                             <constraint firstAttribute="trailingMargin" secondItem="JLo-5M-7YM" secondAttribute="trailing" id="dHH-AR-cJy"/>
-                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="eL9-MV-34L"/>
+                            <constraint firstItem="bd8-Ey-isT" firstAttribute="centerX" secondItem="Uph-Zc-IOq" secondAttribute="centerX" id="eL9-MV-34L"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="bd8-Ey-isT" secondAttribute="width" constant="-50" id="hln-fm-ROY"/>
-                            <constraint firstItem="HgF-aZ-Tke" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="mEq-r6-req"/>
+                            <constraint firstItem="HgF-aZ-Tke" firstAttribute="centerX" secondItem="Uph-Zc-IOq" secondAttribute="centerX" id="mEq-r6-req"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="HgF-aZ-Tke" secondAttribute="trailing" id="mN6-Li-hb4"/>
                             <constraint firstItem="maF-ir-g9C" firstAttribute="top" relation="greaterThanOrEqual" secondItem="JLo-5M-7YM" secondAttribute="bottom" constant="8" symbolic="YES" id="ndA-Nq-naC"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="top" secondItem="maF-ir-g9C" secondAttribute="bottom" constant="16" id="obN-JR-SHm"/>
                             <constraint firstItem="bd8-Ey-isT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="pfv-hO-exC"/>
-                            <constraint firstItem="maF-ir-g9C" firstAttribute="centerX" secondItem="m34-t7-ma0" secondAttribute="centerX" id="tBV-A5-65e"/>
-                            <constraint firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
-                            <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="aJo-bN-TNl" secondAttribute="bottom" constant="40" id="v9p-sf-Eqm"/>
+                            <constraint firstItem="maF-ir-g9C" firstAttribute="centerX" secondItem="Uph-Zc-IOq" secondAttribute="centerX" id="tBV-A5-65e"/>
+                            <constraint firstItem="Uph-Zc-IOq" firstAttribute="centerX" secondItem="WkH-8i-IuH" secondAttribute="centerX" constant="-2" id="tos-Qa-fv2"/>
+                            <constraint firstItem="JLo-5M-7YM" firstAttribute="top" secondItem="Uph-Zc-IOq" secondAttribute="top" constant="40" id="v9p-sf-Eqm"/>
                         </constraints>
+                        <viewLayoutGuide key="safeArea" id="Uph-Zc-IOq"/>
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="7JS-hr-BGG"/>
