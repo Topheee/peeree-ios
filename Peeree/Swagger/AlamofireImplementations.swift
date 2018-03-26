@@ -127,7 +127,8 @@ open class AlamofireRequestBuilder<T>: RequestBuilder<T> {
         configuration.httpShouldUsePipelining = true
         configuration.timeoutIntervalForRequest = 5.0
         configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
-        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
+//        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
+		return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
     }
 
     /**

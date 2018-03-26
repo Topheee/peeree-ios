@@ -352,7 +352,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         // Again, we loop through the array, just in case.
         for characteristic in service.characteristics! {
             // And check if it's the right one
-            NSLog("Peripheral \(peripheral.identifier.uuidString.left(8)): Discovered characteristic \(characteristic.uuid.uuidString.left(8)) of service \(service.uuid.uuidString.left(8))")
+            // NSLog("INFO: Peripheral \(peripheral.identifier.uuidString.left(8)): Discovered characteristic \(characteristic.uuid.uuidString.left(8)) of service \(service.uuid.uuidString.left(8))")
             if let descriptors = characteristic.descriptors {
                 for descriptor in descriptors {
                     if let data = descriptor.value as? Data {
@@ -378,7 +378,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         }
         
         if !found {
-            NSLog("No UUID characteristic found on peripheral \(peripheral).")
+            NSLog("WARN: No UUID characteristic found on peripheral \(peripheral).")
             centralManager.cancelPeripheralConnection(peripheral)
         }
     }
@@ -545,7 +545,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                         delegate?.pictureLoaded(of: peerID)
                     }
                 } else {
-                    fatalError()
+//                    fatalError()
                     // TODO SECURITY characteristic is not verified
                     // TODO this does not get published within the app so that the view does not update (make sure the value really changed)
 //                    cachedPeers[peerID]!.setCharacteristicValue(of: transmission.characteristicID, to: chunk)
@@ -563,7 +563,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                         // always send pin match indication on new connect to be absolutely sure that the other really got that
                         indicatePinMatch(to: peer)
                     } else {
-                        NSLog("Creating peer info failed, disconnecting.")
+                        NSLog("WARNING: Creating peer info failed, disconnecting.")
                         // peer info is essential
                         disconnect(peripheral)
                     }

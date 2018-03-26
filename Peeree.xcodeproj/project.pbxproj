@@ -145,6 +145,8 @@
 		9DB3916B2049F6E100543F74 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9DB3916E2049F74C00543F74 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		9DBD56D91EE04D1900FB8DA4 /* PeerInfoTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerInfoTest.swift; sourceTree = "<group>"; };
+		9DCB1445205E9F4F00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
+		9DCB1447205EA0AF00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OnboardingDescriptionViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/OnboardingDescriptionViewController.swift"; sourceTree = "<group>"; };
 		9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AsymmetricCrypto.swift; path = Peeree/Helpers/AsymmetricCrypto.swift; sourceTree = "<group>"; };
 		9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SynchronizedCollections.swift; path = Peeree/Helpers/SynchronizedCollections.swift; sourceTree = "<group>"; };
@@ -668,6 +670,7 @@
 			children = (
 				9D33E8F11D418839001CECAB /* Base */,
 				9D1AF3D3204B008100B616AF /* de */,
+				9DCB1445205E9F4F00BF38D1 /* en */,
 			);
 			name = FirstLaunch.storyboard;
 			path = "Peeree/Storyboards/Onboarding Sequence";
@@ -678,6 +681,7 @@
 			children = (
 				9DB3916B2049F6E100543F74 /* Base */,
 				9DB3916E2049F74C00543F74 /* de */,
+				9DCB1447205EA0AF00BF38D1 /* en */,
 			);
 			name = Main.storyboard;
 			path = "Storyboards/Main Storyboard";

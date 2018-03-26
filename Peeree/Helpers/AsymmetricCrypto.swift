@@ -122,7 +122,7 @@ public class AsymmetricKey {
                     try AsymmetricKey.removeFromKeychain(tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
-                    NSLog("\(error)")
+                    NSLog("WARN: Removing temporary key from keychain failed: \(error)")
                 }
             }
             
@@ -157,7 +157,7 @@ public class AsymmetricKey {
                     try AsymmetricKey.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
-                    NSLog("WARN: Removing temporary key from keychain failed: \(error)")
+                    NSLog("INFO: Removing temporary key from keychain failed: \(error)")
                 }
             }
             
@@ -251,7 +251,6 @@ public class AsymmetricPublicKey: AsymmetricKey {
     
     public func verify(message data: Data, signature: Data) throws {
         if #available(macOS 10.12.1, iOS 10.0, *) {
-            NSLog("Verify signature size: \(signature.count), block size: \(SecKeyGetBlockSize(key))")
             let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
             guard SecKeyIsAlgorithmSupported(key, .verify, algorithm) else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm \(SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256) does not support verifying", comment: "Error description for verifying exception, which should never actually occur.")])
@@ -264,8 +263,7 @@ public class AsymmetricPublicKey: AsymmetricKey {
         } else {
             #if os(iOS)
                 let digest = data.sha256()
-                NSLog("Verify signature size: \(signature.count), digest size: \(digest.count), block size: \(SecKeyGetBlockSize(key))")
-                
+				
                 let status = signature.withUnsafeBytes { (signatureBytes: UnsafePointer<UInt8>) in
                     return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
                         SecKeyRawVerify(key, signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
@@ -368,14 +366,12 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 throw throwedError
             }
             
-            NSLog("Sign signatureSize: \(signature.count), block size: \(SecKeyGetBlockSize(key))")
             return signature
         } else {
             #if os(iOS)
                 let digest = data.sha256()
                 
                 var signatureSize = 256 // in CryptoExercise it is SecKeyGetBlockSize(key), but on the internet it's some magic number like this
-                NSLog("Sign digest size: \(digest.count) (should be \(CC_SHA256_DIGEST_LENGTH)), signatureSize (block size): \(signatureSize)")
                 var signature = Data(count: signatureSize)
                 
                 let status = signature.withUnsafeMutableBytes { (signatureBytes: UnsafeMutablePointer<UInt8>) in
@@ -383,8 +379,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                         SecKeyRawSign(key, signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
                     }
                 }
-                NSLog("\t actual signatureSize: \(signatureSize)")
-                
+				
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Cryptographically signing failed.", comment: "Cryptographically signing a message failed."))
                 
                 return signature.subdata(in: 0..<signatureSize)
@@ -400,10 +395,6 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             guard SecKeyIsAlgorithmSupported(key, .decrypt, algorithm) else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFeatureUnsupportedError, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Elliptic curve algorithm SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM does not support decryption", comment: "Error description for decryption exception, which should never actually occur.")])
             }
-            
-            //        guard cipherText.count == SecKeyGetBlockSize(privateKey) else {
-            //            throw NSError(domain: NSCocoaErrorDomain, code: NSValidationErrorMaximum, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Cipher text length (\(cipherText.count)) not match block size \(SecKeyGetBlockSize(privateKey))", comment: "Exception when trying to decrypt data of wrong length.")])
-            //        }
             
             var error: Unmanaged<CFError>?
             guard let clearText = SecKeyCreateDecryptedData(key, algorithm, cipherText as CFData, &error) as Data? else {
@@ -435,11 +426,11 @@ extension SecKey {
     static func check(status: OSStatus, localizedError: String) throws {
         guard status == errSecSuccess else {
             #if os(OSX)
-                let msg = "\(localizedError): \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
+                let msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
             #else
                 let msg = localizedError
             #endif
-            NSLog("OSStatus \(status) check failed: \(localizedError)")
+			NSLog("ERROR: OSStatus \(status) check failed: \(localizedError)")
             throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
         }
     }
@@ -493,7 +484,7 @@ public class KeyPair {
         var _publicKey, _privateKey: SecKey?
         try SecKey.check(status: SecKeyGeneratePair(attributes as CFDictionary, &_publicKey, &_privateKey), localizedError: NSLocalizedString("Generating cryptographic key pair failed.", comment: "Low level crypto error."))
         
-        NSLog("Created key pair with block sizes \(SecKeyGetBlockSize(_privateKey!)), \(SecKeyGetBlockSize(_publicKey!))")
+		NSLog("INFO: Created key pair with block sizes \(SecKeyGetBlockSize(_privateKey!)), \(SecKeyGetBlockSize(_publicKey!))")
         
         privateKey = AsymmetricPrivateKey(key: _privateKey!, type: type, size: size, tag: privateTag)
         

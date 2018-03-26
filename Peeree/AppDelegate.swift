@@ -66,7 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	
 	static func viewTerms(in viewController: UIViewController) {
 		// TODO localize URL, store URL in global constant
-		guard let termsURL = URL(string: "https://www.peeree.de/terms.html") else { return }
+		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
 		let safariController = SFSafariViewController(url: termsURL)
 		if #available(iOS 10.0, *) {
 			safariController.preferredBarTintColor = AppDelegate.shared.theme.barTintColor

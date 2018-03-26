@@ -38,9 +38,6 @@ final class InAppNotificationViewController: UIViewController {
     }
 
     @IBAction func close(_ sender: Any) {
-        if let timer = sender as? Timer {
-            NSLog("Closed from timer \(timer). Valid: \(timer.isValid). Fire Date \(timer.fireDate)")
-        }
         dismissFromView(animated: true)
     }
 
@@ -85,7 +82,6 @@ final class InAppNotificationViewController: UIViewController {
             frame.origin.y = 0.0
             self.view.frame = frame
         }, completion: { (completed) in
-            NSLog("Presentation animation completed: \(completed)")
             if completed, duration != 0.0 {
                 // be sure that an may already established timer does not fire
                 self.displayTimer?.invalidate()
@@ -107,7 +103,6 @@ final class InAppNotificationViewController: UIViewController {
                     frame.origin.y = -frame.height
                     self.view.frame = frame
                 }, completion: { (completed) in
-                    NSLog("Dismiss animation completed: \(completed)")
                     if self.view.layer.animationKeys()?.count ?? 0 == 0 {
                         // if no animations are going on, we (hopefully) can be sure that we can remove ourselves from the view hierarchy
                         self.displayTimer?.invalidate()
