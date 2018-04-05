@@ -19,8 +19,6 @@
 		9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
-		9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9D6431141D5FB5E400D81CB7 /* product_ids.plist */; };
-		9D6993551F1DE6B50009BF81 /* cacert.der in Resources */ = {isa = PBXBuildFile; fileRef = 9D6993541F1DE67C0009BF81 /* cacert.der */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
@@ -51,7 +49,7 @@
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42C1EC46FD000A01AEF /* PeerID.swift */; };
 		9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */; };
-		9DD61F5F1EAE33B6004EB56A /* AlamofireImplementations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F531EAE33B6004EB56A /* AlamofireImplementations.swift */; };
+		9DD61F5F1EAE33B6004EB56A /* SwaggerImplementations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */; };
 		9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F541EAE33B6004EB56A /* APIHelper.swift */; };
 		9DD61F611EAE33B6004EB56A /* DefaultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F561EAE33B6004EB56A /* DefaultAPI.swift */; };
 		9DD61F621EAE33B6004EB56A /* APIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F571EAE33B6004EB56A /* APIs.swift */; };
@@ -110,8 +108,6 @@
 		9D400E611EBA2B9C0006480A /* AccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountController.swift; path = Controller/AccountController.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Peeree/Storyboards/Launch/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
-		9D6431141D5FB5E400D81CB7 /* product_ids.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = product_ids.plist; path = Ressources/product_ids.plist; sourceTree = "<group>"; };
-		9D6993541F1DE67C0009BF81 /* cacert.der */ = {isa = PBXFileReference; lastKnownFileType = file; name = cacert.der; path = Ressources/cacert.der; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
 		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
@@ -157,14 +153,12 @@
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CircleMaskView.swift; path = View/CircleMaskView.swift; sourceTree = "<group>"; };
 		9DD1B42C1EC46FD000A01AEF /* PeerID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerID.swift; sourceTree = "<group>"; };
 		9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
-		9DD61F531EAE33B6004EB56A /* AlamofireImplementations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AlamofireImplementations.swift; path = Swagger/AlamofireImplementations.swift; sourceTree = "<group>"; };
+		9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwaggerImplementations.swift; path = Swagger/SwaggerImplementations.swift; sourceTree = "<group>"; };
 		9DD61F541EAE33B6004EB56A /* APIHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIHelper.swift; path = Swagger/APIHelper.swift; sourceTree = "<group>"; };
 		9DD61F561EAE33B6004EB56A /* DefaultAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultAPI.swift; sourceTree = "<group>"; };
 		9DD61F571EAE33B6004EB56A /* APIs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIs.swift; path = Swagger/APIs.swift; sourceTree = "<group>"; };
 		9DD61F581EAE33B6004EB56A /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = Swagger/Extensions.swift; sourceTree = "<group>"; };
 		9DD61F5A1EAE33B6004EB56A /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
-		9DD61F5B1EAE33B6004EB56A /* InlineResponse200.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineResponse200.swift; sourceTree = "<group>"; };
-		9DD61F5C1EAE33B6004EB56A /* InlineResponse2001.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineResponse2001.swift; sourceTree = "<group>"; };
 		9DD61F5D1EAE33B6004EB56A /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		9DD61F5E1EAE33B6004EB56A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Models.swift; path = Swagger/Models.swift; sourceTree = "<group>"; };
 		9DDA3A501D77B6EA00C2ADC8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -345,12 +339,10 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				9D6993541F1DE67C0009BF81 /* cacert.der */,
 				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D1AF3D1204AA2CF00B616AF /* Localizable.strings */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
-				9D6431141D5FB5E400D81CB7 /* product_ids.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -395,7 +387,7 @@
 		9DD61F3C1EAE3356004EB56A /* Swagger */ = {
 			isa = PBXGroup;
 			children = (
-				9DD61F531EAE33B6004EB56A /* AlamofireImplementations.swift */,
+				9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */,
 				9DD61F541EAE33B6004EB56A /* APIHelper.swift */,
 				9DD61F551EAE33B6004EB56A /* APIs */,
 				9DD61F571EAE33B6004EB56A /* APIs.swift */,
@@ -419,8 +411,6 @@
 			isa = PBXGroup;
 			children = (
 				9DD61F5A1EAE33B6004EB56A /* Account.swift */,
-				9DD61F5B1EAE33B6004EB56A /* InlineResponse200.swift */,
-				9DD61F5C1EAE33B6004EB56A /* InlineResponse2001.swift */,
 				9DD1B42C1EC46FD000A01AEF /* PeerID.swift */,
 				9DAD8F951ECF512F00363016 /* PinPoints.swift */,
 				9DD61F5D1EAE33B6004EB56A /* Pin.swift */,
@@ -516,7 +506,7 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9D94589D1F2A1B8700EBCB31 = {
@@ -569,7 +559,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D6431151D5FB5E400D81CB7 /* product_ids.plist in Resources */,
 				9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */,
 				9DCE945A1F30EB8600F31330 /* InAppNotification.xib in Resources */,
 				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
@@ -578,7 +567,6 @@
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
 				9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
-				9D6993551F1DE6B50009BF81 /* cacert.der in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -603,7 +591,7 @@
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D9D02051F2609DA00DC5FC6 /* CharacterTraitViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
-				9DD61F5F1EAE33B6004EB56A /* AlamofireImplementations.swift in Sources */,
+				9DD61F5F1EAE33B6004EB56A /* SwaggerImplementations.swift in Sources */,
 				9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */,
 				9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
@@ -779,12 +767,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -826,12 +816,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

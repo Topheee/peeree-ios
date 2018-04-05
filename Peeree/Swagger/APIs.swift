@@ -21,7 +21,7 @@ open class SwaggerClientAPI {
     open static let baseURL = URL(string: basePath)!
     open static var credential: URLCredential?
     open static var customHeaders: [String:String] = [:]
-    static var requestBuilderFactory: RequestBuilderFactory = AlamofireRequestBuilderFactory()
+    static var requestBuilderFactory: RequestBuilderFactory = CustomRequestBuilderFactory()
 }
 
 open class APIBase {

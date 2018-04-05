@@ -112,7 +112,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     var availablePeers: [PeerID] {
         return peripheralPeerIDs.accessSync { (dictionary) in
-            return dictionary.flatMap({ (peerID, peripheral) -> PeerID? in
+            return dictionary.compactMap({ (peerID, peripheral) -> PeerID? in
                 if peripheral.services == nil || peripheral.services!.isEmpty {
                     return nil
                 } else {

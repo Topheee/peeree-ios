@@ -25,6 +25,8 @@ extension Data {
 }
 
 public class AsymmetricKey {
+	fileprivate static let signaturePadding: SecPadding = [], encryptionPadding: SecPadding = [] // .PKCS1SHA256
+	
     public static func keyFromKeychain(tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
         let getquery: [String: Any] = [kSecClass as String: kSecClassKey,
                                        kSecAttrKeyClass as String: keyClass,
@@ -63,9 +65,7 @@ public class AsymmetricKey {
     fileprivate let key: SecKey
     private var _tag: Data?
     private let keyClass: CFString, type: CFString, size: Int
-    fileprivate let signaturePadding: SecPadding = [] // .PKCS1SHA256
-    fileprivate let encryptionPadding: SecPadding = [] // .PKCS1SHA256
-    
+	
     public func removeFromKeychain() throws {
         guard let tag = _tag else { return }
         
@@ -266,7 +266,7 @@ public class AsymmetricPublicKey: AsymmetricKey {
 				
                 let status = signature.withUnsafeBytes { (signatureBytes: UnsafePointer<UInt8>) in
                     return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
-                        SecKeyRawVerify(key, signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
+                        SecKeyRawVerify(key, AsymmetricKey.signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
                     }
                 }
                 
@@ -310,7 +310,7 @@ public class AsymmetricPublicKey: AsymmetricKey {
                 var cipher = Data(count: cipherSize)
                 let status = cipher.withUnsafeMutableBytes { (cipherBytes: UnsafeMutablePointer<UInt8>) in
                     return plainText.withUnsafeBytes { ( plainTextBytes: UnsafePointer<UInt8>) in
-                        SecKeyEncrypt(key, encryptionPadding, plainTextBytes, plainText.count, cipherBytes, &cipherSize)
+                        SecKeyEncrypt(key, AsymmetricKey.encryptionPadding, plainTextBytes, plainText.count, cipherBytes, &cipherSize)
                     }
                 }
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Cryptographically encrypting failed.", comment: "Cryptographically encrypting a message failed."))
@@ -321,7 +321,6 @@ public class AsymmetricPublicKey: AsymmetricKey {
             #endif
         }
     }
-    
 }
 
 public class AsymmetricPrivateKey: AsymmetricKey {
@@ -376,7 +375,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 
                 let status = signature.withUnsafeMutableBytes { (signatureBytes: UnsafeMutablePointer<UInt8>) in
                     return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
-                        SecKeyRawSign(key, signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
+                        SecKeyRawSign(key, AsymmetricKey.signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
                     }
                 }
 				
@@ -408,7 +407,7 @@ public class AsymmetricPrivateKey: AsymmetricKey {
                 var plainText = Data(count: plainTextSize)
                 let status = cipherText.withUnsafeBytes { (cipherTextBytes: UnsafePointer<UInt8>) in
                     return plainText.withUnsafeMutableBytes { (plainTextBytes: UnsafeMutablePointer<UInt8>) in
-                        SecKeyDecrypt(key, encryptionPadding, cipherTextBytes, cipherText.count, plainTextBytes, &plainTextSize)
+                        SecKeyDecrypt(key, AsymmetricKey.encryptionPadding, cipherTextBytes, cipherText.count, plainTextBytes, &plainTextSize)
                     }
                 }
                 try SecKey.check(status: status, localizedError: NSLocalizedString("Decrypting cipher text failed.", comment: "Cryptographically decrypting a message failed."))

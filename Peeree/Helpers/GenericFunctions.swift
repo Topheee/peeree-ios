@@ -146,13 +146,13 @@ extension String {
     }
     
     /// returns first count characters
-    func left(_ count: String.IndexDistance) -> String {
+    func left(_ count: Int) -> String {
         let rightEnd = index(startIndex, offsetBy: count, limitedBy: endIndex) ?? endIndex
         return String(self[..<rightEnd])
     }
     
     /// returns last count characters
-    func right(_ count: String.IndexDistance) -> String {
+    func right(_ count: Int) -> String {
         let leftEnd = index(endIndex, offsetBy: -count, limitedBy: startIndex) ?? startIndex
         return String(self[leftEnd...])
     }
