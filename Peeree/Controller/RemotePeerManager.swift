@@ -137,7 +137,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             guard !isScanning else { return }
         #endif
         
-        centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: /*[CBCentralManagerScanOptionAllowDuplicatesKey:true]*/ nil)
+        centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
     }
 
     func stopScan() {
@@ -283,8 +283,8 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        NSLog("Discovered peripheral \(peripheral).")
-        
+//		NSLog("INFO: Discovered peripheral \(peripheral).")
+		
         if _availablePeripherals[peripheral] == nil {
             _availablePeripherals.updateValue(nil, forKey: peripheral)
         }

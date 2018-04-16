@@ -9,6 +9,7 @@
 import Foundation
 
 public protocol AccountControllerDelegate {
+	func pin(of peerID: PeerID, failedWith error: Error)
     func publicKeyMismatch(of peerID: PeerID)
     func sequenceNumberResetFailed(error: ErrorResponse)
 }
@@ -48,7 +49,7 @@ public class AccountController: SecurityDataSource {
         
         func post(_ peerID: PeerID) {
             DispatchQueue.main.async {
-                NotificationCenter.default.post(name: Notification.Name(rawValue: self.rawValue), object: AccountController.shared, userInfo: [UserInfo.peerID.rawValue : peerID])
+                NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: AccountController.shared, userInfo: [UserInfo.peerID.rawValue : peerID])
             }
         }
     }
@@ -113,21 +114,13 @@ public class AccountController: SecurityDataSource {
     
     public var delegate: AccountControllerDelegate?
     
-    /// Returns whether we have a pin match with that specific PeerID, that is, the global Peeree identifier. Note, that this does NOT imply we have a match with a concrete PeerInfo with that PeerID, as that PeerInfo may be a malicious peer
+    /// Returns whether we have a pin match with that specific PeerID. Note, that this does NOT imply we have a match with a concrete PeerInfo of that PeerID, as that PeerInfo may be a malicious peer
     public func hasPinMatch(_ peerID: PeerID) -> Bool {
         // it is enough to check whether we are pinned by peerID, as we only know that if we matched
         return pinnedByPeers.contains(peerID)
     }
-    
-    /**
-     * Returns whether we have a pin match with that specific peer.
-     * Note that this does NOT ultimately mean we have a pin match as long as the peer is not verified!
-     */
-    public func hasPinMatch(_ peer: PeerInfo) -> Bool {
-        // it is NOT enough to check whether we are pinned by peer, as we also need to check whether the peer is really the person behind it's peerID (that is, it's public key matches the one we pinned)
-        return pinnedByPeers.contains(peer.peerID) && isPinned(peer)
-    }
-    
+	
+	/// Returns whether we pinned that specific PeerID. Note, that this does NOT imply we pinned that person who's telling us he has this PeerID, as that PeerInfo may be a malicious peer. Thus, always check verification status of PeerInfo additionally
     public func isPinned(_ peer: PeerInfo) -> Bool {
         return pinnedPeers.contains { $0.0 == peer.peerID && $0.1 == peer.publicKeyData }
     }
@@ -154,7 +147,7 @@ public class AccountController: SecurityDataSource {
                 case .httpError(409, _), .sessionTaskError(409?, _, _):
                     self.delegate?.publicKeyMismatch(of: peerID)
                 default:
-                    break
+                    self.delegate?.pin(of: peerID, failedWith: error)
                 }
                 Notifications.pinFailed.post(peerID)
             } else if let isPinMatch = _isPinMatch  {
@@ -231,9 +224,9 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         // attack scenario: Eve sends pin match indication to Alice, but Alice only asks server, if she pinned Eve in the first place => Eve can observe Alice's internet communication and can figure out, whether Alice pinned her, depending on whether Alice' asked the server after the indication.
         // thus, we (Alice) have to at least once validate with the server, even if we know, that we did not pin Eve
-        // This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive an pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
+        // This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive a pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
         // we can savely ignore this if we already know we have a pin match
-        guard !hasPinMatch(peer) else { return }
+        guard !hasPinMatch(peer.peerID) else { return }
         
         let pinPublicKey = peer.publicKeyData.base64EncodedData()
         

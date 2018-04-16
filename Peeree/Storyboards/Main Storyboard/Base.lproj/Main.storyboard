@@ -107,14 +107,14 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="260"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Offline Mode" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="geS-Ue-hzN">
-                                            <rect key="frame" x="103.5" y="31" width="113" height="24"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Offline Mode" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="geS-Ue-hzN">
+                                            <rect key="frame" x="16" y="31" width="288" height="24"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap to go online" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
-                                            <rect key="frame" x="105.5" y="55.5" width="109" height="18"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap to go online" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
+                                            <rect key="frame" x="16" y="55.5" width="288" height="18"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
@@ -132,22 +132,24 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Visit a crowded place and go online to find new people!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oar-8r-xH3">
-                                            <rect key="frame" x="24" y="188.5" width="272" height="40.5"/>
+                                            <rect key="frame" x="16" y="188.5" width="288" height="40.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="9An-iq-LoL" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="07N-Sk-9dC"/>
                                         <constraint firstAttribute="bottomMargin" secondItem="Oar-8r-xH3" secondAttribute="bottom" constant="20" id="0Ob-qd-Awc"/>
                                         <constraint firstItem="zK8-SI-A6d" firstAttribute="centerY" secondItem="daC-My-itZ" secondAttribute="centerY" constant="-12" id="12K-cr-jpN"/>
                                         <constraint firstItem="xdp-HW-ags" firstAttribute="top" secondItem="zK8-SI-A6d" secondAttribute="bottom" id="DAL-LT-ARo"/>
                                         <constraint firstItem="zK8-SI-A6d" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="K5Y-uo-VBO"/>
-                                        <constraint firstItem="geS-Ue-hzN" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="W7w-lW-yZk"/>
-                                        <constraint firstItem="Oar-8r-xH3" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" constant="8" id="bjG-jZ-HK3"/>
+                                        <constraint firstItem="geS-Ue-hzN" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" id="Ny6-S5-M8T"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="9An-iq-LoL" secondAttribute="trailing" id="W9h-fM-8uG"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="geS-Ue-hzN" secondAttribute="trailing" id="aSJ-qz-xXV"/>
+                                        <constraint firstItem="Oar-8r-xH3" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" id="bjG-jZ-HK3"/>
                                         <constraint firstItem="9An-iq-LoL" firstAttribute="firstBaseline" secondItem="geS-Ue-hzN" secondAttribute="baseline" constant="20" symbolType="layoutAnchor" id="cSQ-Gz-R0b"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="Oar-8r-xH3" secondAttribute="trailing" constant="8" id="qwX-1R-JQd"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="Oar-8r-xH3" secondAttribute="trailing" id="qwX-1R-JQd"/>
+                                        <constraint firstItem="9An-iq-LoL" firstAttribute="leading" secondItem="daC-My-itZ" secondAttribute="leadingMargin" id="rNV-w6-b7C"/>
                                         <constraint firstItem="geS-Ue-hzN" firstAttribute="top" secondItem="daC-My-itZ" secondAttribute="topMargin" constant="20" id="v1j-n7-pnt"/>
                                         <constraint firstItem="xdp-HW-ags" firstAttribute="centerX" secondItem="daC-My-itZ" secondAttribute="centerX" id="yap-tK-Thf"/>
                                     </constraints>
@@ -436,7 +438,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RZ1-xL-Yml">
-                                            <rect key="frame" x="54" y="139.5" width="212.5" height="212.5"/>
+                                            <rect key="frame" x="55" y="134.5" width="211" height="211"/>
                                             <accessibility key="accessibilityConfiguration">
                                                 <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
                                                 <bool key="isElement" value="NO"/>
@@ -454,7 +456,7 @@
                                             </variation>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Person Name" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Eb-LT-XnB">
-                                            <rect key="frame" x="16" y="382" width="288" height="24"/>
+                                            <rect key="frame" x="16" y="370.5" width="288" height="24"/>
                                             <accessibility key="accessibilityConfiguration" hint="Name of your pin match" label="Person Name">
                                                 <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                             </accessibility>
@@ -462,7 +464,7 @@
                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pje-ad-i9c">
+                                        <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pje-ad-i9c">
                                             <rect key="frame" x="0.0" y="436" width="320" height="44"/>
                                             <items>
                                                 <barButtonItem image="PersonIcon" id="iTK-E8-ouT">
@@ -495,13 +497,15 @@
                                         </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="top" secondItem="Mym-lw-7EQ" secondAttribute="bottom" constant="30" id="88u-Dx-Lc4"/>
+                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Mym-lw-7EQ" secondAttribute="bottom" constant="25" id="88u-Dx-Lc4"/>
                                         <constraint firstItem="Mym-lw-7EQ" firstAttribute="top" secondItem="EP0-kC-egm" secondAttribute="topMargin" constant="50" id="8xj-4n-gSG"/>
+                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerX" secondItem="EP0-kC-egm" secondAttribute="centerX" id="D3i-I9-cwl"/>
+                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerY" secondItem="EP0-kC-egm" secondAttribute="centerY" id="OZz-KS-4lH"/>
                                         <constraint firstItem="pje-ad-i9c" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leading" id="OsU-WF-aYr"/>
                                         <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerX" secondItem="EP0-kC-egm" secondAttribute="centerX" id="Unj-nx-3dZ"/>
-                                        <constraint firstItem="1Eb-LT-XnB" firstAttribute="top" relation="greaterThanOrEqual" secondItem="RZ1-xL-Yml" secondAttribute="bottom" constant="30" id="Vyo-RD-rY8"/>
+                                        <constraint firstItem="1Eb-LT-XnB" firstAttribute="top" secondItem="RZ1-xL-Yml" secondAttribute="bottom" constant="25" id="Vyo-RD-rY8"/>
                                         <constraint firstItem="RZ1-xL-Yml" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="ZE3-SS-X8j"/>
-                                        <constraint firstItem="pje-ad-i9c" firstAttribute="top" secondItem="1Eb-LT-XnB" secondAttribute="bottom" constant="30" id="bId-tK-qdW"/>
+                                        <constraint firstItem="pje-ad-i9c" firstAttribute="top" relation="greaterThanOrEqual" secondItem="1Eb-LT-XnB" secondAttribute="bottom" constant="30" id="bId-tK-qdW"/>
                                         <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="RZ1-xL-Yml" secondAttribute="trailing" id="gB1-zH-tFy"/>
                                         <constraint firstItem="244-rB-aaA" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="jQ0-lA-dEr"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="Mym-lw-7EQ" secondAttribute="trailing" id="mc3-7H-1Bh"/>
@@ -514,7 +518,6 @@
                                         <constraint firstItem="244-rB-aaA" firstAttribute="trailing" secondItem="EP0-kC-egm" secondAttribute="trailingMargin" id="zr3-Ef-8p1"/>
                                     </constraints>
                                 </view>
-                                <color key="tintColor" red="0.0" green="1" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <blurEffect style="light"/>
                             </visualEffectView>
                         </subviews>
@@ -634,7 +637,7 @@
                                             <action selector="createDeleteAccount:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gM0-WR-JPH"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
                                         <rect key="frame" x="139" y="310.5" width="43" height="15"/>
                                         <accessibility key="accessibilityConfiguration" hint="Your Peeree identity" label="Peer ID">
                                             <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
@@ -678,6 +681,7 @@
                                     <constraint firstItem="gYx-2Y-uq3" firstAttribute="top" secondItem="jMl-1T-kkd" secondAttribute="bottom" constant="22" id="Zci-eb-Vr0"/>
                                     <constraint firstItem="sNx-nf-ozM" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="a3G-Z1-gl4"/>
                                     <constraint firstItem="rAH-3G-jWK" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="d22-2O-GJa"/>
+                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="top" secondItem="rAH-3G-jWK" secondAttribute="bottom" constant="3" id="dL1-m3-I72"/>
                                     <constraint firstItem="sNx-nf-ozM" firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="width" multiplier="0.8" id="dhw-p0-DpG"/>
                                     <constraint firstItem="KtY-qD-KuZ" firstAttribute="top" secondItem="7DY-yh-Oap" secondAttribute="bottom" constant="8" id="dp4-kh-eR6"/>
                                     <constraint firstItem="jMl-1T-kkd" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="emK-Z8-i43"/>
@@ -685,7 +689,6 @@
                                     <constraint firstItem="gYx-2Y-uq3" firstAttribute="width" secondItem="jMl-1T-kkd" secondAttribute="width" id="kYM-HR-3Cf"/>
                                     <constraint firstAttribute="trailing" secondItem="b8E-hE-Mnd" secondAttribute="trailing" constant="195" placeholder="YES" id="lkk-xu-UC3"/>
                                     <constraint firstItem="b8E-hE-Mnd" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="mVo-4q-Y1T"/>
-                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="top" secondItem="sNx-nf-ozM" secondAttribute="bottom" constant="16" id="mXq-7a-aAw"/>
                                     <constraint firstItem="b8E-hE-Mnd" firstAttribute="width" secondItem="hwZ-ru-5l0" secondAttribute="width" id="mbN-Kq-EPb"/>
                                     <constraint firstItem="sNx-nf-ozM" firstAttribute="top" secondItem="hwZ-ru-5l0" secondAttribute="topMargin" constant="8" id="qCZ-G7-TV6"/>
                                     <constraint firstItem="i05-bg-dKb" firstAttribute="firstBaseline" secondItem="7cg-KF-1BD" secondAttribute="baseline" constant="20" symbolType="layoutAnchor" id="ubK-ol-HUz"/>
@@ -762,7 +765,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" translatesAutoresizingMaskIntoConstraints="NO" id="17w-pX-qWh">
-                                                    <rect key="frame" x="28.5" y="8" width="263" height="29"/>
+                                                    <rect key="frame" x="16" y="8" width="288" height="29"/>
                                                     <segments>
                                                         <segment title="All"/>
                                                         <segment title="Males"/>
@@ -775,10 +778,9 @@
                                                 </segmentedControl>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="17w-pX-qWh" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6Ye-an-DVh" secondAttribute="leadingMargin" id="2v3-uO-HNT"/>
-                                                <constraint firstItem="17w-pX-qWh" firstAttribute="centerX" secondItem="6Ye-an-DVh" secondAttribute="centerX" id="hRy-8T-ay9"/>
+                                                <constraint firstItem="17w-pX-qWh" firstAttribute="leading" secondItem="6Ye-an-DVh" secondAttribute="leadingMargin" id="2v3-uO-HNT"/>
                                                 <constraint firstItem="17w-pX-qWh" firstAttribute="centerY" secondItem="6Ye-an-DVh" secondAttribute="centerY" id="jsZ-MQ-Wqf"/>
-                                                <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="17w-pX-qWh" secondAttribute="trailing" id="yaC-p2-jFp"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="17w-pX-qWh" secondAttribute="trailing" id="yaC-p2-jFp"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -1078,7 +1080,7 @@
         <!--Me Nav-->
         <scene sceneID="lpk-Ax-QH5">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="tIL-fs-ywz" userLabel="Me Nav" sceneMemberID="viewController">
+                <navigationController title="Me Nav" automaticallyAdjustsScrollViewInsets="NO" id="tIL-fs-ywz" userLabel="Me Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" largeTitles="YES" id="0JW-Wc-ihy">
                         <rect key="frame" x="0.0" y="20" width="320" height="96"/>
@@ -1108,7 +1110,7 @@
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="D5d-oe-2jg"/>
-        <segue reference="7Nf-9B-BLi"/>
+        <segue reference="EzW-Ik-xrC"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

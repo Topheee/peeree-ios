@@ -128,7 +128,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     }
     
     func receivedPinMatchIndication(from peerID: PeerID) {
-        guard let peer = _remote.getPeerInfo(of: peerID) else {
+        guard let peer = _remote.getPeerInfo(of: peerID), peer.verified else {
             pinMatchIndications.insert(peerID)
             return
         }

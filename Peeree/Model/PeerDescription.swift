@@ -88,6 +88,8 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
 //        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
+		super.init()
+		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
 	}
 
     @objc required public init?(coder aDecoder: NSCoder) {
@@ -299,7 +301,7 @@ public struct PeerInfo: Equatable {
     }
 
     public var pinMatched: Bool {
-        return AccountController.shared.hasPinMatch(self)
+        return AccountController.shared.hasPinMatch(self.peerID)
     }
     
     public var pinned: Bool {

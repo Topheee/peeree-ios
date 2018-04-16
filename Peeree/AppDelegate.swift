@@ -45,14 +45,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
         var errorMessage: String
         if let errorResponse = networkError as? ErrorResponse {
+			let httpErrorMessage = NSLocalizedString("HTTP error %d", comment: "Error message for HTTP status codes")
             switch errorResponse {
             case .parseError(_):
                 errorMessage = NSLocalizedString("Malformed server response.", comment: "Message of network error")
             case .httpError(let code, _):
-                errorMessage = "HTTP error \(code)"
+                errorMessage = String(format: httpErrorMessage, code)
             case .sessionTaskError(let code, _, let theError):
-                errorMessage = "HTTP error \(code ?? -1): \(theError.localizedDescription)"
-            }
+                errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
+			case .offline:
+				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
+			}
         } else {
             errorMessage = networkError.localizedDescription
         }
@@ -158,7 +161,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
             
             window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
-        }
+		} else {
+			for peerID in PeeringController.shared.remote.availablePeers {
+				guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID), BrowseFilterSettings.shared.check(peer: peer) else { continue }
+				_ = PeeringController.shared.remote.loadPicture(of: peer)
+			}
+		}
         
         UIApplication.shared.cancelAllLocalNotifications()
     }
@@ -255,6 +263,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
     
     // MARK: AccountControllerDelegate
+	func pin(of peerID: PeerID, failedWith error: Error) {
+		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Pin Failed", comment: "Title of in-app error notification"))
+	}
     
     func publicKeyMismatch(of peerID: PeerID) {
         let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possibly Malicious Peer alert"), peerID.uuidString)
@@ -269,7 +280,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     
     private func peerAppeared(_ peer: PeerInfo, again: Bool) {
         guard BrowseFilterSettings.shared.check(peer: peer) else { return }
-		if !isActive {
+		if isActive {
+			if BrowseFilterSettings.shared.check(peer: peer) {
+				_ = PeeringController.shared.remote.loadPicture(of: peer)
+			}
+		} else {
             guard !again else { return }
             
 			let note = UILocalNotification()
@@ -309,31 +324,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     private func setupAppearance() {
         RootView.appearance().tintColor = theme.globalTintColor
         RootView.appearance().backgroundColor = theme.globalBackgroundColor
-        
-        // iOS 11 UINavigationBar ButtonItem Fix
-        if #available(iOS 11, *) {
-            UIButton.appearance(whenContainedInInstancesOf: [UINavigationBar.self]).tintColor = theme.barBackgroundColor
-        }
-        
+		
         UINavigationBar.appearance().tintColor = theme.barBackgroundColor // theme.barTintColor
         UINavigationBar.appearance().barTintColor = theme.barTintColor
         UINavigationBar.appearance().barStyle = .black
-        
-        UITableViewCell.appearance().backgroundColor = theme.globalBackgroundColor
-        UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
-        UITableView.appearance().backgroundColor = theme.globalBackgroundColor
-        
-        UITableViewCell.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-        UITextView.appearance().backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-        
-        UIToolbar.appearance().tintColor = theme.globalTintColor
-        
-        UIActivityIndicatorView.appearance().color = theme.globalTintColor
-        UIStackView.appearance().tintColor = theme.globalTintColor
-        
-        UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
-        UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
-        
-        UIWindow.appearance().tintColor = theme.globalTintColor
+		
+		UIActivityIndicatorView.appearance().color = theme.globalTintColor
+		UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
+		UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
+		
+		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
     }
 }

@@ -83,7 +83,9 @@ class Reachability {
             let noteObject: Reachability = bridge(ptr: info!)
             
             // Post a notification to notify the client that the network reachability changed.
-            NotificationCenter.default.post(name: Notification.Name(rawValue: Reachability.ReachabilityChangedNotification), object: noteObject)
+			DispatchQueue.main.async {
+            	NotificationCenter.`default`.post(name: Notification.Name(rawValue: Reachability.ReachabilityChangedNotification), object: noteObject)
+			}
         }), &context)) {
             if (SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)) {
                 returnValue = true
@@ -123,11 +125,13 @@ class Reachability {
                 returnValue = .reachableViaWiFi
             }
         }
-        
+		
+		#if os(iOS)
         if flags.contains(SCNetworkReachabilityFlags.isWWAN) {
             // ... but WWAN connections are OK if the calling application is using the CFNetwork APIs.
             returnValue = .reachableViaWWAN
         }
+		#endif
         
         return returnValue
     }

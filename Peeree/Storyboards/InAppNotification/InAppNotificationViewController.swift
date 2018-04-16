@@ -124,7 +124,7 @@ final class InAppNotificationViewController: UIViewController {
             }
             self.title = title
             self.message = message
-            self.present(in: topVC, duration: 5.0 + Double(message.count) / 42.0)
+            self.present(in: topVC.presentedViewController ?? topVC, duration: 5.0 + Double(message.count) / 42.0)
         }
     }
 }

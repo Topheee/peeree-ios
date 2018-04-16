@@ -158,6 +158,11 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
     }
 
     override open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
+		guard Reachability.getNetworkStatus() != .notReachable else {
+			completion(nil, ErrorResponse.offline)
+			return
+		}
+		
         let managerId:String = UUID().uuidString
         // Create a new manager for each request to customize its request header
         let manager = createSessionManager()

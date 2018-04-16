@@ -11,6 +11,8 @@ protocol JSONEncodable {
 }
 
 public enum ErrorResponse : Error {
+	/// Network Reachability reported not reachable error
+	case offline
     /// HTTP status code, response data and error
     case httpError(Int, Data?)
     /// HTTP status code, response data and URLSession provided error

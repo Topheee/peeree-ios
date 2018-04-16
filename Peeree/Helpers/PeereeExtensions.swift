@@ -36,7 +36,10 @@ extension CBService {
 
 extension RawRepresentable where Self.RawValue == String {
     func postAsNotification(object: Any?, userInfo: [AnyHashable : Any]? = nil) {
-        NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: object, userInfo: userInfo)
+		// I thought that this would be actually done asynchronously, but turns out that it is posted synchronously on the main queue (the operation queue of the default notification center), so we have to make it asynchronously ourselves and rely on the re-entrance capability of the main queue…
+		DispatchQueue.main.async {
+			NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: object, userInfo: userInfo)
+		}
     }
     
     public func addPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
