@@ -23,6 +23,9 @@ final class BrowseViewController: UITableViewController {
     static let ViewPeerSegueID = "ViewPeerSegue"
     
     static var instance: BrowseViewController?
+	
+	private var activePlaceholderCell: UITableViewCell? = nil
+	private var theGesturer: UIGestureRecognizer? = nil // we need to keep a reference to it
     
     private var peerCache: [[PeerInfo]] = [[], [], []]
     
@@ -38,13 +41,32 @@ final class BrowseViewController: UITableViewController {
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
 	
-    @IBAction func toggleNetwork(_ sender: AnyObject) {
+	private func makeNavigationBar(hidden: Bool) {
+		guard let navigator = navigationController else { return }
+		let wasHidden = navigationController?.isNavigationBarHidden
+		guard hidden != wasHidden else { return }
+		navigator.setNavigationBarHidden(hidden, animated: true)
+		guard let placeholderCell = tableView.visibleCells.first as? OfflineTableViewCell else { return }
+		placeholderCell.make(centered: !hidden)
+	}
+	
+	@IBAction func toggleNavigationBar(_ sender: Any) {
+		navigationController.map { makeNavigationBar(hidden: !$0.isNavigationBarHidden) }
+		if !PeeringController.shared.peering {
+			toggleNetwork(self)
+		}
+	}
+	
+	@IBAction func toggleNetwork(_ sender: AnyObject) {
         guard AccountController.shared.accountExists else {
 			InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account"))
 			return
 		}
 		if PeeringController.shared.remote.isBluetoothOn {
 			PeeringController.shared.peering = !PeeringController.shared.peering
+			if PeeringController.shared.peering {
+				makeNavigationBar(hidden: true)
+			}
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
 		}
@@ -52,6 +74,10 @@ final class BrowseViewController: UITableViewController {
     
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
+		defer {
+			// we need to defer this, otherwise tableView.indexPath(for: tappedCell) doesn't work
+			navigationController?.setNavigationBarHidden(false, animated: true)
+		}
 		guard let personDetailVC = segue.destination as? PersonDetailViewController else { return }
         guard let tappedCell = sender as? UITableViewCell else {
             personDetailVC.displayedPeerInfo = sender as? PeerInfo
@@ -93,6 +119,8 @@ final class BrowseViewController: UITableViewController {
             }
             strongSelf.tableView.reloadData()
         })
+
+		tableView.scrollsToTop = true
     }
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -136,33 +164,21 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		tableView.isScrollEnabled = !placeholderCellActive
         guard !placeholderCellActive else {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.OfflineModeCellID) as? OfflineTableViewCell else {
                 assertionFailure()
                 return UITableViewCell()
             }
+			activePlaceholderCell = cell
+			theGesturer.map { cell.gestureRecognizers = [$0] }
             
             if #available(iOS 11.0, *) {
                 cell.frame.size.height = tableView.bounds.height - tableView.adjustedContentInset.bottom
             } else {
                 cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
             }
-            cell.peersMetLabel.text = String(PeeringController.shared.remote.peersMet)
-            if PeeringController.shared.peering {
-                cell.headLabel.text = NSLocalizedString("Nobody here...", comment: "Heading of the placeholder shown in browse view if no peers are around.")
-                cell.subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
-                cell.subheadLabel.textColor = .black
-                cell.shoutoutLabel.text = NSLocalizedString("Visit a crowded place to find other Peeree users!", comment: "Bottom text of the placeholder shown in browse view if no peers are around")
-            } else {
-                cell.headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
-                if PeeringController.shared.remote.isBluetoothOn {
-                    cell.subheadLabel.text = NSLocalizedString("Tap to go online", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
-                } else {
-                    cell.subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
-                }
-                cell.subheadLabel.textColor = AppDelegate.shared.theme.globalTintColor
-                cell.shoutoutLabel.text = NSLocalizedString("Visit a crowded place and go online to find new people!", comment: "Bottom text of the offline mode placeholder shown in browse view")
-            }
+			cell.setContent(mode: PeeringController.shared.peering ? .alone : .offline)
             return cell
         }
         
@@ -208,7 +224,26 @@ final class BrowseViewController: UITableViewController {
         }
         return nil
     }
-    
+	
+	// MARK: UIScollViewDelegate
+	
+	@available(iOS 11.0, *)
+	override func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
+		// throws 'unrecognized selector': super.scrollViewDidChangeAdjustedContentInset(scrollView)
+		
+		theGesturer = activePlaceholderCell?.gestureRecognizers?.first ?? theGesturer
+		activePlaceholderCell?.gestureRecognizers?.removeAll()
+		if placeholderCellActive {
+			DispatchQueue.main.async {
+				self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .fade)
+			}
+		}
+	}
+	
+	override func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
+		super.scrollViewDidScrollToTop(scrollView)
+		toggleNavigationBar(scrollView)
+	}
     
     // MARK: Private Methods
     
@@ -236,6 +271,14 @@ final class BrowseViewController: UITableViewController {
         if #available(iOS 11.0, *) {
             imageView.accessibilityIgnoresInvertColors = peer.picture != nil
         }
+//
+//		let cellBackgroundView = UIView()
+//		cellBackgroundView.layer.backgroundColor = AppDelegate.shared.theme.globalTintColor.cgColor
+//		cellBackgroundView.layer.borderColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
+//		cellBackgroundView.layer.borderWidth = 5.0
+//		cellBackgroundView.isOpaque = true
+//		cellBackgroundView.layer.cornerRadius = 10.0
+//		cell.backgroundView = cellBackgroundView
     }
     
     private func addPeerToCache(_ peer: PeerInfo) -> Int {
@@ -354,8 +397,80 @@ final class BrowseViewController: UITableViewController {
 }
 
 final class OfflineTableViewCell: UITableViewCell {
-    @IBOutlet weak var headLabel: UILabel!
-    @IBOutlet weak var subheadLabel: UILabel!
-    @IBOutlet weak var peersMetLabel: UILabel!
-    @IBOutlet weak var shoutoutLabel: UILabel!
+    @IBOutlet private weak var headLabel: UILabel!
+    @IBOutlet private weak var subheadLabel: UILabel!
+    @IBOutlet private weak var shoutoutLabel: UILabel!
+	@IBOutlet private weak var verticalCenterConstraint: NSLayoutConstraint!
+	@IBOutlet private weak var topConstraint: NSLayoutConstraint!
+	
+	private var navigationBarTimer: Timer?
+	
+	enum Mode { case offline, alone }
+	
+	func make(centered: Bool) {
+		verticalCenterConstraint.isActive = centered
+		topConstraint.isActive = !centered
+		performNavigationBarToggleAnimation()
+	}
+	
+	func setContent(mode: Mode) {
+		switch mode {
+		case .alone:
+			headLabel.text = NSLocalizedString("Looking out…", comment: "Heading of the placeholder shown in browse view if no peers are around.")
+			subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
+			subheadLabel.textColor = .black
+			shoutoutLabel.text = NSLocalizedString("Visit a crowded place to find other Peeree users!", comment: "Bottom text of the placeholder shown in browse view if no peers are around")
+			
+			let emitterLayer = CAEmitterLayer()
+			
+			emitterLayer.emitterPosition = frame.center
+			
+			let emitterCell = CAEmitterCell()
+			emitterCell.birthRate = 6
+			emitterCell.lifetime = 20
+			emitterCell.velocity = 50
+			emitterCell.scale = 0.02
+			
+			emitterCell.emissionRange = CGFloat.pi * 2.0
+			emitterCell.contents = #imageLiteral(resourceName: "Gradient").cgImage
+			emitterCell.color = AppDelegate.shared.theme.globalTintColor.cgColor
+			
+			emitterLayer.emitterCells = [emitterCell]
+			
+			let backgroundView = UIView(frame: frame)
+			backgroundView.layer.addSublayer(emitterLayer)
+			
+			let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
+			effectView.frame = frame
+			
+			 // go under status bar
+			effectView.frame.origin.y = -20.0
+			effectView.frame.size.height += 20.0
+			
+			backgroundView.addSubview(effectView)
+			self.backgroundView = backgroundView
+		case .offline:
+			headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
+			if PeeringController.shared.remote.isBluetoothOn {
+				subheadLabel.text = NSLocalizedString("Tap to go online", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
+			} else {
+				subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
+			}
+			subheadLabel.textColor = AppDelegate.shared.theme.globalTintColor
+			shoutoutLabel.text = NSLocalizedString("Visit a crowded place and go online to find new people!", comment: "Bottom text of the offline mode placeholder shown in browse view")
+			
+			backgroundView = nil
+		}
+	}
+	
+	/// the EffectView's effect is suspended during the navigation bar fade animation, so we need to hide it
+	private func performNavigationBarToggleAnimation() {
+		guard let sublayers = backgroundView?.layer.sublayers else { return }
+		backgroundView?.layer.sublayers = nil
+		if #available(iOS 10.0, *) {
+			navigationBarTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(UINavigationControllerHideShowBarDuration), repeats: false) { (timer) in
+				self.backgroundView?.layer.sublayers = sublayers
+			}
+		}
+	}
 }

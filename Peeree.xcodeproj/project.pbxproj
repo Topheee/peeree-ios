@@ -529,7 +529,7 @@
 			};
 			buildConfigurationList = 9DA0F7B01B5C3AB800F3BA87 /* Build configuration list for PBXProject "Peeree" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
