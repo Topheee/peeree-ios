@@ -78,7 +78,7 @@
 "g3H-jE-mTR.segmentTitles[1]" = "Weiblich";
 
 /* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[2] = "Queer"; ObjectID = "g3H-jE-mTR"; */
-"g3H-jE-mTR.segmentTitles[2]" = "Queer";
+"g3H-jE-mTR.segmentTitles[2]" = "Divers";
 
 /* Class = "UITextView"; text = "Content"; ObjectID = "ith-Hl-trz"; */
 "ith-Hl-trz.text" = "Inhalt";

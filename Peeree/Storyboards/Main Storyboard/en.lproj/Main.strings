@@ -200,8 +200,8 @@
 /* Class = "UISlider"; accessibilityLabel = "Minimum Age Bound"; ObjectID = "kYd-92-VvC"; */
 "kYd-92-VvC.accessibilityLabel" = "Minimum Age Bound";
 
-/* Class = "UINavigationItem"; title = "Finding"; ObjectID = "khg-QX-S1a"; */
-"khg-QX-S1a.title" = "Finding";
+/* Class = "UINavigationItem"; title = "Radar"; ObjectID = "khg-QX-S1a"; */
+"khg-QX-S1a.title" = "Radar";
 
 /* Class = "UITableViewController"; title = "Character Traits"; ObjectID = "kuI-R6-Fbl"; */
 "kuI-R6-Fbl.title" = "Character Traits";
@@ -236,8 +236,8 @@
 /* Class = "UILabel"; text = "Only with age available"; ObjectID = "sZh-Xd-jZD"; */
 "sZh-Xd-jZD.text" = "Only with age available";
 
-/* Class = "UINavigationItem"; title = "Radar"; ObjectID = "sgW-Kv-UY4"; */
-"sgW-Kv-UY4.title" = "Radar";
+/* Class = "UINavigationItem"; title = "Search"; ObjectID = "sgW-Kv-UY4"; */
+"sgW-Kv-UY4.title" = "Search";
 
 /* Class = "UISwitch"; accessibilityHint = "Filters out people with no age set"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityHint" = "Filters out people with no age set";

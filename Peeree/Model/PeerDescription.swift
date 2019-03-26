@@ -72,19 +72,15 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
 	public var dateOfBirth: Date? {
 		didSet {
 			if dateOfBirth != oldValue {
-                if let birth = dateOfBirth {
-                    peer.age = (Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: birth, to: Date(), options: []).year
-                } else {
-                    peer.age = nil
-                }
+                refreshAge()
 			}
 		}
     }
 	
 	private override init() {
 		dateOfBirth = nil
-        try? AsymmetricPublicKey.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag, keyType: PeerInfo.KeyType, size: PeerInfo.KeySize)
-        try? AsymmetricPrivateKey.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag, keyType: PeerInfo.KeyType, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
         self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
 //        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
@@ -108,13 +104,15 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         //            characterTraits = CharacterTrait.standardTraits
         //        }
         
-        guard let __peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
-        _peer = __peer
+        guard let peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
+        _peer = peer
         _keyPair = keyPair
         
         let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
         let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
         _peer.cgPicture = picture
+		super.init()
+		refreshAge()
     }
     
     @objc public func encode(with aCoder: NSCoder) {
@@ -147,6 +145,14 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
 //            PeeringController.shared.peering = false
 //            PeeringController.shared.peering = true
 //        }
+	}
+	
+	private func refreshAge() {
+		if let birth = dateOfBirth {
+			peer.age = (Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: birth, to: Date(), options: []).year
+		} else {
+			peer.age = nil
+		}
 	}
 }
 

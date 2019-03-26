@@ -64,6 +64,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             return peer.pinMatched
         }
     }
+	
+	private var timer: Timer?
     
     private var notificationObservers: [NSObjectProtocol] = []
     
@@ -132,6 +134,11 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             simpleStateUpdate(notification)
             self.animateGradient()
         }))
+		
+		if #available(iOS 11, *) {
+			// reset it's frame on iOS 11 as the view is not layed out there every time it gets active again
+			pinButton.superview!.setNeedsLayout()
+		}
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -175,6 +182,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         if peer.pinMatched {
             animateGradient()
         }
+		
+		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
+		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
     }
     
     private func animateGradient() {
@@ -207,6 +217,11 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         pictureProgressManager = nil
         removePictureLoadLayer()
         portraitImageView.image = nil
+		
+		// reset position from animation, if the user slides back in
+		timer?.invalidate()
+		timer = nil
+		pinButton.layer.removeAllAnimations()
     }
     
     // MARK: ProgressDelegate
@@ -269,6 +284,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         if state.isLocalPeer || state.isAvailable {
             navigationItem.titleView = nil
             navigationItem.title = peer.nickname
+			pinButton.layer.removeAllAnimations()
         } else {
             let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
             titleLable.text = peer.nickname
@@ -289,4 +305,13 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
         circleLayer?.removeFromSuperlayer()
         circleLayer = nil
     }
+	
+	// TODO merge with WelcomeViewController.animatePinButton()
+	@objc private func animatePinButton(timer: Timer?) {
+		guard let peer = displayedPeerInfo else { return }
+		UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: peer.pinned ? [] : [.autoreverse, .repeat, .allowUserInteraction], animations: {
+			self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -3.0)
+		}, completion: nil)
+		self.timer = nil
+	}
 }

@@ -9,7 +9,7 @@
 "17w-pX-qWh.segmentTitles[2]" = "Frauen";
 
 /* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[3] = "Queers"; ObjectID = "17w-pX-qWh"; */
-"17w-pX-qWh.segmentTitles[3]" = "Queers";
+"17w-pX-qWh.segmentTitles[3]" = "Diverse";
 
 /* Class = "UILabel"; accessibilityHint = "Name of the peer you pin matched"; ObjectID = "1Eb-LT-XnB"; */
 "1Eb-LT-XnB.accessibilityHint" = "Name deines Pin Matches";
@@ -186,7 +186,7 @@
 "jMl-1T-kkd.segmentTitles[1]" = "Weiblich";
 
 /* Class = "UISegmentedControl"; jMl-1T-kkd.segmentTitles[2] = "Queer"; ObjectID = "jMl-1T-kkd"; */
-"jMl-1T-kkd.segmentTitles[2]" = "Queer";
+"jMl-1T-kkd.segmentTitles[2]" = "Divers";
 
 /* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "jRR-HL-OFn"; */
 "jRR-HL-OFn.accessibilityLabel" = "Details zur Person";
@@ -200,8 +200,8 @@
 /* Class = "UISlider"; accessibilityLabel = "Minimum Age Bound"; ObjectID = "kYd-92-VvC"; */
 "kYd-92-VvC.accessibilityLabel" = "Altersuntergrenze";
 
-/* Class = "UINavigationItem"; title = "Finding"; ObjectID = "khg-QX-S1a"; */
-"khg-QX-S1a.title" = "Finden";
+/* Class = "UINavigationItem"; title = "Radar"; ObjectID = "khg-QX-S1a"; */
+"khg-QX-S1a.title" = "Radar";
 
 /* Class = "UITableViewController"; title = "Character Traits"; ObjectID = "kuI-R6-Fbl"; */
 "kuI-R6-Fbl.title" = "Charaktereigenschaften";
@@ -236,8 +236,8 @@
 /* Class = "UILabel"; text = "Only with age available"; ObjectID = "sZh-Xd-jZD"; */
 "sZh-Xd-jZD.text" = "Nur mit Alter angegeben";
 
-/* Class = "UINavigationItem"; title = "Radar"; ObjectID = "sgW-Kv-UY4"; */
-"sgW-Kv-UY4.title" = "Radar";
+/* Class = "UINavigationItem"; title = "Search"; ObjectID = "sgW-Kv-UY4"; */
+"sgW-Kv-UY4.title" = "Search";
 
 /* Class = "UISwitch"; accessibilityHint = "Filters out people with no age set"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityHint" = "Filtert Leute heraus, die kein Alter gesetzt haben";
