@@ -56,7 +56,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     }
     
     func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
-        return (CharacterTrait.ApplyType.values.index(of: characterTraits![selectedTrait!.row].applies)!, 0)
+        return (CharacterTrait.ApplyType.allCases.index(of: characterTraits![selectedTrait!.row].applies)!, 0)
     }
 	
 	func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {
@@ -76,15 +76,15 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
 	}
 	
 	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return CharacterTrait.ApplyType.values.count
+        return CharacterTrait.ApplyType.allCases.count
 	}
 	
 	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return CharacterTrait.ApplyType.values[row].localizedRawValue
+		return CharacterTrait.ApplyType.allCases[row].localizedRawValue
 	}
 	
 	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		characterTraits![selectedTrait!.row].applies = CharacterTrait.ApplyType.values[row]
+		characterTraits![selectedTrait!.row].applies = CharacterTrait.ApplyType.allCases[row]
 		self.tableView.reloadRows(at: [selectedTrait!], with: .none)
 	}
 }

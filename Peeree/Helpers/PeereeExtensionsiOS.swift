@@ -19,15 +19,8 @@ extension PeerInfo {
     }
 }
 
-//extension LocalPeerInfo {
-//    var picture: UIImage? {
-//        get { return peer.picture }
-//        set { peer.picture = newValue }
-//    }
-//}
-
 extension UserPeerInfo {
-    /* override */ var picture: UIImage? {
+    var picture: UIImage? {
         get { return peer.picture }
         set {
             let oldValue = picture

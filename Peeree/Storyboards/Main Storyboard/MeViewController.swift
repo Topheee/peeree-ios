@@ -23,7 +23,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     private var activeField: UITextField! = nil
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
-        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[sender.selectedSegmentIndex]
+        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
@@ -66,10 +66,18 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			alertController.addAction(viewTermsAction)
 			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
 			alertController.preferredAction = createAction
-			alertController.present(nil)
+			alertController.present()
         }
     }
-    
+	
+	@IBAction func browsePeereeURL(_ sender: Any) {
+		UIApplication.shared.openURL(URL(string: wwwHomeURL)!)
+	}
+	
+	@IBAction func browsePrivacyPolicyURL(_ sender: Any) {
+		UIApplication.shared.openURL(URL(string: wwwPrivacyPolicyURL)!)
+	}
+	
     private func fillBirthdayInput(with date: Date) {
         let dateFormatter = DateFormatter()
         dateFormatter.timeStyle = .none
@@ -229,7 +237,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     private func loadUserPeerInfo() {
         nameTextField.text = UserPeerInfo.instance.peer.nickname
-        genderControl.selectedSegmentIndex = PeerInfo.Gender.values.index(of: UserPeerInfo.instance.peer.gender) ?? 0
+        genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.index(of: UserPeerInfo.instance.peer.gender) ?? 0
         if let date = UserPeerInfo.instance.dateOfBirth {
             fillBirthdayInput(with: date)
         } else {

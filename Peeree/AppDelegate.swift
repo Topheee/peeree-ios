@@ -9,6 +9,9 @@
 import UIKit
 import SafariServices
 
+let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
+let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
+
 struct Theme {
     let globalTintRed: CGFloat
     let globalTintGreen: CGFloat
@@ -68,7 +71,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
 	
 	static func viewTerms(in viewController: UIViewController) {
-		// TODO localize URL, store URL in global constant
 		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
 		let safariController = SFSafariViewController(url: termsURL)
 		if #available(iOS 10.0, *) {
@@ -81,7 +83,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		viewController.present(safariController, animated: true, completion: nil)
 	}
     
-    let theme = Theme(globalTint: (22/255, 145/255, 101/255), barTint: (22/255, 145/255, 101/255), globalBackground: (255/255, 255/255, 255/255), barBackground: (255/255, 255/255, 255/255)) //white with green
+    let theme = Theme(globalTint: (22.0/255.0, 145.0/255.0, 101.0/255.0), barTint: (22.0/255.0, 145.0/255.0, 101.0/255.0), globalBackground: (255.0/255.0, 255.0/255.0, 255.0/255.0), barBackground: (255.0/255.0, 255.0/255.0, 255.0/255.0)) //white with green
     
     /// This is somehow set by the environment...
     var window: UIWindow?
@@ -121,10 +123,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         }
         
         _ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
-            if UIApplication.instancesRespond(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
-                //only ask on iOS 8 or later
-                UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
-            }
+			UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
         }
 
         // reinstantiate CBManagers if there where some
@@ -256,7 +255,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             })
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
             alertController.preferredAction = retryVerifyAction
-            alertController.present(nil)
+            alertController.present()
         } else {
             AccountController.shared.pin(peer)
         }
@@ -268,8 +267,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
     
     func publicKeyMismatch(of peerID: PeerID) {
-        let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possibly Malicious Peer alert"), peerID.uuidString)
-        InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Possibly Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
+        let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), peerID.uuidString)
+        InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
     }
     
     func sequenceNumberResetFailed(error: ErrorResponse) {

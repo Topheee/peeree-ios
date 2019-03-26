@@ -27,25 +27,25 @@ final public class SynchronizedArray<T> {
     }
     
     /// runs the passed block synchronized and gives direct access to the array
-    open func accessAsync(query: @escaping (inout [T]) -> Void) {
+    public func accessAsync(query: @escaping (inout [T]) -> Void) {
         accessQueue.async {
             query(&self.array)
         }
     }
     
-    open func accessSync<S>(execute work: @escaping (inout [T]) throws -> S) rethrows -> S {
+    public func accessSync<S>(execute work: @escaping (inout [T]) throws -> S) rethrows -> S {
         return try accessQueue.sync {
             return try work(&self.array)
         }
     }
     
-    open func append(_ newElement: T) {
+    public func append(_ newElement: T) {
         accessQueue.async {
             self.array.append(newElement)
         }
     }
     
-    open subscript(index: Int) -> T {
+    public subscript(index: Int) -> T {
         set {
             accessQueue.async {
                 self.array[index] = newValue
@@ -81,19 +81,19 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     /// runs the passed block synchronized and gives direct access to the dictionary
-    open func accessAsync(query: @escaping (inout [Key : Value]) -> Void) {
+    public func accessAsync(query: @escaping (inout [Key : Value]) -> Void) {
         accessQueue.async {
             query(&self.dictionary)
         }
     }
     
-    open func accessSync<S>(execute work: @escaping (inout [Key : Value]) throws -> S) rethrows -> S {
+    public func accessSync<S>(execute work: @escaping (inout [Key : Value]) throws -> S) rethrows -> S {
         return try accessQueue.sync {
             return try work(&self.dictionary)
         }
     }
     
-    open subscript(index: Key) -> Value? {
+    public subscript(index: Key) -> Value? {
         set {
             accessQueue.async {
                 self.dictionary[index] = newValue
@@ -111,13 +111,13 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     // @warn_unused_result public @rethrows func contains(@noescape predicate: (Self.Generator.Element) throws -> Bool) rethrows -> Bool {
-    open func contains( predicate: ((Key, Value)) throws -> Bool) rethrows -> Bool {
+    public func contains( predicate: ((Key, Value)) throws -> Bool) rethrows -> Bool {
         return try accessQueue.sync {
             return try self.dictionary.contains(where: predicate)
         }
     }
     
-    open func removeValue(forKey key: Key) -> Value? {
+    public func removeValue(forKey key: Key) -> Value? {
         var ret: Value? = nil
         accessQueue.sync {
             ret = self.dictionary.removeValue(forKey: key)
@@ -125,7 +125,7 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
         return ret
     }
     
-    open func removeAll() {
+    public func removeAll() {
         accessQueue.async {
             self.dictionary.removeAll()
         }

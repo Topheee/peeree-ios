@@ -235,10 +235,8 @@ public struct PeerInfo: Equatable {
     public static let KeyType = kSecAttrKeyTypeEC // kSecAttrKeyTypeECSECPrimeRandom
     public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
     
-    public enum Gender: String {
+    public enum Gender: String, CaseIterable {
         case male, female, queer
-        
-        static let values = [male, female, queer]
         
         /*
          *  For genstrings
@@ -340,7 +338,7 @@ public struct PeerInfo: Equatable {
     
     var aggregateData: Data {
         get {
-            let ageByte = age != nil ? UInt8(age!) : UInt8(0)
+            let ageByte = UInt8(age ?? 0)
             let genderByte: GenderByte = gender == .queer ? .queer : gender == .female ? .female : .male;
             return Data(bytes: [ageByte, genderByte.rawValue, UInt8(hasPicture), version])
         }

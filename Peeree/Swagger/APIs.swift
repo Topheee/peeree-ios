@@ -12,15 +12,15 @@ public protocol SecurityDataSource {
 }
 
 open class SwaggerClientAPI {
-    open static var dataSource: SecurityDataSource?
+    public static var dataSource: SecurityDataSource?
     
-    open static let `protocol` = "https"
-	open static let testHost = "192.168.178.51" // "peeree-test.ddns.net" // "127.0.0.1" // "172.20.10.2" // "192.168.12.177" // "131.234.241.136" // "192.168.12.190"
-	open static let host = "rest.peeree.de:9443"
-    open static let basePath = "\(`protocol`)://\(host)/v1"
-    open static let baseURL = URL(string: basePath)!
-    open static var credential: URLCredential?
-    open static var customHeaders: [String:String] = [:]
+    public static let `protocol` = "https"
+	public static let testHost = "192.168.178.51" // "peeree-test.ddns.net" // "127.0.0.1" // "172.20.10.2" // "192.168.12.177" // "131.234.241.136" // "192.168.12.190"
+	public static let host = "rest.peeree.de:9443"
+    public static let basePath = "\(`protocol`)://\(host)/v1"
+    public static let baseURL = URL(string: basePath)!
+    public static var credential: URLCredential?
+    public static var customHeaders: [String:String] = [:]
     static var requestBuilderFactory: RequestBuilderFactory = CustomRequestBuilderFactory()
 }
 

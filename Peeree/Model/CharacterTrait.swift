@@ -30,10 +30,8 @@ public struct CharacterTrait {
     
     static let standardTraits = [CharacterTrait(kind: .warmness), CharacterTrait(kind: .logicalConclusion), CharacterTrait(kind: .emotionalStability), CharacterTrait(kind: .dominance), CharacterTrait(kind: .vitality), CharacterTrait(kind: .ruleAwareness), CharacterTrait(kind: .socialCompetence), CharacterTrait(kind: .sensitiveness), CharacterTrait(kind: .vigilance), CharacterTrait(kind: .escapism), CharacterTrait(kind: .privateness), CharacterTrait(kind: .solicitousness), CharacterTrait(kind: .opennessToChange), CharacterTrait(kind: .frugalilty), CharacterTrait(kind: .perfectionism), CharacterTrait(kind: .strain)]
     
-    enum Kind: String {
+    enum Kind: String, CaseIterable {
         case warmness, logicalConclusion, emotionalStability, dominance, vitality, ruleAwareness, socialCompetence, sensitiveness, vigilance, escapism, privateness, solicitousness, opennessToChange, frugalilty, perfectionism, strain
-        
-        static let values = [warmness, logicalConclusion, emotionalStability, dominance, vitality, ruleAwareness, socialCompetence, sensitiveness, vigilance, escapism, privateness, solicitousness, opennessToChange, frugalilty, perfectionism, strain]
         
         var kindDescription: String {
             return Bundle.main.localizedString(forKey: self.rawValue+"Description", value: NSLocalizedString("No description available.", comment: "For whatever reason there is no description available for this Character Trait."), table: nil)
@@ -78,11 +76,9 @@ public struct CharacterTrait {
          */
     }
     
-    enum ApplyType: String {
+    enum ApplyType: String, CaseIterable {
         case yes, no, moreOrLess, dontKnow
-        
-        static let values = [yes, no, moreOrLess, dontKnow]
-        
+		
         /*
          *  For genstrings
          *

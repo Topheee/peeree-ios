@@ -27,7 +27,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     // unfortunenately this will grow until we go offline as we do not get any disconnection notification...
     // also, we CAN NOT rely on that the central really is the peer behind that PeerID, as we have no mechanism to prove it
-    private var _availableCentrals = SynchronizedDictionary<UUID, PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).availableCentrals")
+	private var _availableCentrals = [UUID : PeerID]()
     
     private var nonces = [UUID : Data]()
     
@@ -65,7 +65,9 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     }
     
     func disconnect(_ cbPeerID: UUID) {
-        _ = _availableCentrals.removeValue(forKey: cbPeerID)
+		dQueue.async {
+			_ = self._availableCentrals.removeValue(forKey: cbPeerID)
+		}
     }
     
     // MARK: CBPeripheralManagerDelegate

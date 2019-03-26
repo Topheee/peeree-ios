@@ -10,7 +10,6 @@ import Foundation
 
 public protocol RemotePeering {
     var availablePeers: [PeerID] { get }
-    var peersMet: Int { get }
     var isBluetoothOn: Bool { get }
     
     func getPeerInfo(of peerID: PeerID) -> PeerInfo?
@@ -89,19 +88,23 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
     
     private func range(_ peerID: PeerID, timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
         guard rangeBlock != nil else { return }
-        
+		
+		let timer: Timer
         if #available(iOS 10.0, *) {
-            let timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
+            timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
                 PeeringController.shared._remote.range(peerID)
             }
-            timer.tolerance = tolerance
-            RunLoop.main.add(timer, forMode: .defaultRunLoopMode)
         } else {
-            let timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(PeeringController.callRange(_:)), userInfo: peerID, repeats: false)
-            timer.tolerance = tolerance
-            RunLoop.main.add(timer, forMode: .defaultRunLoopMode)
+            timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(PeeringController.callRange(_:)), userInfo: peerID, repeats: false)
         }
-        
+		timer.tolerance = tolerance
+		
+		#if os(macOS)
+			RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
+		#else
+			RunLoop.main.add(timer, forMode: RunLoopMode.defaultRunLoopMode)
+		#endif
+		
         rangeBlock?(peerID, distance)
     }
     

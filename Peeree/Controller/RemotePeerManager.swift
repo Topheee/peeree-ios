@@ -23,8 +23,6 @@ protocol RemotePeerManagerDelegate {
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
 final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDelegate, CBPeripheralDelegate {
-    static private let PeersMetKey = "PeersMet"
-    
     private struct PeerData {
         var progress = Progress(totalUnitCount: 7)
         var aggregateData: Data? = nil
@@ -76,7 +74,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                     try peer.publicKey.verify(message: data!, signature: signature!)
                 }
             } catch {
-                // TODO populate error and inform user about possibly malicious peer
+                // TODO populate error and inform user about possible malicious peer
                 NSLog("Characteristic verification failed: \(error)")
                 progress.cancel()
                 return nil
@@ -87,11 +85,10 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         }
     }
     
-//    private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", qos: .utility, attributes: [])
     private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
     
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
-    private var cachedPeers = SynchronizedDictionary<PeerID, /* LocalPeerInfo */ PeerInfo>(queueLabel: "\(Bundle.main.bundleIdentifier!).cachedPeers")
+    private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(Bundle.main.bundleIdentifier!).cachedPeers")
     private var peerInfoTransmissions = [PeerID : PeerData]()
     
     private var activeTransmissions = [Transmission : (Progress, Data)]() // TODO if the synchronization through the dQueue is too slow, switch to a delegate model, where the delegate is being told when a transmission begins/ends. Also, inform new delegates (via didSet and then dQueue.aysnc) of ongoing transmissions by calling transmissionDidBegin for every current transmission.
@@ -105,8 +102,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     private var nonces = [CBPeripheral : Data]()
     private var portraitSignatures = [PeerID : Data?]()
-    
-    lazy var peersMet = UserDefaults.standard.integer(forKey: RemotePeerManager.PeersMetKey)
     
     var delegate: RemotePeerManagerDelegate?
     
@@ -149,8 +144,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             }
             self.activeTransmissions.removeAll()
             self.peerInfoTransmissions.removeAll()
-            // writing peersMet here is a good choice, since we will stop peering before the app is quit and also this method won't get called often and the peers met are not that critical
-            UserDefaults.standard.set(self.peersMet, forKey:RemotePeerManager.PeersMetKey)
             for (peripheral, _) in self._availablePeripherals {
                 self.disconnect(peripheral)
             }
@@ -558,7 +551,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                     if let peer = peerData.construct(with: peerID) {
                         cachedPeers[peerID] = peer /* LocalPeerInfo(peer: peer) */
                         peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
-                        peersMet = peersMet + 1
                         peerAppeared(peerID, peripheral: peripheral, again: false)
                         // always send pin match indication on new connect to be absolutely sure that the other really got that
                         indicatePinMatch(to: peer)
@@ -701,15 +693,8 @@ struct Transmission {
     let characteristicID: CBUUID
 }
 
+/// Compiler generates hash(into: for us)
 extension Transmission: Hashable {
-    var hashValue: Int {
-        var hash = 23
-        hash = hash.addingReportingOverflow(peripheralID.hashValue).partialValue
-        hash = hash.multipliedReportingOverflow(by: 31).partialValue
-        hash = hash.addingReportingOverflow(characteristicID.hashValue).partialValue
-        return hash
-    }
-    
     static func ==(lhs: Transmission, rhs: Transmission) -> Bool {
         return lhs.peripheralID == rhs.peripheralID && lhs.characteristicID == rhs.characteristicID
     }

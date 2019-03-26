@@ -9,11 +9,6 @@
 import Foundation
 import CoreGraphics
 
-// TODO use this in the swagger completion blocks as argument, to eliminate the case that both error and data are nil
-enum OperationResult<T> {
-    case good(T), bad(Error)
-}
-
 // MARK: - Functions
 
 func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
@@ -142,7 +137,7 @@ extension String {
         
         let encoding = String.Encoding(rawValue: String.Encoding.RawValue(encodingRawValue))
         let suffix = data.suffix(from: MemoryLayout<UInt32>.size)
-        self.init(data: data.subdata(in: suffix.startIndex..<suffix.endIndex), encoding: encoding)
+        self.init(data: suffix, encoding: encoding)
     }
     
     /// returns first count characters

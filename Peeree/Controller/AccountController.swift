@@ -162,7 +162,7 @@ public class AccountController: SecurityDataSource {
         guard accountExists else { return }
         self.pinnedPeers.accessAsync { (dictionary) in
             let peerID = peer.peerID
-            if !(dictionary.contains { $0.0 == peerID && $0.1 == peer.publicKeyData }) {
+            if dictionary[peerID] != peer.publicKeyData {
                 dictionary[peerID] = peer.publicKeyData
                 // access the set on the queue to ensure the last peerID is also included
                 archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)

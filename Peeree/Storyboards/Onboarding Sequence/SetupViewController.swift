@@ -28,7 +28,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         }
         
         UserPeerInfo.instance.peer.nickname = chosenName
-        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.values[genderPicker.selectedSegmentIndex]
+        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.allCases[genderPicker.selectedSegmentIndex]
         
         AppDelegate.shared.finishIntroduction()
         dismiss(animated: true, completion: nil)
