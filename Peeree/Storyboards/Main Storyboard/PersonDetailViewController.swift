@@ -171,7 +171,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate {
             circleLayer.fillColor = UIColor.clear.cgColor
             circleLayer.strokeColor = AppDelegate.shared.theme.globalTintColor.cgColor
             circleLayer.lineWidth = 5.0
-            circleLayer.lineCap = kCALineCapRound
+            circleLayer.lineCap = CAShapeLayerLineCap.round
             circleLayer.shadowColor = UIColor.gray.cgColor
             circleLayer.strokeEnd = CGFloat(progress.fractionCompleted)
             

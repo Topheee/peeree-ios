@@ -99,11 +99,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
         }
 		timer.tolerance = tolerance
 		
-		#if os(macOS)
-			RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
-		#else
-			RunLoop.main.add(timer, forMode: RunLoopMode.defaultRunLoopMode)
-		#endif
+		RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
 		
         rangeBlock?(peerID, distance)
     }

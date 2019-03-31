@@ -68,7 +68,7 @@ extension UIView {
             value.alpha = 0.0
         }
         
-        UIView.animate(withDuration: duration, delay: delay, usingSpringWithDamping: damping, initialSpringVelocity: velocity, options: UIViewAnimationOptions(rawValue: 0), animations: { () -> Void in
+        UIView.animate(withDuration: duration, delay: delay, usingSpringWithDamping: damping, initialSpringVelocity: velocity, options: UIView.AnimationOptions(rawValue: 0), animations: { () -> Void in
             for (index, view) in views.enumerated() {
                 view.frame = positions[index]
                 view.alpha = 1.0

@@ -13,8 +13,8 @@ final class BrowseViewController: UITableViewController {
 	
     private static let PeerDisplayCellID = "peerDisplayCell"
     private static let OfflineModeCellID = "placeholderCell"
-    private static let AddAnimation = UITableViewRowAnimation.automatic
-    private static let DelAnimation = UITableViewRowAnimation.automatic
+    private static let AddAnimation = UITableView.RowAnimation.automatic
+    private static let DelAnimation = UITableView.RowAnimation.automatic
     
     enum PeersSection: Int {
         case matched = 0, inFilter, outFilter
@@ -68,7 +68,7 @@ final class BrowseViewController: UITableViewController {
 				makeNavigationBar(hidden: true)
 			}
 		} else {
-			UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
+			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}
     }
     
@@ -217,7 +217,7 @@ final class BrowseViewController: UITableViewController {
     
     func indexPath(of peer: PeerInfo) -> IndexPath? {
         for i in 0..<peerCache.count  {
-            let row = peerCache[i].index(of: peer)
+            let row = peerCache[i].firstIndex(of: peer)
             if row != nil {
                 return IndexPath(row: row!, section: i)
             }
@@ -367,14 +367,14 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func pinMatchOccurred(_ peer: PeerInfo) {
-        assert(peerCache[PeersSection.matched.rawValue].index(of: peer) == nil, "The following code assumes it is executed only once for one peer at maximum. If this is not correct any more, a guard check of this assertion would be enough here (since then nothing has to be done).")
+        assert(peerCache[PeersSection.matched.rawValue].firstIndex(of: peer) == nil, "The following code assumes it is executed only once for one peer at maximum. If this is not correct any more, a guard check of this assertion would be enough here (since then nothing has to be done).")
         
         var _row: Int? = nil
         var _sec: Int? = nil
         var wasOne = false
         
         for section in [PeersSection.outFilter.rawValue, PeersSection.inFilter.rawValue] {
-            if let idx = (peerCache[section].index { $0 == peer }) {
+            if let idx = (peerCache[section].firstIndex { $0 == peer }) {
                 peerCache[section].remove(at: idx)
                 wasOne = peerCache[section].count == 0
                 _row = idx
@@ -468,7 +468,7 @@ final class OfflineTableViewCell: UITableViewCell {
 		guard let sublayers = backgroundView?.layer.sublayers else { return }
 		backgroundView?.layer.sublayers = nil
 		if #available(iOS 10.0, *) {
-			navigationBarTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(UINavigationControllerHideShowBarDuration), repeats: false) { (timer) in
+			navigationBarTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(UINavigationController.hideShowBarDuration), repeats: false) { (timer) in
 				self.backgroundView?.layer.sublayers = sublayers
 			}
 		}

@@ -140,6 +140,9 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
             peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic]
             peripheral.add(peereeService)
+		@unknown default:
+			// just wait
+			break
         }
     }
     

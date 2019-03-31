@@ -61,11 +61,11 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         self.dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         var originalImage, editedImage, imageToSave: UIImage?
         
-        editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
-        originalImage = info[UIImagePickerControllerOriginalImage] as? UIImage
+        editedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage
+        originalImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage
         
         if editedImage != nil {
             imageToSave = editedImage

@@ -237,7 +237,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     private func loadUserPeerInfo() {
         nameTextField.text = UserPeerInfo.instance.peer.nickname
-        genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.index(of: UserPeerInfo.instance.peer.gender) ?? 0
+        genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: UserPeerInfo.instance.peer.gender) ?? 0
         if let date = UserPeerInfo.instance.dateOfBirth {
             fillBirthdayInput(with: date)
         } else {
@@ -250,8 +250,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
     
     private func registerForKeyboardNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: NSNotification.Name.UIKeyboardDidShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: UIResponder.keyboardDidShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     /// Called when the UIKeyboardDidShowNotification is sent.
@@ -261,7 +261,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
 		// TEST with iOS < 11
 		let accessoryHeight = activeField.inputView?.inputAccessoryView?.frame.height ?? 0.0
-        let inputHeight = (info[UIKeyboardFrameBeginUserInfoKey] as! CGRect).height
+        let inputHeight = (info[UIResponder.keyboardFrameBeginUserInfoKey] as! CGRect).height
 		let keyboardHeight = accessoryHeight + inputHeight
 
         let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardHeight, right: 0.0)

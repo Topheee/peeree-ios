@@ -69,8 +69,8 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 		let termsAgreement = NSLocalizedString("I agree to the ", comment: "Link button text in onboarding")
 		let terms = NSLocalizedString("Terms of Use", comment: "Colored link name in button text in onboarding")
 		
-		let linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedStringKey.foregroundColor : UIColor.darkText])
-		linkText.append(NSAttributedString(string: terms, attributes: [NSAttributedStringKey.foregroundColor : AppDelegate.shared.theme.globalTintColor]))
+		let linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.darkText])
+		linkText.append(NSAttributedString(string: terms, attributes: [NSAttributedString.Key.foregroundColor : AppDelegate.shared.theme.globalTintColor]))
 		
 		termsLinkButton.setAttributedTitle(linkText, for: .normal)
     }

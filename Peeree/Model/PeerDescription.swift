@@ -346,7 +346,7 @@ public struct PeerInfo: Equatable {
         get {
             let ageByte = UInt8(age ?? 0)
             let genderByte: GenderByte = gender == .queer ? .queer : gender == .female ? .female : .male;
-            return Data(bytes: [ageByte, genderByte.rawValue, UInt8(hasPicture), version])
+            return Data([ageByte, genderByte.rawValue, UInt8(hasPicture), version])
         }
         set {
             if newValue.count > 0 {

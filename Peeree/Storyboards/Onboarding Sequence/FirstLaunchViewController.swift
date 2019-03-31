@@ -32,7 +32,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
         
         let pageView = pageViewController.view
         
-		self.addChildViewController(pageViewController)
+		self.addChild(pageViewController)
 		self.view.addSubview(pageView!)
 		
 		// Set the page view controller's bounds using an inset rect so that self's view is visible around the edges of the pages.
@@ -42,7 +42,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		}
 		pageView?.frame = pageViewRect
 		
-		pageViewController.didMove(toParentViewController: self)
+		pageViewController.didMove(toParent: self)
 		
 		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
@@ -54,8 +54,8 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 	
 	// MARK: - UIPageViewControllerDelegate
 	
-	func pageViewController(_ pageViewController: UIPageViewController, spineLocationFor orientation: UIInterfaceOrientation) -> UIPageViewControllerSpineLocation {
-		return UIPageViewControllerSpineLocation.none
+	func pageViewController(_ pageViewController: UIPageViewController, spineLocationFor orientation: UIInterfaceOrientation) -> UIPageViewController.SpineLocation {
+		return UIPageViewController.SpineLocation.none
 	}
 	
 	// MARK: - UIPageViewControllerDataSource

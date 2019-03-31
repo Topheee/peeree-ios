@@ -164,6 +164,28 @@ extension Data {
     }
 }
 
+extension Data {
+	struct EmptyError: Error {}
+	/**
+	replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
+	*/
+	func withUnsafePointer<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) throws -> ResultType {
+		return try self.withUnsafeBytes { (bufferPointer: UnsafeRawBufferPointer) in
+			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
+			return try body(bytePointer)
+		}
+	}
+	/**
+	replacement of the old `mutating func withUnsafeMutableBytes<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
+	*/
+	mutating func withUnsafeMutablePointer<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) throws -> ResultType {
+		return try self.withUnsafeMutableBytes { (bufferPointer: UnsafeMutableRawBufferPointer) in
+			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
+			return try body(bytePointer)
+		}
+	}
+}
+
 extension HTTPURLResponse {
     var isFailure: Bool { return statusCode > 399 && statusCode < 600 }
 }

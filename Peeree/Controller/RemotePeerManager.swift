@@ -678,7 +678,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         let writeType = CBCharacteristicWriteType.withResponse
         let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerInfo.instance.keyPair.blockSize)
         var nonce = Data(count: randomByteCount)
-        if nonce.withUnsafeMutableBytes({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) }) == 0 {
+        if ((try? nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })) ?? -1) == 0 {
             nonces[peripheral] = nonce
             peripheral.writeValue(nonce, for: characteristic, type: writeType)
         } else {

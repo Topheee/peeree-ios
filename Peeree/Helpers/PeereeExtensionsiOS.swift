@@ -34,7 +34,7 @@ extension UserPeerInfo {
                 DispatchQueue.global().async {
                     // Save the new image to the documents directory
                     do {
-                        try UIImageJPEGRepresentation(self.picture!, 0.0)?.write(to: self.pictureResourceURL, options: .atomic)
+                        try self.picture!.jpegData(compressionQuality: 0.0)?.write(to: self.pictureResourceURL, options: .atomic)
                     } catch let error as NSError {
                         NSLog(error.debugDescription)
                         DispatchQueue.main.async {

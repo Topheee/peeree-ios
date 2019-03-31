@@ -93,7 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     /**
      *  Registers for notifications, presents onboarding on first launch and applies GUI theme
      */
-	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         setupAppearance()
         
         AccountController.shared.delegate = self
@@ -128,8 +128,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
         // reinstantiate CBManagers if there where some
         // TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
-        let restoredCentralManagerIDs = launchOptions?[UIApplicationLaunchOptionsKey.bluetoothCentrals] as? [String]
-        let restoredPeripheralManagerIDs = launchOptions?[UIApplicationLaunchOptionsKey.bluetoothPeripherals] as? [String]
+        let restoredCentralManagerIDs = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothCentrals] as? [String]
+        let restoredPeripheralManagerIDs = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothPeripherals] as? [String]
         if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
             PeeringController.shared.peering = true
         }

@@ -56,7 +56,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     }
     
     func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int) {
-        return (CharacterTrait.ApplyType.allCases.index(of: characterTraits![selectedTrait!.row].applies)!, 0)
+        return (CharacterTrait.ApplyType.allCases.firstIndex(of: characterTraits![selectedTrait!.row].applies)!, 0)
     }
 	
 	func headingOfBasicDescriptionViewController(_ basicDescriptionViewController: BasicDescriptionViewController) -> String? {

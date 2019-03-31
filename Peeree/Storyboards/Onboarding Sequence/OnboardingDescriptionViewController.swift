@@ -35,7 +35,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 240
     }
     
@@ -58,7 +58,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        UIView.animate(withDuration: 2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIViewAnimationOptions.allowUserInteraction, animations: { () -> Void in
+        UIView.animate(withDuration: 2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIView.AnimationOptions.allowUserInteraction, animations: { () -> Void in
             self.backButton.alpha = 1.0
         }, completion: nil)
     }

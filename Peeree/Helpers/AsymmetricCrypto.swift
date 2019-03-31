@@ -11,11 +11,11 @@ import Security
 import CommonCrypto
 
 extension Data {
-    func sha256() -> Data {
+    func sha256() throws -> Data {
         let digestLength = Int(CC_SHA256_DIGEST_LENGTH)
         var digest = Data(count: digestLength)
-        _ = digest.withUnsafeMutableBytes({ (digestMutableBytes) in
-            self.withUnsafeBytes({ (plainTextBytes) in
+        _ = try digest.withUnsafeMutablePointer({ (digestMutableBytes) in
+            try self.withUnsafePointer({ (plainTextBytes) in
                 CC_SHA256(plainTextBytes, CC_LONG(self.count), digestMutableBytes)
             })
         })
@@ -201,10 +201,10 @@ public class AsymmetricPublicKey: AsymmetricKey {
             }
         } else {
             #if os(iOS)
-                let digest = data.sha256()
+                let digest = try data.sha256()
 				
-                let status = signature.withUnsafeBytes { (signatureBytes: UnsafePointer<UInt8>) in
-                    return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
+                let status = try signature.withUnsafePointer { (signatureBytes: UnsafePointer<UInt8>) in
+                    return try digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
                         SecKeyRawVerify(key, AsymmetricKey.signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
                     }
                 }
@@ -247,8 +247,8 @@ public class AsymmetricPublicKey: AsymmetricKey {
             #if os(iOS)
                 var cipherSize = SecKeyGetBlockSize(key)
                 var cipher = Data(count: cipherSize)
-                let status = cipher.withUnsafeMutableBytes { (cipherBytes: UnsafeMutablePointer<UInt8>) in
-                    return plainText.withUnsafeBytes { ( plainTextBytes: UnsafePointer<UInt8>) in
+                let status = try cipher.withUnsafeMutablePointer { (cipherBytes: UnsafeMutablePointer<UInt8>) in
+                    return try plainText.withUnsafePointer { ( plainTextBytes: UnsafePointer<UInt8>) in
                         SecKeyEncrypt(key, AsymmetricKey.encryptionPadding, plainTextBytes, plainText.count, cipherBytes, &cipherSize)
                     }
                 }
@@ -287,13 +287,13 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             return signature
         } else {
             #if os(iOS)
-                let digest = data.sha256()
+                let digest = try data.sha256()
                 
                 var signatureSize = 256 // in CryptoExercise it is SecKeyGetBlockSize(key), but on the internet it's some magic number like this
                 var signature = Data(count: signatureSize)
                 
-                let status = signature.withUnsafeMutableBytes { (signatureBytes: UnsafeMutablePointer<UInt8>) in
-                    return digest.withUnsafeBytes { (digestBytes: UnsafePointer<UInt8>) in
+                let status = try signature.withUnsafeMutablePointer { (signatureBytes: UnsafeMutablePointer<UInt8>) in
+                    return try digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
                         SecKeyRawSign(key, AsymmetricKey.signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
                     }
                 }
@@ -324,8 +324,8 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             #if os(iOS)
                 var plainTextSize = cipherText.count
                 var plainText = Data(count: plainTextSize)
-                let status = cipherText.withUnsafeBytes { (cipherTextBytes: UnsafePointer<UInt8>) in
-                    return plainText.withUnsafeMutableBytes { (plainTextBytes: UnsafeMutablePointer<UInt8>) in
+                let status = try cipherText.withUnsafePointer { (cipherTextBytes: UnsafePointer<UInt8>) in
+                    return try plainText.withUnsafeMutablePointer { (plainTextBytes: UnsafeMutablePointer<UInt8>) in
                         SecKeyDecrypt(key, AsymmetricKey.encryptionPadding, cipherTextBytes, cipherText.count, plainTextBytes, &plainTextSize)
                     }
                 }

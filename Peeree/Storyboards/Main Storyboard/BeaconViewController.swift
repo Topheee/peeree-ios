@@ -32,7 +32,7 @@ final class BeaconViewController: UIViewController {
 		let gradient = CAGradientLayer()
 		gradient.frame = view.frame
 		gradient.bounds = view.bounds
-		gradient.type = "radial" //CAGradientLayerType.radial
+		gradient.type = CAGradientLayerType.radial
 		gradient.startPoint = CGPoint(x: 0.5, y: 1.0)
 		gradient.endPoint = CGPoint(x: 1 + 1/CGFloat.pi, y: -1/CGFloat.pi)
 		

@@ -49,7 +49,7 @@ class PinMatchViewController: UIViewController {
         
         displayPeer()
         
-        guard !UIAccessibilityIsReduceTransparencyEnabled() else {
+        guard !UIAccessibility.isReduceTransparencyEnabled else {
             backgroundImageView.image = nil
             backgroundImageView.isHidden = true
             return
