@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina3_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,14 +24,14 @@
             </connections>
         </panGestureRecognizer>
         <visualEffectView opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="CFQ-EY-Yiv">
-            <rect key="frame" x="0.0" y="0.0" width="397" height="153"/>
+            <rect key="frame" x="0.0" y="0.0" width="397" height="80"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="zlq-8W-WKf">
-                <rect key="frame" x="0.0" y="0.0" width="397" height="153"/>
+                <rect key="frame" x="0.0" y="0.0" width="397" height="80"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DWl-Ta-mLV">
-                        <rect key="frame" x="8" y="48" width="381" height="20"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DWl-Ta-mLV">
+                        <rect key="frame" x="12" y="12" width="373" height="20"/>
                         <accessibility key="accessibilityConfiguration">
                             <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
                         </accessibility>
@@ -40,7 +40,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <textView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" textAlignment="natural" adjustsFontForContentSizeCategory="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iwE-ah-D3B">
-                        <rect key="frame" x="8" y="76" width="381" height="69"/>
+                        <rect key="frame" x="12" y="32" width="373" height="40"/>
                         <accessibility key="accessibilityConfiguration">
                             <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                         </accessibility>
@@ -50,22 +50,33 @@
                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                     </textView>
                 </subviews>
+                <gestureRecognizers/>
                 <constraints>
-                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="leading" secondItem="zlq-8W-WKf" secondAttribute="leading" constant="8" id="5ud-KE-n2U"/>
-                    <constraint firstItem="iwE-ah-D3B" firstAttribute="top" secondItem="DWl-Ta-mLV" secondAttribute="bottom" constant="8" id="Ioh-ZN-pKP"/>
-                    <constraint firstItem="iwE-ah-D3B" firstAttribute="leading" secondItem="zlq-8W-WKf" secondAttribute="leading" constant="8" id="L6w-EP-d3F"/>
-                    <constraint firstAttribute="trailing" secondItem="iwE-ah-D3B" secondAttribute="trailing" constant="8" id="LD5-CJ-5ub"/>
+                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="leading" secondItem="zlq-8W-WKf" secondAttribute="leading" constant="12" id="5ud-KE-n2U"/>
+                    <constraint firstItem="iwE-ah-D3B" firstAttribute="top" secondItem="DWl-Ta-mLV" secondAttribute="bottom" id="Ioh-ZN-pKP"/>
+                    <constraint firstItem="iwE-ah-D3B" firstAttribute="trailing" secondItem="DWl-Ta-mLV" secondAttribute="trailing" id="MGF-b2-6yx"/>
                     <constraint firstAttribute="bottom" secondItem="iwE-ah-D3B" secondAttribute="bottom" constant="8" id="QRq-xW-UOr"/>
-                    <constraint firstAttribute="trailing" secondItem="DWl-Ta-mLV" secondAttribute="trailing" constant="8" id="UDI-54-CO7"/>
-                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="top" relation="greaterThanOrEqual" secondItem="zlq-8W-WKf" secondAttribute="top" constant="8" id="tgo-zS-aua"/>
+                    <constraint firstAttribute="trailing" secondItem="DWl-Ta-mLV" secondAttribute="trailing" constant="12" id="UDI-54-CO7"/>
+                    <constraint firstItem="iwE-ah-D3B" firstAttribute="leading" secondItem="DWl-Ta-mLV" secondAttribute="leading" id="Wc2-bn-yfQ"/>
+                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="top" secondItem="zlq-8W-WKf" secondAttribute="top" constant="12" id="tgo-zS-aua"/>
                 </constraints>
+                <connections>
+                    <outletCollection property="gestureRecognizers" destination="VUO-yX-vAE" appends="YES" id="8bx-VE-Uxa"/>
+                </connections>
             </view>
             <viewLayoutGuide key="safeArea" id="0mk-Nc-ODM"/>
-            <blurEffect style="dark"/>
+            <vibrancyEffect>
+                <blurEffect style="dark"/>
+            </vibrancyEffect>
             <connections>
                 <outletCollection property="gestureRecognizers" destination="fOg-Uf-FF5" appends="YES" id="Fde-35-K2z"/>
             </connections>
-            <point key="canvasLocation" x="-237.5" y="-55.5"/>
+            <point key="canvasLocation" x="-239.0625" y="-25"/>
         </visualEffectView>
+        <tapGestureRecognizer id="VUO-yX-vAE">
+            <connections>
+                <action selector="tapAction:" destination="-1" id="VPI-Fm-BXw"/>
+            </connections>
+        </tapGestureRecognizer>
     </objects>
 </document>

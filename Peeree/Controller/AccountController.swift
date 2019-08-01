@@ -28,17 +28,7 @@ public class AccountController: SecurityDataSource {
     /// User defaults key for sequence number
     static private let SequenceNumberKey = "SequenceNumber"
     
-    private static var _instance = AccountController()
-    
-    public static var shared: AccountController {
-        _ = AccountController.__once
-        
-        return _instance
-    }
-    
-    private static var __once: () = { () -> Void in
-        SwaggerClientAPI.dataSource = _instance
-    }()
+    static let shared = AccountController()
     
     public enum Notifications: String {
         public enum UserInfo: String {
@@ -178,7 +168,7 @@ public class AccountController: SecurityDataSource {
                         archiveObjectInUserDefs(set as NSSet, forKey: AccountController.PinnedByPeersKey)
                         
                         DispatchQueue.main.async {
-                            PeeringController.shared.remote.indicatePinMatch(to: peer)
+                            PeeringController.shared.manager(for: peerID).indicatePinMatch()
                             Notifications.pinMatch.post(peerID)
                         }
                     }
@@ -253,7 +243,7 @@ public class AccountController: SecurityDataSource {
         guard !_isCreatingAccount else { return }
         _isCreatingAccount = true
         _sequenceNumber = nil // we are not responsible here to ensure that no account already exists and need to not send this sequence number as our public key
-        var publicKey = UserPeerInfo.instance.peer.publicKeyData
+        var publicKey = UserPeerManager.instance.peer.publicKeyData
     
         DefaultAPI.putAccount(email: _accountEmail) { (_account, _error) in
             var completionError: Error?
@@ -261,7 +251,7 @@ public class AccountController: SecurityDataSource {
                 self._isCreatingAccount = false
                 completion(completionError)
                 if completionError == nil {
-                    Notifications.accountCreated.post(UserPeerInfo.instance.peerID)
+                    Notifications.accountCreated.post(UserPeerManager.instance.peerID)
                 }
             }
             
@@ -273,8 +263,8 @@ public class AccountController: SecurityDataSource {
             self._sequenceNumber = sequenceNumberDataCipher
             completionError = nil
             DispatchQueue.main.sync {
-                // UserPeerInfo has to be modified on the main queue
-                UserPeerInfo.instance.peerID = newPeerID
+                // UserPeerManager has to be modified on the main queue
+                UserPeerManager.define(peerID: newPeerID)
             }
         }
     }
@@ -293,7 +283,7 @@ public class AccountController: SecurityDataSource {
                 self._sequenceNumber = nil
 				self.clearPins()
                 DispatchQueue.main.sync {
-                    UserPeerInfo.delete()
+                    UserPeerManager.delete()
                 }
             }
             self._isDeletingAccount = false
@@ -329,11 +319,11 @@ public class AccountController: SecurityDataSource {
     // MARK: SecurityDelegate
     
     public func getPeerID() -> String {
-        return UserPeerInfo.instance.peer.peerID.uuidString
+        return UserPeerManager.instance.peer.peerID.uuidString
     }
     
     public func getSignature() -> String {
-        return (try? computeSignature()) ?? (try? UserPeerInfo.instance.keyPair.externalPublicKey().base64EncodedString()) ?? ""
+        return (try? computeSignature()) ?? (try? UserPeerManager.instance.keyPair.externalPublicKey().base64EncodedString()) ?? ""
     }
     
     // MARK: Private Functions
@@ -345,6 +335,7 @@ public class AccountController: SecurityDataSource {
         pinnedPeers = SynchronizedDictionary(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
         _accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
         _sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
+		SwaggerClientAPI.dataSource = self
     }
     
     /// resets sequence number to state before request if the request did not reach the server
@@ -378,6 +369,6 @@ public class AccountController: SecurityDataSource {
         }
         
         _sequenceNumber = _sequenceNumber!.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
-        return try UserPeerInfo.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
+        return try UserPeerManager.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
     }
 }

@@ -27,16 +27,15 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
             }
         }
         
-        UserPeerInfo.instance.peer.nickname = chosenName
-        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.allCases[genderPicker.selectedSegmentIndex]
+        UserPeerManager.instance.peer.nickname = chosenName
+        UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[genderPicker.selectedSegmentIndex]
         
         AppDelegate.shared.finishIntroduction()
         dismiss(animated: true, completion: nil)
 	}
 	
 	@IBAction func takePic(_ sender: UIButton) {
-        guard !nameTextField.isFirstResponder else { return }
-        
+        nameTextField.resignFirstResponder()
         showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
 	}
 	
@@ -94,7 +93,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
     }
     
     override func picked(image: UIImage?) {
-        super.picked(image: image)
         picButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
         if #available(iOS 11.0, *) {
             picButton.accessibilityIgnoresInvertColors = image != nil

@@ -28,7 +28,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
         guard let traits = characterTraits else { return }
         
         // trigger NSUserDefaults archiving
-        UserPeerInfo.instance.peer.characterTraits = traits
+        UserPeerManager.instance.peer.characterTraits = traits
     }
     
     // MARK: UITableViewDataSource

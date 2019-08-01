@@ -17,6 +17,9 @@ final class InAppNotificationViewController: UIViewController {
     @IBOutlet weak var messageView: UITextView!
     
     private var displayTimer: Timer!
+	
+	var isNegative: Bool = true
+	var tapAction: (() -> Void)? = nil
     
     override var title: String? {
         get {
@@ -40,7 +43,12 @@ final class InAppNotificationViewController: UIViewController {
     @IBAction func close(_ sender: Any) {
         dismissFromView(animated: true)
     }
-
+	
+	@IBAction func tapAction(_ sender: Any) {
+		tapAction?()
+		dismissFromView(animated: true, velocity: 0.3)
+	}
+	
     @IBAction func panView(_ gestureRecognizer: UIPanGestureRecognizer) {
         guard let piece = gestureRecognizer.view else { return }
         
@@ -65,17 +73,23 @@ final class InAppNotificationViewController: UIViewController {
         // setup our view so that it fits correctly under the (extended) top bar
         let view = self.view!
         superViewController.view.addSubview(view)
+		
+		view.layer.cornerRadius = 8.0
+		view.clipsToBounds = true
+//		if let contentView = (view as? UIVisualEffectView)?.contentView {
+//			contentView.clipsToBounds = true
+//			contentView.layer.cornerRadius = 8.0
+//		}
+		
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.topAnchor.constraint(equalTo: superViewController.topLayoutGuide.topAnchor).isActive = true
-        titleLabel.topAnchor.constraint(equalTo: superViewController.topLayoutGuide.bottomAnchor, constant: 8.0).isActive = true
-        view.leftAnchor.constraint(equalTo: superViewController.view.leftAnchor).isActive = true
-        view.rightAnchor.constraint(equalTo: superViewController.view.rightAnchor).isActive = true
+        view.topAnchor.constraint(equalTo: superViewController.topLayoutGuide.topAnchor, constant: 22.0).isActive = true
+        view.leftAnchor.constraint(equalTo: superViewController.view.leftAnchor, constant: 8.0).isActive = true
+        view.rightAnchor.constraint(equalTo: superViewController.view.rightAnchor, constant: -8.0).isActive = true
         view.setNeedsLayout()
         view.layoutIfNeeded()
-        view.frame.origin.y = -view.frame.height
-        
-        titleLabel.textColor = .white
-        messageView.textColor = .lightText
+		
+		titleLabel.textColor = isNegative ? .white : .black
+		messageView.textColor = isNegative ? .lightText : .darkText
         
         UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 0.0, options: [.beginFromCurrentState], animations: {
             var frame = self.view.frame
@@ -89,6 +103,8 @@ final class InAppNotificationViewController: UIViewController {
                 self.displayTimer = Timer.scheduledTimer(timeInterval: duration, target: self, selector: #selector(self.close(_:)), userInfo: nil, repeats: false)
             }
         })
+		
+		(view as? UIVisualEffectView)?.effect = UIBlurEffect(style: isNegative ? .dark : .extraLight)
     }
     
     func dismissFromView(animated flag: Bool, velocity: CGFloat=0.0) {
@@ -107,6 +123,7 @@ final class InAppNotificationViewController: UIViewController {
                         // if no animations are going on, we (hopefully) can be sure that we can remove ourselves from the view hierarchy
                         self.displayTimer?.invalidate()
                         self.displayTimer = nil
+						self.tapAction = nil
                         self.view.removeFromSuperview()
                     }
                 })
@@ -116,12 +133,14 @@ final class InAppNotificationViewController: UIViewController {
         }
     }
     
-    func presentGlobally(title: String, message: String) {
+	func presentGlobally(title: String, message: String, isNegative: Bool = true, tapAction: (() -> Void)? = nil) {
         DispatchQueue.main.async {
             guard let topVC = UIApplication.shared.keyWindow?.rootViewController else { return }
             if self.titleLabel == nil {
                 self.loadView()
             }
+			self.tapAction = tapAction
+			self.isNegative = isNegative
             self.title = title
             self.message = message
             self.present(in: topVC.presentedViewController ?? topVC, duration: 5.0 + Double(message.count) / 42.0)

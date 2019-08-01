@@ -7,59 +7,102 @@
 //
 
 import Foundation
-import CoreGraphics
 import ImageIO
 import CoreBluetooth.CBUUID
 
-public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
-    /// Key tag of secure enclave key pair used for communicating with REST API
-    private static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
-    private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
-	private static let PrefKey = "UserPeerInfo"
+public final class UserPeerManager: PeerManager {
+	private static let PrefKey = "UserPeerManager"
+	private static let PortraitFileName = "UserPortrait"
+	fileprivate static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
+	fileprivate static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
+	public static var instance = UserPeerManager()
+	
+	public static var pictureResourceURL: URL {
+		// Create a file path to our documents directory
+		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+		return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeerManager.PortraitFileName, isDirectory: false)
+	}
+	
+	public static func delete() {
+		UserDefaults.standard.removeObject(forKey: PrefKey)
+		instance = UserPeerManager()
+		instance.dirtied()
+	}
+	
+	public static func define(peerID: PeerID) {
+		instance.localPeerInfo.peerID = peerID
+		instance.dirtied()
+	}
+	
+	private let localPeerInfo = unarchiveObjectFromUserDefs(UserPeerManager.PrefKey) ?? UserPeerInfo()
+	
+	private init() {
+		super.init(peerID: localPeerInfo.peerID)
+		if peerInfo!.hasPicture {
+			if let provider = CGDataProvider(url: UserPeerManager.pictureResourceURL as CFURL) {
+				cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+			} else {
+				NSLog("ERR: could not initialize CGDataProvider.")
+			}
+		}
+	}
+	
+	override private init(peerID: PeerID) {
+		super.init(peerID: peerID)
+	}
+	
+	/// always returns true to look good in preview
+	override var verified: Bool {
+		get { return true }
+	}
+	
+	override public var cgPicture: CGImage? {
+		didSet {
+			peer.hasPicture = cgPicture != nil
+		}
+	}
+	
+	override public var peerInfo: PeerInfo? {
+		return localPeerInfo.peer
+	}
+	
+	public var peer: PeerInfo {
+		get { return localPeerInfo.peer }
+		set {
+			localPeerInfo.peer = newValue
+			dirtied()
+		}
+	}
+	
+	public var keyPair: KeyPair { return localPeerInfo._keyPair }
+	public var dateOfBirth: Date? {
+		get { return localPeerInfo.dateOfBirth }
+		set { localPeerInfo.dateOfBirth = newValue }
+	}
+	
+	public func dirtied() {
+		archiveObjectInUserDefs(localPeerInfo, forKey: UserPeerManager.PrefKey)
+	}
+	
+}
+
+public final class UserPeerInfo: NSObject, NSSecureCoding {
     private static let DateOfBirthKey = "dateOfBirth"
-    private static let PortraitFileName = "UserPortrait"
-    
-    private static var __once: () = { () -> Void in
-        Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? UserPeerInfo()
-    }()
-    private struct Singleton {
-        static var sharedInstance: UserPeerInfo!
-    }
-	public static var instance: UserPeerInfo {
-        _ = UserPeerInfo.__once
-        
-        return Singleton.sharedInstance
-    }
-    
-    public static func delete() {
-        UserDefaults.standard.removeObject(forKey: PrefKey)
-        Singleton.sharedInstance = UserPeerInfo()
-    }
-    
+	
     @objc public static var supportsSecureCoding : Bool { return true }
-    
-    public var pictureResourceURL: URL {
-        // Create a file path to our documents directory
-        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
-        return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeerInfo.PortraitFileName)
-    }
-    
+	
     private var _peer: PeerInfo
     
-    public /* override */ var peer: PeerInfo {
+    public var peer: PeerInfo {
         get { return _peer }
         set {
 //            assert(peer == oldValue) cannot assert here as we override this from AccountController
             _peer = newValue
             _peer.lastChanged = Date()
-            dirtied()
         }
     }
     
-    private var _keyPair: KeyPair
-    public var keyPair: KeyPair {
-        get { return _keyPair }
-    }
+    fileprivate var _keyPair: KeyPair
     
     /// must only be done by AccountController when new account is created
     public var peerID: PeerID {
@@ -77,15 +120,12 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
 		}
     }
 	
-	private override init() {
+	fileprivate override init() {
 		dateOfBirth = nil
-		try? KeychainStore.removeFromKeychain(tag: UserPeerInfo.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
-		try? KeychainStore.removeFromKeychain(tag: UserPeerInfo.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
-        self._keyPair = try! KeyPair(privateTag: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
-        self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil)
-//        super.init(peer: PeerInfo(peerID: PeerID(), publicKey: keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, cgPicture: nil))
-		super.init()
-		archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
+        self._keyPair = try! KeyPair(privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
+        self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, hasPicture: false)
 	}
 
     @objc required public init?(coder aDecoder: NSCoder) {
@@ -93,24 +133,13 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
         guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
-        guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerInfo.PrivateKeyTag, publicTag: UserPeerInfo.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
+        guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
         let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
-        
-        //        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        //        var characterTraits: [CharacterTrait]
-        //        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
-        //            characterTraits = CharacterTraitCoding.structArray(decodedTraits)
-        //        } else {
-        //            characterTraits = CharacterTrait.standardTraits
-        //        }
         
         guard let peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
         _peer = peer
         _keyPair = keyPair
-        
-        let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
-        let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
-        _peer.cgPicture = picture
+		
 		super.init()
 		refreshAge()
     }
@@ -121,31 +150,8 @@ public final class UserPeerInfo: /* LocalPeerInfo */ NSObject, NSSecureCoding {
             guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
             encodeIt(aCoder, characteristicID: characteristicID, data: data)
         }
-        if let image = peer.cgPicture {
-            let data = NSMutableData()
-            if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
-                CGImageDestinationAddImage(dest, image, nil)
-                if CGImageDestinationFinalize(dest) {
-                    aCoder.encode(data, forKey: PeerInfo.CodingKey.picture.rawValue)
-                }
-            }
-        }
         aCoder.encode(dateOfBirth, forKey: UserPeerInfo.DateOfBirthKey)
-        //        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
-        //        if let uuid = peer.iBeaconUUID {
-        //            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-        //        }
     }
-	
-	public func dirtied() {
-        archiveObjectInUserDefs(self, forKey: UserPeerInfo.PrefKey)
-        // TODO turn it off and on again to make others reload our data
-        // this is actually too dirty and error-prone to do from here
-//        if PeeringController.shared.peering {
-//            PeeringController.shared.peering = false
-//            PeeringController.shared.peering = true
-//        }
-	}
 	
 	private func refreshAge() {
 		if let birth = dateOfBirth {
@@ -164,81 +170,17 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
     return aCoder.encode(data as NSData, forKey: characteristicID.uuidString)
 }
 
-/* public class LocalPeerInfo: NSObject, NSSecureCoding {
-    var peer: PeerInfo
-    
-    var cgPicture: CGImage? {
-        get { return peer.cgPicture }
-        set { peer.cgPicture = newValue }
-    }
-    
-    @objc public static var supportsSecureCoding : Bool {
-        return true
-    }
-    
-    private override init() {
-        fatalError()
-    }
-    
-    init(peer: PeerInfo) {
-        self.peer = peer
-    }
-    
-    @objc required public init?(coder aDecoder: NSCoder) {
-        guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
-        guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
-        guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
-        let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
-        
-//        let uuid = aDecoder.decodeObject(of: NSUUID.self, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-//        var characterTraits: [CharacterTrait]
-//        if let decodedTraits = aDecoder.decodeObject(of: NSArray.self, forKey: PeerInfo.CodingKey.traits.rawValue) as? [CharacterTraitCoding] {
-//            characterTraits = CharacterTraitCoding.structArray(decodedTraits)
-//        } else {
-//            characterTraits = CharacterTrait.standardTraits
-//        }
-        
-        guard let _peer = PeerInfo(peerID: peerID as PeerID, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
-        peer = _peer
-
-        let pictureData = aDecoder.decodeObject(of: NSData.self, forKey: PeerInfo.CodingKey.picture.rawValue)
-        let picture = pictureData != nil ? CGImage(jpegDataProviderSource: CGDataProvider(data: pictureData!)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) : nil
-        peer.cgPicture = picture
-    }
-    
-    @objc public func encode(with aCoder: NSCoder) {
-        aCoder.encode(peer.peerID, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString)
-        for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
-            guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
-            encodeIt(aCoder, characteristicID: characteristicID, data: data)
-        }
-        if let image = peer.cgPicture {
-            let data = NSMutableData()
-            if let dest = CGImageDestinationCreateWithData(data as CFMutableData, "public.jpeg" as CFString, 1, nil) {
-                CGImageDestinationAddImage(dest, image, nil)
-                if CGImageDestinationFinalize(dest) {
-                    aCoder.encode(data, forKey: PeerInfo.CodingKey.picture.rawValue)
-                }
-            }
-        }
-//        aCoder.encode(CharacterTraitCoding.codingArray(peer.characterTraits), forKey: PeerInfo.CodingKey.traits.rawValue)
-//        if let uuid = peer.iBeaconUUID {
-//            aCoder.encode(uuid as NSUUID, forKey: PeerInfo.CodingKey.beaconUUID.rawValue)
-//        }
-    }
-} */
-
 public struct PeerInfo: Equatable {
     fileprivate enum CodingKey : String {
-        case peerID, nickname, hasPicture, gender, age, status, traits, version, beaconUUID, picture, lastChanged, publicKey
+        case peerID, nickname, hasPicture, gender, age, status, traits, version, lastChanged, publicKey
     }
     
     public static let MinAge = 18, MaxAge = 80
     /// postgres can store strings up to this length very efficiently
     public static let MaxEmailSize = 126
-    /// 4 BLE packets
-    public static let MaxNicknameSize = 80
-    public static let KeyType = kSecAttrKeyTypeEC // kSecAttrKeyTypeECSECPrimeRandom
+    /// 1 non-extended BLE packet length
+    public static let MaxNicknameSize = 27
+    public static let KeyType = kSecAttrKeyTypeEC
     public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
     
     public enum Gender: String, CaseIterable {
@@ -276,8 +218,6 @@ public struct PeerInfo: Equatable {
     /// being a constant ensures that the public key is not overwritten after it was verified
     public let publicKey: AsymmetricPublicKey
     
-    public var verified = false
-    
 //    var authenticationStatus: AuthenticationStatus = []
     
     public var nickname = ""
@@ -293,54 +233,29 @@ public struct PeerInfo: Equatable {
     
     public var lastChanged = Date.distantPast
     
-    fileprivate var _hasPicture: Bool = false
-    public var hasPicture: Bool {
-        return _hasPicture
-    }
-    
-    public var cgPicture: CGImage? {
-        didSet {
-            _hasPicture = cgPicture != nil
-        }
-    }
-
-    public var pinMatched: Bool {
-        return AccountController.shared.hasPinMatch(self.peerID)
-    }
-    
-    public var pinned: Bool {
-        return AccountController.shared.isPinned(self)
-    }
-    
-    public var pinStatus: String {
-        if pinned {
-            if pinMatched {
-                return NSLocalizedString("Pin Match!", comment: "Two peers have pinned each other")
-            } else {
-                return NSLocalizedString("Pinned.", comment: "The user marked someone as interesting")
-            }
-        } else {
-            return NSLocalizedString("Not yet pinned.", comment: "The user did not yet marked someone as interesting")
-        }
-    }
-    
-    public var verificationStatus: String {
-        if verified {
-            return NSLocalizedString("verified", comment: "Verification status of peer")
-        } else {
-            return NSLocalizedString("not verified", comment: "Verification status of peer")
-        }
-    }
-    
-    public var summary: String {
-        if age != nil {
-            let format = NSLocalizedString("%d, %@ - %@ (%@)", comment: "Text describing the peers age, gender, pin and verification status")
-            return String(format: format, age!, gender.localizedRawValue, pinStatus, verificationStatus)
-        } else {
-            let format = NSLocalizedString("%@ - %@ (%@)", comment: "Text describing the peers gender, pin and verification status")
-            return String(format: format, gender.localizedRawValue, pinStatus, verificationStatus)
-        }
-    }
+    public var hasPicture: Bool = false
+	
+	public var pinMatched: Bool {
+		return AccountController.shared.hasPinMatch(peerID)
+	}
+	
+	public var pinned: Bool {
+		return AccountController.shared.isPinned(self)
+	}
+	
+	public var summary: String {
+		let manager = PeeringController.shared.manager(for: peerID)
+		var summary: String
+		if age != nil {
+			let format = NSLocalizedString("fullsummary", comment: "Text describing the peers age, gender, pin and verification status")
+			summary = String(format: format, age!, gender.localizedRawValue, manager.verificationStatus)
+		} else {
+			let format = NSLocalizedString("smallsummary", comment: "Text describing the peers gender, pin and verification status")
+			summary = String(format: format, gender.localizedRawValue, manager.verificationStatus)
+		}
+		if manager.unreadMessages > 0 { summary = "\(summary) - 📫 (\(manager.unreadMessages))" }
+		return summary
+	}
     
     var aggregateData: Data {
         get {
@@ -368,7 +283,7 @@ public struct PeerInfo: Equatable {
                 }
             }
             if newValue.count > 2 {
-                _hasPicture = Bool(newValue[2])
+                hasPicture = Bool(newValue[2])
             }
             if newValue.count > 3 {
                 version = newValue[3]
@@ -436,28 +351,17 @@ public struct PeerInfo: Equatable {
     }
     
     func copy(to: PeerID) -> PeerInfo {
-        return PeerInfo(peerID: to, publicKey: publicKey, nickname: nickname, gender: gender, age: age, cgPicture: cgPicture)
+        return PeerInfo(peerID: to, publicKey: publicKey, nickname: nickname, gender: gender, age: age, hasPicture: hasPicture)
     }
     
-    init(peerID: PeerID, publicKey: AsymmetricPublicKey, nickname: String, gender: PeerInfo.Gender, age: Int?, cgPicture: CGImage?) {
+    init(peerID: PeerID, publicKey: AsymmetricPublicKey, nickname: String, gender: PeerInfo.Gender, age: Int?, hasPicture: Bool) {
         self.peerID = peerID
         self.publicKey = publicKey
         self.nickname = nickname
         self.gender = gender
         self.age = age
-        self.cgPicture = cgPicture
+        self.hasPicture = hasPicture
     }
-    
-//    init?(peerID: PeerID, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
-//        guard aggregateData.count > 2 else { return nil }
-//        self.peerID = peerID
-//        self.aggregateData = aggregateData
-//        self.nicknameData = nicknameData
-//        print("new nickname: \(nickname)")
-//        if nickname == "" { return nil }
-//        guard let changedData = lastChangedData else { return }
-//        self.lastChangedData = changedData
-//    }
     
     init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
         do {
@@ -492,7 +396,7 @@ public struct PeerInfo: Equatable {
             }
         }
         if aggregateData.count > 2 {
-            _hasPicture = Bool(aggregateData[2])
+            hasPicture = Bool(aggregateData[2])
         }
         if aggregateData.count > 3 {
             version = aggregateData[3]
@@ -526,4 +430,13 @@ func ==(lhs: PeerInfo, rhs: PeerID) -> Bool {
 
 func ==(lhs: PeerID, rhs: PeerInfo) -> Bool {
     return lhs == rhs.peerID
+}
+
+public struct Transcript {
+	enum Direction {
+		case send, receive
+	}
+	
+	let direction: Direction
+	let message: String
 }

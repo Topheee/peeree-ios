@@ -61,6 +61,8 @@
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
 		9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */; };
 		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
+		9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */; };
+		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
 		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
 		9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFE8A961F33769700264CFE /* NetworkReachability.swift */; };
@@ -165,6 +167,8 @@
 		9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BeaconViewController.swift; path = "Storyboards/Main Storyboard/BeaconViewController.swift"; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
+		9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessageTableViewController.swift; path = "Storyboards/Main Storyboard/MessageTableViewController.swift"; sourceTree = "<group>"; };
+		9DDFB87022837A1100E129E2 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessageCell.swift; path = View/MessageCell.swift; sourceTree = "<group>"; };
 		9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProgressManager.swift; path = Peeree/Helpers/ProgressManager.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
 		9DFE8A961F33769700264CFE /* NetworkReachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkReachability.swift; path = Peeree/Helpers/NetworkReachability.swift; sourceTree = "<group>"; };
@@ -214,6 +218,7 @@
 				9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */,
 				9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */,
 				9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */,
+				9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */,
 			);
 			name = "Main Storyboard";
 			path = Peeree;
@@ -243,6 +248,7 @@
 				9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */,
 				9D6F7B931BC82AD5007CD234 /* RootView.swift */,
 				9DD049441C5FC80800A91C71 /* CircleMaskView.swift */,
+				9DDFB87022837A1100E129E2 /* MessageCell.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -584,6 +590,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */,
 				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
@@ -595,6 +602,7 @@
 				9D8A593B1B92F2B600164C9F /* PeerDescription.swift in Sources */,
 				9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
+				9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */,
 				9D0EA9F31E44DB9000C71312 /* GenericFunctions.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9DD61F641EAE33B6004EB56A /* Account.swift in Sources */,

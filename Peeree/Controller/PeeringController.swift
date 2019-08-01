@@ -11,63 +11,43 @@ import Foundation
 public protocol RemotePeering {
     var availablePeers: [PeerID] { get }
     var isBluetoothOn: Bool { get }
-    
-    func getPeerInfo(of peerID: PeerID) -> PeerInfo?
-//    func loadPeerInfo(of peerID: PeerID) -> Progress?
-//    func isPeerInfoLoading(of peerID: PeerID) -> Progress?
-    func loadPicture(of peer: PeerInfo) -> Progress?
-    func isPictureLoading(of peerID: PeerID) -> Progress?
-    func indicatePinMatch(to peer: PeerInfo)
-    func verify(_ peerID: PeerID)
 }
-
-public enum PeerDistance {
-    case unknown, close, nearby, far
-}
-
-//public protocol LocalPeering {
-//}
 
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about pinned peers.
 public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate {
     public static let shared = PeeringController()
-    
-    public enum NotificationInfoKey: String {
-        case peerID, again
-    }
+	
+	public enum NotificationInfoKey: String {
+		case peerID, again
+	}
     
     public enum Notifications: String {
         case connectionChangedState
-        case peerAppeared, peerDisappeared
-        case verified, verificationFailed
-        case pictureLoaded
-        
-        func post(_ peerID: PeerID?, again: Bool? = nil) {
-            var userInfo: [AnyHashable: Any]? = nil
-            if let id = peerID {
-                if let a = again {
-                    userInfo = [NotificationInfoKey.peerID.rawValue : id, NotificationInfoKey.again.rawValue : a]
-                } else {
-                    userInfo = [NotificationInfoKey.peerID.rawValue : id]
-                }
-            }
-            postAsNotification(object: PeeringController.shared, userInfo: userInfo)
-        }
+		case peerAppeared, peerDisappeared
+		
+		func post(_ peerID: PeerID?, again: Bool? = nil) {
+			var userInfo: [AnyHashable: Any]? = nil
+			if let id = peerID {
+				if let a = again {
+					userInfo = [NotificationInfoKey.peerID.rawValue : id, NotificationInfoKey.again.rawValue : a]
+				} else {
+					userInfo = [NotificationInfoKey.peerID.rawValue : id]
+				}
+			}
+			postAsNotification(object: PeeringController.shared, userInfo: userInfo)
+		}
     }
     
-    private let _local = LocalPeerManager()
-    private let _remote = RemotePeerManager()
+    let _local = LocalPeerManager()
+    let _remote = RemotePeerManager()
     
-    private var rangeBlock: ((PeerID, PeerDistance) -> Void)?
-    
-    private var pinMatchIndications = Set<PeerID>()
+	private var peerManagers = SynchronizedDictionary<PeerID, PeerManager>(queueLabel: "com.peeree.peerManagers")
     
     public let remote: RemotePeering
-//    public let local: LocalPeering
     
     public var peering: Bool {
         get {
-            return _local.isAdvertising //|| _remote.isScanning
+            return _local.isAdvertising
         }
         set {
             if newValue {
@@ -81,127 +61,59 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
             }
         }
     }
-    
-    @objc func callRange(_ timer: Timer) {
-        PeeringController.shared._remote.range(timer.userInfo as! PeerID)
-    }
-    
-    private func range(_ peerID: PeerID, timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
-        guard rangeBlock != nil else { return }
-		
-		let timer: Timer
-        if #available(iOS 10.0, *) {
-            timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
-                PeeringController.shared._remote.range(peerID)
-            }
-        } else {
-            timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(PeeringController.callRange(_:)), userInfo: peerID, repeats: false)
-        }
-		timer.tolerance = tolerance
-		
-		RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
-		
-        rangeBlock?(peerID, distance)
-    }
-    
-    public func range(_ peerID: PeerID, block: @escaping (PeerID, PeerDistance) -> Void) {
-        rangeBlock = block
-        _remote.range(peerID)
-    }
-    
-    public func stopRanging() {
-        rangeBlock = nil
-    }
+	
+	public func manager(for peerID: PeerID) -> PeerManager {
+		guard peerID != UserPeerManager.instance.peerID else { return UserPeerManager.instance }
+		return peerManagers.accessSync { (managers) in
+			guard let _manager = managers[peerID] else {
+				let manager = PeerManager(peerID: peerID)
+				managers[peerID] = manager
+				return manager
+			}
+			return _manager
+		}
+	}
     
     // MARK: LocalPeerManagerDelegate
     
     func advertisingStarted() {
-        _remote.scan()
         connectionChangedState()
     }
     
     func advertisingStopped() {
         _remote.stopScan() // stop scanning when we where de-authorized
         connectionChangedState()
-        pinMatchIndications.removeAll()
+        peerManagers.removeAll()
     }
-    
-    func receivedPinMatchIndication(from peerID: PeerID) {
-        guard let peer = _remote.getPeerInfo(of: peerID), peer.verified else {
-            pinMatchIndications.insert(peerID)
-            return
-        }
-        
-        AccountController.shared.updatePinStatus(of: peer)
-    }
+	
+	func localPeerDelegate(for peerID: PeerID) -> LocalPeerDelegate {
+		return self.manager(for: peerID)
+	}
     
     // MARK: RemotePeerManagerDelegate
-    
-//    func scanningStopped() {
-//        if local.isAdvertising {
-//            local.stopAdvertising()
-//            connectionChangedState()
-//        }
-//    }
-    
-    func peerAppeared(_ peerID: PeerID, again: Bool) {
-        Notifications.peerAppeared.post(peerID, again: again)
-    }
-    
-    func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
-        _local.disconnect(cbPeerID)
-        Notifications.peerDisappeared.post(peerID)
-    }
-    
-    func pictureLoaded(of peerID: PeerID) {
-        Notifications.pictureLoaded.post(peerID)
-    }
-    
-    func shouldIndicatePinMatch(to peer: PeerInfo) -> Bool {
-        return peer.pinMatched
-    }
-    
-    func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
-        guard error == nil else {
-            NSLog("Error updating range: \(error!.localizedDescription)")
-            range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
-            return
-        }
-        switch rssi!.intValue {
-        case -40 ... 100:
-            range(peerID, timeInterval: 3.0, tolerance: 1.0, distance: .close)
-        case -60 ... -40:
-            range(peerID, timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
-        case -100 ... -60:
-            range(peerID, timeInterval: 5.0, tolerance: 2.0, distance: .far)
-        default:
-            range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
-        }
-    }
-    
-    func failedVerification(of peerID: PeerID, error: Error) {
-        Notifications.verificationFailed.post(peerID)
-    }
-    
-    func didVerify(_ peerID: PeerID) {
-        Notifications.verified.post(peerID)
-        _local.dQueue.async {
-            if let indication = self.pinMatchIndications.remove(peerID) {
-                self.receivedPinMatchIndication(from: indication)
-            }
-        }
-    }
+	
+	func peerAppeared(_ peerID: PeerID, again: Bool) -> RemotePeerDelegate {
+		Notifications.peerAppeared.post(peerID, again: again)
+		// always send pin match indication on new connect to be absolutely sure that the other really got that
+		let manager = self.manager(for: peerID)
+		manager.indicatePinMatch()
+		return manager
+	}
+	
+	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
+		_local.disconnect(cbPeerID)
+		Notifications.peerDisappeared.post(peerID)
+	}
     
     // MARK: Private Methods
     
     private init() {
         remote = _remote
-//        local = _local
         _remote.delegate = self
         _local.delegate = self
     }
     
     private func connectionChangedState() {
-        Notifications.connectionChangedState.post(nil)
+        Notifications.connectionChangedState.postAsNotification(object: nil)
     }
 }

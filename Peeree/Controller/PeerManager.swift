@@ -8,48 +8,224 @@
 
 import Foundation
 import CoreBluetooth
+import CoreGraphics
 
-extension PeerID {
-    private static let uuidEncoding = String.Encoding.ascii
-    init?(data: Data) {
-        guard let string = String(data: data, encoding: PeerID.uuidEncoding) else {
-            assertionFailure()
-            return nil
-        }
-        self.init(uuidString: string)
-    }
-    
-    func encode() -> Data {
-        return self.uuidString.data(using: PeerID.uuidEncoding)!
-    }
+public enum PeerDistance {
+	case unknown, close, nearby, far
 }
 
-extension CBUUID {
-    static let PeereeServiceID = CBUUID(string: "EEB9E7F2-5442-42CC-AC91-E25E10A8D6EE")
-    static let PinMatchIndicationCharacteristicID = CBUUID(string: "05560D3E-2163-4705-AA6F-DED12918DCEE")
-    static let LocalPeerIDCharacteristicID = CBUUID(string: "52FA3B9A-59E8-41AD-BEBE-19826589116A")
-    static let RemoteUUIDCharacteristicID = CBUUID(string: "3C91DF5A-89E4-4F55-9CA2-0CF9E5EABC5D")
-    static let LastChangedCharacteristicID = CBUUID(string: "6F443A3C-F799-4DC1-A02A-72F2D8EA8B24")
-    static let AggregateCharacteristicID = CBUUID(string: "4E0E2DB5-37E1-4083-9463-1AAECABF9179")
-    static let NicknameCharacteristicID = CBUUID(string: "AC5971AF-CB30-4ABF-A699-F13C8E286A91")
-    static let PortraitCharacteristicID = CBUUID(string: "DCB9A435-2795-4D6A-BE5D-854CE1EA8890")
-    static let PublicKeyCharacteristicID = CBUUID(string: "2EC65417-7DE7-459B-A9CC-67AD01842A4F")
-    static let AuthenticationCharacteristicID = CBUUID(string: "79427315-3071-4EA1-AD76-3FF04FCD51CF")
-    
-    static let PeerIDSignatureCharacteristicID = CBUUID(string: "D05A4FA4-F203-4A76-A6EA-560152AD74A5")
-    static let AggregateSignatureCharacteristicID = CBUUID(string: "17B23EC4-F543-48C6-A8B8-F806FE035F10")
-    static let NicknameSignatureCharacteristicID = CBUUID(string: "B69EB678-ABAC-4134-828D-D79868A6CB4A")
-    static let PortraitSignatureCharacteristicID = CBUUID(string: "44BFB98E-56AB-4436-9F14-7277C5D6A8CA")
-    
-    static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID]
-    static let SplitCharacteristicIDs = [PortraitCharacteristicID]
+public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
+	public enum NotificationInfoKey: String {
+		case peerID, error
+	}
+	
+	public enum Notifications: String {
+		case verified, verificationFailed
+		case pictureLoaded
+		case messageSent, messageReceived, unreadMessageCountChanged
+		
+		func post(_ peerID: PeerID) {
+			postAsNotification(object: nil, userInfo: [NotificationInfoKey.peerID.rawValue : peerID])
+		}
+	}
+	
+	public let peerID: PeerID
+	private var remotePeerManager: RemotePeerManager { return PeeringController.shared._remote }
+	private var localPeerManager: LocalPeerManager { return PeeringController.shared._local }
+	
+	init(peerID: PeerID) {
+		self.peerID = peerID
+	}
+	
+	private var rangeBlock: ((PeerID, PeerDistance) -> Void)? = nil
+	
+	private var receivedUnverifiedPinMatchIndication: Bool = false
+	
+	/// thread-safety: write-synced (only writes are assured to be on the same thread
+	private(set) var verified = false
+	
+	public var cgPicture: CGImage? = nil
+	
+	/// access from main thread *only*!
+	public var transcripts = [Transcript]()
+	/// access from main thread *only*!
+	public var unreadMessages = 0 {
+		didSet { Notifications.unreadMessageCountChanged.post(peerID) }
+	}
+	
+	public var peerInfo: PeerInfo? {
+		return remotePeerManager.getPeerInfo(of: peerID)
+	}
+	
+	public var pictureLoadProgress: Progress? {
+		return remotePeerManager.loadProgress(for: CBUUID.PortraitCharacteristicID, of: peerID)
+	}
+	
+	@objc func callRange(_ timer: Timer) {
+		remotePeerManager.range(timer.userInfo as! PeerID)
+	}
+	
+	private func range(_ peerID: PeerID, timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
+		guard rangeBlock != nil else { return }
+		
+		let timer: Timer
+		if #available(iOS 10.0, *) {
+			timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
+				self.remotePeerManager.range(peerID)
+			}
+		} else {
+			timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(callRange(_:)), userInfo: peerID, repeats: false)
+		}
+		timer.tolerance = tolerance
+		
+		RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
+		
+		rangeBlock?(peerID, distance)
+	}
+	
+	public func range(_ peerID: PeerID, block: @escaping (PeerID, PeerDistance) -> Void) {
+		rangeBlock = block
+		remotePeerManager.range(peerID)
+	}
+	
+	public func stopRanging() {
+		rangeBlock = nil
+	}
+	
+	public func loadPicture() -> Progress? {
+		guard let peer = peerInfo, peer.hasPicture && cgPicture == nil else { return nil }
+		return remotePeerManager.loadResource(of: peerID, characteristicID: CBUUID.PortraitCharacteristicID, signatureCharacteristicID: CBUUID.PortraitSignatureCharacteristicID)
+	}
+	
+	public func indicatePinMatch() {
+		guard peerInfo?.pinMatched ?? false else { return }
+		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
+			// TODO either handle failure or make non-reliable
+			if let error = _error { NSLog("indicated pin match failed: \(error)") }
+		}
+	}
+	
+	public func verify() {
+		verified = false
+		remotePeerManager.verify(peerID)
+	}
+	
+	// calls completion on main thread always
+	public func send(message: String, completion: @escaping (Error?) -> Void) {
+		guard let data = message.data(prefixedEncoding: message.smallestEncoding) else {
+			DispatchQueue.main.async {
+				completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Could not encode message.", comment: "Error during bluetooth message sending")]))
+			}
+			return
+		}
+		return remotePeerManager.reliablyWrite(data: data, to: CBUUID.MessageCharacteristicID, of: peerID, callbackQueue: DispatchQueue.main) { error in
+			if error == nil {
+				self.transcripts.append(Transcript(direction: .send, message: message))
+				Notifications.messageSent.post(self.peerID)
+			}
+			completion(error)
+		}
+	}
+	
+	// MARK: RemotePeerDelegate
+	
+	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
+		guard error == nil else {
+			NSLog("Error updating range: \(error!.localizedDescription)")
+			range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+			return
+		}
+		switch rssi!.intValue {
+		case -60 ... Int.max:
+			range(peerID, timeInterval: 3.0, tolerance: 1.0, distance: .close)
+		case -80 ... -60:
+			range(peerID, timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
+		case -100 ... -80:
+			range(peerID, timeInterval: 5.0, tolerance: 2.0, distance: .far)
+		default:
+			range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+		}
+	}
+	
+	func loaded(picture: CGImage, of peerID: PeerID) {
+		cgPicture = picture
+		Notifications.pictureLoaded.post(peerID)
+	}
+	
+	func failedVerification(of peerID: PeerID, error: Error) {
+		verified = false
+		Notifications.verificationFailed.post(peerID)
+	}
+	
+	func didVerify(_ peerID: PeerID) {
+		verified = true
+		Notifications.verified.post(peerID)
+		localPeerManager.dQueue.async {
+			if self.receivedUnverifiedPinMatchIndication {
+				self.receivedPinMatchIndication()
+			}
+		}
+	}
+	
+	// MARK: LocalPeerDelegate
+	
+	func receivedPinMatchIndication() {
+		guard verified, let peer = peerInfo else {
+			// update pin status later when peer is verified
+			receivedUnverifiedPinMatchIndication = true
+			return
+		}
+		
+		AccountController.shared.updatePinStatus(of: peer)
+	}
+	
+	func received(message: String) {
+		DispatchQueue.main.async {
+			self.transcripts.append(Transcript(direction: .receive, message: message))
+			self.unreadMessages += 1
+			Notifications.messageReceived.post(self.peerID)
+		}
+	}
 }
 
-class PeerManager: NSObject {
-    /// prefixed (first packet sent) to split characteristics, that is, characteristics transferred in multiple messages
-    typealias SplitCharacteristicSize = Int32
-    
-    func pinnedData(_ pinned: Bool) -> Data {
-        return pinned ? Data(repeating: UInt8(1), count: 1) : Data(count: 1)
-    }
+extension PeerManager {
+	enum PinState {
+		case pinned, pinning, notPinned
+	}
+	
+	enum DownloadState {
+		case notDownloaded, downloading, downloaded
+	}
+	
+	var isLocalPeer: Bool { return self.peerID == UserPeerManager.instance.peer.peerID }
+	var isOnline: Bool { return PeeringController.shared.peering }
+	var isAvailable: Bool { return PeeringController.shared.remote.availablePeers.contains(self.peerID) }
+	
+	var pictureDownloadState: DownloadState {
+		if cgPicture == nil {
+			return self.pictureLoadProgress != nil ? .downloading : .notDownloaded
+		} else {
+			return .downloaded
+		}
+	}
+	
+	var pictureDownloadProgress: Double {
+		return self.pictureLoadProgress?.fractionCompleted ?? 0.0
+	}
+	
+	var pinState: PinState {
+		if let peer = peerInfo, peer.pinned {
+			return .pinned
+		} else {
+			return AccountController.shared.isPinning(peerID) ? .pinning : .notPinned
+		}
+	}
+	
+	public var verificationStatus: String {
+		if verified {
+			return NSLocalizedString("verified", comment: "Verification status of peer")
+		} else {
+			return NSLocalizedString("not verified", comment: "Verification status of peer")
+		}
+	}
 }

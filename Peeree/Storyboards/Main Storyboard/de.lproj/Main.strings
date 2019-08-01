@@ -29,6 +29,15 @@
 /* Class = "UITableViewController"; title = "Radar"; ObjectID = "44q-aX-Sii"; */
 "44q-aX-Sii.title" = "Radar";
 
+/* Class = "UIButton"; accessibilityHint = "Opens the homepage in Safari"; ObjectID = "4iN-3s-iIx"; */
+"4iN-3s-iIx.accessibilityHint" = "Öffnet die Homepage in Safari";
+
+/* Class = "UIButton"; accessibilityLabel = "Peeree Website"; ObjectID = "4iN-3s-iIx"; */
+"4iN-3s-iIx.accessibilityLabel" = "Peeree Website";
+
+/* Class = "UIButton"; normalTitle = "peeree.de"; ObjectID = "4iN-3s-iIx"; */
+"4iN-3s-iIx.normalTitle" = "peeree.de";
+
 /* Class = "UILabel"; text = "100"; ObjectID = "4uV-1R-Ho8"; */
 "4uV-1R-Ho8.text" = "100";
 
@@ -40,6 +49,15 @@
 
 /* Class = "UIButton"; accessibilityLabel = "Pin"; ObjectID = "59x-ms-KVN"; */
 "59x-ms-KVN.accessibilityLabel" = "Pin";
+
+/* Class = "UIButton"; accessibilityHint = "Opens the privacy policy in Safari"; ObjectID = "5Pm-yd-i31"; */
+"5Pm-yd-i31.accessibilityHint" = "Öffnet die Datenschutzerklärung in Safari";
+
+/* Class = "UIButton"; accessibilityLabel = "Peeree Privacy Policy"; ObjectID = "5Pm-yd-i31"; */
+"5Pm-yd-i31.accessibilityLabel" = "Peeree Privacy Policy";
+
+/* Class = "UIButton"; normalTitle = "Privacy Policy"; ObjectID = "5Pm-yd-i31"; */
+"5Pm-yd-i31.normalTitle" = "Privacy Policy";
 
 /* Class = "UIButton"; normalTitle = "Character Traits"; ObjectID = "7DY-yh-Oap"; */
 "7DY-yh-Oap.normalTitle" = "Charaktereigenschaften";
@@ -86,6 +104,15 @@
 /* Class = "UITextField"; placeholder = "Birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.placeholder" = "Geburtstag";
 
+/* Class = "UILabel"; accessibilityHint = "Can the information be trusted"; ObjectID = "MSB-TZ-Xpf"; */
+"MSB-TZ-Xpf.accessibilityHint" = "Kann den Infos des Gegenübers vertraut werden";
+
+/* Class = "UILabel"; accessibilityLabel = "Verification Status"; ObjectID = "MSB-TZ-Xpf"; */
+"MSB-TZ-Xpf.accessibilityLabel" = "Status der Verifizierung";
+
+/* Class = "UILabel"; text = "verification"; ObjectID = "MSB-TZ-Xpf"; */
+"MSB-TZ-Xpf.text" = "Bestätigung";
+
 /* Class = "UILabel"; accessibilityHint = "You and this person have mutual interest in each other"; ObjectID = "Mym-lw-7EQ"; */
 "Mym-lw-7EQ.accessibilityHint" = "Du und diese Person haben gegenseitiges Interesse aneinander";
 
@@ -107,14 +134,14 @@
 /* Class = "UINavigationItem"; title = "New Peer"; ObjectID = "OwH-Gc-YBz"; */
 "OwH-Gc-YBz.title" = "Neue Person";
 
-/* Class = "UIBarButtonItem"; title = "Message"; ObjectID = "REi-En-PZP"; */
-"REi-En-PZP.title" = "Nachricht";
-
 /* Class = "UIImageView"; accessibilityHint = "Shows a portrait of the person"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityHint" = "Zeigt ein Portrait der Person";
 
 /* Class = "UIImageView"; accessibilityLabel = "Portrait"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityLabel" = "Portrait";
+
+/* Class = "UILabel"; text = "Message"; ObjectID = "Seq-55-m1S"; */
+"Seq-55-m1S.text" = "Nachricht";
 
 /* Class = "UIBarButtonItem"; title = "Dismiss"; ObjectID = "TrO-49-JEM"; */
 "TrO-49-JEM.title" = "OK";
@@ -122,8 +149,14 @@
 /* Class = "UITableViewSection"; headerTitle = "Picture"; ObjectID = "VhZ-Ja-vhb"; */
 "VhZ-Ja-vhb.headerTitle" = "Bild";
 
+/* Class = "UITableViewController"; title = "Chat"; ObjectID = "XqI-Aj-cpS"; */
+"XqI-Aj-cpS.title" = "Chat";
+
 /* Class = "UIButton"; normalTitle = "Character Traits"; ObjectID = "Y5H-8y-Wvq"; */
 "Y5H-8y-Wvq.normalTitle" = "Charaktereigenschaften";
+
+/* Class = "UIBarButtonItem"; title = "Send"; ObjectID = "YPz-t9-los"; */
+"YPz-t9-los.title" = "Senden";
 
 /* Class = "UILabel"; text = "Only with picture available"; ObjectID = "Ydg-QF-ecu"; */
 "Ydg-QF-ecu.text" = "Nur mit Bild angegeben";
@@ -139,12 +172,6 @@
 
 /* Class = "UITableViewSection"; headerTitle = "Age"; ObjectID = "dfr-MX-xyY"; */
 "dfr-MX-xyY.headerTitle" = "Alter";
-
-/* Class = "UIView"; accessibilityHint = "Shows a distance estimation to person"; ObjectID = "eEO-gb-4L3"; */
-"eEO-gb-4L3.accessibilityHint" = "Zeigt eine Entfernungseinschätzung zur Person";
-
-/* Class = "UIView"; accessibilityLabel = "Distance estimator"; ObjectID = "eEO-gb-4L3"; */
-"eEO-gb-4L3.accessibilityLabel" = "Entfernungseinschätzung";
 
 /* Class = "UITableViewSection"; headerTitle = "Gender"; ObjectID = "eYi-0r-Sc8"; */
 "eYi-0r-Sc8.headerTitle" = "Geschlecht";
@@ -191,11 +218,14 @@
 /* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "jRR-HL-OFn"; */
 "jRR-HL-OFn.accessibilityLabel" = "Details zur Person";
 
+/* Class = "UILabel"; text = "age"; ObjectID = "jRR-HL-OFn"; */
+"jRR-HL-OFn.text" = "age";
+
 /* Class = "UILabel"; text = "age and gender"; ObjectID = "jRR-HL-OFn"; */
 "jRR-HL-OFn.text" = "Alter und Geschlecht";
 
 /* Class = "UISlider"; accessibilityHint = "Filters out people below this age"; ObjectID = "kYd-92-VvC"; */
-"kYd-92-VvC.accessibilityHint" = "Filtert Leute unter diesem Alter heraus";
+"kYd-92-VvC.accessibilityHint" = "Filtert Leute unterhalb diesem Alter heraus";
 
 /* Class = "UISlider"; accessibilityLabel = "Minimum Age Bound"; ObjectID = "kYd-92-VvC"; */
 "kYd-92-VvC.accessibilityLabel" = "Altersuntergrenze";
@@ -206,6 +236,12 @@
 /* Class = "UITableViewController"; title = "Character Traits"; ObjectID = "kuI-R6-Fbl"; */
 "kuI-R6-Fbl.title" = "Charaktereigenschaften";
 
+/* Class = "UILabel"; accessibilityLabel = "Person Information Summary"; ObjectID = "nS3-bX-bM2"; */
+"nS3-bX-bM2.accessibilityLabel" = "Angaben zur Person";
+
+/* Class = "UILabel"; text = "gender"; ObjectID = "nS3-bX-bM2"; */
+"nS3-bX-bM2.text" = "Geschlecht";
+
 /* Class = "UILabel"; text = "∞"; ObjectID = "nxn-9p-M99"; */
 "nxn-9p-M99.text" = "∞";
 
@@ -214,9 +250,6 @@
 
 /* Class = "UILabel"; text = "Christopher \"Topher\" Kobusch"; ObjectID = "oo4-4n-i4a"; */
 "oo4-4n-i4a.text" = "Christopher \"Topher\" Kobusch";
-
-/* Class = "UIBarButtonItem"; title = "Send"; ObjectID = "peR-Zg-Tj0"; */
-"peR-Zg-Tj0.title" = "Senden";
 
 /* Class = "UILabel"; text = "Go offline to change settings."; ObjectID = "rAH-3G-jWK"; */
 "rAH-3G-jWK.text" = "Gehe offline, um Einstellungen zu ändern.";
@@ -237,7 +270,10 @@
 "sZh-Xd-jZD.text" = "Nur mit Alter angegeben";
 
 /* Class = "UINavigationItem"; title = "Search"; ObjectID = "sgW-Kv-UY4"; */
-"sgW-Kv-UY4.title" = "Search";
+"sgW-Kv-UY4.title" = "Suche";
+
+/* Class = "UINavigationController"; title = "Me Nav"; ObjectID = "tIL-fs-ywz"; */
+"tIL-fs-ywz.title" = "Profil Nav";
 
 /* Class = "UISwitch"; accessibilityHint = "Filters out people with no age set"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityHint" = "Filtert Leute heraus, die kein Alter gesetzt haben";
@@ -260,8 +296,8 @@
 /* Class = "UILabel"; text = "People Met"; ObjectID = "xdp-HW-ags"; */
 "xdp-HW-ags.text" = "Leute getroffen";
 
+/* Class = "UITextField"; placeholder = "Message"; ObjectID = "yJd-y1-fP9"; */
+"yJd-y1-fP9.placeholder" = "Nachricht";
+
 /* Class = "UILabel"; text = "Your email is necessary to recover your identity on a new device."; ObjectID = "yg9-L6-t2V"; */
 "yg9-L6-t2V.text" = "Deine E-Mail wird benötigt, um deine Identität auf einem neuen Gerät wiederherzustellen.";
-
-/* Class = "UILabel"; text = "0"; ObjectID = "zK8-SI-A6d"; */
-"zK8-SI-A6d.text" = "0";

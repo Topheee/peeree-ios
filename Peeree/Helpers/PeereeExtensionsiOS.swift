@@ -8,53 +8,43 @@
 
 import UIKit
 
-extension PeerInfo {
-    var picture: UIImage? {
-        get {
-            return cgPicture != nil ? UIImage(cgImage: cgPicture!) : nil
-        }
-        set {
-            cgPicture = newValue?.cgImage
-        }
-    }
+extension PeerManager {
+	var picture: UIImage? {
+		get {
+			return cgPicture.map { UIImage(cgImage: $0) }
+		}
+		set {
+			cgPicture = newValue?.cgImage
+		}
+	}
 }
 
-extension UserPeerInfo {
-    var picture: UIImage? {
-        get { return peer.picture }
-        set {
-            let oldValue = picture
-            guard newValue != oldValue else { return }
-            
-            peer.picture = newValue
-            dirtied()
-            
-            if picture != nil {
-                // Don't block the UI when writing the image to documents
-                DispatchQueue.global().async {
-                    // Save the new image to the documents directory
-                    do {
-                        try self.picture!.jpegData(compressionQuality: 0.0)?.write(to: self.pictureResourceURL, options: .atomic)
-                    } catch let error as NSError {
-                        NSLog(error.debugDescription)
-                        DispatchQueue.main.async {
-                            self.picture = oldValue
-                        }
-                    }
-                }
-            } else {
-                let fileManager = FileManager.default
-                do {
-                    if fileManager.fileExists(atPath: pictureResourceURL.path) {
-                        try fileManager.removeItem(at: pictureResourceURL)
-                    }
-                } catch let error as NSError {
-                    NSLog(error.debugDescription)
-                    DispatchQueue.main.async {
-                        self.picture = oldValue
-                    }
-                }
-            }
-        }
-    }
+extension UserPeerManager {
+	/// Not thread-safe! You need to ensure it doesn't get called simultaneously
+	func set(picture: UIImage?, completion: @escaping (NSError?) -> Void) {
+		// Don't block the UI when writing the image to documents
+		// this is not 100% safe, as two concurrent calls to this method can dispatch to different queues (global() doesn't always return the same queue)
+		DispatchQueue.global(qos: .background).async {
+			let oldValue = self.picture
+			guard picture != oldValue else { return }
+			
+			do {
+				if picture != nil {
+					// Save the new image to the documents directory
+					try picture!.jpegData(compressionQuality: 0.0)?.write(to: UserPeerManager.pictureResourceURL, options: .atomic)
+				} else {
+					let fileManager = FileManager.default
+					if fileManager.fileExists(atPath: UserPeerManager.pictureResourceURL.path) {
+						try fileManager.removeItem(at: UserPeerManager.pictureResourceURL)
+					}
+				}
+			} catch let error as NSError {
+				completion(error)
+			}
+			
+			self.picture = picture
+			if !(oldValue == nil && picture == nil || oldValue != nil && picture != nil) { self.dirtied() }
+			completion(nil)
+		}
+	}
 }

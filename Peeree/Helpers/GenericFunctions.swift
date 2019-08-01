@@ -195,6 +195,10 @@ extension Bool {
     init<T: BinaryInteger>(_ value: T) {
         self.init(value != 0)
     }
+	
+	var binaryRepresentation: Data {
+		return self ? Data(repeating: UInt8(1), count: 1) : Data(count: 1)
+	}
 }
 
 extension SignedInteger {
@@ -209,4 +213,14 @@ extension UnsignedInteger {
     init(_ value: Bool) {
         self.init(value ? 1 : 0)
     }
+}
+
+extension CGColor {
+	func inverted() -> CGColor? {
+		guard var invertedComponents = components else { return nil }
+		for index in invertedComponents.startIndex..<invertedComponents.index(before: invertedComponents.endIndex) {
+			invertedComponents[index] = 1.0 - invertedComponents[index]
+		}
+		return CGColor(colorSpace: colorSpace!, components: invertedComponents)
+	}
 }

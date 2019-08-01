@@ -10,7 +10,8 @@ import UIKit
 
 final class BrowseViewController: UITableViewController {
     @IBOutlet private weak var networkButton: UIButton!
-	
+
+	private static let PresentMeSegueID = "presentMeViewController"
     private static let PeerDisplayCellID = "peerDisplayCell"
     private static let OfflineModeCellID = "placeholderCell"
     private static let AddAnimation = UITableView.RowAnimation.automatic
@@ -26,8 +27,9 @@ final class BrowseViewController: UITableViewController {
 	
 	private var activePlaceholderCell: UITableViewCell? = nil
 	private var theGesturer: UIGestureRecognizer? = nil // we need to keep a reference to it
-    
-    private var peerCache: [[PeerInfo]] = [[], [], []]
+	
+	private var peerCache: [[PeerInfo]] = [[], [], []]
+	private var managerCache: [[PeerManager]] = [[], [], []]
     
     private var notificationObservers: [NSObjectProtocol] = []
     
@@ -42,16 +44,14 @@ final class BrowseViewController: UITableViewController {
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
 	
 	private func makeNavigationBar(hidden: Bool) {
-		guard let navigator = navigationController else { return }
-		let wasHidden = navigationController?.isNavigationBarHidden
-		guard hidden != wasHidden else { return }
+		guard let navigator = navigationController, hidden != navigator.isNavigationBarHidden, navigator.visibleViewController == self else { return }
 		navigator.setNavigationBarHidden(hidden, animated: true)
 		guard let placeholderCell = tableView.visibleCells.first as? OfflineTableViewCell else { return }
 		placeholderCell.make(centered: !hidden)
 	}
 	
 	@IBAction func toggleNavigationBar(_ sender: Any) {
-		navigationController.map { makeNavigationBar(hidden: !$0.isNavigationBarHidden) }
+//		navigationController.map { makeNavigationBar(hidden: !$0.isNavigationBarHidden) }
 		if !PeeringController.shared.peering {
 			toggleNetwork(self)
 		}
@@ -59,14 +59,16 @@ final class BrowseViewController: UITableViewController {
 	
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
         guard AccountController.shared.accountExists else {
-			InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account"))
+			InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account")) {
+				self.performSegue(withIdentifier: BrowseViewController.PresentMeSegueID, sender: self)
+			}
 			return
 		}
 		if PeeringController.shared.remote.isBluetoothOn {
 			PeeringController.shared.peering = !PeeringController.shared.peering
-			if PeeringController.shared.peering {
-				makeNavigationBar(hidden: true)
-			}
+//			if PeeringController.shared.peering {
+//				makeNavigationBar(hidden: true)
+//			}
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}
@@ -80,12 +82,14 @@ final class BrowseViewController: UITableViewController {
 		}
 		guard let personDetailVC = segue.destination as? PersonDetailViewController else { return }
         guard let tappedCell = sender as? UITableViewCell else {
-            personDetailVC.displayedPeerInfo = sender as? PeerInfo
+			if let peerID = sender as? PeerID {
+            	personDetailVC.peerManager = PeeringController.shared.manager(for: peerID)
+			}
             return
         }
         guard tappedCell.reuseIdentifier == BrowseViewController.PeerDisplayCellID else { return }
         guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-        personDetailVC.displayedPeerInfo = peerCache[cellPath.section][cellPath.row]
+		personDetailVC.peerManager = managerCache[cellPath.section][cellPath.row]
 	}
     
     override func viewDidLoad() {
@@ -98,12 +102,15 @@ final class BrowseViewController: UITableViewController {
         notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
             self?.connectionChangedState(PeeringController.shared.peering)
         })
+		notificationObservers.append(PeerManager.Notifications.unreadMessageCountChanged.addPeerObserver { [weak self] peerID, _  in
+			self?.messageReceivedOrRead(from: peerID)
+		})
         
-        notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] (peerID, _) in self?.pinMatchOccurred(PeeringController.shared.remote.getPeerInfo(of: peerID)!) })
+		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] (peerID, _) in self?.pinMatchOccurred(peerID: peerID) })
         notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-        notificationObservers.append(PeeringController.Notifications.verified.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-        notificationObservers.append(PeeringController.Notifications.verificationFailed.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeerManager.Notifications.verified.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeerManager.Notifications.verificationFailed.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+        notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
         
         notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
             guard let strongSelf = self else { return }
@@ -111,6 +118,7 @@ final class BrowseViewController: UITableViewController {
             let cacheCount = strongSelf.peerCache.count
             for i in 0..<cacheCount {
                 strongSelf.peerCache[i].removeAll()
+				strongSelf.managerCache[i].removeAll()
             }
             
             let peerManager = PeeringController.shared.remote
@@ -133,9 +141,7 @@ final class BrowseViewController: UITableViewController {
         
         networkButton.layer.cornerRadius = networkButton.bounds.height / 2.0
         networkButton.tintColor = AppDelegate.shared.theme.globalTintColor
-//        if !#available(iOS 11, *) {
-            networkButton.backgroundColor = UIColor.white
-//        }
+		networkButton.backgroundColor = UIColor.white
 	}
 	
 	override func viewDidDisappear(_ animated: Bool) {
@@ -166,8 +172,10 @@ final class BrowseViewController: UITableViewController {
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		tableView.isScrollEnabled = !placeholderCellActive
         guard !placeholderCellActive else {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.OfflineModeCellID) as? OfflineTableViewCell else {
-                assertionFailure()
+// TODO dequeueReusableCell (in both variants) for whatever reason causes EXC_BAD_ACCESS on ipad:
+//			guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.OfflineModeCellID, for: indexPath) as? OfflineTableViewCell else {
+			guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.OfflineModeCellID) as? OfflineTableViewCell else {
+                assertionFailure("well that didn't work out so well")
                 return UITableViewCell()
             }
 			activePlaceholderCell = cell
@@ -182,8 +190,9 @@ final class BrowseViewController: UITableViewController {
             return cell
         }
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
-        fill(cell: cell, peer: peerCache[indexPath.section][indexPath.row])
+//        let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID, for: indexPath)
+		let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
+		fill(cell: cell, peer: peerCache[indexPath.section][indexPath.row], manager: managerCache[indexPath.section][indexPath.row])
 		return cell
 	}
     
@@ -210,20 +219,27 @@ final class BrowseViewController: UITableViewController {
     }
     
     func indexPath(of peerID: PeerID) -> IndexPath? {
-        guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return nil }
-
-        return indexPath(of: peer)
-    }
-    
-    func indexPath(of peer: PeerInfo) -> IndexPath? {
         for i in 0..<peerCache.count  {
-            let row = peerCache[i].firstIndex(of: peer)
+			let row = peerCache[i].firstIndex { $0.peerID == peerID }
             if row != nil {
                 return IndexPath(row: row!, section: i)
             }
         }
         return nil
     }
+	
+	// MARK: UITableViewDelegate
+	
+	@available(iOS 11.0, *)
+	override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+		let peer = self.peerCache[indexPath.section][indexPath.row]
+		guard indexPath.section != PeersSection.matched.rawValue, !peer.pinned else { return nil }
+		let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
+			AccountController.shared.pin(peer)
+			completion(true)
+		}
+		return UISwipeActionsConfiguration(actions: [pinAction])
+	}
 	
 	// MARK: UIScollViewDelegate
 	
@@ -239,19 +255,15 @@ final class BrowseViewController: UITableViewController {
 			}
 		}
 	}
-	
-	override func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
-		super.scrollViewDidScrollToTop(scrollView)
-		toggleNavigationBar(scrollView)
-	}
     
     // MARK: Private Methods
     
-    private func fill(cell: UITableViewCell, peer: PeerInfo) {
+	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
+		cell.textLabel!.highlightedTextColor = AppDelegate.shared.theme.globalTintColor
         cell.textLabel!.text = peer.nickname
         cell.detailTextLabel!.text = peer.summary
         guard let imageView = cell.imageView else { assertionFailure(); return }
-        imageView.image = peer.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+        imageView.image = manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
         guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
         
         let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
@@ -269,39 +281,35 @@ final class BrowseViewController: UITableViewController {
         let maskView = CircleMaskView(maskedView: imageView)
         maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
         if #available(iOS 11.0, *) {
-            imageView.accessibilityIgnoresInvertColors = peer.picture != nil
+            imageView.accessibilityIgnoresInvertColors = manager.picture != nil
         }
-//
-//		let cellBackgroundView = UIView()
-//		cellBackgroundView.layer.backgroundColor = AppDelegate.shared.theme.globalTintColor.cgColor
-//		cellBackgroundView.layer.borderColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
-//		cellBackgroundView.layer.borderWidth = 5.0
-//		cellBackgroundView.isOpaque = true
-//		cellBackgroundView.layer.cornerRadius = 10.0
-//		cell.backgroundView = cellBackgroundView
     }
     
-    private func addPeerToCache(_ peer: PeerInfo) -> Int {
+	private func addToCache(peer: PeerInfo, manager: PeerManager) -> Int {
         if peer.pinMatched {
             peerCache[PeersSection.matched.rawValue].insert(peer, at: 0)
+			managerCache[PeersSection.matched.rawValue].insert(manager, at: 0)
             return PeersSection.matched.rawValue
         } else if BrowseFilterSettings.shared.check(peer: peer) {
             peerCache[PeersSection.inFilter.rawValue].insert(peer, at: 0)
+			managerCache[PeersSection.inFilter.rawValue].insert(manager, at: 0)
             return PeersSection.inFilter.rawValue
         } else {
             peerCache[PeersSection.outFilter.rawValue].insert(peer, at: 0)
+			managerCache[PeersSection.outFilter.rawValue].insert(manager, at: 0)
             return PeersSection.outFilter.rawValue
         }
     }
     
     private func addToView(peerID: PeerID, updateTable: Bool) {
-        guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
+		let manager = PeeringController.shared.manager(for: peerID)
+        guard let peer = manager.peerInfo else {
             assertionFailure()
             return
         }
         
         let placeHolderWasActive = placeholderCellActive
-        let section = addPeerToCache(peer)
+		let section = addToCache(peer: peer, manager: manager)
         
         if updateTable {
             if placeHolderWasActive && !placeholderCellActive {
@@ -321,6 +329,7 @@ final class BrowseViewController: UITableViewController {
     }
 	
 	private func peerAppeared(_ peerID: PeerID) {
+//		makeNavigationBar(hidden: false)
         addToView(peerID: peerID, updateTable: true)
 	}
 	
@@ -334,12 +343,22 @@ final class BrowseViewController: UITableViewController {
         
         let wasOne = peerCache[peerPath.section].count == 1
         peerCache[peerPath.section].remove(at: peerPath.row)
+		managerCache[peerPath.section].remove(at: peerPath.row)
         
         if wasOne && placeholderCellActive {
+//			makeNavigationBar(hidden: true)
             tableView.reloadData()
         } else {
             remove(row: peerPath.row, section: peerPath.section)
         }
+	}
+	
+	private func messageReceivedOrRead(from peerID: PeerID) {
+		guard let peerPath = indexPath(of: peerID) else {
+			NSLog("WARNING: Received message from non-presented peer \(peerID.uuidString)")
+			return
+		}
+		tableView.reloadRows(at: [peerPath], with: .automatic)
 	}
     
     private func connectionChangedState(_ nowOnline: Bool) {
@@ -351,6 +370,7 @@ final class BrowseViewController: UITableViewController {
             
             for i in 0..<peerCache.count {
                 peerCache[i].removeAll()
+				managerCache[i].removeAll()
             }
             tableView.reloadData()
         }
@@ -359,14 +379,16 @@ final class BrowseViewController: UITableViewController {
     }
     
     private func reload(peerID: PeerID) {
-        guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID), let indexPath = indexPath(of: peer) else { return }
+        guard let indexPath = indexPath(of: peerID), let peer = managerCache[indexPath.section][indexPath.row].peerInfo else { return }
         
         // we have to refresh our cache if a peer changes - PeerInfos are structs!
         peerCache[indexPath.section][indexPath.row] = peer
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
-    private func pinMatchOccurred(_ peer: PeerInfo) {
+    private func pinMatchOccurred(peerID: PeerID) {
+		let manager = PeeringController.shared.manager(for: peerID)
+		guard let peer = manager.peerInfo else { return }
         assert(peerCache[PeersSection.matched.rawValue].firstIndex(of: peer) == nil, "The following code assumes it is executed only once for one peer at maximum. If this is not correct any more, a guard check of this assertion would be enough here (since then nothing has to be done).")
         
         var _row: Int? = nil
@@ -374,8 +396,9 @@ final class BrowseViewController: UITableViewController {
         var wasOne = false
         
         for section in [PeersSection.outFilter.rawValue, PeersSection.inFilter.rawValue] {
-            if let idx = (peerCache[section].firstIndex { $0 == peer }) {
+            if let idx = peerCache[section].firstIndex(of: peer) {
                 peerCache[section].remove(at: idx)
+				managerCache[section].remove(at: idx)
                 wasOne = peerCache[section].count == 0
                 _row = idx
                 _sec = section
@@ -386,7 +409,7 @@ final class BrowseViewController: UITableViewController {
         guard let row = _row else { return }
         
         let oldPath = IndexPath(row: row, section: _sec!)
-        let newPath = IndexPath(row: 0, section: addPeerToCache(peer))
+		let newPath = IndexPath(row: 0, section: addToCache(peer: peer, manager: manager))
         tableView.moveRow(at: oldPath, to: newPath)
         tableView.scrollToRow(at: newPath, at: .none, animated: true)
         tableView.reloadRows(at: [newPath], with: .automatic)
@@ -426,13 +449,13 @@ final class OfflineTableViewCell: UITableViewCell {
 			emitterLayer.emitterPosition = frame.center
 			
 			let emitterCell = CAEmitterCell()
-			emitterCell.birthRate = 6
-			emitterCell.lifetime = 20
+			emitterCell.birthRate = 7
+			emitterCell.lifetime = 22
 			emitterCell.velocity = 50
-			emitterCell.scale = 0.02
+			emitterCell.scale = 0.03
 			
 			emitterCell.emissionRange = CGFloat.pi * 2.0
-			emitterCell.contents = #imageLiteral(resourceName: "Gradient").cgImage
+			emitterCell.contents = #imageLiteral(resourceName: "PortraitUnavailable").cgImage
 			emitterCell.color = AppDelegate.shared.theme.globalTintColor.cgColor
 			
 			emitterLayer.emitterCells = [emitterCell]
@@ -441,11 +464,11 @@ final class OfflineTableViewCell: UITableViewCell {
 			backgroundView.layer.addSublayer(emitterLayer)
 			
 			let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
-			effectView.frame = frame
+			effectView.frame = bounds
 			
 			 // go under status bar
-			effectView.frame.origin.y = -20.0
-			effectView.frame.size.height += 20.0
+//			effectView.frame.origin.y = -20.0
+//			effectView.frame.size.height += 20.0
 			
 			backgroundView.addSubview(effectView)
 			self.backgroundView = backgroundView
@@ -457,7 +480,7 @@ final class OfflineTableViewCell: UITableViewCell {
 				subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
 			}
 			subheadLabel.textColor = AppDelegate.shared.theme.globalTintColor
-			shoutoutLabel.text = NSLocalizedString("Visit a crowded place and go online to find new people!", comment: "Bottom text of the offline mode placeholder shown in browse view")
+			shoutoutLabel.text = NSLocalizedString("Peeree uses Bluetooth Low Energy to connect you to people around you.", comment: "Bottom text of the offline mode placeholder shown in browse view")
 			
 			backgroundView = nil
 		}

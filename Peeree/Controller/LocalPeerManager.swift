@@ -9,16 +9,21 @@
 import Foundation
 import CoreBluetooth
 
-protocol LocalPeerManagerDelegate {
-    func advertisingStarted()
-    func advertisingStopped()
+protocol LocalPeerManagerDelegate: AnyObject {
 //    func networkTurnedOff()
-    func receivedPinMatchIndication(from: PeerID)
+	func advertisingStarted()
+	func advertisingStopped()
+	func localPeerDelegate(for peerID: PeerID) -> LocalPeerDelegate
+}
+
+protocol LocalPeerDelegate {
+	func receivedPinMatchIndication()
+	func received(message: String)
 }
 
 /// The LocalPeerManager singleton serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
 /// All the CBPeripheralManagerDelegate methods work on a separate queue so you must not call them yourself.
-final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
+final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
     let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", attributes: [])
     
     private var peripheralManager: CBPeripheralManager! = nil
@@ -31,7 +36,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     private var nonces = [UUID : Data]()
     
-    var delegate: LocalPeerManagerDelegate?
+    weak var delegate: LocalPeerManagerDelegate?
     
     var isAdvertising: Bool {
 //        return dQueue.sync {
@@ -98,36 +103,38 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         case .poweredOff:
             stopAdvertising()
         case .poweredOn:
-            // value: UserPeerInfo.instance.peer.idData
-            let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.idData, permissions: [.readable])
+            // value: UserPeerManager.instance.peer.idData
+            let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: UserPeerManager.instance.peer.idData, permissions: [.readable])
             // value: remote peer.idData
             let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
             // value: Data(count: 1)
             let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-            // value try? Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
+            // value try? Data(contentsOf: UserPeerManager.pictureResourceURL)
             let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
             // value: aggregateData
-            let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.aggregateData, permissions: [.readable])
+            let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: UserPeerManager.instance.peer.aggregateData, permissions: [.readable])
             // value: lastChangedData
-            let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.lastChangedData, permissions: [.readable])
+            let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: UserPeerManager.instance.peer.lastChangedData, permissions: [.readable])
             // value nicknameData
-            let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.nicknameData, permissions: [.readable])
-            // value UserPeerInfo.instance.peer.publicKey
-            let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: UserPeerInfo.instance.peer.publicKeyData, permissions: [.readable])
+            let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: UserPeerManager.instance.peer.nicknameData, permissions: [.readable])
+            // value UserPeerManager.instance.peer.publicKey
+            let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: UserPeerManager.instance.peer.publicKeyData, permissions: [.readable])
             // value nonce when read, signed nonce when written
             // Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
             let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+			// value: String.data(prefixedEncoding:)
+			let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
             
             // provide signature characteristics
             
             var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil
             do {
-                peerIDSignature = try UserPeerInfo.instance.keyPair.sign(message: UserPeerInfo.instance.peer.idData)
-                aggregateSignature = try UserPeerInfo.instance.keyPair.sign(message: UserPeerInfo.instance.peer.aggregateData)
-                nicknameSignature = try UserPeerInfo.instance.keyPair.sign(message: UserPeerInfo.instance.peer.nicknameData)
-                if UserPeerInfo.instance.peer.hasPicture {
-                    let imageData = try Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
-                    portraitSignature = try UserPeerInfo.instance.keyPair.sign(message: imageData)
+                peerIDSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.idData)
+                aggregateSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.aggregateData)
+                nicknameSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.nicknameData)
+                if UserPeerManager.instance.peer.hasPicture {
+                    let imageData = try Data(contentsOf: UserPeerManager.pictureResourceURL)
+                    portraitSignature = try UserPeerManager.instance.keyPair.sign(message: imageData)
                 }
             } catch {
                 NSLog("ERR: Failed to create signature characteristics. (\(error.localizedDescription))")
@@ -138,7 +145,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
             
             let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-            peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic]
+            peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic]
             peripheral.add(peereeService)
 		@unknown default:
 			// just wait
@@ -161,12 +168,12 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
         switch characteristic.uuid {
         case CBUUID.PortraitCharacteristicID:
             do {
-                let data = try Data(contentsOf: UserPeerInfo.instance.pictureResourceURL)
+                let data = try Data(contentsOf: UserPeerManager.pictureResourceURL)
                 send(data: data, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
             } catch {
                 NSLog("ERR: Failed to read user portrait: \(error.localizedDescription)")
                 NSLog("Removing picture from user info.")
-                UserPeerInfo.instance.peer.cgPicture = nil
+                UserPeerManager.instance.cgPicture = nil
             }
         default:
             break
@@ -191,7 +198,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         let centralID = request.central.identifier
         NSLog("Did receive read on \(request.characteristic.uuid.uuidString.left(8)) from central \(centralID)")
-        if let data = UserPeerInfo.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
+        if let data = UserPeerManager.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
             // dead code, as we provided those values when we created the mutable characteristics
             if (request.offset > data.count) {
                 peripheral.respond(to: request, withResult: .invalidOffset)
@@ -205,7 +212,7 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
                 return
             }
             do {
-                let signature = try UserPeerInfo.instance.keyPair.sign(message: nonce)
+                let signature = try UserPeerManager.instance.keyPair.sign(message: nonce)
                 
                 if (request.offset > signature.count) {
                     peripheral.respond(to: request, withResult: .invalidOffset)
@@ -225,34 +232,45 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
         var error: CBATTError.Code = .success
+		
+		// these are the possible contents of the request
         var _peer: (PeerID, UUID)? = nil
         var _pin: (PeerID, Bool)? = nil
         var _nonce: (CBCentral, Data)? = nil
+		var _message: (PeerID, String)? = nil
+		
         for request in requests {
             NSLog("Did receive write on \(request.characteristic.uuid.uuidString.left(8)) from central \(request.central.identifier)")
-            if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
-                guard let data = request.value, let peerID = PeerID(data: data) else {
-                    error = .insufficientResources
+			guard let data = request.value else {
+				// this probably never happens
+				error = .insufficientResources
+				break
+			}
+			if request.characteristic.uuid == CBUUID.MessageCharacteristicID {
+				guard let message = String(dataPrefixedEncoding: data),
+					let peerID = _availableCentrals[request.central.identifier] else {
+					error = .unlikelyError
+					break
+				}
+				_message = (peerID, message)
+			} else if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
+                guard let peerID = PeerID(data: data) else {
+                    error = .unlikelyError
                     break
                 }
                 
                 _peer = (peerID, request.central.identifier)
             } else if request.characteristic.uuid == CBUUID.PinMatchIndicationCharacteristicID {
-                guard let data = request.value, let pinFlag = data.first, let peerID = _availableCentrals[request.central.identifier] else {
-                    error = .insufficientResources
+                guard let pinFlag = data.first, let peerID = _availableCentrals[request.central.identifier] else {
+                    error = .unlikelyError
                     break
                 }
                 
                 _pin = (peerID, pinFlag != 0)
-            } else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
-                guard let nonce = request.value else {
-                    error = .insufficientResources
-                    break
-                }
-                
-                _nonce = (request.central, nonce)
-            } else {
-                error = .writeNotPermitted
+			} else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
+				_nonce = (request.central, data)
+			} else {
+                error = .requestNotSupported
                 break
             }
         }
@@ -260,13 +278,17 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
             if let peer = _peer {
                 _availableCentrals[peer.1] = peer.0
             }
-            if let pin = _pin, pin.1 {
+            if let (peerID, pin) = _pin, pin {
                 // attack scenario: Eve sends us an indication with her or Bob's PeerID => we always validate with the server, and as we do not react to Eve directly, so Eve cannot derive sensitive information
-                delegate?.receivedPinMatchIndication(from: pin.0)
+				delegate?.localPeerDelegate(for: peerID).receivedPinMatchIndication()
             }
-            if let nonce = _nonce {
-                nonces[nonce.0.identifier] = nonce.1
+            if let (central, nonce) = _nonce {
+                nonces[central.identifier] = nonce
             }
+			if let (peerID, message) = _message {
+				// attack scenario: Eve sends us an indication with her or Bob's PeerID => we always validate with the server, and as we do not react to Eve directly, so Eve cannot derive sensitive information
+				delegate?.localPeerDelegate(for: peerID).received(message: message)
+			}
         }
         peripheral.respond(to: requests.first!, withResult: error)
     }
@@ -276,9 +298,9 @@ final class LocalPeerManager: PeerManager, CBPeripheralManagerDelegate {
     private func send(data: Data, via peripheral: CBPeripheralManager, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
         if sendSize {
             // send the amount of bytes in data in the first package
-            var size = SplitCharacteristicSize(data.count)
+            var size = CBCharacteristic.SplitCharacteristicSize(data.count)
             
-            let sizeData = Data(bytesNoCopy: &size, count: MemoryLayout<SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
+            let sizeData = Data(bytesNoCopy: &size, count: MemoryLayout<CBCharacteristic.SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
             guard peripheral.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
                 if isAdvertising {
                     interruptedTransfers.append((data, characteristic, central, true))

@@ -98,38 +98,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         
         AccountController.shared.delegate = self
         
-        _ = PeeringController.Notifications.peerAppeared.addObserver { notification in
+        _ = PeeringController.Notifications.peerAppeared.addPeerObserver { peerID, notification  in
             guard let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool else { return }
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
-            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
-
-            self.peerAppeared(peer, again: again)
+            self.peerAppeared(peerID, again: again)
         }
         
-        _ = PeeringController.Notifications.peerDisappeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
-            
+        _ = PeeringController.Notifications.peerDisappeared.addPeerObserver { peerID, _  in
             self.peerDisappeared(peerID)
         }
         
-        _ = AccountController.Notifications.pinMatch.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
-            guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID) else {
+        _ = AccountController.Notifications.pinMatch.addPeerObserver { peerID, _  in
+            guard let peer = PeeringController.shared.manager(for: peerID).peerInfo else {
                 assertionFailure()
                 return
             }
             
             self.pinMatchOccured(peer)
         }
-        
+		
+		_ = PeerManager.Notifications.messageReceived.addPeerObserver { peerID, _  in
+			self.messageReceived(from: peerID)
+		}
+		
         _ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
 			UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
         }
 
         // reinstantiate CBManagers if there where some
         // TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
-        let restoredCentralManagerIDs = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothCentrals] as? [String]
-        let restoredPeripheralManagerIDs = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothPeripherals] as? [String]
+        let restoredCentralManagerIDs = launchOptions?[.bluetoothCentrals] as? [String]
+        let restoredPeripheralManagerIDs = launchOptions?[.bluetoothPeripherals] as? [String]
         if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
             PeeringController.shared.peering = true
         }
@@ -162,8 +160,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
 		} else {
 			for peerID in PeeringController.shared.remote.availablePeers {
-				guard let peer = PeeringController.shared.remote.getPeerInfo(of: peerID), BrowseFilterSettings.shared.check(peer: peer) else { continue }
-				_ = PeeringController.shared.remote.loadPicture(of: peer)
+				let manager = PeeringController.shared.manager(for: peerID)
+				guard let peer = manager.peerInfo, BrowseFilterSettings.shared.check(peer: peer) else { continue }
+				_ = manager.loadPicture()
 			}
 		}
         
@@ -182,9 +181,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         guard application.applicationState == .inactive else { return }
         guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? Data else { return }
         guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else { return }
-        guard let peerInfo = PeeringController.shared.remote.getPeerInfo(of: peerID) else { return }
-        
-        show(peer: peerInfo)
+		
+        show(peerID: peerID)
     }
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
@@ -195,7 +193,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
     }
     
-    func show(peer: PeerInfo) {
+    func show(peerID: PeerID) {
         guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
         
         browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
@@ -205,10 +203,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             if vc is BrowseViewController {
                 browseVC = vc as? BrowseViewController
             } else if let personVC = vc as? PersonDetailViewController {
-                guard personVC.displayedPeerInfo != peer else { return }
+                guard personVC.peerManager.peerID != peerID else { return }
             }
         }
-        browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peer)
+        browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
     }
     
     func find(peer: PeerInfo) {
@@ -222,11 +220,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             if vc is BrowseViewController {
                 _browseVC = vc as? BrowseViewController
             } else if let somePersonVC = vc as? PersonDetailViewController {
-                if somePersonVC.displayedPeerInfo == peer {
+                if somePersonVC.peerManager.peerID == peer.peerID {
                     _personVC = somePersonVC
                 }
             } else if let someBeaconVC = vc as? BeaconViewController {
-                guard someBeaconVC.searchedPeer != peer else { return }
+                guard someBeaconVC.peerManager?.peerInfo != peer else { return }
             }
         }
         
@@ -235,18 +233,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         } else if let browseVC = _browseVC {
             guard let personVC = browseVC.storyboard?.instantiateViewController(withIdentifier: PersonDetailViewController.storyboardID) as? PersonDetailViewController,
                 let findVC = browseVC.storyboard?.instantiateViewController(withIdentifier: BeaconViewController.storyboardID) as? BeaconViewController else { return }
-            personVC.displayedPeerInfo = peer
+			let manager = PeeringController.shared.manager(for: peer.peerID)
+            personVC.peerManager = manager
             browseNavVC.pushViewController(personVC, animated: false)
-            findVC.searchedPeer = peer
+            findVC.peerManager = manager
             browseNavVC.pushViewController(findVC, animated: false)
         }
     }
     
     static func requestPin(of peer: PeerInfo) {
-        if !peer.verified {
+		let manager = PeeringController.shared.manager(for: peer.peerID)
+        if !manager.verified {
             let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
             let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
-                PeeringController.shared.remote.verify(peer.peerID)
+                manager.verify()
             }
 			alertController.addAction(retryVerifyAction)
             let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), peer.nickname)
@@ -276,22 +276,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
     
     // MARK: Private Methods
-    
-    private func peerAppeared(_ peer: PeerInfo, again: Bool) {
-        guard BrowseFilterSettings.shared.check(peer: peer) else { return }
-		if isActive {
-			if BrowseFilterSettings.shared.check(peer: peer) {
-				_ = PeeringController.shared.remote.loadPicture(of: peer)
-			}
+	
+	/// shows an in-app or system (local) notification related to a peer
+	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, sufficientCondition: Bool) {
+		if isActive && sufficientCondition {
+			InAppNotificationViewController.shared.presentGlobally(title: title, message: body, isNegative: false) { self.show(peerID: peerID) }
 		} else {
-            guard !again else { return }
-            
 			let note = UILocalNotification()
-            let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-			note.alertBody = String(format: alertBodyFormat, peer.nickname)
-            note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
+			note.alertTitle = title
+			note.alertBody = body
+			note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
 			UIApplication.shared.presentLocalNotificationNow(note)
 		}
+	}
+	
+	private func messageReceived(from peerID: PeerID) {
+		let manager = PeeringController.shared.manager(for: peerID)
+		guard let peer = manager.peerInfo, let message = manager.transcripts.last?.message else { return }
+		let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
+		let title = String(format: titleFormat, peer.nickname)
+		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, sufficientCondition: ((window?.rootViewController as? UINavigationController)?.visibleViewController as? PersonDetailViewController)?.peerManager.peerID != peerID)
+	}
+    
+    private func peerAppeared(_ peerID: PeerID, again: Bool) {
+		guard !again, let peer = PeeringController.shared.manager(for: peerID).peerInfo,
+			BrowseFilterSettings.shared.check(peer: peer) else { return }
+		if isActive {
+			_ = PeeringController.shared.manager(for: peer.peerID).loadPicture()
+		}
+		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
+		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, sufficientCondition: ((window?.rootViewController as? UINavigationController)?.visibleViewController as? BrowseViewController) == nil)
 	}
 	
 	private func peerDisappeared(_ peerID: PeerID) {
@@ -319,11 +333,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             UIApplication.shared.presentLocalNotificationNow(note)
         }
     }
+	
+	private func setupManualAppearance() {
+		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (theme.globalTintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? theme.globalTintColor) : theme.globalTintColor
+	}
     
     private func setupAppearance() {
         RootView.appearance().tintColor = theme.globalTintColor
         RootView.appearance().backgroundColor = theme.globalBackgroundColor
 		
+		setupManualAppearance()
+			
         UINavigationBar.appearance().tintColor = theme.barBackgroundColor // theme.barTintColor
         UINavigationBar.appearance().barTintColor = theme.barTintColor
         UINavigationBar.appearance().barStyle = .black
@@ -333,5 +353,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
 		
 		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
+		
+		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
+			self.setupManualAppearance()
+		}
     }
 }

@@ -22,10 +22,8 @@ class PinMatchViewController: UIViewController {
     }
     
     @IBAction func showProfile(_ sender: AnyObject) {
-        guard let peer = displayedPeer else { return }
-        
         cancelMatchmaking(sender)
-        AppDelegate.shared.show(peer: peer)
+		displayedPeer.map { AppDelegate.shared.show(peerID: $0.peerID) }
     }
     
     @IBAction func findPeer(_ sender: AnyObject) {
@@ -66,23 +64,23 @@ class PinMatchViewController: UIViewController {
         
         if #available(iOS 10.0, *) {
             image?.imageRendererFormat.opaque = true
-            backgroundImageView.image = image
-        } else {
-            backgroundImageView.image = image
         }
+		backgroundImageView.image = image
         backgroundImageView.isOpaque = true
         backgroundImageView.isHidden = false
     }
     
     private func displayPeer() {
-        peerNameLabel?.text = displayedPeer?.nickname
+		guard let peer = displayedPeer else { return }
+		let manager = PeeringController.shared.manager(for: peer.peerID)
+        peerNameLabel?.text = peer.nickname
         
         guard portraitView != nil else { return }
-        portraitView.image = displayedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+        portraitView.image = manager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
         portraitView.layoutIfNeeded()
         _ = CircleMaskView(maskedView: portraitView)
         if #available(iOS 11.0, *) {
-            portraitView.accessibilityIgnoresInvertColors = displayedPeer?.picture != nil
+            portraitView.accessibilityIgnoresInvertColors = manager.picture != nil
         }
     }
 }

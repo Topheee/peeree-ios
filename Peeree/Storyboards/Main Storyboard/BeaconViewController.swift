@@ -21,13 +21,13 @@ final class BeaconViewController: UIViewController {
     
     private var currentDistance = PeerDistance.unknown
     
-    var searchedPeer: PeerInfo?
+    var peerManager: PeerManager?
     
     override func viewDidLoad() {
         super.viewDidLoad()
 		
 		let waveColor: CGColor = AppDelegate.shared.theme.barTintColor.cgColor
-		let valleyColor = UIColor.white.cgColor
+		let valleyColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
 		
 		let gradient = CAGradientLayer()
 		gradient.frame = view.frame
@@ -39,60 +39,52 @@ final class BeaconViewController: UIViewController {
 		gradient.colors = [waveColor, valleyColor, waveColor]
 		gradient.locations = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.5), NSNumber(floatLiteral: 1.0)]
 		
-		let locationAnimation = CABasicAnimation(keyPath: "locations")
-		locationAnimation.fromValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.1), NSNumber(floatLiteral: 0.7)]
-		locationAnimation.toValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.7), NSNumber(floatLiteral: 1.0)]
-		locationAnimation.duration = 3.0
-		locationAnimation.repeatCount = Float.greatestFiniteMagnitude
-		
-		let colorsAnimation = CABasicAnimation(keyPath: "colors")
-		colorsAnimation.fromValue = [valleyColor, waveColor, valleyColor]
-		colorsAnimation.toValue = [waveColor, valleyColor, valleyColor]
-		colorsAnimation.duration = 3.0
-		colorsAnimation.repeatCount = Float.greatestFiniteMagnitude
-		
-		gradient.add(locationAnimation, forKey: "locations")
-		gradient.add(colorsAnimation, forKey: "colors")
+		if !UIAccessibility.isReduceMotionEnabled {
+			let locationAnimation = CABasicAnimation(keyPath: "locations")
+			locationAnimation.fromValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.1), NSNumber(floatLiteral: 0.7)]
+			locationAnimation.toValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.7), NSNumber(floatLiteral: 1.0)]
+			locationAnimation.duration = 3.0
+			locationAnimation.repeatCount = Float.greatestFiniteMagnitude
+			
+			let colorsAnimation = CABasicAnimation(keyPath: "colors")
+			colorsAnimation.fromValue = [valleyColor, waveColor, valleyColor]
+			colorsAnimation.toValue = [waveColor, valleyColor, valleyColor]
+			colorsAnimation.duration = 3.0
+			colorsAnimation.repeatCount = Float.greatestFiniteMagnitude
+			
+			gradient.add(locationAnimation, forKey: "locations")
+			gradient.add(colorsAnimation, forKey: "colors")
+		}
 		
 		view.layer.insertSublayer(gradient, at: 0)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        userPortrait.image = UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
-        remotePortrait.image = searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+        userPortrait.image = UserPeerManager.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+        remotePortrait.image = peerManager?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
 		if #available(iOS 11.0, *) {
 			userPortrait.accessibilityIgnoresInvertColors = userPortrait.image != nil
 			remotePortrait.accessibilityIgnoresInvertColors = remotePortrait.image != nil
 		}
         updateDistance(.unknown, animated: false)
-        if let peer = searchedPeer {
-            if PeeringController.shared.remote.availablePeers.contains(peer.peerID) {
+        if let peerID = peerManager?.peerID {
+            if PeeringController.shared.remote.availablePeers.contains(peerID) {
                 showPeerAvailable()
             } else {
                 showPeerUnavailable()
             }
+			
+			notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver(for: peerID) { [weak self] _ in
+				self?.showPeerAvailable()
+			})
+			notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver(for: peerID) { [weak self] _ in
+				self?.showPeerUnavailable()
+			})
+			notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
+				self?.remotePortrait.image = self?.peerManager?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+			})
         }
-        
-        notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver { (notification) in
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
-            guard self.searchedPeer?.peerID == peerID else { return }
-            
-            self.showPeerAvailable()
-        })
-        
-        notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver { notification in
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID else { return }
-            guard self.searchedPeer?.peerID == peerID else { return }
-            
-            self.showPeerUnavailable()
-        })
-        
-        notificationObservers.append(PeeringController.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in
-            guard let strongSelf = self else { return }
-            strongSelf.searchedPeer = PeeringController.shared.remote.getPeerInfo(of: peerID) ?? strongSelf.searchedPeer
-            strongSelf.remotePortrait.image = strongSelf.searchedPeer?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
-        })
         
         startBeacon()
 		
@@ -153,8 +145,8 @@ final class BeaconViewController: UIViewController {
     }
     
     private func startBeacon() {
-        guard let peer = searchedPeer else { return }
-        PeeringController.shared.range(peer.peerID) { [weak self] (_, distance) in
+        guard let manager = peerManager else { return }
+		manager.range(manager.peerID) { [weak self] (_, distance) in
             DispatchQueue.main.async {
                 self?.updateDistance(distance, animated: true)
             }
@@ -162,6 +154,6 @@ final class BeaconViewController: UIViewController {
     }
     
     private func stopBeacon() {
-        PeeringController.shared.stopRanging()
+		peerManager?.stopRanging()
     }
 }

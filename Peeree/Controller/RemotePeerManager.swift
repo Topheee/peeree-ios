@@ -9,20 +9,22 @@
 import CoreGraphics
 import CoreBluetooth
 
-protocol RemotePeerManagerDelegate {
+protocol RemotePeerManagerDelegate: AnyObject {
 //    func scanningStarted()
 //    func scanningStopped()
-    func peerAppeared(_ peerID: PeerID, again: Bool)
-    func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID)
-    func pictureLoaded(of peerID: PeerID)
-    func shouldIndicatePinMatch(to peer: PeerInfo) -> Bool
-    func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
-    func failedVerification(of peerID: PeerID, error: Error)
-    func didVerify(_ peerID: PeerID)
+	func peerAppeared(_ peerID: PeerID, again: Bool) -> RemotePeerDelegate
+	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID)
+}
+
+protocol RemotePeerDelegate {
+	func loaded(picture: CGImage, of peerID: PeerID)
+	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
+	func failedVerification(of peerID: PeerID, error: Error)
+	func didVerify(_ peerID: PeerID)
 }
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
-final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDelegate, CBPeripheralDelegate {
+final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate, CBPeripheralDelegate {
     private struct PeerData {
         var progress = Progress(totalUnitCount: 7)
         var aggregateData: Data? = nil
@@ -90,8 +92,10 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
     private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(Bundle.main.bundleIdentifier!).cachedPeers")
     private var peerInfoTransmissions = [PeerID : PeerData]()
+	private var remotePeerDelegates = [PeerID : RemotePeerDelegate]()
     
     private var activeTransmissions = [Transmission : (Progress, Data)]() // TODO if the synchronization through the dQueue is too slow, switch to a delegate model, where the delegate is being told when a transmission begins/ends. Also, inform new delegates (via didSet and then dQueue.aysnc) of ongoing transmissions by calling transmissionDidBegin for every current transmission.
+	private var reliableWriteProcesses = [Transmission : (DispatchQueue, (Error?) -> Void)]()
     
     private var centralManager: CBCentralManager!
     
@@ -103,17 +107,17 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     private var nonces = [CBPeripheral : Data]()
     private var portraitSignatures = [PeerID : Data?]()
     
-    var delegate: RemotePeerManagerDelegate?
+    weak var delegate: RemotePeerManagerDelegate?
     
     var availablePeers: [PeerID] {
         return peripheralPeerIDs.accessSync { (dictionary) in
-            return dictionary.compactMap({ (peerID, peripheral) -> PeerID? in
-                if peripheral.services == nil || peripheral.services!.isEmpty {
+            return dictionary.compactMap { (peerID, peripheral) -> PeerID? in
+                if peripheral.state != .connected || peripheral.services == nil || peripheral.services!.isEmpty {
                     return nil
                 } else {
                     return peerID
                 }
-            })
+            }
         }
     }
     
@@ -139,6 +143,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         guard isScanning else { return }
         
         dQueue.sync {
+			self.centralManager.stopScan()
             for (_, (progress, _)) in self.activeTransmissions {
                 progress.cancel()
             }
@@ -152,7 +157,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             self.nonces.removeAll()
             self.peripheralPeerIDs.removeAll()
             self.cachedPeers.removeAll()
-            self.centralManager.stopScan()
         }
     }
     
@@ -182,18 +186,17 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
         // do not sync activeTransmissions with dQueue as we don't need to be 100% correct here
         return activeTransmissions[Transmission(peripheralID: peripheral.identifier, characteristicID: characteristicID)]?.0
     }
+	
+	func loadResource(of peerID: PeerID, characteristicID: CBUUID, signatureCharacteristicID: CBUUID) -> Progress? {
+		guard let peripheral = peripheralPeerIDs[peerID],
+			let signatureCharacteristic = peripheral.peereeService?.get(characteristic: signatureCharacteristicID) else { return nil }
+		peripheral.readValue(for: signatureCharacteristic)
+		return load(characteristicID: characteristicID, of: peerID)
+	}
     
-    func loadPicture(of peer: PeerInfo) -> Progress? {
-        guard peer.hasPicture && peer.cgPicture == nil,
-            let peripheral = peripheralPeerIDs[peer.peerID],
-            let characteristic = peripheral.peereeService?.get(characteristic: CBUUID.PortraitSignatureCharacteristicID) else { return nil }
-        peripheral.readValue(for: characteristic)
-        return load(characteristicID: CBUUID.PortraitCharacteristicID, of: peer.peerID)
-    }
-    
-    func isPictureLoading(of peerID: PeerID) -> Progress? {
+	func loadProgress(for characteristicID: CBUUID, of peerID: PeerID) -> Progress? {
         guard let peripheral = peripheralPeerIDs[peerID] else { return nil }
-        return isLoading(characteristicID: CBUUID.PortraitCharacteristicID, of: peripheral)
+        return isLoading(characteristicID: characteristicID, of: peripheral)
     }
     
     func isPeerInfoLoading(of peerID: PeerID) -> Progress? {
@@ -203,14 +206,30 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     func getPeerInfo(of peerID: PeerID) -> PeerInfo? {
         return cachedPeers[peerID]
     }
-    
-    func indicatePinMatch(to peer: PeerInfo) {
-        guard delegate?.shouldIndicatePinMatch(to: peer) ?? false,
-            let peripheral = peripheralPeerIDs[peer.peerID],
-            let characteristic = peripheral.peereeService?.get(characteristic: CBUUID.PinMatchIndicationCharacteristicID) else { return }
-        
-        peripheral.writeValue(pinnedData(true), for: characteristic, type: .withResponse)
-    }
+	
+	func isReliablyWriting(to characteristicID: CBUUID, of peerID: PeerID) -> Bool {
+		guard let peripheral = peripheralPeerIDs[peerID] else { return false }
+		return dQueue.sync {
+			self.reliableWriteProcesses[Transmission(peripheralID: peripheral.identifier, characteristicID: characteristicID)] != nil
+		}
+	}
+	
+	func reliablyWrite(data: Data, to characteristicID: CBUUID, of peerID: PeerID, callbackQueue: DispatchQueue, completion: @escaping (Error?) -> Void) {
+		dQueue.async {
+			guard let peripheral = self.peripheralPeerIDs[peerID],
+				let characteristic = peripheral.peereeService?.get(characteristic: characteristicID) else { return }
+			let transmission = Transmission(peripheralID: peripheral.identifier, characteristicID: characteristic.uuid)
+			if self.reliableWriteProcesses[transmission] == nil {
+				self.reliableWriteProcesses[transmission] = (callbackQueue, completion)
+				peripheral.writeValue(data, for: characteristic, type: .withResponse)
+			} else {
+				callbackQueue.async {
+					completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Reliable write already in progress.", comment: "Error during reliable bluetooth send operation")]))
+				}
+				
+			}
+		}
+	}
     
     func range(_ peerID: PeerID) {
         peripheralPeerIDs[peerID]?.readRSSI()
@@ -218,10 +237,9 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     func verify(_ peerID: PeerID) {
         guard let peripheral = peripheralPeerIDs[peerID], let characteristic = peripheral.peereeService?.get(characteristic: CBUUID.AuthenticationCharacteristicID) else {
-            delegate?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Insufficient resources for writing Bluetooth nonce.", comment: "Error during peer verification")]))
+            remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Insufficient resources for writing Bluetooth nonce.", comment: "Error during peer verification")]))
             return
         }
-        cachedPeers[peerID]?.verified = false
         writeNonce(to: peripheral, with: peerID, characteristic: characteristic)
     }
     
@@ -259,7 +277,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 }
                 
                 peripheral.readValue(for: characteristics[1])
-                peripheral.writeValue(UserPeerInfo.instance.peer.idData, for: characteristics[2], type: .withResponse)
+                peripheral.writeValue(UserPeerManager.instance.peer.idData, for: characteristics[2], type: .withResponse)
             }
         default:
             break
@@ -366,7 +384,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                 peripheral.readValue(for: characteristic)
                 found = true
             } else if characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
-                peripheral.writeValue(UserPeerInfo.instance.peer.idData, for: characteristic, type: .withResponse)
+                peripheral.writeValue(UserPeerManager.instance.peer.idData, for: characteristic, type: .withResponse)
             }
         }
         
@@ -388,7 +406,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             cancelTransmission(to: peripheral, of: characteristic.uuid)
             if characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
                 guard let peerID = peerID(of: peripheral) else { return }
-                delegate?.failedVerification(of: peerID, error: error!)
+                remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: error!)
             }
             return
         }
@@ -452,8 +470,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                     progress.cancel()
                     break
                 }
-                cachedPeers[peerID]?.cgPicture = image
-                delegate?.pictureLoaded(of: peerID)
+				remotePeerDelegates[peerID]?.loaded(picture: image, of: peerID)
             default:
                 break
             }
@@ -501,15 +518,13 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
             
             do {
                 try peer.publicKey.verify(message: nonce, signature: signature)
-                cachedPeers[peerID]?.verified = true
-                delegate?.didVerify(peerID)
+                remotePeerDelegates[peerID]?.didVerify(peerID)
             } catch {
-                cachedPeers[peerID]?.verified = false
-                delegate?.failedVerification(of: peerID, error: error)
+                remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: error)
             }
             
         case CBUUID.PortraitCharacteristicID:
-            var size: SplitCharacteristicSize = 0
+            var size: CBCharacteristic.SplitCharacteristicSize = 0
             withUnsafeMutableBytes(of: &size) { pointer in
                 pointer.copyBytes(from: chunk)
             }
@@ -533,9 +548,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                         // the peer has a newer state then the one we cached, so reload all changeable properties
                         guard let characteristics = peripheral.peereeService?.get(characteristics: [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.PeerIDSignatureCharacteristicID, CBUUID.AggregateSignatureCharacteristicID, CBUUID.NicknameSignatureCharacteristicID, CBUUID.LastChangedCharacteristicID]) else { break }
                         peripheral.readValues(for: characteristics)
-                        // invalidate portrait to let it be reloaded
-                        cachedPeers[peerID]!.cgPicture = nil
-                        delegate?.pictureLoaded(of: peerID)
                     }
                 } else {
 //                    fatalError()
@@ -552,8 +564,6 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
                         cachedPeers[peerID] = peer /* LocalPeerInfo(peer: peer) */
                         peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
                         peerAppeared(peerID, peripheral: peripheral, again: false)
-                        // always send pin match indication on new connect to be absolutely sure that the other really got that
-                        indicatePinMatch(to: peer)
                     } else {
                         NSLog("WARNING: Creating peer info failed, disconnecting.")
                         // peer info is essential
@@ -586,12 +596,12 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         NSLog("Did read RSSI \(RSSI) of peripheral \(peripheral).")
         guard let peerID = peerID(of: peripheral) else { assertionFailure(); return }
-        delegate?.didRange(peerID, rssi: RSSI, error: error)
+        remotePeerDelegates[peerID]?.didRange(peerID, rssi: RSSI, error: error)
     }
     #else
     func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
         guard let peerID = peerID(of: peripheral) else { assertionFailure(); return }
-        delegate?.didRange(peerID, rssi: peripheral.rssi, error: error)
+        remotePeerDelegates[peerID]?.didRange(peerID, rssi: peripheral.rssi, error: error)
     }
     #endif
     
@@ -610,6 +620,9 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+		if let (callbackQueue, completion) = reliableWriteProcesses.removeValue(forKey: Transmission(peripheralID: peripheral.identifier, characteristicID: characteristic.uuid)) {
+			callbackQueue.async { completion(error) }
+		}
         guard error == nil else {
             NSLog("Error writing \(characteristic.uuid.uuidString.left(8)) to PeerID \(peerID(of: peripheral)?.uuidString.left(8) ?? "unknown"): \(error!.localizedDescription).")
             return
@@ -640,7 +653,7 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     private func peerAppeared(_ peerID: PeerID, peripheral: CBPeripheral, again: Bool) {
         verify(peerID)
-        delegate?.peerAppeared(peerID, again: again)
+        remotePeerDelegates[peerID] = delegate?.peerAppeared(peerID, again: again)
     }
     
     private func disconnect(_ peripheral: CBPeripheral) {
@@ -676,14 +689,14 @@ final class RemotePeerManager: PeerManager, RemotePeering, CBCentralManagerDeleg
     
     private func writeNonce(to peripheral: CBPeripheral, with peerID: PeerID, characteristic: CBCharacteristic) {
         let writeType = CBCharacteristicWriteType.withResponse
-        let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerInfo.instance.keyPair.blockSize)
+        let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerManager.instance.keyPair.blockSize)
         var nonce = Data(count: randomByteCount)
         if ((try? nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })) ?? -1) == 0 {
             nonces[peripheral] = nonce
             peripheral.writeValue(nonce, for: characteristic, type: writeType)
         } else {
             perror(nil)
-            delegate?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Generating random Bluetooth nonce failed.", comment: "Error message during verification")]))
+            remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Generating random Bluetooth nonce failed.", comment: "Error message during verification")]))
         }
     }
 }

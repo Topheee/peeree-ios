@@ -9,25 +9,21 @@
 import Foundation
 
 public protocol ProgressDelegate: class {
-    func progress(didUpdate progress: Progress, peerID: PeerID)
-    func progress(didCancel progress: Progress, peerID: PeerID)
-    func progress(didPause progress: Progress, peerID: PeerID)
-    func progress(didResume progress: Progress, peerID: PeerID)
+    func progressDidUpdate(_ progress: Progress)
+    func progressDidCancel(_ progress: Progress)
+    func progressDidPause(_ progress: Progress)
+    func progressDidResume(_ progress: Progress)
 }
 
 // IDEA parameter which incicates the minimum changed fraction needed to update the delegate, to prevent from unnecessary often queue changes 
 public class ProgressManager: NSObject {
-    // KVO path strings for observing changes to properties of NSProgress
-    //    static let ProgressCancelledKeyPath          = "cancelled"
     private static let ProgressCompletedUnitCountKeyPath = "completedUnitCount"
     
-    let peerID: PeerID
     let progress: Progress
     let targetQueue: DispatchQueue
     weak var delegate: ProgressDelegate?
     
-    public init(peerID: PeerID, progress: Progress, delegate: ProgressDelegate, queue: DispatchQueue) {
-        self.peerID = peerID
+    public init(progress: Progress, delegate: ProgressDelegate, queue: DispatchQueue) {
         self.progress = progress
         self.delegate = delegate
         targetQueue = queue
@@ -37,26 +33,24 @@ public class ProgressManager: NSObject {
         progress.cancellationHandler = { [weak self] in
             guard let strongSelf = self else { return }
             strongSelf.targetQueue.async {
-                strongSelf.delegate?.progress(didCancel: strongSelf.progress, peerID: strongSelf.peerID)
+                strongSelf.delegate?.progressDidCancel(strongSelf.progress)
             }
         }
         progress.pausingHandler = { [weak self] in
             guard let strongSelf = self else { return }
             strongSelf.targetQueue.async {
-                strongSelf.delegate?.progress(didPause: strongSelf.progress, peerID: strongSelf.peerID)
+                strongSelf.delegate?.progressDidPause(strongSelf.progress)
             }
         }
         progress.resumingHandler = { [weak self] in
             guard let strongSelf = self else { return }
             strongSelf.targetQueue.async {
-                strongSelf.delegate?.progress(didResume: strongSelf.progress, peerID: strongSelf.peerID)
+                strongSelf.delegate?.progressDidResume(strongSelf.progress)
             }
         }
     }
     
     deinit {
-        // stop KVO
-        //        progress.removeObserver(self, forKeyPath:"cancelled")
         progress.removeObserver(self, forKeyPath:ProgressManager.ProgressCompletedUnitCountKeyPath)
     }
     
@@ -66,14 +60,22 @@ public class ProgressManager: NSObject {
         guard delegate != nil && keyPath != nil else { return }
         
         switch keyPath! {
-            //        case "cancelled":
-        //            delegate!.portraitLoadCancelled()
         case ProgressManager.ProgressCompletedUnitCountKeyPath:
             targetQueue.async {
-                self.delegate?.progress(didUpdate: progress, peerID: self.peerID)
+                self.delegate?.progressDidUpdate(progress)
             }
         default:
             break
         }
     }
+}
+
+extension Progress {
+	enum State {
+		case unstarted, processing, finished
+	}
+	
+	var state: State {
+		return completedUnitCount == 0 ? .unstarted : (completedUnitCount == totalUnitCount ? .finished : .processing)
+	}
 }

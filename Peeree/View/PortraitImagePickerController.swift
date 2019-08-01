@@ -47,7 +47,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
 			alertController.preferredAction = photoLibraryAction
 		}
         alertController.addAction(UIAlertAction(title: destructiveActionName, style: .destructive) { (action) in
-            self.picked(image: nil)
+            self.save(image: nil)
         })
         if allowCancel {
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
@@ -79,7 +79,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
                 UIImageWriteToSavedPhotosAlbum(imageToSave!, nil, nil , nil)
             }
             
-            picked(image: imageToSave)
+            save(image: imageToSave)
         }
         
         // picker.parentViewController is nil, but I don't know why
@@ -87,7 +87,17 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         self.dismiss(animated: true, completion: nil)
     }
     
-    func picked(image: UIImage?) {
-        UserPeerInfo.instance.picture = image
+    private func save(image: UIImage?) {
+		UserPeerManager.instance.set(picture: image) { [weak self] (_error) in
+			if let error = _error {
+				InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Saving Image Failed", comment: "Title of alert"), message: error.localizedDescription)
+			} else {
+				DispatchQueue.main.async { self?.picked(image: image) }
+			}
+		}
     }
+	
+	func picked(image: UIImage?) {
+		NSLog("WARN: picked(image:) should be overridden (or not called with super).")
+	}
 }

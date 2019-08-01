@@ -23,7 +23,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     private var activeField: UITextField! = nil
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
-        UserPeerInfo.instance.peer.gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
+        UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
 	}
     
     @IBAction func changePicture(_ sender: AnyObject) {
@@ -101,9 +101,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
         if let personDetailVC = segue.destination as? PersonDetailViewController {
-            personDetailVC.displayedPeerInfo = UserPeerInfo.instance.peer
+            personDetailVC.peerManager = PeeringController.shared.manager(for: UserPeerManager.instance.peer.peerID)
         } else if let charTraitVC = segue.destination as? CharacterTraitViewController {
-			charTraitVC.characterTraits = UserPeerInfo.instance.peer.characterTraits
+			charTraitVC.characterTraits = UserPeerManager.instance.peer.characterTraits
             charTraitVC.userTraits = true
 		}
 	}
@@ -121,6 +121,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		loadUserPeerInfo()
         adjustAccountView()
 		lockView()
+		navigationController?.isToolbarHidden = true
 	}
     
     override func viewDidLayoutSubviews() {
@@ -148,7 +149,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		datePicker.minimumDate = Calendar.current.date(from: minComponents)
 		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
 		
-		datePicker.date = UserPeerInfo.instance.dateOfBirth ?? datePicker.maximumDate ?? today
+		datePicker.date = UserPeerManager.instance.dateOfBirth ?? datePicker.maximumDate ?? today
 		datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
 		
 		let saveToolBar = UIToolbar()
@@ -179,18 +180,18 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         switch textField {
         case nameTextField:
             guard let newValue = textField.text, newValue != "" else {
-                textField.text = UserPeerInfo.instance.peer.nickname
+                textField.text = UserPeerManager.instance.peer.nickname
                 return
             }
             let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-            UserPeerInfo.instance.peer.nickname = String(newValue[..<endIndex])
+            UserPeerManager.instance.peer.nickname = String(newValue[..<endIndex])
         case birthdayInput:
             guard textField.text != nil && textField.text != "" else {
-                UserPeerInfo.instance.dateOfBirth = nil
+                UserPeerManager.instance.dateOfBirth = nil
                 return
             }
             guard let datePicker = textField.inputView as? UIDatePicker else { return }
-            UserPeerInfo.instance.dateOfBirth = datePicker.date
+            UserPeerManager.instance.dateOfBirth = datePicker.date
         case mailTextField:
             guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
             guard let newValue = textField.text, newValue != "" else {
@@ -228,7 +229,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	// MARK: Private Methods
     
     override func picked(image: UIImage?) {
-        super.picked(image: image)
         portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
         if #available(iOS 11.0, *) {
             portraitImageButton.accessibilityIgnoresInvertColors = image != nil
@@ -236,16 +236,16 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     }
     
     private func loadUserPeerInfo() {
-        nameTextField.text = UserPeerInfo.instance.peer.nickname
-        genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: UserPeerInfo.instance.peer.gender) ?? 0
-        if let date = UserPeerInfo.instance.dateOfBirth {
+        nameTextField.text = UserPeerManager.instance.peer.nickname
+        genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: UserPeerManager.instance.peer.gender) ?? 0
+        if let date = UserPeerManager.instance.dateOfBirth {
             fillBirthdayInput(with: date)
         } else {
             birthdayInput.text = nil
         }
-        portraitImageButton.setImage(UserPeerInfo.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
+        portraitImageButton.setImage(UserPeerManager.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
         if #available(iOS 11.0, *) {
-            portraitImageButton.accessibilityIgnoresInvertColors = UserPeerInfo.instance.picture != nil
+            portraitImageButton.accessibilityIgnoresInvertColors = UserPeerManager.instance.picture != nil
         }
     }
     
@@ -260,7 +260,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		
 		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
 		// TEST with iOS < 11
-		let accessoryHeight = activeField.inputView?.inputAccessoryView?.frame.height ?? 0.0
+		let accessoryHeight = activeField?.inputView?.inputAccessoryView?.frame.height ?? 0.0
         let inputHeight = (info[UIResponder.keyboardFrameBeginUserInfoKey] as! CGRect).height
 		let keyboardHeight = accessoryHeight + inputHeight
 
@@ -311,7 +311,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
     }
     
-    /// do not allow changes to UserPeerInfo while peering
+    /// do not allow changes to UserPeerManager while peering
     private func lockView() {
         for control: UIControl in [nameTextField, portraitImageButton, genderControl, birthdayInput] {
             control.isEnabled = !PeeringController.shared.peering
