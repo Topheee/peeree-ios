@@ -95,6 +95,9 @@
 /* Class = "UINavigationController"; title = "Radar Nav"; ObjectID = "BeP-GU-KG9"; */
 "BeP-GU-KG9.title" = "Radar Nav";
 
+/* Section Footer */
+"dfr-MX-xyY.footerTitle" = "Filter out people who are too young or old, or have no age set.";
+
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Safes your birthday";
 
@@ -128,11 +131,14 @@
 /* Class = "UIBarButtonItem"; title = "Preview"; ObjectID = "OHO-ma-96H"; */
 "OHO-ma-96H.title" = "Preview";
 
-/* Class = "UILabel"; text = "Visit a crowded place and go online to find new people!"; ObjectID = "Oar-8r-xH3"; */
-"Oar-8r-xH3.text" = "Visit a crowded place and go online to find new people!";
-
 /* Class = "UINavigationItem"; title = "New Peer"; ObjectID = "OwH-Gc-YBz"; */
 "OwH-Gc-YBz.title" = "New Peer";
+
+/* Class = "UIImageView"; accessibilityHint = "Shows a portrait of the person you just matched"; ObjectID = "RZ1-xL-Yml"; */
+"RZ1-xL-Yml.accessibilityHint" = "Shows a portrait of the person you just matched";
+
+/* Class = "UIImageView"; accessibilityLabel = "Portrait"; ObjectID = "RZ1-xL-Yml"; */
+"RZ1-xL-Yml.accessibilityLabel" = "Portrait";
 
 /* Class = "UIImageView"; accessibilityHint = "Shows a portrait of the person"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityHint" = "Shows a portrait of the person";
@@ -252,7 +258,7 @@
 "rAH-3G-jWK.text" = "Go offline to change settings.";
 
 /* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "sCY-WJ-efU"; */
-"sCY-WJ-efU.title" = "Find";
+"sCY-WJ-efU.title" = "Radar";
 
 /* Class = "UITextField"; accessibilityHint = "Your publicly visible name"; ObjectID = "sNx-nf-ozM"; */
 "sNx-nf-ozM.accessibilityHint" = "Your publicly visible name";
@@ -277,6 +283,9 @@
 
 /* Class = "UISwitch"; accessibilityLabel = "Age available filter"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityLabel" = "Age available filter";
+
+/* Section Footer */
+"VhZ-Ja-vhb.footerTitle" = "Filter out people without a portrait.";
 
 /* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "wGc-0s-dzf"; */
 "wGc-0s-dzf.accessibilityLabel" = "Person Details";

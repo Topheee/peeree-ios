@@ -36,9 +36,10 @@ final class WelcomeViewController: UIViewController {
 	
 	override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        infoButton.tintColor = AppDelegate.shared.theme.globalTintColor // for whatever reason we have to do that here...
+        infoButton.tintColor = AppTheme.tintColor // for whatever reason we have to do that here...
         
         // somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
+		guard !UIAccessibility.isReduceMotionEnabled else { return }
         timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
     }
     

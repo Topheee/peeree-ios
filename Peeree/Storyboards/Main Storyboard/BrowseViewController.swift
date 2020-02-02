@@ -43,32 +43,15 @@ final class BrowseViewController: UITableViewController {
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
 	
-	private func makeNavigationBar(hidden: Bool) {
-		guard let navigator = navigationController, hidden != navigator.isNavigationBarHidden, navigator.visibleViewController == self else { return }
-		navigator.setNavigationBarHidden(hidden, animated: true)
-		guard let placeholderCell = tableView.visibleCells.first as? OfflineTableViewCell else { return }
-		placeholderCell.make(centered: !hidden)
-	}
-	
-	@IBAction func toggleNavigationBar(_ sender: Any) {
-//		navigationController.map { makeNavigationBar(hidden: !$0.isNavigationBarHidden) }
-		if !PeeringController.shared.peering {
-			toggleNetwork(self)
-		}
-	}
-	
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
         guard AccountController.shared.accountExists else {
-			InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account")) {
+			InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account")) {
 				self.performSegue(withIdentifier: BrowseViewController.PresentMeSegueID, sender: self)
 			}
 			return
 		}
 		if PeeringController.shared.remote.isBluetoothOn {
 			PeeringController.shared.peering = !PeeringController.shared.peering
-//			if PeeringController.shared.peering {
-//				makeNavigationBar(hidden: true)
-//			}
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}
@@ -140,8 +123,21 @@ final class BrowseViewController: UITableViewController {
         UIApplication.shared.applicationIconBadgeNumber = 0
         
         networkButton.layer.cornerRadius = networkButton.bounds.height / 2.0
-        networkButton.tintColor = AppDelegate.shared.theme.globalTintColor
-		networkButton.backgroundColor = UIColor.white
+        networkButton.tintColor = AppTheme.tintColor
+		if #available(iOS 13, *) {
+			// WHAT THE FUCK WHY DOES IT NOT WORK: networkButton.backgroundColor = AppTheme.backgroundColor
+			networkButton.backgroundColor = self.traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+		} else {
+			networkButton.backgroundColor = UIColor.white
+		}
+	}
+	
+	override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+		super.traitCollectionDidChange(previousTraitCollection)
+		if #available(iOS 13, *) {
+			// WHAT THE FUCK WHY DOES IT NOT WORK: networkButton.backgroundColor = AppTheme.backgroundColor
+			networkButton.backgroundColor = self.traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+		}
 	}
 	
 	override func viewDidDisappear(_ animated: Bool) {
@@ -232,8 +228,9 @@ final class BrowseViewController: UITableViewController {
 	
 	@available(iOS 11.0, *)
 	override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+		guard !placeholderCellActive && indexPath.section != PeersSection.matched.rawValue else { return nil }
 		let peer = self.peerCache[indexPath.section][indexPath.row]
-		guard indexPath.section != PeersSection.matched.rawValue, !peer.pinned else { return nil }
+		guard !peer.pinned else { return nil }
 		let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
 			AccountController.shared.pin(peer)
 			completion(true)
@@ -259,7 +256,7 @@ final class BrowseViewController: UITableViewController {
     // MARK: Private Methods
     
 	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
-		cell.textLabel!.highlightedTextColor = AppDelegate.shared.theme.globalTintColor
+		cell.textLabel!.highlightedTextColor = AppTheme.tintColor
         cell.textLabel!.text = peer.nickname
         cell.detailTextLabel!.text = peer.summary
         guard let imageView = cell.imageView else { assertionFailure(); return }
@@ -272,7 +269,7 @@ final class BrowseViewController: UITableViewController {
         let imageRect = CGRect(squareEdgeLength: cell.contentView.marginFrame.height)
         
         UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cell.contentView.marginFrame.height), true, UIScreen.main.scale)        
-        AppDelegate.shared.theme.globalBackgroundColor.setFill()
+        AppTheme.backgroundColor.setFill()
         UIRectFill(imageRect)
         croppedImage.draw(in: imageRect)
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
@@ -312,7 +309,7 @@ final class BrowseViewController: UITableViewController {
 		let section = addToCache(peer: peer, manager: manager)
         
         if updateTable {
-            if placeHolderWasActive && !placeholderCellActive {
+            if placeHolderWasActive {
                 tableView.reloadData()
             } else {
                 add(row: 0, section: section)
@@ -329,7 +326,6 @@ final class BrowseViewController: UITableViewController {
     }
 	
 	private func peerAppeared(_ peerID: PeerID) {
-//		makeNavigationBar(hidden: false)
         addToView(peerID: peerID, updateTable: true)
 	}
 	
@@ -346,7 +342,6 @@ final class BrowseViewController: UITableViewController {
 		managerCache[peerPath.section].remove(at: peerPath.row)
         
         if wasOne && placeholderCellActive {
-//			makeNavigationBar(hidden: true)
             tableView.reloadData()
         } else {
             remove(row: peerPath.row, section: peerPath.section)
@@ -422,28 +417,32 @@ final class BrowseViewController: UITableViewController {
 final class OfflineTableViewCell: UITableViewCell {
     @IBOutlet private weak var headLabel: UILabel!
     @IBOutlet private weak var subheadLabel: UILabel!
-    @IBOutlet private weak var shoutoutLabel: UILabel!
-	@IBOutlet private weak var verticalCenterConstraint: NSLayoutConstraint!
-	@IBOutlet private weak var topConstraint: NSLayoutConstraint!
+	@IBOutlet private weak var vibrancyEffectView: UIVisualEffectView!
+	@IBOutlet private weak var blurEffectView: UIVisualEffectView!
 	
 	private var navigationBarTimer: Timer?
 	
 	enum Mode { case offline, alone }
-	
-	func make(centered: Bool) {
-		verticalCenterConstraint.isActive = centered
-		topConstraint.isActive = !centered
-		performNavigationBarToggleAnimation()
-	}
 	
 	func setContent(mode: Mode) {
 		switch mode {
 		case .alone:
 			headLabel.text = NSLocalizedString("Looking out…", comment: "Heading of the placeholder shown in browse view if no peers are around.")
 			subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
-			subheadLabel.textColor = .black
-			shoutoutLabel.text = NSLocalizedString("Visit a crowded place to find other Peeree users!", comment: "Bottom text of the placeholder shown in browse view if no peers are around")
+			let blurEffect: UIBlurEffect
+			if #available(iOS 13.0, *) {
+				subheadLabel.textColor = UIColor.label
+				blurEffect = UIBlurEffect(style: .systemMaterial)
+			} else {
+				subheadLabel.textColor = UIColor.black
+				blurEffect = UIBlurEffect(style: .extraLight)
+			}
+			blurEffectView.effect = blurEffect
+			vibrancyEffectView.effect = UIVibrancyEffect(blurEffect: blurEffect)
 			
+			if #available(iOS 11.0, *) {
+				guard ProcessInfo.processInfo.thermalState != .critical else { return }
+			}
 			let emitterLayer = CAEmitterLayer()
 			
 			emitterLayer.emitterPosition = frame.center
@@ -452,25 +451,17 @@ final class OfflineTableViewCell: UITableViewCell {
 			emitterCell.birthRate = 7
 			emitterCell.lifetime = 22
 			emitterCell.velocity = 50
-			emitterCell.scale = 0.03
+			emitterCell.scale = 0.035
 			
 			emitterCell.emissionRange = CGFloat.pi * 2.0
 			emitterCell.contents = #imageLiteral(resourceName: "PortraitUnavailable").cgImage
-			emitterCell.color = AppDelegate.shared.theme.globalTintColor.cgColor
+			emitterCell.color = AppTheme.tintColor.cgColor
 			
 			emitterLayer.emitterCells = [emitterCell]
 			
-			let backgroundView = UIView(frame: frame)
+			let backgroundView = UIView(frame: bounds)
+			backgroundView.clipsToBounds = true
 			backgroundView.layer.addSublayer(emitterLayer)
-			
-			let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
-			effectView.frame = bounds
-			
-			 // go under status bar
-//			effectView.frame.origin.y = -20.0
-//			effectView.frame.size.height += 20.0
-			
-			backgroundView.addSubview(effectView)
 			self.backgroundView = backgroundView
 		case .offline:
 			headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
@@ -479,21 +470,11 @@ final class OfflineTableViewCell: UITableViewCell {
 			} else {
 				subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")
 			}
-			subheadLabel.textColor = AppDelegate.shared.theme.globalTintColor
-			shoutoutLabel.text = NSLocalizedString("Peeree uses Bluetooth Low Energy to connect you to people around you.", comment: "Bottom text of the offline mode placeholder shown in browse view")
+			subheadLabel.textColor = AppTheme.tintColor
+			vibrancyEffectView.effect = nil
+			blurEffectView.effect = nil
 			
 			backgroundView = nil
-		}
-	}
-	
-	/// the EffectView's effect is suspended during the navigation bar fade animation, so we need to hide it
-	private func performNavigationBarToggleAnimation() {
-		guard let sublayers = backgroundView?.layer.sublayers else { return }
-		backgroundView?.layer.sublayers = nil
-		if #available(iOS 10.0, *) {
-			navigationBarTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(UINavigationController.hideShowBarDuration), repeats: false) { (timer) in
-				self.backgroundView?.layer.sublayers = sublayers
-			}
 		}
 	}
 }

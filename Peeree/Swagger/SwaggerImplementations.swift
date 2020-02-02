@@ -27,7 +27,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
         }
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if SwaggerClientAPI.testHost == challenge.protectionSpace.host {
+			if SwaggerClientAPI.testHost.starts(with: challenge.protectionSpace.host) {
                 // for debug only!
                 guard let trust = challenge.protectionSpace.serverTrust else {
                     NSLog("no server trust found")

@@ -21,7 +21,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
         let presentPicker = {
             DispatchQueue.main.async {
                 self.present(imagePicker, animated: true, completion: nil)
-                imagePicker.view.tintColor = AppDelegate.shared.theme.globalTintColor
+                imagePicker.view.tintColor = AppTheme.tintColor
             }
         }
         let cameraHandler = {(alertAction: UIAlertAction) -> Void in
@@ -90,7 +90,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
     private func save(image: UIImage?) {
 		UserPeerManager.instance.set(picture: image) { [weak self] (_error) in
 			if let error = _error {
-				InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Saving Image Failed", comment: "Title of alert"), message: error.localizedDescription)
+				InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Saving Image Failed", comment: "Title of alert"), message: error.localizedDescription)
 			} else {
 				DispatchQueue.main.async { self?.picked(image: image) }
 			}

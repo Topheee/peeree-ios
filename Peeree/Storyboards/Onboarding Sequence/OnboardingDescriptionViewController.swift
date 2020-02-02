@@ -12,6 +12,8 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     @IBOutlet private weak var headerView: UIStackView!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var backButton: UIButton!
+    @IBOutlet private weak var topEffectView: UIVisualEffectView!
+    @IBOutlet private weak var bottomEffectView: UIVisualEffectView!
     
     static private let DescriptionParagraphCellID = "DescriptionParagraphCell"
     
@@ -38,6 +40,18 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 240
     }
+	
+	override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+		super.traitCollectionDidChange(previousTraitCollection)
+		let blurEffect: UIBlurEffect
+		if #available(iOS 13.0, *) {
+			blurEffect = UIBlurEffect(style: .systemThinMaterial)
+		} else {
+			blurEffect = UIBlurEffect(style: .extraLight)
+		}
+		topEffectView.effect = blurEffect
+		bottomEffectView.effect = blurEffect
+	}
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -58,6 +72,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+		guard !UIAccessibility.isReduceMotionEnabled else { self.backButton.alpha = 1.0; return }
         UIView.animate(withDuration: 2.0, delay: 1.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: UIView.AnimationOptions.allowUserInteraction, animations: { () -> Void in
             self.backButton.alpha = 1.0
         }, completion: nil)
@@ -81,7 +96,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
         return createDescriptionParagraphCell(for: tableView, indexPath: indexPath)
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+	func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
         for cell in tableView.visibleCells {
             guard let indexPath = tableView.indexPath(for: cell) else { continue }
             
@@ -94,7 +109,8 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     }
     
     private func createDescriptionParagraphCell(for tableView: UITableView, indexPath: IndexPath) -> DescriptionParagraphCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: OnboardingDescriptionViewController.DescriptionParagraphCellID) as! DescriptionParagraphCell
+//		this does not work on iPad with iOS 9: let cell = tableView.dequeueReusableCell(withIdentifier: OnboardingDescriptionViewController.DescriptionParagraphCellID, for: indexPath) as! DescriptionParagraphCell
+		let cell = tableView.dequeueReusableCell(withIdentifier: OnboardingDescriptionViewController.DescriptionParagraphCellID) as! DescriptionParagraphCell
         cell.heading = headingsAndContent[indexPath.row].0
         cell.content = headingsAndContent[indexPath.row].1
         cell.accessoryImage = headingsAndContent[indexPath.row].2

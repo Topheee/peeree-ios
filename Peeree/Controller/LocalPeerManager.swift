@@ -226,7 +226,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
             }
             
         } else {
-            peripheral.respond(to: request, withResult: .readNotPermitted)
+			NSLog("WARN: Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
+            peripheral.respond(to: request, withResult: .requestNotSupported)
         }
     }
     

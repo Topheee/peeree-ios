@@ -50,7 +50,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public var transcripts = [Transcript]()
 	/// access from main thread *only*!
 	public var unreadMessages = 0 {
-		didSet { Notifications.unreadMessageCountChanged.post(peerID) }
+		didSet { if oldValue != unreadMessages { Notifications.unreadMessageCountChanged.post(peerID) } }
 	}
 	
 	public var peerInfo: PeerInfo? {

@@ -124,11 +124,11 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
     var isBluetoothOn: Bool { return centralManager.state == .poweredOn }
     
     var isScanning: Bool {
-        #if os(iOS)
-            return centralManager.isScanning
-        #else
-            return true // shitty shit is not available on mac - what the fuck?
-        #endif
+		if #available(macOS 10.13, iOS 6.0, *) {
+			return centralManager.isScanning
+		} else {
+			return true // shitty shit is not available on mac - what the fuck?
+		}
     }
     
     func scan() {
@@ -148,6 +148,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
                 progress.cancel()
             }
             self.activeTransmissions.removeAll()
+			self.reliableWriteProcesses.removeAll()
             self.peerInfoTransmissions.removeAll()
             for (peripheral, _) in self._availablePeripherals {
                 self.disconnect(peripheral)
@@ -162,8 +163,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
     
     // characteristicID is ! because CBMutableCharacteristic.uuid is fucking optional on macOS
     private func load(characteristicID: CBUUID!, of peerID: PeerID) -> Progress? {
-        guard isScanning else { return nil }
-        guard let peripheral = peripheralPeerIDs[peerID] else { return nil }
+        guard isScanning, let peripheral = peripheralPeerIDs[peerID] else { return nil }
         
         return dQueue.sync {
             if let progress = isLoading(characteristicID: characteristicID, of: peripheral) {
@@ -294,7 +294,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-//		NSLog("INFO: Discovered peripheral \(peripheral).")
+//		NSLog("INFO: Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
 		
         if _availablePeripherals[peripheral] == nil {
             _availablePeripherals.updateValue(nil, forKey: peripheral)
@@ -433,7 +433,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
         activeTransmissions[transmission]?.1.append(chunk)
         let data = activeTransmissions[transmission]!.1
         
-        let transmissionCount = Int64(activeTransmissions[transmission]?.1.count ?? 0)
+        let transmissionCount = Int64(data.count)
         
         // Have we got everything we need?
         if transmissionCount == progress.totalUnitCount {
@@ -484,7 +484,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
         switch transmission.characteristicID {
         case CBUUID.LocalPeerIDCharacteristicID:
             guard let peerID = PeerID(data: chunk) else {
-                NSLog("Retrieved malformed peer ID. Disconnecting peer \(peripheral).")
+                NSLog("ERROR: Retrieved malformed peer ID \(String(data: chunk, encoding: .utf8) ?? "<non-utf8 string>"). Disconnecting peer \(peripheral).")
                 disconnect(peripheral)
                 if #available(iOS 10.0, *) {
                     // does not work yet

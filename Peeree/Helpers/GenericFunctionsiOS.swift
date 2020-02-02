@@ -51,7 +51,7 @@ extension UIAlertController {
     /// This is the preferred method to display an UIAlertController since it sets the tint color of the global theme.
     func present(_ completion: (() -> Void)? = nil) {
         presentInFrontMostViewController(true, completion: completion)
-        self.view.tintColor = AppDelegate.shared.theme.globalTintColor
+        self.view.tintColor = AppTheme.tintColor
     }
 }
 
@@ -75,4 +75,15 @@ extension UIView {
             }
         }, completion: nil)
     }
+}
+
+extension UITextField {
+	/// cap number of characters to <code>maxUtf8Length</code>. Use in <code>func textField(_: UITextField, shouldChangeCharactersIn: NSRange, replacementString: String) -> Bool</code>
+	func allowChangeCharacters(in range: NSRange, replacementString string: String, maxUtf8Length: Int) -> Bool {
+		let oldLength = self.text?.utf8.count ?? 0
+		if (range.length + range.location > oldLength) {
+			return false
+		}
+		return oldLength + string.utf8.count - range.length <= maxUtf8Length
+	}
 }

@@ -125,10 +125,6 @@ extension String {
         // NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
         // PEFORMANCE
         let encodingData = data.subdata(in: 0..<MemoryLayout<UInt32>.size)
-//        var encodingRawValue: String.Encoding.RawValue = String.Encoding.utf8.rawValue
-//        withUnsafeMutableBytes(of: &encodingRawValue) { pointer in
-//            pointer.copyBytes(from: encodingData)
-//        }
         
         var encodingRawValue: UInt32 = UInt32(String.Encoding.utf8.rawValue)
         withUnsafeMutableBytes(of: &encodingRawValue) { pointer in

@@ -79,6 +79,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		if messageComposeTextField.isFirstResponder {
 			// provide more space for the chat
 			messageComposeTextField.resignFirstResponder()
+			portraitImageView.setNeedsLayout()
 		} else {
 			// show greater picture
 			layoutMetadata(isHorizontal: false)
@@ -99,7 +100,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     override func viewDidLoad() {
         super.viewDidLoad()
 		for view in propertyStackView.arrangedSubviews {
-			view.layer.backgroundColor = AppDelegate.shared.theme.globalTintColor.cgColor
+			view.layer.backgroundColor = AppTheme.tintColor.cgColor
 			view.layer.cornerRadius = view.layer.bounds.height / 2.0
 		}
         pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
@@ -107,8 +108,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     
 	override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-		
-		navigationController?.toolbar.setNeedsLayout()
         
         // make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
         if peerManager != nil {
@@ -158,7 +157,14 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		animatePictureLoadLayer()
 		animateGradient()
 		
+		if peerManager.transcripts.count > 0 {
+			layoutMetadata(isHorizontal: true)
+		}
+		
+		navigationController?.toolbar.setNeedsLayout()
+		
 		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
+		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
 		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
     }
     
@@ -242,8 +248,11 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
                 displayedPeerInfo = peerManager.peerInfo
                 removePictureLoadLayer()
                 updateState()
-            } else {
-                circleLayer?.strokeEnd = CGFloat(progress.fractionCompleted)
+            } else if let circle = circleLayer {
+                circle.strokeEnd = CGFloat(progress.fractionCompleted)
+				if #available(iOS 13, *) {
+					circle.setNeedsDisplay()
+				}
             }
         }
     }
@@ -303,7 +312,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		resizeCircleLayer()
 		
 		circleLayer.fillColor = UIColor.clear.cgColor
-		circleLayer.strokeColor = AppDelegate.shared.theme.globalTintColor.cgColor
+		circleLayer.strokeColor = AppTheme.tintColor.cgColor
 		circleLayer.lineWidth = 5.0
 		circleLayer.lineCap = CAShapeLayerLineCap.round
 		circleLayer.strokeEnd = CGFloat(progress.fractionCompleted)
@@ -336,8 +345,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	private func animateGradient() {
 		guard displayedPeerInfo?.pinMatched ?? false else { return }
 		
-		let waveColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
-		let valleyColor = AppDelegate.shared.theme.globalTintColor.cgColor
+		let waveColor = AppTheme.backgroundColor.cgColor
+		let valleyColor = AppTheme.tintColor.cgColor
 		let view = gradientView!
 		let gradient = CAGradientLayer()
 		pinMatchGradientLayer = gradient
@@ -428,15 +437,19 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	
 	@objc func toolbarAnimationCompletion(animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
 		portraitImageView.layer.cornerRadius = portraitImageView.frame.width / 2
+		resizeGradientLayer()
+		resizeCircleLayer()
 	}
 	
 	private func layoutMetadata(isHorizontal: Bool) {
 		guard self.peerStackView.axis == (isHorizontal ? .vertical : .horizontal) else { return /* nothing changed */ }
 		
 		pinButton.isHidden = true
+		pinButton.layer.removeAllAnimations()
 		pinIndicator.isHidden = true
 		removeGradient()
 		removePictureLoadLayer()
+		
 		UIView.animate(withDuration: 0.25, animations: { () -> Void in
 			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical
 			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal

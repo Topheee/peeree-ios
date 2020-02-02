@@ -34,7 +34,7 @@ final class CharacterTraitViewController: UITableViewController, SingleSelViewCo
     // MARK: UITableViewDataSource
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = tableView.dequeueReusableCell(withIdentifier: CharacterTraitViewController.cellID)!
+		let cell = tableView.dequeueReusableCell(withIdentifier: CharacterTraitViewController.cellID, for: indexPath)
 		let characterTrait = characterTraits![indexPath.row]
 		cell.textLabel!.text = characterTrait.kind.localizedRawValue
 		cell.detailTextLabel!.text = characterTrait.applies.localizedRawValue

@@ -11,8 +11,21 @@ import UIKit
 /// this class does not work quite correctly when several notifications are presented after another, e.g. when they are currently animating to close
 final class InAppNotificationViewController: UIViewController {
     // it would be great to have this nillable and re-initializable for memory warnings
-    static var shared: InAppNotificationViewController = InAppNotificationViewController(nibName: "InAppNotification", bundle: nil)
-    
+    //static var shared: InAppNotificationViewController = InAppNotificationViewController(nibName: "InAppNotification", bundle: nil)
+	
+	private init(title: String, message: String, isNegative: Bool = true, tapAction: (() -> Void)? = nil) {
+		super.init(nibName: "InAppNotification", bundle: nil)
+		loadView()
+		self.tapAction = tapAction
+		self.isNegative = isNegative
+		self.title = title
+		self.message = message
+	}
+	
+	internal required init?(coder: NSCoder) {
+		super.init(coder: coder)
+	}
+	
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var messageView: UITextView!
     
@@ -46,7 +59,7 @@ final class InAppNotificationViewController: UIViewController {
 	
 	@IBAction func tapAction(_ sender: Any) {
 		tapAction?()
-		dismissFromView(animated: true, velocity: 0.3)
+		dismissFromView(animated: true, velocity: 0.5)
 	}
 	
     @IBAction func panView(_ gestureRecognizer: UIPanGestureRecognizer) {
@@ -76,13 +89,13 @@ final class InAppNotificationViewController: UIViewController {
 		
 		view.layer.cornerRadius = 8.0
 		view.clipsToBounds = true
-//		if let contentView = (view as? UIVisualEffectView)?.contentView {
-//			contentView.clipsToBounds = true
-//			contentView.layer.cornerRadius = 8.0
-//		}
 		
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.topAnchor.constraint(equalTo: superViewController.topLayoutGuide.topAnchor, constant: 22.0).isActive = true
+		if #available(iOS 11.0, *) {
+			view.topAnchor.constraint(equalTo: superViewController.view.safeAreaLayoutGuide.topAnchor, constant: 8.0).isActive = true
+		} else {
+			view.topAnchor.constraint(equalTo: superViewController.topLayoutGuide.topAnchor, constant: 22.0).isActive = true
+		}
         view.leftAnchor.constraint(equalTo: superViewController.view.leftAnchor, constant: 8.0).isActive = true
         view.rightAnchor.constraint(equalTo: superViewController.view.rightAnchor, constant: -8.0).isActive = true
         view.setNeedsLayout()
@@ -91,7 +104,7 @@ final class InAppNotificationViewController: UIViewController {
 		titleLabel.textColor = isNegative ? .white : .black
 		messageView.textColor = isNegative ? .lightText : .darkText
         
-        UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 0.0, options: [.beginFromCurrentState], animations: {
+		UIView.animate(withDuration: 0.42, delay: 0.0, usingSpringWithDamping: 1.1, initialSpringVelocity: 0.1, options: [.beginFromCurrentState], animations: {
             var frame = self.view.frame
             frame.origin.y = 0.0
             self.view.frame = frame
@@ -133,17 +146,11 @@ final class InAppNotificationViewController: UIViewController {
         }
     }
     
-	func presentGlobally(title: String, message: String, isNegative: Bool = true, tapAction: (() -> Void)? = nil) {
+	static func presentGlobally(title: String, message: String, isNegative: Bool = true, tapAction: (() -> Void)? = nil) {
         DispatchQueue.main.async {
             guard let topVC = UIApplication.shared.keyWindow?.rootViewController else { return }
-            if self.titleLabel == nil {
-                self.loadView()
-            }
-			self.tapAction = tapAction
-			self.isNegative = isNegative
-            self.title = title
-            self.message = message
-            self.present(in: topVC.presentedViewController ?? topVC, duration: 5.0 + Double(message.count) / 42.0)
+			let vc = InAppNotificationViewController(title: title, message: message, isNegative: isNegative, tapAction: tapAction)
+            vc.present(in: topVC.presentedViewController ?? topVC, duration: 5.0 + Double(message.count) / 42.0)
         }
     }
 }

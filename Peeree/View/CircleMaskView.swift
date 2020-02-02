@@ -41,11 +41,8 @@ class ProgressCircleMaskView: CircleMaskView {
         let endAngle: CGFloat = startAngle + 2 * CGFloat.pi * (1.0 - progress)
         let circle = UIBezierPath(arcCenter: rect.center, radius: rect.width, startAngle: startAngle, endAngle: endAngle, clockwise: clockwiseProgress)
         let context = UIGraphicsGetCurrentContext()
-        context?.setFillColor(AppDelegate.shared.theme.globalTintColor.cgColor)
+        context?.setFillColor(AppTheme.tintColor.cgColor)
         circle.fill()
-//        context?.setFillColor(UIColor.clear.cgColor)
-//        context?.setStrokeColor(AppDelegate.shared.theme.globalTintColor.cgColor)
-//        circle.stroke()
     }
 }
 

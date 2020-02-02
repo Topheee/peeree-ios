@@ -95,6 +95,9 @@
 /* Class = "UINavigationController"; title = "Radar Nav"; ObjectID = "BeP-GU-KG9"; */
 "BeP-GU-KG9.title" = "Radar Nav";
 
+/* Section Footer */
+"dfr-MX-xyY.footerTitle" = "Filtere zu junge oder alte Leute, oder Leute mit unbekanntem Alter.";
+
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Speichert deinen Geburtstag";
 
@@ -114,7 +117,7 @@
 "MSB-TZ-Xpf.text" = "Bestätigung";
 
 /* Class = "UILabel"; accessibilityHint = "You and this person have mutual interest in each other"; ObjectID = "Mym-lw-7EQ"; */
-"Mym-lw-7EQ.accessibilityHint" = "Du und diese Person haben gegenseitiges Interesse aneinander";
+"Mym-lw-7EQ.accessibilityHint" = "Du und diese Person habt ein gegenseitiges Interesse aneinander";
 
 /* Class = "UILabel"; accessibilityLabel = "Pin Match Event"; ObjectID = "Mym-lw-7EQ"; */
 "Mym-lw-7EQ.accessibilityLabel" = "Pin Match Event";
@@ -128,11 +131,14 @@
 /* Class = "UIBarButtonItem"; title = "Preview"; ObjectID = "OHO-ma-96H"; */
 "OHO-ma-96H.title" = "Vorschau";
 
-/* Class = "UILabel"; text = "Visit a crowded place and go online to find new people!"; ObjectID = "Oar-8r-xH3"; */
-"Oar-8r-xH3.text" = "Besuche einen belebten Ort und gehe online, um neue Leute zu finden!";
-
 /* Class = "UINavigationItem"; title = "New Peer"; ObjectID = "OwH-Gc-YBz"; */
 "OwH-Gc-YBz.title" = "Neue Person";
+
+/* Class = "UIImageView"; accessibilityHint = "Shows a portrait of the person you just matched"; ObjectID = "RZ1-xL-Yml"; */
+"RZ1-xL-Yml.accessibilityHint" = "Zeigt ein Portrait der Person, die du gerade gematcht hast";
+
+/* Class = "UIImageView"; accessibilityLabel = "Portrait"; ObjectID = "RZ1-xL-Yml"; */
+"RZ1-xL-Yml.accessibilityLabel" = "Portrait";
 
 /* Class = "UIImageView"; accessibilityHint = "Shows a portrait of the person"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityHint" = "Zeigt ein Portrait der Person";
@@ -219,10 +225,7 @@
 "jRR-HL-OFn.accessibilityLabel" = "Details zur Person";
 
 /* Class = "UILabel"; text = "age"; ObjectID = "jRR-HL-OFn"; */
-"jRR-HL-OFn.text" = "age";
-
-/* Class = "UILabel"; text = "age and gender"; ObjectID = "jRR-HL-OFn"; */
-"jRR-HL-OFn.text" = "Alter und Geschlecht";
+"jRR-HL-OFn.text" = "Alter";
 
 /* Class = "UISlider"; accessibilityHint = "Filters out people below this age"; ObjectID = "kYd-92-VvC"; */
 "kYd-92-VvC.accessibilityHint" = "Filtert Leute unterhalb diesem Alter heraus";
@@ -255,7 +258,7 @@
 "rAH-3G-jWK.text" = "Gehe offline, um Einstellungen zu ändern.";
 
 /* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "sCY-WJ-efU"; */
-"sCY-WJ-efU.title" = "Finden";
+"sCY-WJ-efU.title" = "Radar";
 
 /* Class = "UITextField"; accessibilityHint = "Your publicly visible name"; ObjectID = "sNx-nf-ozM"; */
 "sNx-nf-ozM.accessibilityHint" = "Dein öffentlich sichtbarer Name";
@@ -281,6 +284,9 @@
 /* Class = "UISwitch"; accessibilityLabel = "Age available filter"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityLabel" = "Altersangabe-Filter";
 
+/* Section Footer */
+"VhZ-Ja-vhb.footerTitle" = "Filtere Leute ohne Portrait.";
+
 /* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "wGc-0s-dzf"; */
 "wGc-0s-dzf.accessibilityLabel" = "Details zur Person";
 
@@ -292,9 +298,6 @@
 
 /* Class = "UISwitch"; accessibilityLabel = "Picture available filter"; ObjectID = "xJk-Ke-rVF"; */
 "xJk-Ke-rVF.accessibilityLabel" = "Bild vorhanden Filter";
-
-/* Class = "UILabel"; text = "People Met"; ObjectID = "xdp-HW-ags"; */
-"xdp-HW-ags.text" = "Leute getroffen";
 
 /* Class = "UITextField"; placeholder = "Message"; ObjectID = "yJd-y1-fP9"; */
 "yJd-y1-fP9.placeholder" = "Nachricht";

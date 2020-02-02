@@ -35,8 +35,8 @@
 /* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.accessibilityLabel" = "Greeting";
 
-/* Class = "UILabel"; text = "Hello and Welcome!"; ObjectID = "TFv-dL-32n"; */
-"TFv-dL-32n.text" = "Hello and Welcome!";
+/* Class = "UILabel"; text = "Peeree"; ObjectID = "TFv-dL-32n"; */
+"TFv-dL-32n.text" = "Peeree";
 
 /* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "WkH-8i-IuH"; */
 "WkH-8i-IuH.accessibilityHint" = "Finishes introduction";
@@ -50,11 +50,11 @@
 /* Class = "UIButton"; accessibilityHint = "Read details about P2P"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.accessibilityHint" = "Read details about P2P";
 
-/* Class = "UIButton"; accessibilityLabel = "Describte Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
-"XwS-Db-Ixl.accessibilityLabel" = "Describte Peer-to-Peer";
+/* Class = "UIButton"; accessibilityLabel = "Describe Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.accessibilityLabel" = "Describe Peer-to-Peer";
 
-/* Class = "UIButton"; normalTitle = "Learn more about Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
-"XwS-Db-Ixl.normalTitle" = "Learn more about Peer-to-Peer";
+/* Class = "UIButton"; normalTitle = "Learn more about how Peeree works"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.normalTitle" = "Learn more about how Peeree works";
 
 /* Class = "UIButton"; normalTitle = "Portrait"; ObjectID = "YRI-ar-stS"; */
 "YRI-ar-stS.normalTitle" = "Portrait";
@@ -104,8 +104,8 @@
 /* Class = "UILabel"; text = "This is Peeree, \na Social Peer-to-Peer App"; ObjectID = "rNF-0l-DWJ"; */
 "rNF-0l-DWJ.text" = "This is Peeree, \na Social Peer-to-Peer App";
 
-/* Class = "UILabel"; text = "Learn more about how Peeree works:"; ObjectID = "skT-uK-VEP"; */
-"skT-uK-VEP.text" = "Learn more about how Peeree works:";
+/* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
+"skT-uK-VEP.text" = "This is how we protect your Privacy:";
 
 /* Class = "UIViewController"; title = "Details"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "Details";

@@ -26,8 +26,8 @@ final class BeaconViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 		
-		let waveColor: CGColor = AppDelegate.shared.theme.barTintColor.cgColor
-		let valleyColor = AppDelegate.shared.theme.globalBackgroundColor.cgColor
+		let waveColor: CGColor = AppTheme.tintColor.cgColor
+		let valleyColor = AppTheme.backgroundColor.cgColor
 		
 		let gradient = CAGradientLayer()
 		gradient.frame = view.frame

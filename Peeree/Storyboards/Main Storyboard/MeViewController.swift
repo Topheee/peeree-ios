@@ -21,6 +21,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     @IBOutlet private weak var scrollView: UIScrollView!
     
     private var activeField: UITextField! = nil
+	private var connectionStateObserver: NSObjectProtocol? = nil
     
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
         UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
@@ -101,7 +102,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
         if let personDetailVC = segue.destination as? PersonDetailViewController {
-            personDetailVC.peerManager = PeeringController.shared.manager(for: UserPeerManager.instance.peer.peerID)
+            personDetailVC.peerManager = UserPeerManager.instance
         } else if let charTraitVC = segue.destination as? CharacterTraitViewController {
 			charTraitVC.characterTraits = UserPeerManager.instance.peer.characterTraits
             charTraitVC.userTraits = true
@@ -111,7 +112,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func viewDidLoad() {
         super.viewDidLoad()
         registerForKeyboardNotifications()
-        _ = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+        connectionStateObserver = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
             self?.lockView()
         }
 	}
@@ -128,11 +129,12 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         super.viewDidLayoutSubviews()
         _ = CircleMaskView(maskedView: portraitImageButton.imageView!)
     }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
 	
+	deinit {
+		connectionStateObserver.map { NotificationCenter.default.removeObserver($0) }
+		NotificationCenter.default.removeObserver(self)
+	}
+    
 	// MARK: UITextFieldDelegate
 	
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
@@ -213,13 +215,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard textField == nameTextField || textField == mailTextField else { return true }
-        
-        if (range.length + range.location > textField.text!.utf8.count) {
-            return false
-        }
-        
-        let newLength = textField.text!.utf8.count + string.utf8.count - range.length
-        return textField == nameTextField ? newLength <= PeerInfo.MaxNicknameSize : newLength <= PeerInfo.MaxEmailSize
+		
+		return textField.allowChangeCharacters(in: range, replacementString: string, maxUtf8Length: textField == nameTextField ? PeerInfo.MaxNicknameSize : PeerInfo.MaxEmailSize)
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -243,10 +240,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         } else {
             birthdayInput.text = nil
         }
-        portraitImageButton.setImage(UserPeerManager.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
-        if #available(iOS 11.0, *) {
-            portraitImageButton.accessibilityIgnoresInvertColors = UserPeerManager.instance.picture != nil
-        }
+		picked(image: UserPeerManager.instance.picture)
     }
     
     private func registerForKeyboardNotifications() {
@@ -303,7 +297,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
             accountIDLabel.text = AccountController.shared.getPeerID()
         } else {
             accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
-            accountButton.tintColor = AppDelegate.shared.theme.globalTintColor
+            accountButton.tintColor = AppTheme.tintColor
         }
         mailTextField.isHidden = !AccountController.shared.accountExists
         mailNoteLabel.isHidden = !AccountController.shared.accountExists

@@ -12,35 +12,26 @@ import SafariServices
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
 
-struct Theme {
-    let globalTintRed: CGFloat
-    let globalTintGreen: CGFloat
-    let globalTintBlue: CGFloat
-    let globalTintColor: UIColor
-    let globalBackgroundRed: CGFloat
-    let globalBackgroundGreen: CGFloat
-    let globalBackgroundBlue: CGFloat
-    let globalBackgroundColor: UIColor
-    let barBackgroundColor : UIColor
-    let barTintColor : UIColor
-    
-    init(globalTint: (r:CGFloat, g:CGFloat, b:CGFloat), barTint: (r:CGFloat, g:CGFloat, b:CGFloat), globalBackground: (r:CGFloat, g:CGFloat, b:CGFloat), barBackground: (r:CGFloat, g:CGFloat, b:CGFloat)) {
-        self.globalTintRed = globalTint.r
-        self.globalTintGreen = globalTint.g
-        self.globalTintBlue = globalTint.b
-        self.globalTintColor = UIColor(red: self.globalTintRed, green: self.globalTintGreen, blue: self.globalTintBlue, alpha: 1.0)
-        self.globalBackgroundRed = globalBackground.r
-        self.globalBackgroundGreen = globalBackground.g
-        self.globalBackgroundBlue = globalBackground.b
-        self.globalBackgroundColor = UIColor(red: globalBackgroundRed, green: globalBackgroundGreen, blue: globalBackgroundBlue, alpha: 1.0)
-        self.barBackgroundColor = UIColor(red: barBackground.r, green: barBackground.g, blue: barBackground.b, alpha: 1.0)
-        barTintColor = UIColor(red: barTint.r, green: barTint.g, blue: barTint.b, alpha: 1.0)
-    }
+struct VisualTheme {
+	var tintColor: UIColor {
+		if #available(iOS 10, *) {
+			return UIColor(displayP3Red: 22.0/255.0, green: 145.0/255.0, blue: 101.0/255.0, alpha: 1.0)
+		} else {
+			return UIColor(red: 22.0/255.0, green: 145.0/255.0, blue: 101.0/255.0, alpha: 1.0)
+		}
+	}
+	var backgroundColor: UIColor {
+		if #available(iOS 13, *) {
+			return UIColor.systemBackground
+		} else {
+			return UIColor.white
+		}
+	}
 }
+let AppTheme = VisualTheme()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
-    static private let PrefSkipOnboarding = "peeree-prefs-skip-onboarding"
     static let PeerIDKey = "PeerIDKey"
 	
     static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
@@ -67,23 +58,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             errorMessage += "\n\(furtherDescription!)"
         }
         
-        InAppNotificationViewController.shared.presentGlobally(title: localizedTitle, message: errorMessage)
+        InAppNotificationViewController.presentGlobally(title: localizedTitle, message: errorMessage)
     }
 	
 	static func viewTerms(in viewController: UIViewController) {
 		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
 		let safariController = SFSafariViewController(url: termsURL)
 		if #available(iOS 10.0, *) {
-			safariController.preferredBarTintColor = AppDelegate.shared.theme.barTintColor
-			safariController.preferredControlTintColor = AppDelegate.shared.theme.barBackgroundColor
+			safariController.preferredBarTintColor = AppTheme.tintColor
+			safariController.preferredControlTintColor = AppTheme.backgroundColor
 		}
 		if #available(iOS 11.0, *) {
 			safariController.dismissButtonStyle = .done
 		}
 		viewController.present(safariController, animated: true, completion: nil)
 	}
-    
-    let theme = Theme(globalTint: (22.0/255.0, 145.0/255.0, 101.0/255.0), barTint: (22.0/255.0, 145.0/255.0, 101.0/255.0), globalBackground: (255.0/255.0, 255.0/255.0, 255.0/255.0), barBackground: (255.0/255.0, 255.0/255.0, 255.0/255.0)) //white with green
     
     /// This is somehow set by the environment...
     var window: UIWindow?
@@ -123,6 +112,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
         _ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
 			UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
         }
+		
+		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
+			self.setupManualAppearance()
+		}
 
         // reinstantiate CBManagers if there where some
         // TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
@@ -152,8 +145,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	func applicationDidBecomeActive(_ application: UIApplication) {
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         isActive = true
+		
+		// trigger setting the correct colors for Dark Mode, as there is no `TraitCollectionDidChange` notification available
+//		setupAppearance()
         
-        if !UserDefaults.standard.bool(forKey: AppDelegate.PrefSkipOnboarding) {
+		if UserDefaults.standard.object(forKey: UserPeerManager.PrefKey) == nil {
             // this is the first launch of the app, so we show the first launch UI
             let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
             
@@ -187,10 +183,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         PeeringController.shared.peering = false
-    }
-    
-    func finishIntroduction() {
-        UserDefaults.standard.set(true, forKey: AppDelegate.PrefSkipOnboarding)
     }
     
     func show(peerID: PeerID) {
@@ -267,8 +259,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
     
     func publicKeyMismatch(of peerID: PeerID) {
-        let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), peerID.uuidString)
-        InAppNotificationViewController.shared.presentGlobally(title: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
+		let peerDescription = PeeringController.shared.manager(for: peerID).peerInfo?.nickname ?? peerID.uuidString
+        let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), peerDescription)
+        InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
     }
     
     func sequenceNumberResetFailed(error: ErrorResponse) {
@@ -280,7 +273,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	/// shows an in-app or system (local) notification related to a peer
 	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, sufficientCondition: Bool) {
 		if isActive && sufficientCondition {
-			InAppNotificationViewController.shared.presentGlobally(title: title, message: body, isNegative: false) { self.show(peerID: peerID) }
+			InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { self.show(peerID: peerID) }
 		} else {
 			let note = UILocalNotification()
 			note.alertTitle = title
@@ -335,27 +328,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     }
 	
 	private func setupManualAppearance() {
-		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (theme.globalTintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? theme.globalTintColor) : theme.globalTintColor
+		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (AppTheme.tintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? AppTheme.tintColor) : AppTheme.tintColor
 	}
     
     private func setupAppearance() {
-        RootView.appearance().tintColor = theme.globalTintColor
-        RootView.appearance().backgroundColor = theme.globalBackgroundColor
+//        RootView.appearance().tintColor = theme.tintColor
+//        RootView.appearance().backgroundColor = theme.backgroundColor
 		
 		setupManualAppearance()
-			
-        UINavigationBar.appearance().tintColor = theme.barBackgroundColor // theme.barTintColor
-        UINavigationBar.appearance().barTintColor = theme.barTintColor
-        UINavigationBar.appearance().barStyle = .black
-		
-		UIActivityIndicatorView.appearance().color = theme.globalTintColor
-		UIPageControl.appearance().pageIndicatorTintColor = theme.globalTintColor.withAlphaComponent(0.65)
-		UIPageControl.appearance().currentPageIndicatorTintColor = theme.globalTintColor
-		
-		UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
-		
-		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
-			self.setupManualAppearance()
+
+		if #available(iOS 13.0, *) {
+			UINavigationBar.appearance().tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+			let appearance = UINavigationBarAppearance()
+			appearance.configureWithOpaqueBackground()
+			appearance.backgroundColor = #colorLiteral(red: 0.0862745098, green: 0.568627451, blue: 0.3960784314, alpha: 1)
+			appearance.largeTitleTextAttributes = [.foregroundColor: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)]
+			UINavigationBar.appearance().standardAppearance = appearance
+			UINavigationBar.appearance().compactAppearance = appearance
+			UINavigationBar.appearance().scrollEdgeAppearance = appearance
+		} else {
+			UINavigationBar.appearance().tintColor = AppTheme.backgroundColor
+			UINavigationBar.appearance().barTintColor = AppTheme.tintColor
+			UITableView.appearance().separatorColor = UIColor(white: 0.3, alpha: 1.0)
 		}
+		
+		UIActivityIndicatorView.appearance().color = AppTheme.tintColor
+		UIPageControl.appearance().pageIndicatorTintColor = AppTheme.tintColor.withAlphaComponent(0.65)
+		UIPageControl.appearance().currentPageIndicatorTintColor = AppTheme.tintColor
     }
 }

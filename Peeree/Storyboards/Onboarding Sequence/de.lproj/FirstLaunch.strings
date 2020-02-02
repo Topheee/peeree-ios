@@ -35,8 +35,8 @@
 /* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.accessibilityLabel" = "Begrüßung";
 
-/* Class = "UILabel"; text = "Hello and Welcome!"; ObjectID = "TFv-dL-32n"; */
-"TFv-dL-32n.text" = "Hallo und Willkommen!";
+/* Class = "UILabel"; text = "Peeree"; ObjectID = "TFv-dL-32n"; */
+"TFv-dL-32n.text" = "Peeree";
 
 /* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "WkH-8i-IuH"; */
 "WkH-8i-IuH.accessibilityHint" = "Beendet Einführung";
@@ -50,11 +50,11 @@
 /* Class = "UIButton"; accessibilityHint = "Read details about P2P"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.accessibilityHint" = "Lies details über P2P";
 
-/* Class = "UIButton"; accessibilityLabel = "Describte Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
+/* Class = "UIButton"; accessibilityLabel = "Describe Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.accessibilityLabel" = "Beschreibe Peer-to-Peer";
 
-/* Class = "UIButton"; normalTitle = "Learn more about Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
-"XwS-Db-Ixl.normalTitle" = "Erfahre mehr über Peer-to-Peer";
+/* Class = "UIButton"; normalTitle = "Learn more about how Peeree works"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.normalTitle" = "Erfahre, wie Peeree funktioniert";
 
 /* Class = "UIButton"; normalTitle = "Portrait"; ObjectID = "YRI-ar-stS"; */
 "YRI-ar-stS.normalTitle" = "Portrait";
@@ -104,8 +104,8 @@
 /* Class = "UILabel"; text = "This is Peeree, \na Social Peer-to-Peer App"; ObjectID = "rNF-0l-DWJ"; */
 "rNF-0l-DWJ.text" = "Dies ist Peeree, \neine Social Peer-to-Peer App";
 
-/* Class = "UILabel"; text = "Learn more about how Peeree works:"; ObjectID = "skT-uK-VEP"; */
-"skT-uK-VEP.text" = "Erfahre mehr darüber, wie Peeree funktioniert:";
+/* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
+"skT-uK-VEP.text" = "So wird deine Privatsphäre geschützt:";
 
 /* Class = "UIViewController"; title = "Details"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "Details";

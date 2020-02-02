@@ -30,7 +30,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
         UserPeerManager.instance.peer.nickname = chosenName
         UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[genderPicker.selectedSegmentIndex]
         
-        AppDelegate.shared.finishIntroduction()
         dismiss(animated: true, completion: nil)
 	}
 	
@@ -50,6 +49,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 			UIView.animate(withDuration: 1.0, delay: 0.8, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 				self.launchAppButton.alpha = 1.0
 			}, completion: { finished in
+				guard !UIAccessibility.isReduceMotionEnabled else { return }
 				UIView.animate(withDuration: 0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: { () -> Void in
 					self.launchAppButton.transform = self.launchAppButton.transform.scaledBy(x: 0.97, y: 0.97)
 				}, completion: nil)
@@ -68,8 +68,13 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 		let termsAgreement = NSLocalizedString("I agree to the ", comment: "Link button text in onboarding")
 		let terms = NSLocalizedString("Terms of Use", comment: "Colored link name in button text in onboarding")
 		
-		let linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.darkText])
-		linkText.append(NSAttributedString(string: terms, attributes: [NSAttributedString.Key.foregroundColor : AppDelegate.shared.theme.globalTintColor]))
+		let linkText: NSMutableAttributedString
+		if #available(iOS 13, *) {
+			linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.label])
+		} else {
+			linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.darkText])
+		}
+		linkText.append(NSAttributedString(string: terms, attributes: [NSAttributedString.Key.foregroundColor : AppTheme.tintColor]))
 		
 		termsLinkButton.setAttributedTitle(linkText, for: .normal)
     }
@@ -105,5 +110,9 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
 		return true
+	}
+	
+	func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+		return textField.allowChangeCharacters(in: range, replacementString: string, maxUtf8Length: PeerInfo.MaxNicknameSize)
 	}
 }

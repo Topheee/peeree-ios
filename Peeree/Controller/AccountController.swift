@@ -28,7 +28,7 @@ public class AccountController: SecurityDataSource {
     /// User defaults key for sequence number
     static private let SequenceNumberKey = "SequenceNumber"
     
-    static let shared = AccountController()
+    public static let shared = AccountController()
     
     public enum Notifications: String {
         public enum UserInfo: String {
@@ -341,7 +341,7 @@ public class AccountController: SecurityDataSource {
     /// resets sequence number to state before request if the request did not reach the server
     private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
         switch errorResponse {
-        case .httpError(403, _): // TODO well this should only handle 403 errors and thus the switch should not be exhaustive...
+        case .httpError(403, _):
             self.resetSequenceNumber()
         case .parseError(_):
             NSLog("ERR: Response could not be parsed.")

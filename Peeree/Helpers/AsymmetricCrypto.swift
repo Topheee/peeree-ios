@@ -102,8 +102,8 @@ public class AsymmetricKey {
     public let keyClass: CFString, type: CFString, size: Int
     
     public func externalRepresentation() throws -> Data {
-        var error: Unmanaged<CFError>?
         if #available(macOS 10.12.1, iOS 10.0, *) {
+			var error: Unmanaged<CFError>?
             guard let data = SecKeyCopyExternalRepresentation(key, &error) as Data? else {
                 throw error!.takeRetainedValue()
             }
@@ -342,16 +342,21 @@ public class AsymmetricPrivateKey: AsymmetricKey {
 
 extension SecKey {
     static func check(status: OSStatus, localizedError: String) throws {
-        guard status == errSecSuccess else {
-            #if os(OSX)
-                let msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
-            #else
-                let msg = localizedError
-            #endif
-			NSLog("ERROR: OSStatus \(status) check failed: \(localizedError)")
-            throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
-        }
-    }
+		guard status != errSecSuccess else { return }
+		
+		let msg: String
+		#if os(OSX)
+			msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
+		#else
+			if #available(iOS 11.3, *) {
+				msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
+			} else {
+				msg = localizedError
+			}
+		#endif
+		NSLog("INFO: OSStatus \(status) check failed: \(msg)")
+		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
+	}
 }
 
 public struct KeyPair {
@@ -361,47 +366,46 @@ public struct KeyPair {
     
     public var blockSize: Int { return SecKeyGetBlockSize(privateKey.key) }
     
-    public init(privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool, useEnclave: Bool = false) throws {
+	public init(label: String, privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool, useEnclave: Bool = false) throws {
 		self.privateTag = privateTag
 		self.publicTag = publicTag
         var error: Unmanaged<CFError>?
         var attributes: [String : Any]
-        #if os(macOS) || (os(iOS) && (arch(x86_64) || arch(i386))) //iPhone Simulator
-            attributes = [
-                kSecAttrKeyType as String:            type,
-                kSecAttrKeySizeInBits as String:      size,
-                kSecPrivateKeyAttrs as String: [
-                    kSecAttrIsPermanent as String:    persistent,
-                    kSecAttrApplicationTag as String: privateTag
-                    ] as CFDictionary
-            ]
-        #else
-            if useEnclave {
-                guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
-                    throw error!.takeRetainedValue() as Error
-                }
-            attributes = [
-                kSecAttrKeyType as String:            type,
-                kSecAttrKeySizeInBits as String:      size,
-                kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
-                kSecPrivateKeyAttrs as String: [
-                    kSecAttrIsPermanent as String:    persistent,
-                    kSecAttrApplicationTag as String: privateTag,
-                    kSecAttrAccessControl as String:  access
-                    ] as CFDictionary
-                ]
-            } else {
-                attributes = [
-                    kSecAttrKeyType as String:            type,
-                    kSecAttrKeySizeInBits as String:      size,
-                    kSecPrivateKeyAttrs as String: [
-                        kSecAttrIsPermanent as String:    persistent,
-                        kSecAttrApplicationTag as String: privateTag
-                        ] as CFDictionary
-                ]
-            }
-        #endif
-        
+		if useEnclave {
+			guard let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .privateKeyUsage, &error) else {
+				throw error!.takeRetainedValue() as Error
+			}
+			attributes = [
+				kSecAttrKeyType as String:            type,
+				kSecAttrKeySizeInBits as String:      size,
+				kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
+				kSecPrivateKeyAttrs as String: [
+					kSecAttrIsPermanent as String:    persistent,
+					kSecAttrApplicationTag as String: privateTag,
+					kSecAttrAccessControl as String:  access
+					] as CFDictionary,
+				kSecPublicKeyAttrs as String: [
+					kSecAttrIsPermanent as String:    persistent,
+					kSecAttrApplicationTag as String: publicTag,
+					kSecAttrAccessControl as String:  access
+					] as CFDictionary
+			]
+		} else {
+			attributes = [
+				kSecAttrLabel as String:              label as CFString,
+				kSecAttrKeyType as String:            type,
+				kSecAttrKeySizeInBits as String:      size,
+				kSecPrivateKeyAttrs as String: [
+					kSecAttrIsPermanent as String:    persistent,
+					kSecAttrApplicationTag as String: privateTag
+					] as CFDictionary,
+				kSecPublicKeyAttrs as String: [
+					kSecAttrIsPermanent as String:    persistent,
+					kSecAttrApplicationTag as String: publicTag
+					] as CFDictionary
+			]
+		}
+		
         var _publicKey, _privateKey: SecKey?
         try SecKey.check(status: SecKeyGeneratePair(attributes as CFDictionary, &_publicKey, &_privateKey), localizedError: NSLocalizedString("Generating cryptographic key pair failed.", comment: "Low level crypto error."))
         
@@ -412,12 +416,7 @@ public struct KeyPair {
         #if (os(iOS) && (arch(x86_64) || arch(i386))) || os(macOS) // iPhone Simulator or macOS
             publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size)
         #else
-            if #available(iOS 10.0, *) {
-                publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size)
-            } else {
-                publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size)
-				_ = try KeychainStore.addToKeychain(key: publicKey, tag: publicTag)
-            }
+			publicKey = AsymmetricPublicKey(key: _publicKey!, type: type, size: size)
         #endif
     }
     

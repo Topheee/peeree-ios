@@ -3,6 +3,16 @@
     {
       "idiom" : "universal",
       "filename" : "PersonPlaceholderFilled.pdf"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "PersonPlaceholderFilledDark.pdf",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ]
     }
   ],
   "info" : {

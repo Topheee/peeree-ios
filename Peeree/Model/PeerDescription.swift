@@ -11,7 +11,7 @@ import ImageIO
 import CoreBluetooth.CBUUID
 
 public final class UserPeerManager: PeerManager {
-	private static let PrefKey = "UserPeerManager"
+	public static let PrefKey = "UserPeerManager"
 	private static let PortraitFileName = "UserPortrait"
 	fileprivate static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
 	fileprivate static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
@@ -30,7 +30,7 @@ public final class UserPeerManager: PeerManager {
 	}
 	
 	public static func define(peerID: PeerID) {
-		instance.localPeerInfo.peerID = peerID
+		instance = UserPeerManager(peerID: peerID)
 		instance.dirtied()
 	}
 	
@@ -47,8 +47,10 @@ public final class UserPeerManager: PeerManager {
 		}
 	}
 	
+	// hide initializer
 	override private init(peerID: PeerID) {
 		super.init(peerID: peerID)
+		localPeerInfo.peerID = peerID
 	}
 	
 	/// always returns true to look good in preview
@@ -77,7 +79,7 @@ public final class UserPeerManager: PeerManager {
 	public var keyPair: KeyPair { return localPeerInfo._keyPair }
 	public var dateOfBirth: Date? {
 		get { return localPeerInfo.dateOfBirth }
-		set { localPeerInfo.dateOfBirth = newValue }
+		set { localPeerInfo.dateOfBirth = newValue; dirtied() }
 	}
 	
 	public func dirtied() {
@@ -86,7 +88,7 @@ public final class UserPeerManager: PeerManager {
 	
 }
 
-public final class UserPeerInfo: NSObject, NSSecureCoding {
+/*@objc(_TtC6PeereeP33_DB5622D9576691BD4650A5BF163822B512UserPeerInfo) private */ public final class UserPeerInfo: NSObject, NSSecureCoding {
     private static let DateOfBirthKey = "dateOfBirth"
 	
     @objc public static var supportsSecureCoding : Bool { return true }
@@ -124,12 +126,11 @@ public final class UserPeerInfo: NSObject, NSSecureCoding {
 		dateOfBirth = nil
 		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
 		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
-        self._keyPair = try! KeyPair(privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
-        self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peer", comment: "Placeholder for peer name."), gender: .female, age: nil, hasPicture: false)
+		self._keyPair = try! KeyPair(label: "Peeree Identity", privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
+        self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peereer", comment: "Placeholder for peer name."), gender: .female, age: nil, hasPicture: false)
 	}
 
     @objc required public init?(coder aDecoder: NSCoder) {
-        dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as Date?
         guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
@@ -141,7 +142,7 @@ public final class UserPeerInfo: NSObject, NSSecureCoding {
         _keyPair = keyPair
 		
 		super.init()
-		refreshAge()
+        dateOfBirth = aDecoder.decodeObject(of: NSDate.self, forKey: UserPeerInfo.DateOfBirthKey) as Date?
     }
     
     @objc public func encode(with aCoder: NSCoder) {
@@ -171,15 +172,11 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
 }
 
 public struct PeerInfo: Equatable {
-    fileprivate enum CodingKey : String {
-        case peerID, nickname, hasPicture, gender, age, status, traits, version, lastChanged, publicKey
-    }
-    
     public static let MinAge = 18, MaxAge = 80
     /// postgres can store strings up to this length very efficiently
     public static let MaxEmailSize = 126
-    /// 1 non-extended BLE packet length
-    public static let MaxNicknameSize = 27
+    /// 1 non-extended BLE packet length would be 27. Since most devices seem to support extended packets, we chose something higher and cap it on the phy level
+    public static let MaxNicknameSize = 184
     public static let KeyType = kSecAttrKeyTypeEC
     public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
     
