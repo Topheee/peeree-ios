@@ -109,7 +109,7 @@ final class BeaconViewController: UIViewController {
         let multipliers: [PeerDistance : CGFloat] = [.close : 0.0, .nearby : 0.3, .far : 0.6, .unknown : 0.85]
         let multiplier = multipliers[proximity] ?? 1.0
         let oldFrame = remotePortrait.frame
-        portraitDistanceConstraint.constant = (view.frame.height - userPortrait.frame.height) * multiplier
+		portraitDistanceConstraint.constant = (view.frame.height - (navigationController?.navigationBar.frame.height ?? 0.0) - userPortrait.frame.height) * multiplier
         if animated {
             remotePortrait.setNeedsLayout()
             view.layoutIfNeeded()

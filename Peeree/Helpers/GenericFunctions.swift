@@ -109,7 +109,16 @@ extension NotificationCenter {
 
 extension String {
     /// stores the encoding along the serialization of the string to let decoders know which it is
-    func data(prefixedEncoding encoding: String.Encoding) -> Data? {
+	func data(prefixedEncoding encoding: String.Encoding) -> Data? {
+		// Java / Android compatibility: only use encodings defined in java.nio.charset.StandardCharsets
+		var encoding = encoding
+		switch encoding {
+		case .utf8, .ascii, .utf16, .utf16BigEndian, .utf16LittleEndian, .isoLatin1:
+			// conforms to standard
+			break
+		default:
+			encoding = .utf8
+		}
         // NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
         // PERFORMANCE: let size = MemoryLayout<UInt32>.size + nickname.lengthOfBytes(using: encoding)
         var encodingRawValue = UInt32(encoding.rawValue)

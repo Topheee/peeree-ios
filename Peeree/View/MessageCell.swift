@@ -37,16 +37,21 @@ class MessageCell: UITableViewCell {
 	@IBOutlet private weak var balloonView: UIImageView!
 	// Message text string
 	@IBOutlet private weak var messageLabel: UILabel!
-	@IBOutlet private weak var ballonLeading: NSLayoutConstraint!
-	@IBOutlet private weak var ballonTrailing: NSLayoutConstraint!
+	// these NSLayoutConstraints must not be `weak` because they get deallocated when inactive
+	@IBOutlet private var ballonLeadingEqual: NSLayoutConstraint!
+	@IBOutlet private var ballonTrailingEqual: NSLayoutConstraint!
+	@IBOutlet private var ballonLeadingGreaterOrEqual: NSLayoutConstraint!
+	@IBOutlet private var ballonTrailingGreaterOrEqual: NSLayoutConstraint!
 	@IBOutlet private weak var messageLeading: NSLayoutConstraint!
 	@IBOutlet private weak var messageTrailing: NSLayoutConstraint!
 	
 	func set(transcript: Transcript) {
 		let sent = transcript.direction == .send
 		messageLabel.text = transcript.message
-		ballonLeading.constant = sent ? 20.0 : 8.0
-		ballonTrailing.constant = sent ? 8.0 : 20.0
+		ballonLeadingEqual.isActive = !sent
+		ballonTrailingEqual.isActive = sent
+		ballonLeadingGreaterOrEqual.isActive = sent
+		ballonTrailingGreaterOrEqual.isActive = !sent
 		messageLeading.constant = sent ? 8.0 : 24.0
 		messageTrailing.constant = sent ? 24.0 : 8.0
 		messageLabel.setNeedsLayout()

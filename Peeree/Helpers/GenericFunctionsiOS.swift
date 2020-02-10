@@ -87,3 +87,16 @@ extension UITextField {
 		return oldLength + string.utf8.count - range.length <= maxUtf8Length
 	}
 }
+
+extension UITableView {
+	func scrollToBottom(animated: Bool) {
+		var numberOfRows = 0
+		let nSections = self.numberOfSections
+		for section in 0..<nSections {
+			numberOfRows = numberOfRows + self.numberOfRows(inSection: section)
+		}
+		if (numberOfRows > 0) {
+			self.scrollToRow(at: IndexPath(row:(numberOfRows - 1), section: nSections-1), at: .bottom, animated: animated)
+		}
+	}
+}

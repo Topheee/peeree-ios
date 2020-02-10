@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -180,7 +180,7 @@
                             </connections>
                         </barButtonItem>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="6" width="100" height="32"/>
+                            <rect key="frame" x="110" y="9" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -379,7 +379,7 @@
                                 <rect key="frame" x="16" y="10" width="208" height="34"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <textInputTraits key="textInputTraits" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" returnKeyType="send" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="bgg-zV-1WC" id="QKk-xs-lAO"/>
                                 </connections>
@@ -402,7 +402,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
-                        <outlet property="chatTableView" destination="Vq4-kH-h3A" id="FP0-Lu-4bB"/>
+                        <outlet property="chatTableViewContainer" destination="Vq4-kH-h3A" id="fg6-en-yXb"/>
                         <outlet property="findButtonItem" destination="sCY-WJ-efU" id="Eki-oU-oPU"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
@@ -436,7 +436,7 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="85"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
@@ -450,7 +450,7 @@
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="MessageBubble" highlightedImage="MessageBubbleOpposite" translatesAutoresizingMaskIntoConstraints="NO" id="LWs-dB-GsB">
                                             <rect key="frame" x="16" y="3" width="296" height="71"/>
                                         </imageView>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Message" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Seq-55-m1S">
+                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Message" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Seq-55-m1S">
                                             <rect key="frame" x="32" y="11" width="256" height="55"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -460,18 +460,22 @@
                                     <constraints>
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="bottomMargin" secondItem="Seq-55-m1S" secondAttribute="bottom" id="D9P-gj-3cD"/>
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="top" secondItem="eUA-n6-Ifh" secondAttribute="top" constant="3" id="J9l-Pg-Agf"/>
-                                        <constraint firstAttribute="trailing" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="8" id="N7E-VO-wud"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="8" id="N7E-VO-wud"/>
                                         <constraint firstAttribute="bottom" secondItem="LWs-dB-GsB" secondAttribute="bottom" id="UUY-ah-gjw"/>
                                         <constraint firstItem="Seq-55-m1S" firstAttribute="leading" secondItem="LWs-dB-GsB" secondAttribute="leading" constant="16" id="Yht-qp-orS"/>
                                         <constraint firstItem="Seq-55-m1S" firstAttribute="top" secondItem="LWs-dB-GsB" secondAttribute="topMargin" id="lhX-MM-ZBT"/>
-                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="trailingMargin" secondItem="Seq-55-m1S" secondAttribute="trailing" constant="16" id="oi9-3y-Ank"/>
-                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="vqD-qB-iPn"/>
+                                        <constraint firstAttribute="trailing" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="8" id="nR6-qn-jPa"/>
+                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="trailing" secondItem="Seq-55-m1S" secondAttribute="trailing" constant="24" id="oi9-3y-Ank"/>
+                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="vqD-qB-iPn"/>
+                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="zJh-NN-ZUA"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <connections>
-                                    <outlet property="ballonLeading" destination="vqD-qB-iPn" id="dEz-XI-ifp"/>
-                                    <outlet property="ballonTrailing" destination="N7E-VO-wud" id="fTD-Kz-1Zi"/>
+                                    <outlet property="ballonLeadingEqual" destination="zJh-NN-ZUA" id="XZ9-nF-V1j"/>
+                                    <outlet property="ballonLeadingGreaterOrEqual" destination="vqD-qB-iPn" id="BYZ-b6-hmO"/>
+                                    <outlet property="ballonTrailingEqual" destination="nR6-qn-jPa" id="w2p-d9-Z1R"/>
+                                    <outlet property="ballonTrailingGreaterOrEqual" destination="N7E-VO-wud" id="27U-7q-qAH"/>
                                     <outlet property="balloonView" destination="LWs-dB-GsB" id="hi6-6F-Cit"/>
                                     <outlet property="messageLabel" destination="Seq-55-m1S" id="KbO-xQ-O0m"/>
                                     <outlet property="messageLeading" destination="Yht-qp-orS" id="k7S-Jt-KUo"/>
@@ -484,6 +488,7 @@
                             <outlet property="delegate" destination="XqI-Aj-cpS" id="C11-Cv-42a"/>
                         </connections>
                     </tableView>
+                    <modalPageSheetSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8Oj-on-3Wx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1244,7 +1249,7 @@
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="44.5" height="35.5"/>
-        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
+        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplate" width="180" height="180"/>

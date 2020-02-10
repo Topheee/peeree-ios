@@ -73,10 +73,7 @@ class MessageTableViewController: UITableViewController {
 		self.tableView.insertRows(at: [newIndexPath], with: .fade)
 		
 		// Scroll to the bottom so we focus on the latest message
-		let numberOfRows = self.tableView.numberOfRows(inSection: 0)
-		if (numberOfRows > 0) {
-			self.tableView.scrollToRow(at: IndexPath(row:(numberOfRows - 1), section: 0), at: .bottom, animated: true)
-		}
+		self.tableView.scrollToBottom(animated: true)
 	}
 
 }

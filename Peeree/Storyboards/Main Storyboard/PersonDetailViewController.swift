@@ -27,11 +27,13 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	@IBOutlet private weak var sendMessageButton: UIBarButtonItem!
 	@IBOutlet private weak var messageTableHeight: NSLayoutConstraint!
 	@IBOutlet private weak var messageTableBottom: NSLayoutConstraint!
-	@IBOutlet private weak var chatTableView: UIView!
+	@IBOutlet private weak var chatTableViewContainer: UIView!
 	
     private static let unwindSegueID = "unwindToBrowseViewController"
     static let storyboardID = "PersonDetailViewController"
     static let beaconSegueID = "beaconSegue"
+	
+	private var chatTableView: UITableView? { return chatTableViewContainer.subviews.first as? UITableView }
 	
 	private var timer: Timer?
     
@@ -159,9 +161,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		
 		if peerManager.transcripts.count > 0 {
 			layoutMetadata(isHorizontal: true)
+			chatTableView?.scrollToBottom(animated: true)
 		}
-		
-		navigationController?.toolbar.setNeedsLayout()
 		
 		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
 		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
@@ -197,6 +198,11 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		timer?.invalidate()
 		timer = nil
 		pinButton.layer.removeAllAnimations()
+		
+		// reverse toolbar modifications, otherwise the toolbar disappears when going into Radar view and back
+		messageComposeTextField.resignFirstResponder()
+		messageTableHeight.isActive = false
+		messageTableBottom.constant = 0.0
     }
 	
 	// MARK: UITextFieldDelegate methods
@@ -209,6 +215,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	}
 	
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+		sendMessageTapped(sender: textField)
 		return true
 	}
 	
@@ -425,7 +432,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		UIView.setAnimationDuration(animationDuration.doubleValue)
 		UIView.setAnimationCurve(animationCurve)
 		UIView.setAnimationDelegate(self)
-//		UIView.setAnimationDidStop(#selector(toolbarAnimationCompletion))
 		UIView.setAnimationWillStart(#selector(toolbarAnimationCompletion))
 		
 		let toolbarFrame = toolbar.frame
@@ -433,6 +439,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		messageTableHeight.isActive = up
 		messageTableBottom.constant = up ? keyboardFrame.size.height : 0.0
 		UIView.commitAnimations()
+		if up {
+			chatTableView?.scrollToBottom(animated: true)
+		}
 	}
 	
 	@objc func toolbarAnimationCompletion(animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
@@ -454,7 +463,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical
 			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal
 			self.propertyStackView.alignment = isHorizontal ? .leading : .center
-			self.chatTableView.isHidden = !isHorizontal
+			self.chatTableViewContainer.isHidden = !isHorizontal
 		}, completion: { _ in
 			self.animatePictureLoadLayer()
 			self.animateGradient()
