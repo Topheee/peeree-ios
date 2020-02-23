@@ -62,7 +62,7 @@ public class AccountController: SecurityDataSource {
     
     private func resetSequenceNumber() {
         NSLog("WARN: resetting sequence number")
-        DefaultAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
+        AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
             guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
                 if let error = _error {
                     self.delegate?.sequenceNumberResetFailed(error: error)
@@ -126,7 +126,7 @@ public class AccountController: SecurityDataSource {
         
         self.pinningPeers.insert(peerID)
         Notifications.pinningStarted.post(peerID)
-        DefaultAPI.putPin(pinnedID: peerID, pinnedKey: peer.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
+        PinsAPI.putPin(pinnedID: peerID, pinnedKey: peer.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
             self.pinningPeers.remove(peerID)
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
@@ -220,7 +220,7 @@ public class AccountController: SecurityDataSource {
         
         let pinPublicKey = peer.publicKeyData.base64EncodedData()
         
-        DefaultAPI.getPin(pinnedID: peer.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
+        PinsAPI.getPin(pinnedID: peer.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
             guard _error == nil else {
                 self.preprocessAuthenticatedRequestError(_error!)
                 return
@@ -245,7 +245,7 @@ public class AccountController: SecurityDataSource {
         _sequenceNumber = nil // we are not responsible here to ensure that no account already exists and need to not send this sequence number as our public key
         var publicKey = UserPeerManager.instance.peer.publicKeyData
     
-        DefaultAPI.putAccount(email: _accountEmail) { (_account, _error) in
+        AccountAPI.putAccount(email: _accountEmail) { (_account, _error) in
             var completionError: Error?
             defer {
                 self._isCreatingAccount = false
@@ -274,7 +274,7 @@ public class AccountController: SecurityDataSource {
         guard !_isDeletingAccount else { return }
         _isDeletingAccount = true
         PeeringController.shared.peering = false
-        DefaultAPI.deleteAccount { (_error) in
+        AccountAPI.deleteAccount { (_error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {
@@ -294,7 +294,7 @@ public class AccountController: SecurityDataSource {
     public func update(email: String, completion: @escaping (Error?) -> Void) {
         guard accountExists else { return }
         guard email != "" else { deleteEmail(completion: completion); return }
-        DefaultAPI.putAccountEmail(email: email) { (_error) in
+        AccountAPI.putAccountEmail(email: email) { (_error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {
@@ -306,7 +306,7 @@ public class AccountController: SecurityDataSource {
     
     public func deleteEmail(completion: @escaping (Error?) -> Void) {
         guard accountExists else { return }
-        DefaultAPI.deleteAccountEmail { (_error) in
+        AccountAPI.deleteAccountEmail { (_error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {

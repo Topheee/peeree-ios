@@ -136,6 +136,10 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
             guard !isScanning else { return }
         #endif
         
+		// we need to allow duplicates, because in the following scenario non-allow did not work:
+		// 0. both are online and found each other
+		// 1. the other peer goes offline and back online
+		// 2. he finds me, but I do not find him, because my CentralManager does not report him, because we disconnected him
         centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
     }
 

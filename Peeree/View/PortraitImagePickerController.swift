@@ -50,7 +50,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
             self.save(image: nil)
         })
         if allowCancel {
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+			_ = alertController.addCancelAction()
         }
         alertController.present()
     }

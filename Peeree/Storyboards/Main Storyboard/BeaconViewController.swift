@@ -85,8 +85,6 @@ final class BeaconViewController: UIViewController {
 				self?.remotePortrait.image = self?.peerManager?.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
 			})
         }
-        
-        startBeacon()
 		
 		_ = CircleMaskView(maskedView: userPortrait)
 		_ = CircleMaskView(maskedView: remotePortrait)
@@ -127,6 +125,8 @@ final class BeaconViewController: UIViewController {
             self.remotePortrait.alpha = 0.5
         }, completion: nil)
         
+        stopBeacon()
+        
 //        let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
 //        titleLable.text = self.searchedPeer?.nickname
 //        titleLable.textColor = UIColor(white: 0.5, alpha: 1.0)
@@ -140,13 +140,15 @@ final class BeaconViewController: UIViewController {
             self.remotePortrait.alpha = 1.0
         }, completion: nil)
         
+        startBeacon()
+        
 //        self.navigationItem.titleView = nil
 //        self.navigationItem.title = self.searchedPeer?.nickname
     }
     
     private func startBeacon() {
         guard let manager = peerManager else { return }
-		manager.range(manager.peerID) { [weak self] (_, distance) in
+		manager.range { [weak self] (_, distance) in
             DispatchQueue.main.async {
                 self?.updateDistance(distance, animated: true)
             }

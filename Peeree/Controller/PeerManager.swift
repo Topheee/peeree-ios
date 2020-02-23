@@ -65,13 +65,13 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		remotePeerManager.range(timer.userInfo as! PeerID)
 	}
 	
-	private func range(_ peerID: PeerID, timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
+	private func rerange(timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
 		guard rangeBlock != nil else { return }
 		
 		let timer: Timer
 		if #available(iOS 10.0, *) {
 			timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
-				self.remotePeerManager.range(peerID)
+				self.remotePeerManager.range(self.peerID)
 			}
 		} else {
 			timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(callRange(_:)), userInfo: peerID, repeats: false)
@@ -83,7 +83,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		rangeBlock?(peerID, distance)
 	}
 	
-	public func range(_ peerID: PeerID, block: @escaping (PeerID, PeerDistance) -> Void) {
+	public func range(_ block: @escaping (PeerID, PeerDistance) -> Void) {
 		rangeBlock = block
 		remotePeerManager.range(peerID)
 	}
@@ -132,18 +132,18 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
 		guard error == nil else {
 			NSLog("Error updating range: \(error!.localizedDescription)")
-			range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 			return
 		}
 		switch rssi!.intValue {
 		case -60 ... Int.max:
-			range(peerID, timeInterval: 3.0, tolerance: 1.0, distance: .close)
+			rerange(timeInterval: 3.0, tolerance: 1.0, distance: .close)
 		case -80 ... -60:
-			range(peerID, timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
+			rerange(timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
 		case -100 ... -80:
-			range(peerID, timeInterval: 5.0, tolerance: 2.0, distance: .far)
+			rerange(timeInterval: 5.0, tolerance: 2.0, distance: .far)
 		default:
-			range(peerID, timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 		}
 	}
 	

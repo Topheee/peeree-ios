@@ -41,6 +41,9 @@
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAD8F951ECF512F00363016 /* PinPoints.swift */; };
 		9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3916C2049F6E100543F74 /* Main.storyboard */; };
+		9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F824030480005EECB3 /* PinsAPI.swift */; };
+		9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F724030480005EECB3 /* AccountAPI.swift */; };
+		9DB677FE24030480005EECB3 /* AuthenticationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F924030480005EECB3 /* AuthenticationAPI.swift */; };
 		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */; };
 		9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */; };
@@ -51,7 +54,6 @@
 		9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */; };
 		9DD61F5F1EAE33B6004EB56A /* SwaggerImplementations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */; };
 		9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F541EAE33B6004EB56A /* APIHelper.swift */; };
-		9DD61F611EAE33B6004EB56A /* DefaultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F561EAE33B6004EB56A /* DefaultAPI.swift */; };
 		9DD61F621EAE33B6004EB56A /* APIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F571EAE33B6004EB56A /* APIs.swift */; };
 		9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F581EAE33B6004EB56A /* Extensions.swift */; };
 		9DD61F641EAE33B6004EB56A /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F5A1EAE33B6004EB56A /* Account.swift */; };
@@ -142,6 +144,9 @@
 		9DAD8F951ECF512F00363016 /* PinPoints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinPoints.swift; sourceTree = "<group>"; };
 		9DB3916B2049F6E100543F74 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9DB3916E2049F74C00543F74 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
+		9DB677F724030480005EECB3 /* AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAPI.swift; sourceTree = "<group>"; };
+		9DB677F824030480005EECB3 /* PinsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinsAPI.swift; sourceTree = "<group>"; };
+		9DB677F924030480005EECB3 /* AuthenticationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationAPI.swift; sourceTree = "<group>"; };
 		9DBD56D91EE04D1900FB8DA4 /* PeerInfoTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerInfoTest.swift; sourceTree = "<group>"; };
 		9DCB1445205E9F4F00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9DCB1447205EA0AF00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
@@ -157,7 +162,6 @@
 		9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
 		9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwaggerImplementations.swift; path = Swagger/SwaggerImplementations.swift; sourceTree = "<group>"; };
 		9DD61F541EAE33B6004EB56A /* APIHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIHelper.swift; path = Swagger/APIHelper.swift; sourceTree = "<group>"; };
-		9DD61F561EAE33B6004EB56A /* DefaultAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultAPI.swift; sourceTree = "<group>"; };
 		9DD61F571EAE33B6004EB56A /* APIs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIs.swift; path = Swagger/APIs.swift; sourceTree = "<group>"; };
 		9DD61F581EAE33B6004EB56A /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = Swagger/Extensions.swift; sourceTree = "<group>"; };
 		9DD61F5A1EAE33B6004EB56A /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
@@ -407,7 +411,9 @@
 		9DD61F551EAE33B6004EB56A /* APIs */ = {
 			isa = PBXGroup;
 			children = (
-				9DD61F561EAE33B6004EB56A /* DefaultAPI.swift */,
+				9DB677F724030480005EECB3 /* AccountAPI.swift */,
+				9DB677F924030480005EECB3 /* AuthenticationAPI.swift */,
+				9DB677F824030480005EECB3 /* PinsAPI.swift */,
 			);
 			name = APIs;
 			path = Swagger/APIs;
@@ -593,6 +599,7 @@
 				9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */,
 				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */,
+				9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
@@ -609,7 +616,7 @@
 				9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
-				9DD61F611EAE33B6004EB56A /* DefaultAPI.swift in Sources */,
+				9DB677FE24030480005EECB3 /* AuthenticationAPI.swift in Sources */,
 				9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
 				9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */,
@@ -633,6 +640,7 @@
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
 				9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */,
 				9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */,
+				9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
