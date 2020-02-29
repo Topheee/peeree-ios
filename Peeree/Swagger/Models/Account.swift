@@ -8,19 +8,16 @@
 import Foundation
 
 
-open class Account: JSONEncodable {
-    public var peerID: PeerID?
+public struct Account: Codable {
+
+
+    public var peerID: PeerID
+
     /** Random sequence number encrypted with the public key of the user.  */
-    public var sequenceNumber: Int32?
-
-    public init() {}
-
-    // MARK: JSONEncodable
-    open func encodeToJSON() -> Any {
-        var nillableDictionary = [String:Any?]()
-        nillableDictionary["peerID"] = self.peerID?.encodeToJSON()
-        nillableDictionary["sequenceNumber"] = self.sequenceNumber?.encodeToJSON()
-        let dictionary: [String:Any] = APIHelper.rejectNil(nillableDictionary) ?? [:]
-        return dictionary
+    public var sequenceNumber: Int32
+    public init(peerID: PeerID, sequenceNumber: Int32) { 
+        self.peerID = peerID
+        self.sequenceNumber = sequenceNumber
     }
+
 }

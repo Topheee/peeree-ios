@@ -39,12 +39,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
         var errorMessage: String
         if let errorResponse = networkError as? ErrorResponse {
-			let httpErrorMessage = NSLocalizedString("HTTP error %d", comment: "Error message for HTTP status codes")
+			let httpErrorMessage = NSLocalizedString("HTTP error %d.", comment: "Error message for HTTP status codes")
             switch errorResponse {
             case .parseError(_):
                 errorMessage = NSLocalizedString("Malformed server response.", comment: "Message of network error")
             case .httpError(let code, _):
                 errorMessage = String(format: httpErrorMessage, code)
+				if code == 403 {
+					errorMessage = errorMessage + NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
+				}
             case .sessionTaskError(let code, _, let theError):
                 errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
 			case .offline:

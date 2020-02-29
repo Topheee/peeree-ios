@@ -65,6 +65,7 @@ public class AccountController: SecurityDataSource {
         AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
             guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
                 if let error = _error {
+					NSLog("ERROR: resetting sequence number failed: \(error.localizedDescription)")
                     self.delegate?.sequenceNumberResetFailed(error: error)
                 }
                 return
@@ -255,16 +256,16 @@ public class AccountController: SecurityDataSource {
                 }
             }
             
-            guard let account = _account, let sequenceNumberDataCipher = account.sequenceNumber, let newPeerID = account.peerID else {
+            guard let account = _account else {
                 completionError = _error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")])
                 return
             }
 
-            self._sequenceNumber = sequenceNumberDataCipher
+            self._sequenceNumber = account.sequenceNumber
             completionError = nil
             DispatchQueue.main.sync {
                 // UserPeerManager has to be modified on the main queue
-                UserPeerManager.define(peerID: newPeerID)
+                UserPeerManager.define(peerID: account.peerID)
             }
         }
     }
@@ -274,7 +275,7 @@ public class AccountController: SecurityDataSource {
         guard !_isDeletingAccount else { return }
         _isDeletingAccount = true
         PeeringController.shared.peering = false
-        AccountAPI.deleteAccount { (_error) in
+		AccountAPI.deleteAccount { (_, _error)  in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {
@@ -294,7 +295,7 @@ public class AccountController: SecurityDataSource {
     public func update(email: String, completion: @escaping (Error?) -> Void) {
         guard accountExists else { return }
         guard email != "" else { deleteEmail(completion: completion); return }
-        AccountAPI.putAccountEmail(email: email) { (_error) in
+        AccountAPI.putAccountEmail(email: email) { (_, _error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {
@@ -306,7 +307,7 @@ public class AccountController: SecurityDataSource {
     
     public func deleteEmail(completion: @escaping (Error?) -> Void) {
         guard accountExists else { return }
-        AccountAPI.deleteAccountEmail { (_error) in
+        AccountAPI.deleteAccountEmail { (_, _error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
             } else {
@@ -351,7 +352,7 @@ public class AccountController: SecurityDataSource {
             if (error as NSError).domain == NSURLErrorDomain {
                 if let sequenceNumber = _sequenceNumber {
                     // we did not even reach the server, so we have to decrement our sequenceNumber again
-                    _sequenceNumber = sequenceNumber.subtractingReportingOverflow(1).partialValue
+                    _sequenceNumber = sequenceNumber.subtractingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
                 }
             }
             if statusCode == 403 { // forbidden

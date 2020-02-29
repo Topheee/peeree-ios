@@ -48,6 +48,7 @@ open class RequestBuilder<T> {
     var credential: URLCredential?
     var headers: [String:String]
     let parameters: [String:Any]?
+	public let isBody: Bool
     let body: Data?
     let method: HTTPMethod
     let url: URL
@@ -58,10 +59,11 @@ open class RequestBuilder<T> {
     /// Optional block to obtain a reference to the request's progress instance when available.
 //    public var onProgressReady: ((Progress) -> ())?
 
-    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, headers: [String:String] = [:], body: Data? = nil, isValidated: Bool = true) {
+    required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, isBody: Bool, headers: [String:String] = [:], body: Data? = nil, isValidated: Bool = true) {
         self.method = method
         self.url = url
         self.parameters = parameters
+        self.isBody = isBody
         self.body = body
         self.headers = headers
         self.credential = nil
@@ -91,6 +93,7 @@ open class RequestBuilder<T> {
 }
 
 public protocol RequestBuilderFactory {
-    func getBuilder<T>() -> RequestBuilder<T>.Type
+    func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type
+    func getBuilder<T:Decodable>() -> RequestBuilder<T>.Type
 }
 

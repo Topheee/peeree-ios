@@ -7,6 +7,5 @@
 
 import Foundation
 
-
-/** Unique identifier representing a specific user.  */
+/** Unique identifier representing a specific user.  RFC 4122 version 4 universally unique identifier (UUID), encoded as in \&quot;E621E1F8-C36C-495A-93FC-0C247A3E6E5F\&quot;.  */
 public typealias PeerID = UUID

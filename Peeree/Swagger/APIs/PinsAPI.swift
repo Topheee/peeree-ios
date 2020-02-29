@@ -11,106 +11,145 @@ import Foundation
 
 open class PinsAPI {
     /**
-	 Retrieve All Pinned Users
-	 
-	 - parameter completion: completion handler to receive the data and the error objects
-	 */
-	open class func getAccountPins(completion: @escaping ((_ data: [Pin]?,_ error: ErrorResponse?) -> Void)) {
-		getAccountPinsWithRequestBuilder().execute { (response, error) -> Void in
-			completion(response?.body, error);
-		}
-	}
-
-
-	/**
-	 Retrieve All Pinned Users
-	 - GET /account/pins
-	 - Sends all list of all uuid's and public keys to the client. This request should not be needed, except for a new device is installed.
-	 - API Key:
-	   - type: apiKey peerID
-	   - name: peerID
-	 - API Key:
-	   - type: apiKey signature
-	   - name: signature
-	 - examples: [{contentType=application/json, example=[ {
-  "peerID" : { },
-  "match" : true,
-  "publicKey" : { }
-} ]}]
-
-	 - returns: RequestBuilder<[Pin]>
-	 */
-	open class func getAccountPinsWithRequestBuilder() -> RequestBuilder<[Pin]> {
-		let path = "/account/pins"
-		let URLString = SwaggerClientAPI.basePath + path
-		let parameters: [String:Any]? = nil
-
-		let url = NSURLComponents(string: URLString)!
-
-
-		let requestBuilder: RequestBuilder<[Pin]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-
-		return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
-	}
-    
-    /**
-     Pin Status Query
-     
-     - parameter pinnedID: (query) The PeerID of the opposite user.
-     - parameter pinnedKey: (query) See PublicKey in Definitions.
+     Delete Pin
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.
      - parameter completion: completion handler to receive the data and the error objects
      */
-    open class func getPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Int32?,_ error: ErrorResponse?) -> Void)) {
-        getPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
-            completion(response?.body, error);
+    open class func deletePin(pinnedID: UUID, completion: @escaping ((_ data: Void?,_ error: ErrorResponse?) -> Void)) {
+        deletePinWithRequestBuilder(pinnedID: pinnedID).execute { (response, error) -> Void in
+            if error == nil {
+                completion((), error)
+            } else {
+                completion(nil, error)
+            }
         }
     }
-    
-    
+
+
     /**
-     Pin Status Query
-     - GET /pin
-     - Returns, whether a the requested peer is pinnend and a pin match occured.
+     Delete Pin
+     - DELETE /pin
+     - Unpins a previously pinned user.
      - API Key:
-     - type: apiKey peerID
-     - name: peerID
+       - type: apiKey peerID
+       - name: peerID
      - API Key:
-     - type: apiKey signature
-     - name: signature
-     - examples: [{contentType=application/json, example=0}]
-     
-     - parameter pinnedID: (query) The PeerID of the opposite user.
-     - parameter pinnedKey: (query) See PublicKey in Definitions.
-     
-     - returns: RequestBuilder<Int32>
+       - type: apiKey signature
+       - name: signature
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.
+
+     - returns: RequestBuilder<Void>
      */
-    open class func getPinWithRequestBuilder(pinnedID: UUID, pinnedKey: Data) -> RequestBuilder<Int32> {
+    open class func deletePinWithRequestBuilder(pinnedID: UUID) -> RequestBuilder<Void> {
         let path = "/pin"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
-        
-        let url = NSURLComponents(string: URLString)!
-        url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "pinnedID": pinnedID,
-            "pinnedKey": pinnedKey
-            ])
-        
-        
-        let requestBuilder: RequestBuilder<Int32>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
-        
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters)
+        var url = URLComponents(string: URLString)!
+        url.queryItems = APIHelper.mapValuesToQueryItems([
+                        "pinnedID": pinnedID
+        ])
+
+        let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
+    }
+
+    /**
+     Retrieve All Pinned Users
+
+     - parameter completion: completion handler to receive the data and the error objects
+     */
+    open class func getAccountPins(completion: @escaping ((_ data: [Pin]?,_ error: ErrorResponse?) -> Void)) {
+        getAccountPinsWithRequestBuilder().execute { (response, error) -> Void in
+            completion(response?.body, error)
+        }
+    }
+
+
+    /**
+     Retrieve All Pinned Users
+     - GET /account/pins
+     - Sends all list of all uuid's and public keys to the client. This request should not be needed, except for a new device is installed.
+     - API Key:
+       - type: apiKey peerID
+       - name: peerID
+     - API Key:
+       - type: apiKey signature
+       - name: signature
+     - examples: [{contentType=application/json, example=[ {
+  "peerID" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "match" : true,
+  "publicKey" : "publicKey"
+}, {
+  "peerID" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "match" : true,
+  "publicKey" : "publicKey"
+} ]}]
+
+     - returns: RequestBuilder<[Pin]>
+     */
+    open class func getAccountPinsWithRequestBuilder() -> RequestBuilder<[Pin]> {
+        let path = "/account/pins"
+        let URLString = SwaggerClientAPI.basePath + path
+        let parameters: [String:Any]? = nil
+
+        let url = URLComponents(string: URLString)!
+
+        let requestBuilder: RequestBuilder<[Pin]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+    }
+
+    /**
+     Pin Status Query
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.       - parameter pinnedKey: (query) See PublicKey in Definitions section.
+     - parameter completion: completion handler to receive the data and the error objects
+     */
+    open class func getPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Int?,_ error: ErrorResponse?) -> Void)) {
+        getPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
+            completion(response?.body, error)
+        }
+    }
+
+
+    /**
+     Pin Status Query
+     - GET /pin
+     - Returns whether a the requested peer is pinnend and a pin match occured.
+     - API Key:
+       - type: apiKey peerID
+       - name: peerID
+     - API Key:
+       - type: apiKey signature
+       - name: signature
+     - examples: [{contentType=application/json, example=0}]
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.       - parameter pinnedKey: (query) See PublicKey in Definitions section.
+
+     - returns: RequestBuilder<Int>
+     */
+    open class func getPinWithRequestBuilder(pinnedID: UUID, pinnedKey: Data) -> RequestBuilder<Int> {
+        let path = "/pin"
+        let URLString = SwaggerClientAPI.basePath + path
+        let parameters: [String:Any]? = nil
+        var url = URLComponents(string: URLString)!
+        url.queryItems = APIHelper.mapValuesToQueryItems([
+                        "pinnedID": pinnedID,
+                        "pinnedKey": pinnedKey
+        ])
+
+        let requestBuilder: RequestBuilder<Int>.Type = SwaggerClientAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
     }
 
     /**
      Pin Another User
-     
-     - parameter pinnedID: (query) The PeerID of the opposite user.
-     - parameter pinnedKey: (query) See PublicKey in Definitions.
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.       - parameter pinnedKey: (query) See PublicKey in Definitions section.
      - parameter completion: completion handler to receive the data and the error objects
      */
     open class func putPin(pinnedID: UUID, pinnedKey: Data, completion: @escaping ((_ data: Bool?,_ error: ErrorResponse?) -> Void)) {
         putPinWithRequestBuilder(pinnedID: pinnedID, pinnedKey: pinnedKey).execute { (response, error) -> Void in
-            completion(response?.body, error);
+            completion(response?.body, error)
         }
     }
 
@@ -118,35 +157,31 @@ open class PinsAPI {
     /**
      Pin Another User
      - PUT /pin
-     - Requests a *Pin*. Notifies both parties, if a *Pin Match* occurred.
+     - Requests a *Pin* and returns whether a *Pin Match* occurred.
      - API Key:
-     - type: apiKey peerID
-     - name: peerID
+       - type: apiKey peerID
+       - name: peerID
      - API Key:
-     - type: apiKey signature
-     - name: signature
+       - type: apiKey signature
+       - name: signature
      - examples: [{contentType=application/json, example=true}]
-     
-     - parameter pinnedID: (query) The PeerID of the opposite user.
-     - parameter pinnedKey: (query) See PublicKey in Definitions.
-     
+     - parameter pinnedID: (query) The PeerID of the opposite user. See also PeerID in Definitions section.       - parameter pinnedKey: (query) See PublicKey in Definitions section.
+
      - returns: RequestBuilder<Bool>
      */
     open class func putPinWithRequestBuilder(pinnedID: UUID, pinnedKey: Data) -> RequestBuilder<Bool> {
         let path = "/pin"
         let URLString = SwaggerClientAPI.basePath + path
         let parameters: [String:Any]? = nil
-
-        let url = NSURLComponents(string: URLString)!
-        url.queryItems = APIHelper.mapValuesToQueryItems(values:[
-            "pinnedID": pinnedID,
-            "pinnedKey": pinnedKey
+        var url = URLComponents(string: URLString)!
+        url.queryItems = APIHelper.mapValuesToQueryItems([
+                        "pinnedID": pinnedID,
+                        "pinnedKey": pinnedKey
         ])
-        
 
-        let requestBuilder: RequestBuilder<Bool>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
+        let requestBuilder: RequestBuilder<Bool>.Type = SwaggerClientAPI.requestBuilderFactory.getNonDecodableBuilder()
 
-        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters)
+        return requestBuilder.init(method: .PUT, url: url.url!, parameters: parameters, isBody: false)
     }
 
 }

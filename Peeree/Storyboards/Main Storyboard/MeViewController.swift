@@ -250,11 +250,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
     
     /// Called when the UIKeyboardDidShowNotification is sent.
     @objc private func keyboardWasShown(aNotification: Notification) {
-        guard let info = aNotification.userInfo else { return }
+        guard let info = aNotification.userInfo, let fieldToShow = activeField else { return }
 		
 		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
 		// TEST with iOS < 11
-		let accessoryHeight = activeField?.inputView?.inputAccessoryView?.frame.height ?? 0.0
+		let accessoryHeight = fieldToShow.inputView?.inputAccessoryView?.frame.height ?? 0.0
         let inputHeight = (info[UIResponder.keyboardFrameBeginUserInfoKey] as! CGRect).height
 		let keyboardHeight = accessoryHeight + inputHeight
 
@@ -265,8 +265,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
         // If active text field is hidden by keyboard, scroll it so it's visible
         var aRect = self.view.frame
         aRect.size.height -= keyboardHeight
-        if (!aRect.contains(activeField.frame.origin) ) {
-            scrollView.scrollRectToVisible(activeField.frame, animated: true)
+        if (!aRect.contains(fieldToShow.frame.origin) ) {
+            scrollView.scrollRectToVisible(fieldToShow.frame, animated: true)
         }
     }
     

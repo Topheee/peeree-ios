@@ -7,8 +7,12 @@
 import Foundation
 
 class CustomRequestBuilderFactory: RequestBuilderFactory {
-    func getBuilder<T>() -> RequestBuilder<T>.Type {
+	func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type {
         return CustomRequestBuilder<T>.self
+    }
+
+    func getBuilder<T:Decodable>() -> RequestBuilder<T>.Type {
+        return CustomDecodableRequestBuilder<T>.self
     }
 }
 
@@ -100,7 +104,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
 }
 
 open class CustomRequestBuilder<T>: RequestBuilder<T> {
-    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, headers: [String : String] = [:], body: Data? = nil, isValidated: Bool = true) {
+    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, isBody: Bool, headers: [String : String] = [:], body: Data? = nil, isValidated: Bool = true) {
         var headers = headers
         if let d = SwaggerClientAPI.dataSource {
             var val = d.getPeerID()
@@ -114,7 +118,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
                 }
             }
         }
-        super.init(method: method, url: url, parameters: parameters, headers: headers)
+		super.init(method: method, url: url, parameters: parameters, isBody: isBody, headers: headers, isValidated: isValidated)
     }
 
     /**
@@ -174,7 +178,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
         processRequest(manager: manager, request: makeRequest(manager: manager, method: method), managerId, completion)
     }
 
-    private func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
+    fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
         let cleanupRequest = {
             _ = managerStore.removeValue(forKey: managerId)
         }
@@ -248,4 +252,118 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
 //        return httpHeaders
         return self.headers
     }
+}
+
+fileprivate enum DownloadException : Error {
+    case responseDataMissing
+    case responseFailed
+    case requestMissing
+    case requestMissingPath
+    case requestMissingURL
+}
+
+public enum AlamofireDecodableRequestBuilderError: Error {
+    case emptyDataResponse
+    case nilHTTPResponse
+    case jsonDecoding(DecodingError)
+    case generalError(Error)
+}
+
+open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
+
+	override fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
+        let cleanupRequest = {
+            _ = managerStore.removeValue(forKey: managerId)
+        }
+
+		let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
+            cleanupRequest()
+            if let error = error {
+                completion(nil, ErrorResponse.sessionTaskError((response as? HTTPURLResponse)?.statusCode, data, error))
+            } else if let httpResponse = response as? HTTPURLResponse {
+                guard !httpResponse.isFailure else {
+                    completion(nil, ErrorResponse.httpError(httpResponse.statusCode, data))
+                    return
+                }
+                
+                switch T.self {
+                case is String.Type:
+                    var body: T?
+                    if data != nil {
+                        body = String(data: data!, encoding: .utf8) as? T
+                    } else {
+                        body = "" as? T
+                    }
+                    completion(Response(response: httpResponse, body: body), nil)
+                case is Void.Type:
+                    completion(Response(response: httpResponse, body: nil), nil)
+                case is Data.Type:
+                    completion(Response(response: httpResponse, body: data as? T), nil)
+                default:
+                    // handle HTTP 204 No Content
+                    // NSNull would crash decoders
+                    if httpResponse.statusCode == 204 || data == nil {
+                        completion(Response(response: httpResponse, body: nil), nil)
+                        return
+                    }
+                    
+                    if () is T {
+                        completion(Response(response: httpResponse, body: (() as! T)), nil)
+                        return
+                    }
+
+					guard let data = data, !data.isEmpty else {
+						completion(nil, ErrorResponse.sessionTaskError(-1, nil, AlamofireDecodableRequestBuilderError.emptyDataResponse))
+						return
+					}
+
+					var responseObj: Response<T>? = nil
+					
+//					let decodeResult: (decodableObj: T?, error: Error?)
+//					if #available(iOS 13, *) {
+//						decodeResult = CodableHelper.decode(T.self, from: data)
+//					} else {
+//						switch T.self {
+//						case is Bool.Type, is Int.Type, is Double.Type:
+//							let intermediateResult = CodableHelper.decode(JSONValue.self, from: data)
+//							if let intermediateValue = intermediateResult.decodableObj {
+//								switch intermediateValue {
+//								case .bool(let val):
+//									decodeResult = (val as? T, intermediateResult.error)
+//								case .int(let val):
+//									decodeResult = (val as? T, intermediateResult.error)
+//								case .double(let val):
+//									decodeResult = (val as? T, intermediateResult.error)
+//								default:
+//									decodeResult = (nil, intermediateResult.error)
+//								}
+//							} else {
+//								decodeResult = (nil, intermediateResult.error)
+//							}
+//						default:
+//							decodeResult = CodableHelper.decode(T.self, from: data)
+//						}
+//
+//					}
+					
+
+					
+					let decodeResult: (decodableObj: T?, error: Error?) = CodableHelper.decode(T.self, from: data)
+					if decodeResult.error == nil {
+						responseObj = Response(response: httpResponse, body: decodeResult.decodableObj)
+					}
+
+					completion(responseObj, decodeResult.error.map { ErrorResponse.sessionTaskError(-3, data, $0) })
+                }
+            } else {
+                completion(nil, ErrorResponse.sessionTaskError(-2, data, AlamofireDecodableRequestBuilderError.nilHTTPResponse))
+            }
+        }
+        
+        if let body = self.body {
+            (manager.uploadTask(with: request, from: body, completionHandler: taskCompletionHandler)).resume()
+        } else {
+            (manager.dataTask(with: request, completionHandler: taskCompletionHandler)).resume()
+        }
+	}
 }

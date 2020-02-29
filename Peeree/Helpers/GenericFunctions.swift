@@ -193,6 +193,7 @@ extension Data {
 
 extension HTTPURLResponse {
     var isFailure: Bool { return statusCode > 399 && statusCode < 600 }
+    var isSuccess: Bool { return statusCode > 199 && statusCode < 300 }
 }
 
 extension Bool {

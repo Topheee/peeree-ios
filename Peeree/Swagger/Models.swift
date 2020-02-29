@@ -22,9 +22,9 @@ public enum ErrorResponse : Error {
 }
 
 open class Response<T> {
-    public let statusCode: Int
-    public let header: [String: String]
-    public let body: T?
+	public let statusCode: Int
+	public let header: [String: String]
+	public let body: T?
 
     public init(statusCode: Int, header: [String: String], body: T?) {
         self.statusCode = statusCode
@@ -35,8 +35,8 @@ open class Response<T> {
     public convenience init(response: HTTPURLResponse, body: T?) {
         let rawHeader = response.allHeaderFields
         var header = [String:String]()
-        for (key, value) in rawHeader {
-            header[key as! String] = value as? String
+        for case let (key, value) as (String, String) in rawHeader {
+            header[key] = value
         }
         self.init(statusCode: response.statusCode, header: header, body: body)
     }
@@ -154,7 +154,7 @@ class Decoders {
                 return Date(timeIntervalSince1970: Double(sourceInt / 1000) )
             }
             fatalError("formatter failed to parse \(source)")
-        } 
+        }
 
         // Decoder for [Account]
         Decoders.addDecoder(clazz: [Account].self) { (source: AnyObject) -> [Account] in
@@ -164,9 +164,8 @@ class Decoders {
         Decoders.addDecoder(clazz: Account.self) { (source: AnyObject) -> Account in
             let sourceDictionary = source as! [AnyHashable: Any]
 
-            let instance = Account()
-            instance.peerID = Decoders.decodeOptional(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject?)
-            instance.sequenceNumber = Decoders.decodeOptional(clazz: Int32.self, source: sourceDictionary["sequenceNumber"] as AnyObject?)
+            let instance = Account(peerID: Decoders.decode(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject),
+								   sequenceNumber: Decoders.decode(clazz: Int32.self, source: sourceDictionary["sequenceNumber"] as AnyObject))
             return instance
         }
 
@@ -192,10 +191,9 @@ class Decoders {
         Decoders.addDecoder(clazz: Pin.self) { (source: AnyObject) -> Pin in
             let sourceDictionary = source as! [AnyHashable: Any]
 
-            let instance = Pin()
-            instance.peerID = Decoders.decodeOptional(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject?)
-            instance.publicKey = Decoders.decodeOptional(clazz: PublicKey.self, source: sourceDictionary["publicKey"] as AnyObject?)
-            instance.match = Decoders.decodeOptional(clazz: Bool.self, source: sourceDictionary["match"] as AnyObject?)
+            let instance = Pin(peerID: Decoders.decode(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject),
+							   publicKey: Decoders.decode(clazz: PublicKey.self, source: sourceDictionary["publicKey"] as AnyObject),
+							   match: Decoders.decode(clazz: Bool.self, source: sourceDictionary["match"] as AnyObject))
             return instance
         }
 

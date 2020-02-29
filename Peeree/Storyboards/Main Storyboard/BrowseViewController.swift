@@ -256,9 +256,9 @@ final class BrowseViewController: UITableViewController {
     // MARK: Private Methods
     
 	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
-		cell.textLabel!.highlightedTextColor = AppTheme.tintColor
-        cell.textLabel!.text = peer.nickname
-        cell.detailTextLabel!.text = peer.summary
+		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
+        cell.textLabel?.text = peer.nickname
+        cell.detailTextLabel?.text = peer.summary
         guard let imageView = cell.imageView else { assertionFailure(); return }
         imageView.image = manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
         guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }

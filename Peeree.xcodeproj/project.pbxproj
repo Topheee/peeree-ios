@@ -29,6 +29,7 @@
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
+		9D91E0462405B131002BD814 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D91E0452405B131002BD814 /* JSONValue.swift */; };
 		9D9458A21F2A1B8800EBCB31 /* CommonCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		9D9458A61F2A1B8800EBCB31 /* CommonCrypto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -36,6 +37,12 @@
 		9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
 		9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
 		9D9D02051F2609DA00DC5FC6 /* CharacterTraitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592D1B92EC3F00164C9F /* CharacterTraitViewController.swift */; };
+		9D9D5A5824045F690063532F /* ContentfilterAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A5724045F690063532F /* ContentfilterAPI.swift */; };
+		9D9D5A6B240469C70063532F /* JSONEncodingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A69240469C60063532F /* JSONEncodingHelper.swift */; };
+		9D9D5A6C240469C70063532F /* JSONEncodableEncoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */; };
+		9D9D5A6E24046CA00063532F /* CodableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6D24046CA00063532F /* CodableHelper.swift */; };
+		9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6F24046CCF0063532F /* Configuration.swift */; };
+		9D9D5A72240474FF0063532F /* Picture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A71240474FF0063532F /* Picture.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
@@ -123,6 +130,7 @@
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
+		9D91E0452405B131002BD814 /* JSONValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONValue.swift; path = Swagger/JSONValue.swift; sourceTree = "<group>"; };
 		9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonCrypto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonCrypto.h; sourceTree = "<group>"; };
 		9D9458A11F2A1B8800EBCB31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -134,6 +142,12 @@
 		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeerManager.swift; path = Controller/PeerManager.swift; sourceTree = "<group>"; };
 		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeeringController.swift; path = Controller/PeeringController.swift; sourceTree = "<group>"; };
 		9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		9D9D5A5724045F690063532F /* ContentfilterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentfilterAPI.swift; sourceTree = "<group>"; };
+		9D9D5A69240469C60063532F /* JSONEncodingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONEncodingHelper.swift; path = Swagger/JSONEncodingHelper.swift; sourceTree = "<group>"; };
+		9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONEncodableEncoding.swift; path = Swagger/JSONEncodableEncoding.swift; sourceTree = "<group>"; };
+		9D9D5A6D24046CA00063532F /* CodableHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CodableHelper.swift; path = Swagger/CodableHelper.swift; sourceTree = "<group>"; };
+		9D9D5A6F24046CCF0063532F /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Configuration.swift; path = Swagger/Configuration.swift; sourceTree = "<group>"; };
+		9D9D5A71240474FF0063532F /* Picture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Picture.swift; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -401,7 +415,12 @@
 				9DD61F541EAE33B6004EB56A /* APIHelper.swift */,
 				9DD61F551EAE33B6004EB56A /* APIs */,
 				9DD61F571EAE33B6004EB56A /* APIs.swift */,
+				9D9D5A6D24046CA00063532F /* CodableHelper.swift */,
+				9D9D5A6F24046CCF0063532F /* Configuration.swift */,
 				9DD61F581EAE33B6004EB56A /* Extensions.swift */,
+				9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */,
+				9D9D5A69240469C60063532F /* JSONEncodingHelper.swift */,
+				9D91E0452405B131002BD814 /* JSONValue.swift */,
 				9DD61F591EAE33B6004EB56A /* Models */,
 				9DD61F5E1EAE33B6004EB56A /* Models.swift */,
 			);
@@ -413,6 +432,7 @@
 			children = (
 				9DB677F724030480005EECB3 /* AccountAPI.swift */,
 				9DB677F924030480005EECB3 /* AuthenticationAPI.swift */,
+				9D9D5A5724045F690063532F /* ContentfilterAPI.swift */,
 				9DB677F824030480005EECB3 /* PinsAPI.swift */,
 			);
 			name = APIs;
@@ -424,6 +444,7 @@
 			children = (
 				9DD61F5A1EAE33B6004EB56A /* Account.swift */,
 				9DD1B42C1EC46FD000A01AEF /* PeerID.swift */,
+				9D9D5A71240474FF0063532F /* Picture.swift */,
 				9DAD8F951ECF512F00363016 /* PinPoints.swift */,
 				9DD61F5D1EAE33B6004EB56A /* Pin.swift */,
 				9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */,
@@ -600,6 +621,7 @@
 				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */,
 				9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */,
+				9D9D5A72240474FF0063532F /* Picture.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
@@ -610,12 +632,16 @@
 				9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
 				9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */,
+				9D9D5A6C240469C70063532F /* JSONEncodableEncoding.swift in Sources */,
 				9D0EA9F31E44DB9000C71312 /* GenericFunctions.swift in Sources */,
+				9D9D5A6E24046CA00063532F /* CodableHelper.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9DD61F641EAE33B6004EB56A /* Account.swift in Sources */,
 				9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
+				9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */,
 				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
+				9D91E0462405B131002BD814 /* JSONValue.swift in Sources */,
 				9DB677FE24030480005EECB3 /* AuthenticationAPI.swift in Sources */,
 				9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */,
 				9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */,
@@ -628,6 +654,7 @@
 				9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
 				9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */,
+				9D9D5A5824045F690063532F /* ContentfilterAPI.swift in Sources */,
 				9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */,
 				9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
@@ -635,6 +662,7 @@
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
 				9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
+				9D9D5A6B240469C70063532F /* JSONEncodingHelper.swift in Sources */,
 				9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */,
 				9D08E2DA1C4031050045388A /* BasicDescriptionViewController.swift in Sources */,
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,

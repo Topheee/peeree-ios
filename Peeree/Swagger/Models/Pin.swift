@@ -7,23 +7,20 @@
 
 import Foundation
 
-
 /** Object holding the ID and public key of a pinned peer.  */
-open class Pin: JSONEncodable {
-    public var peerID: PeerID?
-    public var publicKey: PublicKey?
+public struct Pin: Codable {
+
+
+    public var peerID: PeerID
+
+    public var publicKey: PublicKey
+
     /** True, if the pinned peer also pinned the user.  */
-    public var match: Bool?
-
-    public init() {}
-
-    // MARK: JSONEncodable
-    open func encodeToJSON() -> Any {
-        var nillableDictionary = [String:Any?]()
-        nillableDictionary["peerID"] = self.peerID?.encodeToJSON()
-        nillableDictionary["publicKey"] = self.publicKey?.encodeToJSON()
-        nillableDictionary["match"] = self.match
-        let dictionary: [String:Any] = APIHelper.rejectNil(nillableDictionary) ?? [:]
-        return dictionary
+    public var match: Bool
+    public init(peerID: PeerID, publicKey: PublicKey, match: Bool) { 
+        self.peerID = peerID
+        self.publicKey = publicKey
+        self.match = match
     }
+
 }

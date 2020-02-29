@@ -48,6 +48,19 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	private var displayedPeerInfo: PeerInfo?
 	var peerManager: PeerManager!
 	
+	@IBAction func reportPeer(_ sender: Any) {
+		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
+		alertController.preferredAction = alertController.addCancelAction()
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
+//            self.unpin()
+        })
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Report User", comment: "Alert action button title"), style: .destructive) { (action) in
+//            self.reportUser()
+        })
+		
+        alertController.present()
+	}
+	
 	// Action method when user presses "send"
 	@IBAction func sendMessageTapped(sender: Any) {
 		guard let message = messageComposeTextField.text, message != "" else { return }
@@ -140,6 +153,18 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
             self.animateGradient()
         }))
 		
+		notificationObservers.append(UIApplication.willResignActiveNotification.addObserver { (notification) in
+			if self.messageComposeTextField.isFirstResponder {
+				self.shiftedToolbarFrame = self.navigationController?.toolbar?.frame
+			}
+		})
+		notificationObservers.append(UIApplication.didBecomeActiveNotification.addObserver { (notification) in
+			if let frame = self.shiftedToolbarFrame {
+				self.navigationController?.toolbar?.frame = frame
+			}
+			self.shiftedToolbarFrame = nil
+		})
+		
 		registerForKeyboardNotifications()
 		
 		// TODO test whether we really still need this, because probably not because of new stack view
@@ -151,11 +176,15 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		// somehow sometimes it is still hidden from BrowseViewController
 		navigationController?.setNavigationBarHidden(false, animated: false)
     }
+	
+	private var shiftedToolbarFrame: CGRect? = nil
+	private var originalToolbarFrame = CGRect.zero
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let peer = displayedPeerInfo else { return }
 		
+		originalToolbarFrame = navigationController?.toolbar.frame ?? originalToolbarFrame
 		animatePictureLoadLayer()
 		animateGradient()
 		
@@ -275,7 +304,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
         pinButton.isSelected = state.pinState == .pinned
 //        traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
         pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
-        findButtonItem.isEnabled = peer.pinMatched
+//        findButtonItem.isEnabled = peer.pinMatched
 		sendMessageButton.isEnabled = state.isAvailable && messageComposeTextField.text?.count ?? 0 > 0
         
         title = peer.nickname
@@ -434,7 +463,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		UIView.setAnimationDelegate(self)
 		UIView.setAnimationWillStart(#selector(toolbarAnimationCompletion))
 		
-		let toolbarFrame = toolbar.frame
+		// since the notification is triggered a second time when the user switches to emojis, we cannot simply use `toolbar.frame`:
+		let toolbarFrame = originalToolbarFrame
 		toolbar.frame = CGRect(x: toolbarFrame.origin.x, y: toolbarFrame.origin.y + (keyboardFrame.size.height * (up ? -1 : 1)), width: toolbarFrame.size.width, height: toolbarFrame.size.height)
 		messageTableHeight.isActive = up
 		messageTableBottom.constant = up ? keyboardFrame.size.height : 0.0

@@ -180,7 +180,7 @@
                             </connections>
                         </barButtonItem>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="9" width="100" height="32"/>
+                            <rect key="frame" x="110" y="6" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -217,7 +217,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="8" y="52" width="304" height="278"/>
+                                <rect key="frame" x="8" y="52" width="304" height="282"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG">
                                         <rect key="frame" x="86" y="0.0" width="132" height="132"/>
@@ -253,7 +253,7 @@
                                         </connections>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="MVp-Wy-cyC">
-                                        <rect key="frame" x="32" y="132" width="240" height="146"/>
+                                        <rect key="frame" x="32" y="132" width="240" height="150"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="BQJ-Fm-gFE">
                                                 <rect key="frame" x="0.0" y="0.0" width="240" height="32"/>
@@ -311,10 +311,10 @@
                                                 </connections>
                                             </button>
                                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" horizontalCompressionResistancePriority="760" verticalCompressionResistancePriority="760" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Iei-rm-kRj">
-                                                <rect key="frame" x="61" y="120" width="118.5" height="26"/>
+                                                <rect key="frame" x="33.5" y="120" width="173.5" height="30"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="UnverfiedIcon" highlightedImage="VerfiedIcon" translatesAutoresizingMaskIntoConstraints="NO" id="Yms-Pn-YOk">
-                                                        <rect key="frame" x="0.0" y="0.0" width="26" height="26"/>
+                                                        <rect key="frame" x="0.0" y="2" width="26" height="26"/>
                                                         <accessibility key="accessibilityConfiguration">
                                                             <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
                                                         </accessibility>
@@ -324,16 +324,23 @@
                                                         </constraints>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="verification" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MSB-TZ-Xpf">
-                                                        <rect key="frame" x="34" y="3" width="84.5" height="20.5"/>
+                                                        <rect key="frame" x="34" y="5" width="84.5" height="20.5"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Can the peers information be trusted" label="Verification Status"/>
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4mf-uQ-o4f">
+                                                        <rect key="frame" x="126.5" y="0.0" width="47" height="30"/>
+                                                        <state key="normal" title="Report"/>
+                                                        <connections>
+                                                            <action selector="reportPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="gP4-Bq-iDM"/>
+                                                        </connections>
+                                                    </button>
                                                 </subviews>
                                             </stackView>
                                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
-                                                <rect key="frame" x="65" y="146" width="110" height="0.0"/>
+                                                <rect key="frame" x="65" y="150" width="110" height="0.0"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <bool key="isElement" value="NO"/>
                                                 </accessibility>
@@ -347,7 +354,7 @@
                                 </subviews>
                             </stackView>
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="338" width="320" height="85"/>
+                                <rect key="frame" x="0.0" y="342" width="320" height="81"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="64" id="VPu-gz-2Vl"/>
                                 </constraints>
@@ -375,11 +382,11 @@
                     </view>
                     <toolbarItems>
                         <barButtonItem style="plain" id="71W-5G-Qes">
-                            <textField key="customView" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Message" minimumFontSize="17" id="yJd-y1-fP9">
+                            <textField key="customView" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Message" adjustsFontForContentSizeCategory="YES" minimumFontSize="17" id="yJd-y1-fP9">
                                 <rect key="frame" x="16" y="10" width="208" height="34"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <textInputTraits key="textInputTraits" returnKeyType="send" enablesReturnKeyAutomatically="YES"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="send" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="bgg-zV-1WC" id="QKk-xs-lAO"/>
                                 </connections>
@@ -392,18 +399,11 @@
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
-                    <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz">
-                        <barButtonItem key="rightBarButtonItem" title="Radar" id="sCY-WJ-efU">
-                            <connections>
-                                <segue destination="PIG-Ng-mYB" kind="show" identifier="beaconSegue" id="lMU-bc-BVT"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
                         <outlet property="chatTableViewContainer" destination="Vq4-kH-h3A" id="fg6-en-yXb"/>
-                        <outlet property="findButtonItem" destination="sCY-WJ-efU" id="Eki-oU-oPU"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
                         <outlet property="messageComposeTextField" destination="yJd-y1-fP9" id="neN-TR-rEt"/>
@@ -436,22 +436,22 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="81"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="Message Cell" id="P8y-s7-Nks" customClass="MessageCell" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="320" height="74"/>
+                                <rect key="frame" x="0.0" y="28" width="320" height="71"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="P8y-s7-Nks" id="eUA-n6-Ifh">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="74"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="71"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="MessageBubble" highlightedImage="MessageBubbleOpposite" translatesAutoresizingMaskIntoConstraints="NO" id="LWs-dB-GsB">
-                                            <rect key="frame" x="16" y="3" width="296" height="71"/>
+                                            <rect key="frame" x="16" y="3" width="296" height="68"/>
                                         </imageView>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Message" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Seq-55-m1S">
-                                            <rect key="frame" x="32" y="11" width="256" height="55"/>
+                                            <rect key="frame" x="32" y="11" width="256" height="52"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
@@ -488,11 +488,10 @@
                             <outlet property="delegate" destination="XqI-Aj-cpS" id="C11-Cv-42a"/>
                         </connections>
                     </tableView>
-                    <modalPageSheetSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8Oj-on-3Wx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2107.5" y="1242.5"/>
+            <point key="canvasLocation" x="2109" y="1243"/>
         </scene>
         <!--Character Trait Table-->
         <scene sceneID="Fuh-NE-A6I">
@@ -605,7 +604,7 @@
                                                     </connections>
                                                 </barButtonItem>
                                                 <barButtonItem systemItem="flexibleSpace" id="BP5-r4-b8w"/>
-                                                <barButtonItem image="LeftRightRadarGlyph" id="9YV-Ru-0A8">
+                                                <barButtonItem enabled="NO" image="LeftRightRadarGlyph" id="9YV-Ru-0A8">
                                                     <connections>
                                                         <action selector="findPeer:" destination="m9M-nD-Ibs" id="on2-Y5-hes"/>
                                                     </connections>
@@ -1079,8 +1078,38 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="Picture" footerTitle="Filter out people without a portrait" id="VhZ-Ja-vhb">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ftg-Zm-Bcc">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ul7-Fh-dp8">
                                         <rect key="frame" x="0.0" y="386.5" width="320" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ul7-Fh-dp8" id="L0z-pG-1Gn">
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="0C0-la-Zur">
+                                                    <rect key="frame" x="247" y="6.5" width="51" height="31"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="Filters out people with no picture set" label="Picture available filter"/>
+                                                    <connections>
+                                                        <action selector="changeFilter:" destination="FVN-ta-Q5I" eventType="valueChanged" id="rLg-wP-oc7"/>
+                                                    </connections>
+                                                </switch>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Filter objectionable content" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="51V-hR-FjH">
+                                                    <rect key="frame" x="24" y="11.5" width="209" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="0C0-la-Zur" firstAttribute="centerY" secondItem="L0z-pG-1Gn" secondAttribute="centerY" id="0Sl-5e-rE1"/>
+                                                <constraint firstItem="51V-hR-FjH" firstAttribute="centerY" secondItem="L0z-pG-1Gn" secondAttribute="centerY" id="6cJ-na-G57"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="0C0-la-Zur" secondAttribute="trailing" constant="8" id="PIp-co-no1"/>
+                                                <constraint firstItem="0C0-la-Zur" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="51V-hR-FjH" secondAttribute="trailing" constant="8" id="omv-7O-ZJh"/>
+                                                <constraint firstItem="51V-hR-FjH" firstAttribute="leading" secondItem="L0z-pG-1Gn" secondAttribute="leadingMargin" constant="8" id="umD-gv-ocX"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ftg-Zm-Bcc">
+                                        <rect key="frame" x="0.0" y="430.5" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ftg-Zm-Bcc" id="Fhb-Tr-cMy">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
@@ -1191,7 +1220,7 @@
                 <navigationController title="Radar Nav" extendedLayoutIncludesOpaqueBars="YES" id="BeP-GU-KG9" userLabel="Browse Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" barStyle="black" largeTitles="YES" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1248,8 +1277,8 @@
     </scenes>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
-        <image name="MessageBubble" width="44.5" height="35.5"/>
-        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
+        <image name="MessageBubble" width="45.5" height="34"/>
+        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplate" width="180" height="180"/>

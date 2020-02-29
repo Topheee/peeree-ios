@@ -7,6 +7,5 @@
 
 import Foundation
 
-
 /** Public key of a user. Base-64 encoded ANSI X9.63 format (using a byte string of \&quot;04 || X || Y\&quot; encoding elliptic curve point coordinates) of an elliptic curve key.  */
 public typealias PublicKey = Data
