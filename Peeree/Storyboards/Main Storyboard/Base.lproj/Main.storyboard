@@ -164,7 +164,6 @@
                                     <outlet property="headLabel" destination="geS-Ue-hzN" id="MNg-mh-bii"/>
                                     <outlet property="subheadLabel" destination="9An-iq-LoL" id="CRR-b9-pI0"/>
                                     <outlet property="vibrancyEffectView" destination="TEm-wO-YUV" id="zT3-jh-J5v"/>
-                                    <outletCollection property="gestureRecognizers" destination="q1O-dB-ngY" appends="YES" id="NnG-NR-WPV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -200,11 +199,6 @@
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xco-ft-52g" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="q1O-dB-ngY">
-                    <connections>
-                        <action selector="toggleNetwork:" destination="44q-aX-Sii" id="y3C-Au-N4m"/>
-                    </connections>
-                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1391.25" y="-41.25"/>
         </scene>

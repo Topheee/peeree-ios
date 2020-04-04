@@ -18,12 +18,12 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
     static private let DescriptionParagraphCellID = "DescriptionParagraphCell"
     
     static private let GeneralInfoContent =
-        [(NSLocalizedString("Peer-to-Peer", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Peer-to-Peer content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconP2P")),
-         (NSLocalizedString("Social P2P", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Social P2P content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconSocial")),
-         (NSLocalizedString("Benefits", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Benefits content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconBenefits"))]
+        [(NSLocalizedString("Connected", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Connected content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconP2P")),
+         (NSLocalizedString("Social", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Social content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconSocial")),
+         (NSLocalizedString("Efficient", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Efficient content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconBenefits"))]
     static private let DataInfoContent =
-        [(NSLocalizedString("Your Data", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Your Data content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconData")),
-         (NSLocalizedString("Decentralized Information", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Decentralized Information content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconLocalInfo")),
+        [(NSLocalizedString("Private", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Private content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconData")),
+         (NSLocalizedString("Local", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Local content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconLocalInfo")),
          (NSLocalizedString("Temporary", comment: "Heading of onboarding description paragraph."), NSLocalizedString("Temporary content", comment: "Content of onboarding description paragraph."), #imageLiteral(resourceName: "ReadIconTemporary"))]
     
     enum InfoType { case general, data }

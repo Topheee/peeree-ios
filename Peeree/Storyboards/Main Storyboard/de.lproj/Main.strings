@@ -54,10 +54,10 @@
 "5Pm-yd-i31.accessibilityHint" = "Öffnet die Datenschutzerklärung in Safari";
 
 /* Class = "UIButton"; accessibilityLabel = "Peeree Privacy Policy"; ObjectID = "5Pm-yd-i31"; */
-"5Pm-yd-i31.accessibilityLabel" = "Peeree Privacy Policy";
+"5Pm-yd-i31.accessibilityLabel" = "Peeree Datenschutzerklärung";
 
 /* Class = "UIButton"; normalTitle = "Privacy Policy"; ObjectID = "5Pm-yd-i31"; */
-"5Pm-yd-i31.normalTitle" = "Privacy Policy";
+"5Pm-yd-i31.normalTitle" = "Datenschutzerklärung";
 
 /* Class = "UIButton"; normalTitle = "Character Traits"; ObjectID = "7DY-yh-Oap"; */
 "7DY-yh-Oap.normalTitle" = "Charaktereigenschaften";

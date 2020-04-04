@@ -17,7 +17,7 @@ protocol RemotePeerManagerDelegate: AnyObject {
 }
 
 protocol RemotePeerDelegate {
-	func loaded(picture: CGImage, of peerID: PeerID)
+	func loaded(picture: CGImage, of peerID: PeerID, hash: Data)
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
 	func failedVerification(of peerID: PeerID, error: Error)
 	func didVerify(_ peerID: PeerID)
@@ -474,7 +474,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
                     progress.cancel()
                     break
                 }
-				remotePeerDelegates[peerID]?.loaded(picture: image, of: peerID)
+				remotePeerDelegates[peerID]?.loaded(picture: image, of: peerID, hash: data.sha256())
             default:
                 break
             }
@@ -695,7 +695,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
         let writeType = CBCharacteristicWriteType.withResponse
         let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerManager.instance.keyPair.blockSize)
         var nonce = Data(count: randomByteCount)
-        if ((try? nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })) ?? -1) == 0 {
+        if nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) }) == 0 {
             nonces[peripheral] = nonce
             peripheral.writeValue(nonce, for: characteristic, type: writeType)
         } else {

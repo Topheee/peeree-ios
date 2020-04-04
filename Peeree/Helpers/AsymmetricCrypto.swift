@@ -11,11 +11,11 @@ import Security
 import CommonCrypto
 
 extension Data {
-    func sha256() throws -> Data {
+    func sha256() -> Data {
         let digestLength = Int(CC_SHA256_DIGEST_LENGTH)
         var digest = Data(count: digestLength)
-        _ = try digest.withUnsafeMutablePointer({ (digestMutableBytes) in
-            try self.withUnsafePointer({ (plainTextBytes) in
+        _ = digest.withUnsafeMutablePointer({ (digestMutableBytes) in
+            self.withUnsafePointer({ (plainTextBytes) in
                 CC_SHA256(plainTextBytes, CC_LONG(self.count), digestMutableBytes)
             })
         })
@@ -26,8 +26,9 @@ extension Data {
 
 public class KeychainStore {
 	/// low-level keychain manipulation
-	public static func keyFromKeychain(tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> SecKey {
-		let getquery: [String: Any] = [kSecClass as String: kSecClassKey,
+	public static func keyFromKeychain(label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> SecKey {
+		let getquery: [String: Any] = [kSecAttrLabel as String: label as CFString,
+									   kSecClass as String: kSecClassKey,
 									   kSecAttrKeyClass as String: keyClass,
 									   kSecAttrKeyType as String: keyType,
 									   kSecAttrKeySizeInBits as String: size,
@@ -39,8 +40,9 @@ public class KeychainStore {
 		return item as! SecKey
 	}
 	/// low-level keychain manipulation
-	public static func keyDataFromKeychain(tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
-		let getquery: [String: Any] = [kSecClass as String: kSecClassKey,
+	public static func keyDataFromKeychain(label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
+		let getquery: [String: Any] = [kSecAttrLabel as String: label as CFString,
+									   kSecClass as String: kSecClassKey,
 									   kSecAttrKeyClass as String: keyClass,
 									   kSecAttrKeySizeInBits as String: size,
 									   kSecAttrApplicationTag as String: tag,
@@ -52,22 +54,37 @@ public class KeychainStore {
 		return (item as! CFData) as Data
 	}
 	/// low-level keychain manipulation
-	public static func addToKeychain(key: SecKey, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
-		let addquery: [String: Any] = [kSecClass as String: kSecClassKey,
-									   kSecAttrKeyClass as String: keyClass,
-									   kSecValueRef as String: key,
-									   kSecAttrKeySizeInBits as String: size,
-									   kSecAttrApplicationTag as String: tag,
-									   kSecAttrKeyType as String: keyType,
-									   kSecReturnData as String: NSNumber(value: true)]
+	public static func addToKeychain(key: SecKey, label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
+		var addquery: [String: Any]
+		if #available(OSX 10.15, iOS 13.0, *) {
+			addquery = [kSecAttrLabel as String: label as CFString,
+						kSecUseDataProtectionKeychain as String: true as CFBoolean,
+						kSecClass as String: kSecClassKey,
+						kSecAttrKeyClass as String: keyClass,
+						kSecValueRef as String: key,
+						kSecAttrKeySizeInBits as String: size,
+						kSecAttrApplicationTag as String: tag,
+						kSecAttrKeyType as String: keyType,
+						kSecReturnData as String: NSNumber(value: true)]
+		} else {
+			addquery = [kSecAttrLabel as String: label as CFString,
+						kSecClass as String: kSecClassKey,
+						kSecAttrKeyClass as String: keyClass,
+						kSecValueRef as String: key,
+						kSecAttrKeySizeInBits as String: size,
+						kSecAttrApplicationTag as String: tag,
+						kSecAttrKeyType as String: keyType,
+						kSecReturnData as String: NSNumber(value: true)]
+		}
 		var item: CFTypeRef?
 		try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
 		
 		return (item as! CFData) as Data
 	}
 	/// low-level keychain manipulation
-	public static func removeFromKeychain(tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws {
-		let remquery: [String: Any] = [kSecClass as String: kSecClassKey,
+	public static func removeFromKeychain(label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws {
+		let remquery: [String: Any] = [kSecAttrLabel as String: label as CFString,
+									   kSecClass as String: kSecClassKey,
 									   kSecAttrKeyClass as String: keyClass,
 									   kSecAttrKeySizeInBits as String: size,
 									   kSecAttrApplicationTag as String: tag,
@@ -75,21 +92,21 @@ public class KeychainStore {
 		try SecKey.check(status: SecItemDelete(remquery as CFDictionary), localizedError: NSLocalizedString("Deleting keychain item failed.", comment: "Removing an item from the keychain produced an error."))
 	}
 	
-	public static func addToKeychain(key: AsymmetricKey, tag: Data) throws -> Data {
-		return try KeychainStore.addToKeychain(key: key.key, tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
+	public static func addToKeychain(key: AsymmetricKey, label: String, tag: Data) throws -> Data {
+		return try KeychainStore.addToKeychain(key: key.key, label: label, tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
 	}
 	
-	public static func removeFromKeychain(key: AsymmetricKey, tag: Data) throws {
-		try KeychainStore.removeFromKeychain(tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
+	public static func removeFromKeychain(key: AsymmetricKey, label: String, tag: Data) throws {
+		try KeychainStore.removeFromKeychain(label: label, tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
 	}
 	
-	public static func publicKeyFromKeychain(tag: Data, type: CFString, size: Int) throws -> AsymmetricPublicKey {
-		let key = try KeychainStore.keyFromKeychain(tag: tag, keyType: type, keyClass: kSecAttrKeyClassPublic, size: size)
+	public static func publicKeyFromKeychain(label: String, tag: Data, type: CFString, size: Int) throws -> AsymmetricPublicKey {
+		let key = try KeychainStore.keyFromKeychain(label: label, tag: tag, keyType: type, keyClass: kSecAttrKeyClassPublic, size: size)
 		return AsymmetricPublicKey(key: key, type: type, size: size)
 	}
 	
-	public static func privateKeyFromKeychain(tag: Data, type: CFString, size: Int) throws -> AsymmetricPrivateKey {
-		let key = try KeychainStore.keyFromKeychain(tag: tag, keyType: type, keyClass: kSecAttrKeyClassPrivate, size: size)
+	public static func privateKeyFromKeychain(label: String, tag: Data, type: CFString, size: Int) throws -> AsymmetricPrivateKey {
+		let key = try KeychainStore.keyFromKeychain(label: label, tag: tag, keyType: type, keyClass: kSecAttrKeyClassPrivate, size: size)
 		return AsymmetricPrivateKey(key: key, type: type, size: size)
 	}
 	
@@ -109,19 +126,20 @@ public class AsymmetricKey {
             }
             return data
         } else {
-            let temporaryTag = "de.kobusch.tempkey2".data(using: .utf8)!
+			let temporaryLabel = "de.kobusch.tempkey2"
+            let temporaryTag = temporaryLabel.data(using: .utf8)!
             
             defer {
                 // always try to remove key from keychain
                 do {
-                    try KeychainStore.removeFromKeychain(tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
+					try KeychainStore.removeFromKeychain(label: temporaryLabel, tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
                     NSLog("WARN: Removing temporary key from keychain failed: \(error)")
                 }
             }
             
-            return try KeychainStore.addToKeychain(key: key, tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
+            return try KeychainStore.addToKeychain(key: key, label: temporaryLabel, tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
         }
     }
     
@@ -141,15 +159,16 @@ public class AsymmetricKey {
             
             self.key = key
         } else {
-            let tag = "de.kobusch.tempkey".data(using: .utf8)!
+			let temporaryLabel = "de.kobusch.tempkey"
+            let tag = temporaryLabel.data(using: .utf8)!
             
             // always try to remove key from keychain before we add it again
-            try? KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
+			try? KeychainStore.removeFromKeychain(label: temporaryLabel, tag: tag, keyType: type, keyClass: keyClass, size: size)
             
             defer {
                 // always try to remove key from keychain when we added it
                 do {
-                    try KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
+                    try KeychainStore.removeFromKeychain(label: temporaryLabel, tag: tag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
                     NSLog("INFO: Removing temporary key from keychain failed: \(error)")
@@ -201,10 +220,10 @@ public class AsymmetricPublicKey: AsymmetricKey {
             }
         } else {
             #if os(iOS)
-                let digest = try data.sha256()
+                let digest = data.sha256()
 				
-                let status = try signature.withUnsafePointer { (signatureBytes: UnsafePointer<UInt8>) in
-                    return try digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
+                let status = signature.withUnsafePointer { (signatureBytes: UnsafePointer<UInt8>) in
+                    return digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
                         SecKeyRawVerify(key, AsymmetricKey.signaturePadding, digestBytes, digest.count, signatureBytes, signature.count)
                     }
                 }
@@ -247,8 +266,8 @@ public class AsymmetricPublicKey: AsymmetricKey {
             #if os(iOS)
                 var cipherSize = SecKeyGetBlockSize(key)
                 var cipher = Data(count: cipherSize)
-                let status = try cipher.withUnsafeMutablePointer { (cipherBytes: UnsafeMutablePointer<UInt8>) in
-                    return try plainText.withUnsafePointer { ( plainTextBytes: UnsafePointer<UInt8>) in
+                let status = cipher.withUnsafeMutablePointer { (cipherBytes: UnsafeMutablePointer<UInt8>) in
+                    return plainText.withUnsafePointer { ( plainTextBytes: UnsafePointer<UInt8>) in
                         SecKeyEncrypt(key, AsymmetricKey.encryptionPadding, plainTextBytes, plainText.count, cipherBytes, &cipherSize)
                     }
                 }
@@ -287,13 +306,13 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             return signature
         } else {
             #if os(iOS)
-                let digest = try data.sha256()
+                let digest = data.sha256()
                 
                 var signatureSize = 256 // in CryptoExercise it is SecKeyGetBlockSize(key), but on the internet it's some magic number like this
                 var signature = Data(count: signatureSize)
                 
-                let status = try signature.withUnsafeMutablePointer { (signatureBytes: UnsafeMutablePointer<UInt8>) in
-                    return try digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
+                let status = signature.withUnsafeMutablePointer { (signatureBytes: UnsafeMutablePointer<UInt8>) in
+                    return digest.withUnsafePointer { (digestBytes: UnsafePointer<UInt8>) in
                         SecKeyRawSign(key, AsymmetricKey.signaturePadding, digestBytes /* CC_SHA256_DIGEST_LENGTH */, digest.count, signatureBytes, &signatureSize)
                     }
                 }
@@ -324,8 +343,8 @@ public class AsymmetricPrivateKey: AsymmetricKey {
             #if os(iOS)
                 var plainTextSize = cipherText.count
                 var plainText = Data(count: plainTextSize)
-                let status = try cipherText.withUnsafePointer { (cipherTextBytes: UnsafePointer<UInt8>) in
-                    return try plainText.withUnsafeMutablePointer { (plainTextBytes: UnsafeMutablePointer<UInt8>) in
+                let status = cipherText.withUnsafePointer { (cipherTextBytes: UnsafePointer<UInt8>) in
+                    return plainText.withUnsafeMutablePointer { (plainTextBytes: UnsafeMutablePointer<UInt8>) in
                         SecKeyDecrypt(key, AsymmetricKey.encryptionPadding, cipherTextBytes, cipherText.count, plainTextBytes, &plainTextSize)
                     }
                 }
@@ -363,12 +382,14 @@ public struct KeyPair {
     private let privateKey: AsymmetricPrivateKey
     public let publicKey: AsymmetricPublicKey
 	let privateTag: Data, publicTag: Data
+	let label: String
     
     public var blockSize: Int { return SecKeyGetBlockSize(privateKey.key) }
     
 	public init(label: String, privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool, useEnclave: Bool = false) throws {
 		self.privateTag = privateTag
 		self.publicTag = publicTag
+		self.label = label
         var error: Unmanaged<CFError>?
         var attributes: [String : Any]
 		if useEnclave {
@@ -376,6 +397,7 @@ public struct KeyPair {
 				throw error!.takeRetainedValue() as Error
 			}
 			attributes = [
+				kSecAttrLabel as String:              label as CFString,
 				kSecAttrKeyType as String:            type,
 				kSecAttrKeySizeInBits as String:      size,
 				kSecAttrTokenID as String:            kSecAttrTokenIDSecureEnclave,
@@ -395,6 +417,7 @@ public struct KeyPair {
 				kSecAttrLabel as String:              label as CFString,
 				kSecAttrKeyType as String:            type,
 				kSecAttrKeySizeInBits as String:      size,
+				kSecAttrIsExtractable as String:      false as CFBoolean,
 				kSecPrivateKeyAttrs as String: [
 					kSecAttrIsPermanent as String:    persistent,
 					kSecAttrApplicationTag as String: privateTag
@@ -420,12 +443,13 @@ public struct KeyPair {
         #endif
     }
     
-    public init(fromKeychainWith privateTag: Data, publicTag: Data, type: CFString, size: Int) throws {
+    public init(fromKeychainWith label: String, privateTag: Data, publicTag: Data, type: CFString, size: Int) throws {
 		self.privateTag = privateTag
 		self.publicTag = publicTag
-        privateKey = try KeychainStore.privateKeyFromKeychain(tag: privateTag, type: type, size: size)
+		self.label = label
+		privateKey = try KeychainStore.privateKeyFromKeychain(label: label, tag: privateTag, type: type, size: size)
         #if ((arch(i386) || arch(x86_64)) && os(iOS)) || os(macOS) // iPhone Simulator or macOS
-            publicKey = try KeychainStore.publicKeyFromKeychain(tag: publicTag, type: type, size: size)
+            publicKey = try KeychainStore.publicKeyFromKeychain(label: label, tag: publicTag, type: type, size: size)
         #else
         if #available(iOS 10.0, *) {
             guard let pubKey = SecKeyCopyPublicKey(privateKey.key) else {
@@ -433,14 +457,14 @@ public struct KeyPair {
             }
             publicKey = AsymmetricPublicKey(key: pubKey, type: type, size: size)
         } else {
-            publicKey = try KeychainStore.publicKeyFromKeychain(tag: publicTag, type: type, size: size)
+			publicKey = try KeychainStore.publicKeyFromKeychain(label: label, tag: publicTag, type: type, size: size)
         }
         #endif
     }
     
     public func removeFromKeychain() throws {
-        try KeychainStore.removeFromKeychain(key: publicKey, tag: publicTag)
-        try KeychainStore.removeFromKeychain(key: privateKey, tag: privateTag)
+		try KeychainStore.removeFromKeychain(key: publicKey, label: label, tag: publicTag)
+        try KeychainStore.removeFromKeychain(key: privateKey, label: label, tag: privateTag)
     }
     
     public func externalPublicKey() throws -> Data {

@@ -26,7 +26,6 @@ final class BrowseViewController: UITableViewController {
     static var instance: BrowseViewController?
 	
 	private var activePlaceholderCell: UITableViewCell? = nil
-	private var theGesturer: UIGestureRecognizer? = nil // we need to keep a reference to it
 	
 	private var peerCache: [[PeerInfo]] = [[], [], []]
 	private var managerCache: [[PeerManager]] = [[], [], []]
@@ -52,6 +51,9 @@ final class BrowseViewController: UITableViewController {
 		}
 		if PeeringController.shared.remote.isBluetoothOn {
 			PeeringController.shared.peering = !PeeringController.shared.peering
+			AccountController.shared.refreshBlockedContent { error in
+				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
+			}
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}
@@ -175,7 +177,8 @@ final class BrowseViewController: UITableViewController {
                 return UITableViewCell()
             }
 			activePlaceholderCell = cell
-			theGesturer.map { cell.gestureRecognizers = [$0] }
+			let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleNetwork(_:)))
+			cell.addGestureRecognizer(gestureRecognizer)
             
             if #available(iOS 11.0, *) {
                 cell.frame.size.height = tableView.bounds.height - tableView.adjustedContentInset.bottom
@@ -244,8 +247,6 @@ final class BrowseViewController: UITableViewController {
 	override func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
 		// throws 'unrecognized selector': super.scrollViewDidChangeAdjustedContentInset(scrollView)
 		
-		theGesturer = activePlaceholderCell?.gestureRecognizers?.first ?? theGesturer
-		activePlaceholderCell?.gestureRecognizers?.removeAll()
 		if placeholderCellActive {
 			DispatchQueue.main.async {
 				self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .fade)

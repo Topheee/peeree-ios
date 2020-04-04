@@ -37,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
     static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
     
     static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
+		var notificationAction: (() -> Void)? = nil
         var errorMessage: String
         if let errorResponse = networkError as? ErrorResponse {
 			let httpErrorMessage = NSLocalizedString("HTTP error %d.", comment: "Error message for HTTP status codes")
@@ -52,6 +53,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
                 errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
 			case .offline:
 				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
+				notificationAction = { UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!) }
 			}
         } else {
             errorMessage = networkError.localizedDescription
@@ -61,7 +63,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
             errorMessage += "\n\(furtherDescription!)"
         }
         
-        InAppNotificationViewController.presentGlobally(title: localizedTitle, message: errorMessage)
+        InAppNotificationViewController.presentGlobally(title: localizedTitle, message: errorMessage, isNegative: true, tapAction: notificationAction)
     }
 	
 	static func viewTerms(in viewController: UIViewController) {

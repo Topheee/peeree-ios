@@ -16,9 +16,6 @@ class CustomRequestBuilderFactory: RequestBuilderFactory {
     }
 }
 
-// Store manager to retain its reference (WARNING: not thread-safe!)
-private var managerStore: [String: URLSession] = [:]
-
 final class CredentialAcceptor : NSObject, URLSessionDelegate {
     static let shared = CredentialAcceptor()
     
@@ -101,39 +98,27 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
             completionHandler(.performDefaultHandling, nil)
         }
     }
+	
+	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+		NSLog("ERROR: session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
+	}
 }
 
 open class CustomRequestBuilder<T>: RequestBuilder<T> {
-    required public init(method: HTTPMethod, url: URL, parameters: [String : Any]?, isBody: Bool, headers: [String : String] = [:], body: Data? = nil, isValidated: Bool = true) {
-        var headers = headers
-        if let d = SwaggerClientAPI.dataSource {
-            var val = d.getPeerID()
-            if !val.isEmpty {
-                headers["peerID"] = val
-            }
-            if isValidated {
-                val = d.getSignature()
-                if !val.isEmpty {
-                    headers["signature"] = val
-                }
-            }
-        }
-		super.init(method: method, url: url, parameters: parameters, isBody: isBody, headers: headers, isValidated: isValidated)
-    }
 
     /**
      May be overridden by a subclass if you want to control the session
      configuration.
      */
-    open func createSessionManager() -> URLSession {
+	private lazy var sessionManager: URLSession = {
         let configuration = URLSessionConfiguration.default
-        configuration.httpAdditionalHeaders = buildHeaders()
-        configuration.httpShouldUsePipelining = true
+//        these are set for each request: configuration.httpAdditionalHeaders = buildHeaders()
+//        configuration.httpShouldUsePipelining = true
         configuration.timeoutIntervalForRequest = 5.0
         configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
-//        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-		return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
-    }
+        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
+//		return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
+    }()
 
     /**
      May be overridden by a subclass if you want to control the Content-Type
@@ -150,11 +135,12 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
      May be overridden by a subclass if you want to control the request
      configuration (e.g. to override the cache policy).
      */
-    open func makeRequest(manager: URLSession, method: HTTPMethod) -> URLRequest {
+	open func makeRequest(method: HTTPMethod) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.allowsCellularAccess = true
         request.httpShouldHandleCookies = false
+		request.httpBody = httpBody
         for header in self.headers {
             request.setValue(header.value, forHTTPHeaderField: header.key)
         }
@@ -169,22 +155,16 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
 		
         let managerId:String = UUID().uuidString
         // Create a new manager for each request to customize its request header
-        let manager = createSessionManager()
-        managerStore[managerId] = manager
 
         // NOTE: at this point, swagger handled the parameters, but used some crappy Custom stuff.
         // If you want to recover it, generate code again and reverse engineer it
         
-        processRequest(manager: manager, request: makeRequest(manager: manager, method: method), managerId, completion)
+        processRequest(manager: sessionManager, request: makeRequest(method: method), managerId, completion)
     }
 
     fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
-        let cleanupRequest = {
-            _ = managerStore.removeValue(forKey: managerId)
-        }
         
         let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
-            cleanupRequest()
             if let error = error {
                 completion(nil, ErrorResponse.sessionTaskError((response as? HTTPURLResponse)?.statusCode, data, error))
             } else if let httpResponse = response as? HTTPURLResponse {
@@ -237,7 +217,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
             }
         }
         
-        if let body = self.body {
+        if let body = self.httpBody {
             (manager.uploadTask(with: request, from: body, completionHandler: taskCompletionHandler)).resume()
         } else {
             (manager.dataTask(with: request, completionHandler: taskCompletionHandler)).resume()
@@ -252,17 +232,37 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
 //        return httpHeaders
         return self.headers
     }
+
+	
+	/* see https://stackoverflow.com/questions/26335656/how-to-upload-images-to-a-server-in-ios-with-swift and https://fluffy.es/upload-image-to-server/
+	//		let boundary = generateBoundaryString()
+	//		let body = createBodyWithParameters(filePathKey: "file.jpeg", imageDataKey: body, boundary: boundary)
+	//		return requestBuilder.init(method: .POST, url: url.url!, parameters: parameters, isBody: true, headers: ["Content-Type" : "multipart/form-data; boundary=\(boundary)"], body: body)
+	class func createBodyWithParameters(filePathKey: String, imageDataKey: Data, boundary: String) -> Data {
+		var body = Data()
+
+		let filename = "user-profile.jpg"
+
+		let mimetype = "image/jpg"
+
+		body.append("--\(boundary)\r\n".data(using: .utf8)!)
+		body.append("Content-Disposition: form-data; name=\"\(filePathKey)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+		body.append("Content-Type: \(mimetype)\r\n\r\n".data(using: .utf8)!)
+		body.append(imageDataKey)
+		body.append("\r\n".data(using: .utf8)!)
+
+		body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+		return body
+	}
+	
+	class func generateBoundaryString() -> String {
+		return "Boundary-\(UUID().uuidString)"
+	}
+	*/
 }
 
-fileprivate enum DownloadException : Error {
-    case responseDataMissing
-    case responseFailed
-    case requestMissing
-    case requestMissingPath
-    case requestMissingURL
-}
-
-public enum AlamofireDecodableRequestBuilderError: Error {
+public enum DecodableRequestBuilderError: Error {
     case emptyDataResponse
     case nilHTTPResponse
     case jsonDecoding(DecodingError)
@@ -272,12 +272,8 @@ public enum AlamofireDecodableRequestBuilderError: Error {
 open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
 
 	override fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
-        let cleanupRequest = {
-            _ = managerStore.removeValue(forKey: managerId)
-        }
 
 		let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
-            cleanupRequest()
             if let error = error {
                 completion(nil, ErrorResponse.sessionTaskError((response as? HTTPURLResponse)?.statusCode, data, error))
             } else if let httpResponse = response as? HTTPURLResponse {
@@ -313,7 +309,7 @@ open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
                     }
 
 					guard let data = data, !data.isEmpty else {
-						completion(nil, ErrorResponse.sessionTaskError(-1, nil, AlamofireDecodableRequestBuilderError.emptyDataResponse))
+						completion(nil, ErrorResponse.sessionTaskError(-1, nil, DecodableRequestBuilderError.emptyDataResponse))
 						return
 					}
 
@@ -356,11 +352,11 @@ open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
 					completion(responseObj, decodeResult.error.map { ErrorResponse.sessionTaskError(-3, data, $0) })
                 }
             } else {
-                completion(nil, ErrorResponse.sessionTaskError(-2, data, AlamofireDecodableRequestBuilderError.nilHTTPResponse))
+                completion(nil, ErrorResponse.sessionTaskError(-2, data, DecodableRequestBuilderError.nilHTTPResponse))
             }
         }
         
-        if let body = self.body {
+        if let body = self.httpBody {
             (manager.uploadTask(with: request, from: body, completionHandler: taskCompletionHandler)).resume()
         } else {
             (manager.dataTask(with: request, completionHandler: taskCompletionHandler)).resume()

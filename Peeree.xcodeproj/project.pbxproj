@@ -42,7 +42,6 @@
 		9D9D5A6C240469C70063532F /* JSONEncodableEncoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */; };
 		9D9D5A6E24046CA00063532F /* CodableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6D24046CA00063532F /* CodableHelper.swift */; };
 		9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6F24046CCF0063532F /* Configuration.swift */; };
-		9D9D5A72240474FF0063532F /* Picture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A71240474FF0063532F /* Picture.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
@@ -147,7 +146,6 @@
 		9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONEncodableEncoding.swift; path = Swagger/JSONEncodableEncoding.swift; sourceTree = "<group>"; };
 		9D9D5A6D24046CA00063532F /* CodableHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CodableHelper.swift; path = Swagger/CodableHelper.swift; sourceTree = "<group>"; };
 		9D9D5A6F24046CCF0063532F /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Configuration.swift; path = Swagger/Configuration.swift; sourceTree = "<group>"; };
-		9D9D5A71240474FF0063532F /* Picture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Picture.swift; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -444,7 +442,6 @@
 			children = (
 				9DD61F5A1EAE33B6004EB56A /* Account.swift */,
 				9DD1B42C1EC46FD000A01AEF /* PeerID.swift */,
-				9D9D5A71240474FF0063532F /* Picture.swift */,
 				9DAD8F951ECF512F00363016 /* PinPoints.swift */,
 				9DD61F5D1EAE33B6004EB56A /* Pin.swift */,
 				9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */,
@@ -621,7 +618,6 @@
 				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */,
 				9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */,
-				9D9D5A72240474FF0063532F /* Picture.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,

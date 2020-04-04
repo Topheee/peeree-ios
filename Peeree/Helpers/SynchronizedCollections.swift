@@ -52,13 +52,9 @@ final public class SynchronizedArray<T> {
             }
         }
         get {
-            var element: T!
-            
-            accessQueue.sync {
-                element = self.array[index]
+            return accessQueue.sync {
+                self.array[index]
             }
-            
-            return element
         }
     }
 }
@@ -100,13 +96,9 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
             }
         }
         get {
-            var element: Value?
-            
-            accessQueue.sync {
-                element = self.dictionary[index]
+            return accessQueue.sync {
+                self.dictionary[index]
             }
-            
-            return element
         }
     }
     
@@ -118,11 +110,9 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
     }
     
     public func removeValue(forKey key: Key) -> Value? {
-        var ret: Value? = nil
-        accessQueue.sync {
-            ret = self.dictionary.removeValue(forKey: key)
+        return accessQueue.sync {
+            self.dictionary.removeValue(forKey: key)
         }
-        return ret
     }
     
     public func removeAll() {
@@ -163,13 +153,9 @@ open class SynchronizedSet<T : Hashable> {
     }
     
     open func contains(_ member: T) -> Bool {
-        var contains: Bool!
-        
-        accessQueue.sync {
-            contains = self.set.contains(member)
+        return accessQueue.sync {
+            self.set.contains(member)
         }
-        
-        return contains
     }
     
     open func insert(_ member: T) {

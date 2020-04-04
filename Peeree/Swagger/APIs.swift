@@ -49,7 +49,7 @@ open class RequestBuilder<T> {
     var headers: [String:String]
     let parameters: [String:Any]?
 	public let isBody: Bool
-    let body: Data?
+    let httpBody: Data?
     let method: HTTPMethod
     let url: URL
     var URLString: String {
@@ -60,11 +60,25 @@ open class RequestBuilder<T> {
 //    public var onProgressReady: ((Progress) -> ())?
 
     required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, isBody: Bool, headers: [String:String] = [:], body: Data? = nil, isValidated: Bool = true) {
+		var headers = headers
+		if let d = SwaggerClientAPI.dataSource {
+			var val = d.getPeerID()
+			if !val.isEmpty {
+				headers["peerID"] = val
+			}
+			if isValidated {
+				val = d.getSignature()
+				if !val.isEmpty {
+					headers["signature"] = val
+				}
+			}
+		}
+		
         self.method = method
         self.url = url
         self.parameters = parameters
         self.isBody = isBody
-        self.body = body
+        self.httpBody = body
         self.headers = headers
         self.credential = nil
         

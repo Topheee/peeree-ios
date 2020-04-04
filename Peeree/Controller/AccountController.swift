@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import ImageIO
+import CoreServices
 
 public protocol AccountControllerDelegate {
 	func pin(of peerID: PeerID, failedWith error: Error)
@@ -27,6 +29,14 @@ public class AccountController: SecurityDataSource {
     static private let EmailKey = "Email"
     /// User defaults key for sequence number
     static private let SequenceNumberKey = "SequenceNumber"
+    /// User defaults key for objectionable image hashes
+    static private let ObjectionableImageHashesKey = "ObjectionableImageHashes"
+    /// User defaults key for objectionable content refresh timestamp
+    static private let ObjectionableContentRefreshKey = "ObjectionableContentRefresh"
+    /// JPEG compression quality for protrait report uploads
+	static private let UploadCompressionQuality: CGFloat = 0.3
+	/// refresh objectionable content every hour at most (or when the app is killed)
+	static let ObjectionableContentRefreshThreshold: TimeInterval = 0 //60 * 60
     
     public static let shared = AccountController()
     
@@ -35,6 +45,7 @@ public class AccountController: SecurityDataSource {
             case peerID
         }
         case pinned, pinningStarted, pinFailed, pinMatch
+        case pinStateUpdated, unpinned, unpinFailed
         case accountCreated
         
         func post(_ peerID: PeerID) {
@@ -54,12 +65,14 @@ public class AccountController: SecurityDataSource {
     
     /// stores acknowledged pinned peers and their public keys
     private var pinnedPeers: SynchronizedDictionary<PeerID, Data>
-    // maybe encrypt these on disk so no one can read out their display names
     /// stores acknowledged pin matched peers
     private var pinnedByPeers: SynchronizedSet<PeerID>
     
     private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).pinningPeers")
     
+    private var objectionableImageHashes: SynchronizedSet<Data>
+	private var lastObjectionableContentRefresh: Date
+	
     private func resetSequenceNumber() {
         NSLog("WARN: resetting sequence number")
         AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
@@ -149,6 +162,82 @@ public class AccountController: SecurityDataSource {
         }
     }
     
+    public func unpin(peer: PeerInfo) {
+        guard accountExists && isPinned(peer) else { return }
+        let peerID = peer.peerID
+        
+        PinsAPI.deletePin(pinnedID: peerID) { (_, _error) in
+            if let error = _error {
+                self.preprocessAuthenticatedRequestError(error)
+				Notifications.unpinFailed.post(peerID)
+            } else {
+				self.removePin(from: peer)
+				Notifications.unpinned.post(peerID)
+            }
+        }
+    }
+	
+	public func containsObjectionableContent(imageHash: Data, completion: @escaping (Bool) -> Void) {
+		objectionableImageHashes.accessAsync { (set) in
+			completion(set.contains(imageHash))
+		}
+	}
+	
+    public func report(manager: PeerManager, errorCallback: @escaping (Error) -> Void) {
+		guard let portrait = manager.cgPicture, let hash = manager.pictureHash?.hexString() else { return }
+		
+		let jpgData: Data
+
+		do {
+			#if os(iOS)
+			if let data = manager.picture?.jpegData(compressionQuality: AccountController.UploadCompressionQuality) {
+				jpgData = data
+				let str = jpgData[jpgData.startIndex...jpgData.startIndex.advanced(by: 20)].hexString()
+				NSLog("INFO: sending \(str)")
+			} else {
+				jpgData = try portrait.jpgData()
+			}
+			#else
+			jpgData = try portrait.jpgData()
+			#endif
+		} catch let error {
+			errorCallback(error)
+			return
+		}
+		
+		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: manager.peerID, hash: hash) { (_, _error) in // TODO pass hash, since server is not able to compute it (doesn't get the original image)
+            if let error = _error {
+                self.preprocessAuthenticatedRequestError(error)
+				errorCallback(error)
+            }
+        }
+    }
+    
+	public func refreshBlockedContent(errorCallback: @escaping (Error) -> Void) {
+		objectionableImageHashes.accessAsync { (_) in
+			guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
+			ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
+				if let error = _error {
+					errorCallback(error)
+				} else if let hexHashes = _hexHashes {
+					self.objectionableImageHashes.accessAsync { (set) in
+						self.lastObjectionableContentRefresh = Date()
+						UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
+						for hexHash in hexHashes {
+							if let decodedHash = Data(hexString: hexHash) {
+								set.insert(decodedHash)
+							} else {
+								NSLog("WARN: Decoding objectionable image hash '\(hexHash)' failed.")
+							}
+						}
+					}
+				} else {
+					errorCallback(ErrorResponse.parseError(nil))
+				}
+			}
+		}
+    }
+    
     private func pin(peer: PeerInfo, isPinMatch: Bool) {
         guard accountExists else { return }
         self.pinnedPeers.accessAsync { (dictionary) in
@@ -178,7 +267,7 @@ public class AccountController: SecurityDataSource {
         }
     }
     
-    private func unpin(peer: PeerInfo) {
+    private func removePin(from peer: PeerInfo) {
         let peerID = peer.peerID
         self.pinnedPeers.accessAsync { (dictionary) in
             dictionary.removeValue(forKey: peerID)
@@ -233,9 +322,9 @@ public class AccountController: SecurityDataSource {
                 case 1:
                     self.pin(peer: peer, isPinMatch: true)
                 default:
-                    self.unpin(peer: peer)
+                    self.removePin(from: peer)
                 }
-                
+				Notifications.pinStateUpdated.post(peer.peerID)
             }
         }
     }
@@ -334,6 +423,9 @@ public class AccountController: SecurityDataSource {
         pinnedByPeers = SynchronizedSet(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
         let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
         pinnedPeers = SynchronizedDictionary(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
+		let nsObjectionableImageHashes: NSSet? = unarchiveObjectFromUserDefs(AccountController.ObjectionableImageHashesKey)
+		objectionableImageHashes = SynchronizedSet(queueLabel: "\(Bundle.main.bundleIdentifier!).objectionableImageHashes", set: nsObjectionableImageHashes as? Set<Data> ?? Set())
+		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
         _accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
         _sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
 		SwaggerClientAPI.dataSource = self
@@ -342,7 +434,8 @@ public class AccountController: SecurityDataSource {
     /// resets sequence number to state before request if the request did not reach the server
     private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
         switch errorResponse {
-        case .httpError(403, _):
+        case .httpError(403, let messageData):
+			NSLog("ERR: Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
             self.resetSequenceNumber()
         case .parseError(_):
             NSLog("ERR: Response could not be parsed.")

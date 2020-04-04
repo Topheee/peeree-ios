@@ -44,6 +44,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	/// thread-safety: write-synced (only writes are assured to be on the same thread
 	private(set) var verified = false
 	
+	public var pictureObjectionable = false
+	public var pictureHash: Data? = nil
 	public var cgPicture: CGImage? = nil
 	
 	/// access from main thread *only*!
@@ -147,9 +149,13 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		}
 	}
 	
-	func loaded(picture: CGImage, of peerID: PeerID) {
+	func loaded(picture: CGImage, of peerID: PeerID, hash: Data) {
 		cgPicture = picture
-		Notifications.pictureLoaded.post(peerID)
+		pictureHash = hash
+		AccountController.shared.containsObjectionableContent(imageHash: hash) { containsObjectionableContent in
+			self.pictureObjectionable = containsObjectionableContent
+			Notifications.pictureLoaded.post(peerID)
+		}
 	}
 	
 	func failedVerification(of peerID: PeerID, error: Error) {
@@ -180,6 +186,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	}
 	
 	func received(message: String) {
+		guard pinState == .pinned else { return }
+		
 		DispatchQueue.main.async {
 			self.transcripts.append(Transcript(direction: .receive, message: message))
 			self.unreadMessages += 1

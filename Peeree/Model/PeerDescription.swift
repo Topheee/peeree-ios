@@ -15,6 +15,7 @@ public final class UserPeerManager: PeerManager {
 	private static let PortraitFileName = "UserPortrait"
 	fileprivate static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
 	fileprivate static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
+	fileprivate static let KeyLabel = "Peeree Identity"
 	public static var instance = UserPeerManager()
 	
 	public static var pictureResourceURL: URL {
@@ -45,6 +46,7 @@ public final class UserPeerManager: PeerManager {
 				NSLog("ERR: could not initialize CGDataProvider.")
 			}
 		}
+		dirtied()
 	}
 	
 	// hide initializer
@@ -124,9 +126,9 @@ public final class UserPeerManager: PeerManager {
 	
 	fileprivate override init() {
 		dateOfBirth = nil
-		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
-		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
-		self._keyPair = try! KeyPair(label: "Peeree Identity", privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
+		try? KeychainStore.removeFromKeychain(label: UserPeerManager.KeyLabel, tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(label: UserPeerManager.KeyLabel, tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
+		self._keyPair = try! KeyPair(label: UserPeerManager.KeyLabel, privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peereer", comment: "Placeholder for peer name."), gender: .female, age: nil, hasPicture: false)
 	}
 
@@ -134,7 +136,7 @@ public final class UserPeerManager: PeerManager {
         guard let peerID = aDecoder.decodeObject(of: NSUUID.self, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString) else { return nil }
         guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
         guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
-        guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
+		guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerManager.KeyLabel, privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
         let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
         
         guard let peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }

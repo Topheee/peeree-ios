@@ -49,13 +49,16 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	var peerManager: PeerManager!
 	
 	@IBAction func reportPeer(_ sender: Any) {
+		guard let manager = self.peerManager, let peer = manager.peerInfo else { return }
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
         alertController.addAction(UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
-//            self.unpin()
+			AccountController.shared.unpin(peer: peer)
         })
-        alertController.addAction(UIAlertAction(title: NSLocalizedString("Report User", comment: "Alert action button title"), style: .destructive) { (action) in
-//            self.reportUser()
+        alertController.addAction(UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
+			AccountController.shared.report(manager: manager) { (error) in
+				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
+			}
         })
 		
         alertController.present()
@@ -143,7 +146,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeerManager.Notifications.verified.addObserver(usingBlock: simpleStateUpdate))
 		
-        let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed]
+		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinned, .unpinFailed, .pinStateUpdated]
         for networkNotification in simpleHandledNotifications2 {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
@@ -327,7 +330,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		verificationStatusLabel.text = state.verificationStatus
 		verificationImage.isHighlighted = state.verified
 		verificationImage.tintColor = state.verified ? UIColor.green : UIColor.red
-        portraitImageView.image = state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+		portraitImageView.image = state.pictureObjectionable ? #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder") : state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
         if #available(iOS 11.0, *) {
             portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
         }

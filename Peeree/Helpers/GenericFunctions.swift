@@ -27,6 +27,11 @@ func arrayFromBundle(name: String) -> [String]? {
     return NSArray(contentsOf: url) as? [String]
 }
 
+/// this does nothing else than throwing an exception
+func createApplicationError(localizedDescription: String, code: Int = -1) -> Error {
+	return NSError(domain: "Peeree", code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
+}
+
 
 //"Swift 2" - not working
 ///// Objective-C __bridge cast
@@ -158,15 +163,26 @@ extension String {
     }
 }
 
+// Hex string parsing, e. g. useful for interaction with PostgreSQL's bytea type
+// base on https://stackoverflow.com/questions/26501276/converting-hex-string-to-nsdata-in-swift
 extension Data {
-    func hexString() -> String {
-        var hex = ""
-        for byte in self {
-            hex += String(format: "%02x", byte)
+	func hexString() -> String {
+		return self.map { String(format: "%02x", $0) }.joined()
+	}
+	
+	private static let hexRegex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
+	
+	init?(hexString: String) {
+		guard hexString.count % 2 == 0 else { return nil }
+		self.init(capacity: hexString.count / 2)
+
+		// TODO sanity check, whether hexString is really only hex digits, and if not, return nil
+		Data.hexRegex.enumerateMatches(in: hexString, range: NSRange(hexString.startIndex..., in: hexString)) { match, _, _ in
+            let byteString = (hexString as NSString).substring(with: match!.range)
+            let num = UInt8(byteString, radix: 16)!
+            self.append(num)
         }
-        
-        return hex
-    }
+	}
 }
 
 extension Data {
@@ -174,7 +190,7 @@ extension Data {
 	/**
 	replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
 	*/
-	func withUnsafePointer<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) throws -> ResultType {
+	func withUnsafePointer<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType {
 		return try self.withUnsafeBytes { (bufferPointer: UnsafeRawBufferPointer) in
 			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
 			return try body(bytePointer)
@@ -183,7 +199,7 @@ extension Data {
 	/**
 	replacement of the old `mutating func withUnsafeMutableBytes<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
 	*/
-	mutating func withUnsafeMutablePointer<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) throws -> ResultType {
+	mutating func withUnsafeMutablePointer<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType {
 		return try self.withUnsafeMutableBytes { (bufferPointer: UnsafeMutableRawBufferPointer) in
 			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
 			return try body(bytePointer)

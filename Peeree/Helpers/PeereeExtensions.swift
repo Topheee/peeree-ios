@@ -8,6 +8,9 @@
 
 import Foundation
 import CoreBluetooth
+import CoreGraphics
+import ImageIO
+import CoreServices
 
 extension CBPeripheral {
     var peereeService: CBService? {
@@ -99,4 +102,35 @@ extension CBUUID {
 	
 	static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID, MessageCharacteristicID]
 	static let SplitCharacteristicIDs = [PortraitCharacteristicID]
+}
+
+extension CGImage {
+	// TODO check whether it really returns correctly formatted JPEG data
+	func jpgData() throws -> Data {
+		let jpgDataBuffer = NSMutableData()
+		
+		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, kUTTypeJPEG, 1, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data destination", code: -502)
+		}
+		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(0.3)] as CFDictionary)
+		
+		if let src  = CGImageSourceCreateWithURL(UserPeerManager.pictureResourceURL as CFURL, nil) {
+			if let properties = CGImageSourceCopyProperties(src, nil) {
+				NSLog("INFO: obtained properties \(properties)")
+				CGImageDestinationSetProperties(dest, properties)
+			} else {
+				NSLog("WARN: could not create source properties")
+			}
+			CGImageDestinationAddImageFromSource(dest, src, 0, nil)
+		} else {
+			NSLog("WARN: could not create source")
+			CGImageDestinationAddImage(dest, self, nil)
+		}
+		
+		guard CGImageDestinationFinalize(dest) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -503)
+		}
+		
+		return jpgDataBuffer as Data
+	}
 }

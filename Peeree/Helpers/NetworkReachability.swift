@@ -73,6 +73,7 @@ class Reachability {
         reachabilityRef = tmp
     }
     
+/* dead, probably non-working code
     func startNotifier() -> Bool {
         var returnValue = false
         var selfptr = bridge(obj: self)
@@ -103,6 +104,7 @@ class Reachability {
     deinit {
         stopNotifier()
     }
+*/
     
     func networkStatusForFlags(_ flags: SCNetworkReachabilityFlags) -> NetworkStatus {
         //        Reachability.PrintReachabilityFlags(flags, "networkStatusForFlags")
