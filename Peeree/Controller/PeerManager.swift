@@ -44,7 +44,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	/// thread-safety: write-synced (only writes are assured to be on the same thread
 	private(set) var verified = false
 	
-	public var pictureObjectionable = false
+	public var pictureClassification: AccountController.ContentClassification = .none
 	public var pictureHash: Data? = nil
 	public var cgPicture: CGImage? = nil
 	
@@ -153,7 +153,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		cgPicture = picture
 		pictureHash = hash
 		AccountController.shared.containsObjectionableContent(imageHash: hash) { containsObjectionableContent in
-			self.pictureObjectionable = containsObjectionableContent
+			self.pictureClassification = containsObjectionableContent
 			Notifications.pictureLoaded.post(peerID)
 		}
 	}

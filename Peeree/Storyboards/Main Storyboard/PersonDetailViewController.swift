@@ -10,6 +10,7 @@ import UIKit
 
 final class PersonDetailViewController: UIViewController, ProgressDelegate, UITextFieldDelegate {
 	@IBOutlet private weak var portraitImageView: UIImageView!
+	@IBOutlet private weak var portraitEffectView: UIVisualEffectView!
 	@IBOutlet private weak var ageLabel: UILabel!
 	@IBOutlet private weak var genderLabel: UILabel!
 	@IBOutlet private weak var verificationStatusLabel: UILabel!
@@ -26,7 +27,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	// Button for executing the message send.
 	@IBOutlet private weak var sendMessageButton: UIBarButtonItem!
 	@IBOutlet private weak var messageTableHeight: NSLayoutConstraint!
-	@IBOutlet private weak var messageTableBottom: NSLayoutConstraint!
+//	@IBOutlet private weak var messageTableBottom: NSLayoutConstraint!
 	@IBOutlet private weak var chatTableViewContainer: UIView!
 	
     private static let unwindSegueID = "unwindToBrowseViewController"
@@ -146,7 +147,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeerManager.Notifications.verified.addObserver(usingBlock: simpleStateUpdate))
 		
-		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinned, .unpinFailed, .pinStateUpdated]
+		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinned, .unpinFailed, .pinStateUpdated, .peerReported]
         for networkNotification in simpleHandledNotifications2 {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
@@ -200,13 +201,19 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
 		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
     }
+
+	private func resizePortraitViews() {
+		portraitEffectView.layer.cornerRadius = portraitEffectView.frame.width / 2
+		portraitEffectView.layer.masksToBounds = true
+		portraitImageView.layer.cornerRadius = portraitImageView.frame.width / 2
+		portraitImageView.layer.masksToBounds = true
+		resizeCircleLayer()
+		resizeGradientLayer()
+	}
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        portraitImageView.layer.cornerRadius = portraitImageView.frame.width / 2
-        portraitImageView.layer.masksToBounds = true
-		resizeCircleLayer()
-		resizeGradientLayer()
+        resizePortraitViews()
 		
         updateState()
     }
@@ -234,7 +241,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		// reverse toolbar modifications, otherwise the toolbar disappears when going into Radar view and back
 		messageComposeTextField.resignFirstResponder()
 		messageTableHeight.isActive = false
-		messageTableBottom.constant = 0.0
+//		messageTableBottom.constant = 0.0
     }
 	
 	// MARK: UITextFieldDelegate methods
@@ -330,7 +337,17 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		verificationStatusLabel.text = state.verificationStatus
 		verificationImage.isHighlighted = state.verified
 		verificationImage.tintColor = state.verified ? UIColor.green : UIColor.red
-		portraitImageView.image = state.pictureObjectionable ? #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder") : state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+		switch state.pictureClassification {
+			case .none:
+				portraitImageView.image = state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+				portraitEffectView.effect = nil
+			case .pending:
+				portraitImageView.image = state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+				portraitEffectView.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
+			case .objectionable:
+				portraitImageView.image = #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
+				portraitEffectView.effect = nil
+		}
         if #available(iOS 11.0, *) {
             portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
         }
@@ -431,6 +448,7 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	}
 	
 	private func registerForKeyboardNotifications() {
+		// TODO UIResponder.keyboardDidChangeFrameNotification / keyboardWillChangeFrameNotification
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
 	}
@@ -464,13 +482,13 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		UIView.setAnimationDuration(animationDuration.doubleValue)
 		UIView.setAnimationCurve(animationCurve)
 		UIView.setAnimationDelegate(self)
-		UIView.setAnimationWillStart(#selector(toolbarAnimationCompletion))
+		UIView.setAnimationDidStop(#selector(toolbarAnimationCompletion))
 		
 		// since the notification is triggered a second time when the user switches to emojis, we cannot simply use `toolbar.frame`:
 		let toolbarFrame = originalToolbarFrame
 		toolbar.frame = CGRect(x: toolbarFrame.origin.x, y: toolbarFrame.origin.y + (keyboardFrame.size.height * (up ? -1 : 1)), width: toolbarFrame.size.width, height: toolbarFrame.size.height)
 		messageTableHeight.isActive = up
-		messageTableBottom.constant = up ? keyboardFrame.size.height : 0.0
+//		messageTableBottom.constant = up ? keyboardFrame.size.height : 0.0
 		UIView.commitAnimations()
 		if up {
 			chatTableView?.scrollToBottom(animated: true)
@@ -478,29 +496,28 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	}
 	
 	@objc func toolbarAnimationCompletion(animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
-		portraitImageView.layer.cornerRadius = portraitImageView.frame.width / 2
-		resizeGradientLayer()
-		resizeCircleLayer()
+		resizePortraitViews()
 	}
 	
 	private func layoutMetadata(isHorizontal: Bool) {
 		guard self.peerStackView.axis == (isHorizontal ? .vertical : .horizontal) else { return /* nothing changed */ }
 		
-		pinButton.isHidden = true
-		pinButton.layer.removeAllAnimations()
-		pinIndicator.isHidden = true
 		removeGradient()
 		removePictureLoadLayer()
 		
 		UIView.animate(withDuration: 0.25, animations: { () -> Void in
+			self.pinButton.isHidden = true
+			self.pinIndicator.isHidden = true
 			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical
 			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal
 			self.propertyStackView.alignment = isHorizontal ? .leading : .center
 			self.chatTableViewContainer.isHidden = !isHorizontal
+			self.resizePortraitViews()
 		}, completion: { _ in
 			self.animatePictureLoadLayer()
 			self.animateGradient()
 			self.updateState()
+			self.resizePortraitViews()
 		})
 	}
 }

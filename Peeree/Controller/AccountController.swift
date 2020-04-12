@@ -31,6 +31,8 @@ public class AccountController: SecurityDataSource {
     static private let SequenceNumberKey = "SequenceNumber"
     /// User defaults key for objectionable image hashes
     static private let ObjectionableImageHashesKey = "ObjectionableImageHashes"
+    /// User defaults key for reported and not yet objectionable image hashes
+    static private let PendingObjectionableImageHashesKey = "PendingObjectionableImageHashesKey"
     /// User defaults key for objectionable content refresh timestamp
     static private let ObjectionableContentRefreshKey = "ObjectionableContentRefresh"
     /// JPEG compression quality for protrait report uploads
@@ -47,6 +49,7 @@ public class AccountController: SecurityDataSource {
         case pinned, pinningStarted, pinFailed, pinMatch
         case pinStateUpdated, unpinned, unpinFailed
         case accountCreated
+		case peerReported
         
         func post(_ peerID: PeerID) {
             DispatchQueue.main.async {
@@ -70,7 +73,9 @@ public class AccountController: SecurityDataSource {
     
     private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(Bundle.main.bundleIdentifier!).pinningPeers")
     
-    private var objectionableImageHashes: SynchronizedSet<Data>
+	// only access these only from the main thread!
+    private var objectionableImageHashes: Set<Data>
+	private var pendingObjectionableImageHashes: [Data : Date]
 	private var lastObjectionableContentRefresh: Date
 	
     private func resetSequenceNumber() {
@@ -177,15 +182,20 @@ public class AccountController: SecurityDataSource {
         }
     }
 	
-	public func containsObjectionableContent(imageHash: Data, completion: @escaping (Bool) -> Void) {
-		objectionableImageHashes.accessAsync { (set) in
-			completion(set.contains(imageHash))
+	public enum ContentClassification {
+		case objectionable, pending, none
+	}
+	
+	public func containsObjectionableContent(imageHash: Data, completion: @escaping (ContentClassification) -> Void) {
+		DispatchQueue.main.async {
+			completion(self.objectionableImageHashes.contains(imageHash) ? .objectionable : (self.pendingObjectionableImageHashes[imageHash] != nil ? .pending : .none))
 		}
 	}
 	
     public func report(manager: PeerManager, errorCallback: @escaping (Error) -> Void) {
-		guard let portrait = manager.cgPicture, let hash = manager.pictureHash?.hexString() else { return }
+		guard let portrait = manager.cgPicture, let hash = manager.pictureHash else { return }
 		
+		let hashString = hash.hexString()
 		let jpgData: Data
 
 		do {
@@ -205,35 +215,42 @@ public class AccountController: SecurityDataSource {
 			return
 		}
 		
-		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: manager.peerID, hash: hash) { (_, _error) in // TODO pass hash, since server is not able to compute it (doesn't get the original image)
+		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: manager.peerID, hash: hashString) { (_, _error) in
             if let error = _error {
                 self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
-            }
+			} else {
+				DispatchQueue.main.async {
+					self.pendingObjectionableImageHashes[hash] = Date()
+					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
+					Notifications.peerReported.post(manager.peerID)
+				}
+			}
         }
     }
     
 	public func refreshBlockedContent(errorCallback: @escaping (Error) -> Void) {
-		objectionableImageHashes.accessAsync { (_) in
-			guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
-			ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
-				if let error = _error {
-					errorCallback(error)
-				} else if let hexHashes = _hexHashes {
-					self.objectionableImageHashes.accessAsync { (set) in
-						self.lastObjectionableContentRefresh = Date()
-						UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
-						for hexHash in hexHashes {
-							if let decodedHash = Data(hexString: hexHash) {
-								set.insert(decodedHash)
-							} else {
-								NSLog("WARN: Decoding objectionable image hash '\(hexHash)' failed.")
-							}
+		guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
+		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
+			if let error = _error {
+				errorCallback(error)
+			} else if let hexHashes = _hexHashes {
+				DispatchQueue.main.async {
+					self.lastObjectionableContentRefresh = Date()
+					UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
+					for hexHash in hexHashes {
+						if let decodedHash = Data(hexString: hexHash) {
+							self.objectionableImageHashes.insert(decodedHash)
+							self.pendingObjectionableImageHashes.removeValue(forKey: decodedHash)
+						} else {
+							NSLog("WARN: Decoding objectionable image hash '\(hexHash)' failed.")
 						}
 					}
-				} else {
-					errorCallback(ErrorResponse.parseError(nil))
+					archiveObjectInUserDefs(self.objectionableImageHashes as NSSet, forKey: AccountController.ObjectionableImageHashesKey)
+					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
 				}
+			} else {
+				errorCallback(ErrorResponse.parseError(nil))
 			}
 		}
     }
@@ -333,7 +350,7 @@ public class AccountController: SecurityDataSource {
         guard !_isCreatingAccount else { return }
         _isCreatingAccount = true
         _sequenceNumber = nil // we are not responsible here to ensure that no account already exists and need to not send this sequence number as our public key
-        var publicKey = UserPeerManager.instance.peer.publicKeyData
+        //var publicKey = UserPeerManager.instance.peer.publicKeyData
     
         AccountAPI.putAccount(email: _accountEmail) { (_account, _error) in
             var completionError: Error?
@@ -424,7 +441,9 @@ public class AccountController: SecurityDataSource {
         let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
         pinnedPeers = SynchronizedDictionary(queueLabel: "\(Bundle.main.bundleIdentifier!).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
 		let nsObjectionableImageHashes: NSSet? = unarchiveObjectFromUserDefs(AccountController.ObjectionableImageHashesKey)
-		objectionableImageHashes = SynchronizedSet(queueLabel: "\(Bundle.main.bundleIdentifier!).objectionableImageHashes", set: nsObjectionableImageHashes as? Set<Data> ?? Set())
+		objectionableImageHashes = nsObjectionableImageHashes as? Set<Data> ?? Set()
+		let nsPendingObjectionableImageHashes: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PendingObjectionableImageHashesKey)
+		pendingObjectionableImageHashes = nsPendingObjectionableImageHashes as? Dictionary<Data,Date> ?? Dictionary<Data,Date>()
 		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
         _accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
         _sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value

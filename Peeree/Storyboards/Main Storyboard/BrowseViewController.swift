@@ -261,7 +261,7 @@ final class BrowseViewController: UITableViewController {
         cell.textLabel?.text = peer.nickname
         cell.detailTextLabel?.text = peer.summary
         guard let imageView = cell.imageView else { assertionFailure(); return }
-        imageView.image = manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+		imageView.image = manager.pictureClassification == .none ? manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
         guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
         
         let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)

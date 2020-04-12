@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -179,7 +179,7 @@
                             </connections>
                         </barButtonItem>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="6" width="100" height="32"/>
+                            <rect key="frame" x="110" y="9" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -235,12 +235,24 @@
                                                     </mask>
                                                 </variation>
                                             </imageView>
+                                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC">
+                                                <rect key="frame" x="16" y="16" width="100" height="100"/>
+                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
+                                                    <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                </view>
+                                                <blurEffect style="regular"/>
+                                            </visualEffectView>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" id="I6F-AN-QZ6"/>
-                                            <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" id="LJX-9X-Zhi"/>
-                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" id="Uox-Ry-Cdo"/>
-                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="yhg-cE-5YF"/>
+                                            <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" id="1EP-07-K56"/>
+                                            <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" id="Avq-G7-1G6"/>
+                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" id="P8q-ve-RuT"/>
+                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" id="cPt-AY-8RY"/>
+                                            <constraint firstAttribute="trailing" secondItem="pRr-uE-8dC" secondAttribute="trailing" constant="16" id="dpC-E6-DKt"/>
+                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="oCn-tu-VM5"/>
+                                            <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" id="pZU-oO-ghk"/>
+                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="vMB-h8-hUl"/>
                                         </constraints>
                                         <connections>
                                             <outletCollection property="gestureRecognizers" destination="FHf-Bb-adK" appends="YES" id="yEC-To-7jI"/>
@@ -348,7 +360,7 @@
                                 </subviews>
                             </stackView>
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="342" width="320" height="81"/>
+                                <rect key="frame" x="0.0" y="342" width="320" height="94"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="64" id="VPu-gz-2Vl"/>
                                 </constraints>
@@ -368,8 +380,9 @@
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="trailing" secondItem="YYz-qE-CF7" secondAttribute="trailing" id="C07-qn-M91"/>
                             <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" id="Rfa-Ie-qD9"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" id="YHh-hk-aVc"/>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Vq4-kH-h3A" secondAttribute="bottom" constant="8" id="lq7-cP-n5V"/>
+                            <constraint firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="mrE-0w-sGc"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="n9E-Zf-Swe"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="Vq4-kH-h3A" secondAttribute="bottom" constant="-5" id="rSQ-g7-q9J"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" id="vMf-3d-C95"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
@@ -401,11 +414,11 @@
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
                         <outlet property="messageComposeTextField" destination="yJd-y1-fP9" id="neN-TR-rEt"/>
-                        <outlet property="messageTableBottom" destination="lq7-cP-n5V" id="Idj-nM-92j"/>
                         <outlet property="messageTableHeight" destination="VPu-gz-2Vl" id="1wB-ZR-9Vo"/>
                         <outlet property="peerStackView" destination="DbU-Tc-UDS" id="kcK-TX-9ic"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
+                        <outlet property="portraitEffectView" destination="pRr-uE-8dC" id="Cum-CT-DKu"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
                         <outlet property="propertyStackView" destination="BQJ-Fm-gFE" id="hWh-Xf-T6B"/>
                         <outlet property="sendMessageButton" destination="YPz-t9-los" id="FxC-Gy-602"/>
@@ -430,22 +443,22 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="81"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="94"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="Message Cell" id="P8y-s7-Nks" customClass="MessageCell" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="28" width="320" height="71"/>
+                                <rect key="frame" x="0.0" y="28" width="320" height="39.5"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="P8y-s7-Nks" id="eUA-n6-Ifh">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="71"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="39.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="MessageBubble" highlightedImage="MessageBubbleOpposite" translatesAutoresizingMaskIntoConstraints="NO" id="LWs-dB-GsB">
-                                            <rect key="frame" x="16" y="3" width="296" height="68"/>
+                                            <rect key="frame" x="16" y="3" width="296" height="36.5"/>
                                         </imageView>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Message" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Seq-55-m1S">
-                                            <rect key="frame" x="32" y="11" width="256" height="52"/>
+                                            <rect key="frame" x="32" y="11" width="256" height="20.5"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
@@ -635,7 +648,7 @@
                                         <constraint firstAttribute="trailingMargin" secondItem="Mym-lw-7EQ" secondAttribute="trailing" id="mc3-7H-1Bh"/>
                                         <constraint firstAttribute="trailingMargin" secondItem="1Eb-LT-XnB" secondAttribute="trailing" id="mub-e7-QHb"/>
                                         <constraint firstItem="1Eb-LT-XnB" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="niG-8c-wgc"/>
-                                        <constraint firstItem="Mym-lw-7EQ" firstAttribute="firstBaseline" secondItem="244-rB-aaA" secondAttribute="baseline" constant="28" symbolType="layoutAnchor" id="q8Z-b6-0Nm"/>
+                                        <constraint firstItem="Mym-lw-7EQ" firstAttribute="firstBaseline" secondItem="244-rB-aaA" secondAttribute="baseline" constant="32" symbolType="layoutAnchor" id="q8Z-b6-0Nm"/>
                                         <constraint firstAttribute="trailing" secondItem="pje-ad-i9c" secondAttribute="trailing" id="wAG-5h-I65"/>
                                         <constraint firstItem="Mym-lw-7EQ" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="wAr-Xn-uV5"/>
                                         <constraint firstAttribute="bottom" secondItem="pje-ad-i9c" secondAttribute="bottom" id="zDU-xd-K8i"/>
@@ -1214,7 +1227,7 @@
                 <navigationController title="Radar Nav" extendedLayoutIncludesOpaqueBars="YES" id="BeP-GU-KG9" userLabel="Browse Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" barStyle="black" largeTitles="YES" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1269,6 +1282,11 @@
             <point key="canvasLocation" x="717" y="704"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="r7K-aS-PK5"/>
+        <segue reference="EzW-Ik-xrC"/>
+    </inferredMetricsTieBreakers>
+    <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34"/>
@@ -1282,9 +1300,4 @@
         <image name="UnverfiedIcon" width="512" height="512"/>
         <image name="VerfiedIcon" width="512" height="512"/>
     </resources>
-    <inferredMetricsTieBreakers>
-        <segue reference="r7K-aS-PK5"/>
-        <segue reference="EzW-Ik-xrC"/>
-    </inferredMetricsTieBreakers>
-    <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>
