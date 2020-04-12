@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class PersonDetailViewController: UIViewController, ProgressDelegate, UITextFieldDelegate {
+final class PersonDetailViewController: UIViewController, ProgressDelegate, UITextViewDelegate, GrowingTextViewDelegate {
 	@IBOutlet private weak var portraitImageView: UIImageView!
 	@IBOutlet private weak var portraitEffectView: UIVisualEffectView!
 	@IBOutlet private weak var ageLabel: UILabel!
@@ -22,13 +22,15 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     @IBOutlet private weak var findButtonItem: UIBarButtonItem!
 	@IBOutlet private weak var peerStackView: UIStackView!
 	@IBOutlet private weak var propertyStackView: UIStackView!
-	// Text field used for typing text messages to send to peers
-	@IBOutlet private weak var messageComposeTextField: UITextField!
+	
 	// Button for executing the message send.
-	@IBOutlet private weak var sendMessageButton: UIBarButtonItem!
+	@IBOutlet private weak var sendMessageButton: UIButton!
 	@IBOutlet private weak var messageTableHeight: NSLayoutConstraint!
-//	@IBOutlet private weak var messageTableBottom: NSLayoutConstraint!
 	@IBOutlet private weak var chatTableViewContainer: UIView!
+	@IBOutlet private weak var messageBar: UIView!
+	// Text field used for typing text messages to send to peers
+	@IBOutlet private weak var messageTextView: UITextView!
+	@IBOutlet private weak var messageBottomConstraint: NSLayoutConstraint!
 	
     private static let unwindSegueID = "unwindToBrowseViewController"
     static let storyboardID = "PersonDetailViewController"
@@ -67,16 +69,16 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	
 	// Action method when user presses "send"
 	@IBAction func sendMessageTapped(sender: Any) {
-		guard let message = messageComposeTextField.text, message != "" else { return }
+		guard let message = messageTextView.text, message != "" else { return }
 		
-		self.messageComposeTextField.text = ""
+		self.messageTextView.text = ""
 		
 		self.sendMessageButton.isEnabled = false
 		peerManager.send(message: message) { error in
 			if let error = error {
 				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog"))
-				self.messageComposeTextField.text = message
-				self.messageComposeTextField.resignFirstResponder() // quick fix to toolbar disappearing bug (due to re-layouting when displaying the error)
+				self.messageTextView.text = message
+				self.messageTextView.resignFirstResponder() // quick fix to toolbar disappearing bug (due to re-layouting when displaying the error)
 			}
 		}
 	}
@@ -95,9 +97,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     }
 	
 	@IBAction func tapImage(_ sender: Any) {
-		if messageComposeTextField.isFirstResponder {
+		if messageTextView.isFirstResponder {
 			// provide more space for the chat
-			messageComposeTextField.resignFirstResponder()
+			messageTextView.resignFirstResponder()
 			portraitImageView.setNeedsLayout()
 		} else {
 			// show greater picture
@@ -123,6 +125,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 			view.layer.cornerRadius = view.layer.bounds.height / 2.0
 		}
         pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
+		messageBar.layer.borderWidth = 0.25
+		messageBar.layer.borderColor = UIColor.lightGray.cgColor
     }
     
 	override func viewWillAppear(_ animated: Bool) {
@@ -157,38 +161,16 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
             self.animateGradient()
         }))
 		
-		notificationObservers.append(UIApplication.willResignActiveNotification.addObserver { (notification) in
-			if self.messageComposeTextField.isFirstResponder {
-				self.shiftedToolbarFrame = self.navigationController?.toolbar?.frame
-			}
-		})
-		notificationObservers.append(UIApplication.didBecomeActiveNotification.addObserver { (notification) in
-			if let frame = self.shiftedToolbarFrame {
-				self.navigationController?.toolbar?.frame = frame
-			}
-			self.shiftedToolbarFrame = nil
-		})
-		
 		registerForKeyboardNotifications()
-		
-		// TODO test whether we really still need this, because probably not because of new stack view
-//		if #available(iOS 11, *) {
-//			// reset it's frame on iOS 11 as the view is not layed out there every time it gets active again
-//			pinButton.superview!.setNeedsLayout()
-//		}
 		
 		// somehow sometimes it is still hidden from BrowseViewController
 		navigationController?.setNavigationBarHidden(false, animated: false)
     }
 	
-	private var shiftedToolbarFrame: CGRect? = nil
-	private var originalToolbarFrame = CGRect.zero
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let peer = displayedPeerInfo else { return }
 		
-		originalToolbarFrame = navigationController?.toolbar.frame ?? originalToolbarFrame
 		animatePictureLoadLayer()
 		animateGradient()
 		
@@ -213,9 +195,9 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        resizePortraitViews()
 		
         updateState()
+		resizePortraitViews()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -223,7 +205,6 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		NotificationCenter.default.removeObserver(self)
         for observer in notificationObservers { NotificationCenter.`default`.removeObserver(observer) }
         notificationObservers.removeAll()
-		navigationController?.setToolbarHidden(true, animated: true)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -239,23 +220,23 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		pinButton.layer.removeAllAnimations()
 		
 		// reverse toolbar modifications, otherwise the toolbar disappears when going into Radar view and back
-		messageComposeTextField.resignFirstResponder()
+		messageTextView.resignFirstResponder()
 		messageTableHeight.isActive = false
-//		messageTableBottom.constant = 0.0
     }
 	
 	// MARK: UITextFieldDelegate methods
 	
-	// Override to dynamically enable/disable the send button based on user typing
-	func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-		let length = (textField.text?.count ?? 0) - range.length + string.count;
+	// Dynamically enables/disables the send button based on user typing
+	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+		let length = (textView.text?.count ?? 0) - range.length + text.count;
 		self.sendMessageButton.isEnabled = length > 0
 		return true
 	}
 	
-	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		sendMessageTapped(sender: textField)
-		return true
+	// MARK: GrowingTextViewDelegate
+	
+	func textViewDidChangeHeight(_ textView: GrowingTextView, height: CGFloat) {
+		resizePortraitViews()
 	}
 	
     // MARK: ProgressDelegate
@@ -308,14 +289,14 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
     private func updateState() {
         guard let peer = displayedPeerInfo, let state = peerManager else { return }
 		
-		navigationController?.isToolbarHidden = !peer.pinMatched || state.isLocalPeer
+		messageBar.isHidden = !peer.pinMatched || state.isLocalPeer
         pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
         pinButton.isEnabled = state.isAvailable && !state.isLocalPeer
         pinButton.isSelected = state.pinState == .pinned
 //        traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
         pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
 //        findButtonItem.isEnabled = peer.pinMatched
-		sendMessageButton.isEnabled = state.isAvailable && messageComposeTextField.text?.count ?? 0 > 0
+		sendMessageButton.isEnabled = state.isAvailable && messageTextView.text?.count ?? 0 > 0
         
         title = peer.nickname
         if state.isLocalPeer || state.isAvailable {
@@ -455,7 +436,8 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	
 	/// Called when the UIKeyboardWillShowNotification is sent.
 	@objc private func keyboardWillShow(notification: Notification) {
-		self.layoutMetadata(isHorizontal: true)
+		let animationDuration = notification.userInfo![UIResponder.keyboardAnimationDurationUserInfoKey] as! NSNumber
+		self.layoutMetadata(isHorizontal: true, animationDuration: animationDuration.doubleValue)
 		// move the toolbar frame up as keyboard animates into view
 		self.moveToolBar(up: true, for: notification)
 	}
@@ -470,26 +452,21 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 	
 	// Helper method for moving the toolbar frame based on user action
 	private func moveToolBar(up: Bool, for keyboardNotification: Notification) {
-		guard let userInfo = keyboardNotification.userInfo, let toolbar = self.navigationController?.toolbar else { return }
+		guard let userInfo = keyboardNotification.userInfo else { return }
 		
 		let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! CGRect
-		let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! NSNumber
-		let animationCurveNumber = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! NSNumber
-		let animationCurve = UIView.AnimationCurve(rawValue: animationCurveNumber.intValue) ?? UIView.AnimationCurve.easeOut
-		
-		// Animate up or down
-		UIView.beginAnimations(nil, context: nil)
-		UIView.setAnimationDuration(animationDuration.doubleValue)
-		UIView.setAnimationCurve(animationCurve)
-		UIView.setAnimationDelegate(self)
-		UIView.setAnimationDidStop(#selector(toolbarAnimationCompletion))
-		
-		// since the notification is triggered a second time when the user switches to emojis, we cannot simply use `toolbar.frame`:
-		let toolbarFrame = originalToolbarFrame
-		toolbar.frame = CGRect(x: toolbarFrame.origin.x, y: toolbarFrame.origin.y + (keyboardFrame.size.height * (up ? -1 : 1)), width: toolbarFrame.size.width, height: toolbarFrame.size.height)
+		let inset: CGFloat
+		if #available(iOS 11.0, *) {
+			inset = view.safeAreaInsets.bottom
+		} else {
+			inset = 0.0
+		}
+
+		messageBottomConstraint.constant = up ? keyboardFrame.size.height - inset : 0.0
+		UIView.animateAlongKeyboard(notification: keyboardNotification, animations: {
+			self.view.layoutIfNeeded()
+		}, completion: nil)
 		messageTableHeight.isActive = up
-//		messageTableBottom.constant = up ? keyboardFrame.size.height : 0.0
-		UIView.commitAnimations()
 		if up {
 			chatTableView?.scrollToBottom(animated: true)
 		}
@@ -499,13 +476,13 @@ final class PersonDetailViewController: UIViewController, ProgressDelegate, UITe
 		resizePortraitViews()
 	}
 	
-	private func layoutMetadata(isHorizontal: Bool) {
+	private func layoutMetadata(isHorizontal: Bool, animationDuration: TimeInterval = 0.25) {
 		guard self.peerStackView.axis == (isHorizontal ? .vertical : .horizontal) else { return /* nothing changed */ }
 		
 		removeGradient()
 		removePictureLoadLayer()
 		
-		UIView.animate(withDuration: 0.25, animations: { () -> Void in
+		UIView.animate(withDuration: animationDuration, animations: { () -> Void in
 			self.pinButton.isHidden = true
 			self.pinIndicator.isHidden = true
 			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical

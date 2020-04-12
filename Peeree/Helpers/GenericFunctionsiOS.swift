@@ -56,6 +56,22 @@ extension UIAlertController {
 }
 
 extension UIView {
+	/***
+	Animates <code>animations</code> with the same parameters as the keyboard (provided by <code>notification</code>.
+	@param notification	A notification object from one the <code>UIResponder.keyboard…Notification</code> notifications.
+	*/
+	static func animateAlongKeyboard(notification: Notification, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+		guard let userInfo = notification.userInfo else { return }
+		
+		let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as! NSNumber
+		let animationCurveNumber = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as! NSNumber
+		let animationCurve = UIView.AnimationCurve(rawValue: animationCurveNumber.intValue) ?? UIView.AnimationCurve.easeOut
+		
+		let animationCurveOptions = UIView.AnimationOptions(curve: animationCurve)
+		
+		UIView.animate(withDuration: animationDuration.doubleValue, delay: 0.0, options: animationCurveOptions, animations: animations, completion: completion)
+	}
+	
     /**
      *	Animates views like they are flown in from the bottom of the screen.
      *	@param views    the views to animate
@@ -76,6 +92,24 @@ extension UIView {
         }, completion: nil)
     }
 }
+
+extension UIView.AnimationOptions {
+	init(curve: UIView.AnimationCurve) {
+		switch curve {
+		case .easeIn:
+			self = UIView.AnimationOptions.curveEaseIn
+		case .easeOut:
+			self = .curveEaseOut
+		case .easeInOut:
+			self = .curveEaseInOut
+		case .linear:
+			self = .curveLinear
+		default:
+			self = []
+		}
+	}
+}
+
 
 extension UITextField {
 	/// cap number of characters to <code>maxUtf8Length</code>. Use in <code>func textField(_: UITextField, shouldChangeCharactersIn: NSRange, replacementString: String) -> Bool</code>

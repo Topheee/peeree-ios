@@ -14,14 +14,14 @@
             <objects>
                 <viewController hidesBottomBarWhenPushed="YES" id="Oq7-ng-Nj5" userLabel="Single Sel" customClass="SingleSelViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="iyu-mt-mGM" customClass="RootView" customModule="Peeree" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="352"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VD9-ZK-Mut">
-                                <rect key="frame" x="0.0" y="244" width="320" height="216"/>
+                                <rect key="frame" x="0.0" y="136" width="320" height="216"/>
                             </pickerView>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pcu-hx-Kx3">
-                                <rect key="frame" x="16" y="128" width="288" height="108"/>
+                                <rect key="frame" x="16" y="20" width="288" height="108"/>
                                 <connections>
                                     <segue destination="hII-Vs-YKL" kind="embed" id="hUm-g1-znD"/>
                                 </connections>
@@ -179,7 +179,7 @@
                             </connections>
                         </barButtonItem>
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="9" width="100" height="32"/>
+                            <rect key="frame" x="110" y="6" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -207,11 +207,11 @@
             <objects>
                 <viewController storyboardIdentifier="PersonDetailViewController" title="Person Detail" extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" id="bgg-zV-1WC" userLabel="Person Detail" customClass="PersonDetailViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ahI-Va-yoM" userLabel="Root View" customClass="RootView" customModule="Peeree" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="8" y="52" width="304" height="282"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
+                                <rect key="frame" x="8" y="64" width="304" height="282"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG">
                                         <rect key="frame" x="86" y="0.0" width="132" height="132"/>
@@ -235,7 +235,7 @@
                                                     </mask>
                                                 </variation>
                                             </imageView>
-                                            <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC">
+                                            <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC">
                                                 <rect key="frame" x="16" y="16" width="100" height="100"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
                                                     <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
@@ -359,10 +359,10 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
-                            <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="342" width="320" height="94"/>
+                            <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
+                                <rect key="frame" x="0.0" y="354" width="320" height="73"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="64" id="VPu-gz-2Vl"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" id="VPu-gz-2Vl"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -373,55 +373,81 @@
                                     <segue destination="XqI-Aj-cpS" kind="embed" id="QbC-f3-IGm"/>
                                 </connections>
                             </containerView>
+                            <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
+                                <rect key="frame" x="0.0" y="427" width="320" height="33"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
+                                        <rect key="frame" x="8" y="0.0" width="304" height="33"/>
+                                        <subviews>
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="260" height="33"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="maxHeight">
+                                                        <real key="value" value="120"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="placeholder" value="Message"/>
+                                                </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <outlet property="delegate" destination="bgg-zV-1WC" id="zfH-o8-GrD"/>
+                                                </connections>
+                                            </textView>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
+                                                <rect key="frame" x="268" y="0.0" width="36" height="33"/>
+                                                <state key="normal" title="Send"/>
+                                                <connections>
+                                                    <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="pns-Vh-qyy" secondAttribute="trailing" constant="8" id="USf-K3-oT8"/>
+                                    <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" id="Z1y-gy-KdT"/>
+                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="top" secondItem="Lkr-13-Jfz" secondAttribute="top" id="hYZ-dV-Pbe"/>
+                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="leading" secondItem="Lkr-13-Jfz" secondAttribute="leading" constant="8" id="wco-8B-5sd"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" id="5XF-gF-5uE"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="top" secondItem="YYz-qE-CF7" secondAttribute="top" constant="8" id="8ir-l2-8hz"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="Lkr-13-Jfz" secondAttribute="trailing" id="BGH-8a-eUG"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="trailing" secondItem="YYz-qE-CF7" secondAttribute="trailing" id="C07-qn-M91"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="FdN-Lg-oeE"/>
                             <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" id="Rfa-Ie-qD9"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" id="YHh-hk-aVc"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" id="jJd-49-mLg"/>
                             <constraint firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="mrE-0w-sGc"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="n9E-Zf-Swe"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="Vq4-kH-h3A" secondAttribute="bottom" constant="-5" id="rSQ-g7-q9J"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" id="vMf-3d-C95"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
                     </view>
-                    <toolbarItems>
-                        <barButtonItem style="plain" id="71W-5G-Qes">
-                            <textField key="customView" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Message" adjustsFontForContentSizeCategory="YES" minimumFontSize="17" id="yJd-y1-fP9">
-                                <rect key="frame" x="16" y="10" width="208" height="34"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
-                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="send" enablesReturnKeyAutomatically="YES"/>
-                                <connections>
-                                    <outlet property="delegate" destination="bgg-zV-1WC" id="QKk-xs-lAO"/>
-                                </connections>
-                            </textField>
-                        </barButtonItem>
-                        <barButtonItem systemItem="flexibleSpace" id="iSb-ar-VzQ"/>
-                        <barButtonItem enabled="NO" title="Send" id="YPz-t9-los">
-                            <connections>
-                                <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" id="Jwt-jH-WEP"/>
-                            </connections>
-                        </barButtonItem>
-                    </toolbarItems>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz"/>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
                         <outlet property="chatTableViewContainer" destination="Vq4-kH-h3A" id="fg6-en-yXb"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
-                        <outlet property="messageComposeTextField" destination="yJd-y1-fP9" id="neN-TR-rEt"/>
-                        <outlet property="messageTableHeight" destination="VPu-gz-2Vl" id="1wB-ZR-9Vo"/>
+                        <outlet property="messageBar" destination="Lkr-13-Jfz" id="EqV-w5-kyP"/>
+                        <outlet property="messageBottomConstraint" destination="5XF-gF-5uE" id="Spd-Mg-uEj"/>
+                        <outlet property="messageTableHeight" destination="VPu-gz-2Vl" id="qPO-hm-F35"/>
+                        <outlet property="messageTextView" destination="7Il-00-It7" id="mCm-oy-uJz"/>
                         <outlet property="peerStackView" destination="DbU-Tc-UDS" id="kcK-TX-9ic"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
                         <outlet property="portraitEffectView" destination="pRr-uE-8dC" id="Cum-CT-DKu"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
                         <outlet property="propertyStackView" destination="BQJ-Fm-gFE" id="hWh-Xf-T6B"/>
-                        <outlet property="sendMessageButton" destination="YPz-t9-los" id="FxC-Gy-602"/>
+                        <outlet property="sendMessageButton" destination="kJ7-ps-KKx" id="GOI-fm-lEf"/>
                         <outlet property="traitsButton" destination="Y5H-8y-Wvq" id="18k-Kv-kaq"/>
                         <outlet property="verificationImage" destination="Yms-Pn-YOk" id="U1L-Mh-bxp"/>
                         <outlet property="verificationStatusLabel" destination="MSB-TZ-Xpf" id="1ap-zL-rcB"/>
@@ -443,7 +469,7 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="94"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="73"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
@@ -505,7 +531,7 @@
             <objects>
                 <tableViewController title="Character Traits" hidesBottomBarWhenPushed="YES" clearsSelectionOnViewWillAppear="NO" id="kuI-R6-Fbl" userLabel="Character Trait Table" customClass="CharacterTraitViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="39" sectionHeaderHeight="22" sectionFooterHeight="22" id="DaA-by-IuP">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="404"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
@@ -1227,7 +1253,7 @@
                 <navigationController title="Radar Nav" extendedLayoutIncludesOpaqueBars="YES" id="BeP-GU-KG9" userLabel="Browse Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" barStyle="black" largeTitles="YES" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1253,7 +1279,7 @@
         <!--Me Nav-->
         <scene sceneID="lpk-Ax-QH5">
             <objects>
-                <navigationController title="Me Nav" automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="tIL-fs-ywz" userLabel="Me Nav" sceneMemberID="viewController">
+                <navigationController title="Me Nav" automaticallyAdjustsScrollViewInsets="NO" id="tIL-fs-ywz" userLabel="Me Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" largeTitles="YES" id="0JW-Wc-ihy">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="108"/>
@@ -1270,7 +1296,7 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translucent="NO" id="IJd-3E-U4u">
-                        <rect key="frame" x="0.0" y="416" width="320" height="44"/>
+                        <rect key="frame" x="0.0" y="-20" width="0.0" height="0.0"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
@@ -1284,7 +1310,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="r7K-aS-PK5"/>
-        <segue reference="EzW-Ik-xrC"/>
+        <segue reference="7Nf-9B-BLi"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
