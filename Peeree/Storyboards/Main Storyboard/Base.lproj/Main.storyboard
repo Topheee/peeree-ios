@@ -213,10 +213,10 @@
                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
                                 <rect key="frame" x="8" y="64" width="304" height="282"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG">
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="86" y="0.0" width="132" height="132"/>
                                         <subviews>
-                                            <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO">
+                                            <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
                                                 <rect key="frame" x="16" y="16" width="100" height="100"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person" label="Portrait">
                                                     <bool key="isElement" value="YES"/>
@@ -235,7 +235,7 @@
                                                     </mask>
                                                 </variation>
                                             </imageView>
-                                            <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC">
+                                            <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC" customClass="RoundedVisualEffectView" customModule="Peeree" customModuleProvider="target">
                                                 <rect key="frame" x="16" y="16" width="100" height="100"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
                                                     <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
@@ -244,6 +244,7 @@
                                                 <blurEffect style="regular"/>
                                             </visualEffectView>
                                         </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
                                             <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" id="1EP-07-K56"/>
                                             <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" id="Avq-G7-1G6"/>
@@ -254,6 +255,14 @@
                                             <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" id="pZU-oO-ghk"/>
                                             <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="vMB-h8-hUl"/>
                                         </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="color" keyPath="startColor">
+                                                <color key="value" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="color" keyPath="endColor">
+                                                <color key="value" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
                                         <connections>
                                             <outletCollection property="gestureRecognizers" destination="FHf-Bb-adK" appends="YES" id="yEC-To-7jI"/>
                                         </connections>
@@ -374,16 +383,16 @@
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
-                                <rect key="frame" x="0.0" y="427" width="320" height="33"/>
+                                <rect key="frame" x="-1" y="427" width="322" height="34"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="0.0" width="304" height="33"/>
+                                        <rect key="frame" x="8" y="0.0" width="306" height="34"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="260" height="33"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="262" height="34"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                 <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="maxHeight">
@@ -396,7 +405,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="268" y="0.0" width="36" height="33"/>
+                                                <rect key="frame" x="270" y="0.0" width="36" height="34"/>
                                                 <state key="normal" title="Send"/>
                                                 <connections>
                                                     <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
@@ -416,11 +425,11 @@
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" id="5XF-gF-5uE"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" constant="-1" id="5XF-gF-5uE"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="top" secondItem="YYz-qE-CF7" secondAttribute="top" constant="8" id="8ir-l2-8hz"/>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="Lkr-13-Jfz" secondAttribute="trailing" id="BGH-8a-eUG"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="Lkr-13-Jfz" secondAttribute="trailing" constant="-1" id="BGH-8a-eUG"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="trailing" secondItem="YYz-qE-CF7" secondAttribute="trailing" id="C07-qn-M91"/>
-                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="FdN-Lg-oeE"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="-1" id="FdN-Lg-oeE"/>
                             <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" id="Rfa-Ie-qD9"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" id="YHh-hk-aVc"/>
                             <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" id="jJd-49-mLg"/>
@@ -1253,7 +1262,7 @@
                 <navigationController title="Radar Nav" extendedLayoutIncludesOpaqueBars="YES" id="BeP-GU-KG9" userLabel="Browse Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" barStyle="black" largeTitles="YES" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1316,7 +1325,7 @@
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34"/>
-        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
+        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplate" width="180" height="180"/>

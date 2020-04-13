@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol ProgressDelegate: class {
+public protocol ProgressManagerDelegate: class {
     func progressDidUpdate(_ progress: Progress)
     func progressDidCancel(_ progress: Progress)
     func progressDidPause(_ progress: Progress)
@@ -21,9 +21,9 @@ public class ProgressManager: NSObject {
     
     let progress: Progress
     let targetQueue: DispatchQueue
-    weak var delegate: ProgressDelegate?
+    weak var delegate: ProgressManagerDelegate?
     
-    public init(progress: Progress, delegate: ProgressDelegate, queue: DispatchQueue) {
+    public init(progress: Progress, delegate: ProgressManagerDelegate, queue: DispatchQueue) {
         self.progress = progress
         self.delegate = delegate
         targetQueue = queue
