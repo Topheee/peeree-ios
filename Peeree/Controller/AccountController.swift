@@ -223,6 +223,7 @@ public class AccountController: SecurityDataSource {
 				DispatchQueue.main.async {
 					self.pendingObjectionableImageHashes[hash] = Date()
 					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
+					manager.pictureClassification = .pending
 					Notifications.peerReported.post(manager.peerID)
 				}
 			}
@@ -236,8 +237,6 @@ public class AccountController: SecurityDataSource {
 				errorCallback(error)
 			} else if let hexHashes = _hexHashes {
 				DispatchQueue.main.async {
-					self.lastObjectionableContentRefresh = Date()
-					UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
 					for hexHash in hexHashes {
 						if let decodedHash = Data(hexString: hexHash) {
 							self.objectionableImageHashes.insert(decodedHash)
@@ -246,6 +245,8 @@ public class AccountController: SecurityDataSource {
 							NSLog("WARN: Decoding objectionable image hash '\(hexHash)' failed.")
 						}
 					}
+					self.lastObjectionableContentRefresh = Date()
+					UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
 					archiveObjectInUserDefs(self.objectionableImageHashes as NSSet, forKey: AccountController.ObjectionableImageHashesKey)
 					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
 				}

@@ -208,6 +208,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
                             // https://github.com/swagger-api/swagger-parser/pull/34
                             completion(Response(response: httpResponse, body: ("" as! T)), nil)
                         } else {
+                            NSLog("ERROR: parsing server response failed (\(error))")
                             completion(nil, ErrorResponse.parseError(data))
                         }
                     }

@@ -32,13 +32,11 @@ public final class UserPeerManager: PeerManager {
 	
 	public static func define(peerID: PeerID) {
 		instance = UserPeerManager(peerID: peerID)
-		instance.dirtied()
 	}
 	
 	private let localPeerInfo = unarchiveObjectFromUserDefs(UserPeerManager.PrefKey) ?? UserPeerInfo()
 	
-	private init() {
-		super.init(peerID: localPeerInfo.peerID)
+	private func commonInit() {
 		if peerInfo!.hasPicture {
 			if let provider = CGDataProvider(url: UserPeerManager.pictureResourceURL as CFURL) {
 				cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
@@ -49,10 +47,16 @@ public final class UserPeerManager: PeerManager {
 		dirtied()
 	}
 	
+	private init() {
+		super.init(peerID: localPeerInfo.peerID)
+		commonInit()
+	}
+	
 	// hide initializer
 	override private init(peerID: PeerID) {
 		super.init(peerID: peerID)
 		localPeerInfo.peerID = peerID
+		commonInit()
 	}
 	
 	/// always returns true to look good in preview
@@ -126,8 +130,8 @@ public final class UserPeerManager: PeerManager {
 	
 	fileprivate override init() {
 		dateOfBirth = nil
-		try? KeychainStore.removeFromKeychain(label: UserPeerManager.KeyLabel, tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
-		try? KeychainStore.removeFromKeychain(label: UserPeerManager.KeyLabel, tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PublicKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeerInfo.KeySize)
+		try? KeychainStore.removeFromKeychain(tag: UserPeerManager.PrivateKeyTag, keyType: PeerInfo.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeerInfo.KeySize)
 		self._keyPair = try! KeyPair(label: UserPeerManager.KeyLabel, privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize, persistent: true)
         self._peer = PeerInfo(peerID: PeerID(), publicKey: _keyPair.publicKey, nickname: NSLocalizedString("New Peereer", comment: "Placeholder for peer name."), gender: .female, age: nil, hasPicture: false)
 	}

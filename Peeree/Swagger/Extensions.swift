@@ -68,6 +68,7 @@ private let dateFormatter: DateFormatter = {
     let fmt = DateFormatter()
     fmt.dateFormat = Configuration.dateFormat
     fmt.locale = Locale(identifier: "en_US_POSIX")
+    fmt.timeZone = TimeZone(secondsFromGMT: 0)
     return fmt
 }()
 

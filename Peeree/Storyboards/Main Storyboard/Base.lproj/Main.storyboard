@@ -1120,36 +1120,6 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="Picture" footerTitle="Filter out people without a portrait" id="VhZ-Ja-vhb">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ul7-Fh-dp8">
-                                        <rect key="frame" x="0.0" y="386.5" width="320" height="44"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ul7-Fh-dp8" id="L0z-pG-1Gn">
-                                            <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="0C0-la-Zur">
-                                                    <rect key="frame" x="247" y="6.5" width="51" height="31"/>
-                                                    <accessibility key="accessibilityConfiguration" hint="Filters out people with no picture set" label="Picture available filter"/>
-                                                    <connections>
-                                                        <action selector="changeFilter:" destination="FVN-ta-Q5I" eventType="valueChanged" id="rLg-wP-oc7"/>
-                                                    </connections>
-                                                </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Filter objectionable content" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="51V-hR-FjH">
-                                                    <rect key="frame" x="24" y="11.5" width="209" height="21"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="0C0-la-Zur" firstAttribute="centerY" secondItem="L0z-pG-1Gn" secondAttribute="centerY" id="0Sl-5e-rE1"/>
-                                                <constraint firstItem="51V-hR-FjH" firstAttribute="centerY" secondItem="L0z-pG-1Gn" secondAttribute="centerY" id="6cJ-na-G57"/>
-                                                <constraint firstAttribute="trailingMargin" secondItem="0C0-la-Zur" secondAttribute="trailing" constant="8" id="PIp-co-no1"/>
-                                                <constraint firstItem="0C0-la-Zur" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="51V-hR-FjH" secondAttribute="trailing" constant="8" id="omv-7O-ZJh"/>
-                                                <constraint firstItem="51V-hR-FjH" firstAttribute="leading" secondItem="L0z-pG-1Gn" secondAttribute="leadingMargin" constant="8" id="umD-gv-ocX"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                    </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ftg-Zm-Bcc">
                                         <rect key="frame" x="0.0" y="430.5" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>

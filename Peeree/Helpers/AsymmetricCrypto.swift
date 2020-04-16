@@ -55,7 +55,7 @@ public class KeychainStore {
 	}
 	/// low-level keychain manipulation
 	public static func addToKeychain(key: SecKey, label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws -> Data {
-		var addquery: [String: Any]
+		let addquery: [String: Any]
 		if #available(OSX 10.15, iOS 13.0, *) {
 			addquery = [kSecAttrLabel as String: label as CFString,
 						kSecUseDataProtectionKeychain as String: true as CFBoolean,
@@ -82,9 +82,8 @@ public class KeychainStore {
 		return (item as! CFData) as Data
 	}
 	/// low-level keychain manipulation
-	public static func removeFromKeychain(label: String, tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws {
-		let remquery: [String: Any] = [kSecAttrLabel as String: label as CFString,
-									   kSecClass as String: kSecClassKey,
+	public static func removeFromKeychain(tag: Data, keyType: CFString, keyClass: CFString, size: Int) throws {
+		let remquery: [String: Any] = [kSecClass as String: kSecClassKey,
 									   kSecAttrKeyClass as String: keyClass,
 									   kSecAttrKeySizeInBits as String: size,
 									   kSecAttrApplicationTag as String: tag,
@@ -97,7 +96,7 @@ public class KeychainStore {
 	}
 	
 	public static func removeFromKeychain(key: AsymmetricKey, label: String, tag: Data) throws {
-		try KeychainStore.removeFromKeychain(label: label, tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
+		try KeychainStore.removeFromKeychain(tag: tag, keyType: key.type, keyClass: key.keyClass, size: key.size)
 	}
 	
 	public static func publicKeyFromKeychain(label: String, tag: Data, type: CFString, size: Int) throws -> AsymmetricPublicKey {
@@ -132,7 +131,7 @@ public class AsymmetricKey {
             defer {
                 // always try to remove key from keychain
                 do {
-					try KeychainStore.removeFromKeychain(label: temporaryLabel, tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
+					try KeychainStore.removeFromKeychain(tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
                     NSLog("WARN: Removing temporary key from keychain failed: \(error)")
@@ -163,12 +162,12 @@ public class AsymmetricKey {
             let tag = temporaryLabel.data(using: .utf8)!
             
             // always try to remove key from keychain before we add it again
-			try? KeychainStore.removeFromKeychain(label: temporaryLabel, tag: tag, keyType: type, keyClass: keyClass, size: size)
+			try? KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
             
             defer {
                 // always try to remove key from keychain when we added it
                 do {
-                    try KeychainStore.removeFromKeychain(label: temporaryLabel, tag: tag, keyType: type, keyClass: keyClass, size: size)
+                    try KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
                 } catch {
                     // only log this
                     NSLog("INFO: Removing temporary key from keychain failed: \(error)")
@@ -180,6 +179,7 @@ public class AsymmetricKey {
                                            kSecAttrApplicationTag as String: tag,
                                            kSecAttrKeySizeInBits as String: size,
                                            kSecValueData as String: data,
+                                           kSecAttrLabel as String: temporaryLabel as CFString,
                                            kSecAttrKeyClass as String: keyClass,
                                            kSecReturnRef as String: NSNumber(value: true)]
             var item: CFTypeRef?

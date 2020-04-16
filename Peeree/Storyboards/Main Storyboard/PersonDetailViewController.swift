@@ -55,14 +55,14 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
 			AccountController.shared.unpin(peer: peer)
 		}
-		unpinAction.isEnabled = peer.pinned
+		unpinAction.isEnabled = !manager.isLocalPeer && peer.pinned
 		alertController.addAction(unpinAction)
 		let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
 			AccountController.shared.report(manager: manager) { (error) in
 				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
 			}
 		}
-		reportAction.isEnabled = peer.hasPicture && manager.cgPicture != nil
+		reportAction.isEnabled = !manager.isLocalPeer && peer.hasPicture && manager.cgPicture != nil && manager.pictureClassification == .none
 		alertController.addAction(reportAction)
 		
 		alertController.present()
@@ -152,15 +152,20 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeerManager.Notifications.verified.addObserver(usingBlock: simpleStateUpdate))
 		
-		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinned, .unpinFailed, .pinStateUpdated, .peerReported]
+		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinFailed, .pinStateUpdated, .peerReported]
         for networkNotification in simpleHandledNotifications2 {
             notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
         }
         
         notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
             simpleStateUpdate(notification)
-			self?.gradientView.animateGradient = true
+			self?.gradientView?.animateGradient = true
         }))
+
+		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { [weak self] (notification) in
+			simpleStateUpdate(notification)
+			self?.messageTextView?.resignFirstResponder()
+		}))
 		
 		registerForKeyboardNotifications()
 		

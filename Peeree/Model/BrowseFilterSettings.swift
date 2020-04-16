@@ -86,7 +86,7 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
         // always keep matched peers in filter
         if peer.pinMatched { return true }
         
-		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .female) || (gender == .male && peer.gender == .male)
+		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .female) || (gender == .male && peer.gender == .male) || (gender == .queer && peer.gender == .queer)
         var matchingAge: Bool
         if let peerAge = peer.age {
             matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))
