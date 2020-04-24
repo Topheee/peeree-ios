@@ -38,7 +38,7 @@ public class AccountController: SecurityDataSource {
     /// JPEG compression quality for protrait report uploads
 	static private let UploadCompressionQuality: CGFloat = 0.3
 	/// refresh objectionable content every hour at most (or when the app is killed)
-	static let ObjectionableContentRefreshThreshold: TimeInterval = 0 //60 * 60
+	static let ObjectionableContentRefreshThreshold: TimeInterval = 60 * 60
     
     public static let shared = AccountController()
     

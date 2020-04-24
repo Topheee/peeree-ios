@@ -249,9 +249,9 @@ public struct PeerInfo: Equatable {
 	public var summary: String {
 		let manager = PeeringController.shared.manager(for: peerID)
 		var summary: String
-		if age != nil {
+		if let age = self.age {
 			let format = NSLocalizedString("fullsummary", comment: "Text describing the peers age, gender, pin and verification status")
-			summary = String(format: format, age!, gender.localizedRawValue, manager.verificationStatus)
+			summary = String(format: format, age, gender.localizedRawValue, manager.verificationStatus)
 		} else {
 			let format = NSLocalizedString("smallsummary", comment: "Text describing the peers gender, pin and verification status")
 			summary = String(format: format, gender.localizedRawValue, manager.verificationStatus)
