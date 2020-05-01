@@ -37,7 +37,7 @@ public final class UserPeerManager: PeerManager {
 	private let localPeerInfo = unarchiveObjectFromUserDefs(UserPeerManager.PrefKey) ?? UserPeerInfo()
 	
 	private func commonInit() {
-		if peerInfo!.hasPicture {
+		if peerInfo?.hasPicture ?? false {
 			if let provider = CGDataProvider(url: UserPeerManager.pictureResourceURL as CFURL) {
 				cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
 			} else {
@@ -250,10 +250,10 @@ public struct PeerInfo: Equatable {
 		let manager = PeeringController.shared.manager(for: peerID)
 		var summary: String
 		if let age = self.age {
-			let format = NSLocalizedString("fullsummary", comment: "Text describing the peers age, gender, pin and verification status")
+			let format = NSLocalizedString("fullsummary", comment: "Text describing the peers age, gender and verification status")
 			summary = String(format: format, age, gender.localizedRawValue, manager.verificationStatus)
 		} else {
-			let format = NSLocalizedString("smallsummary", comment: "Text describing the peers gender, pin and verification status")
+			let format = NSLocalizedString("smallsummary", comment: "Text describing the peers gender and verification status")
 			summary = String(format: format, gender.localizedRawValue, manager.verificationStatus)
 		}
 		if manager.unreadMessages > 0 { summary = "\(summary) - 📫 (\(manager.unreadMessages))" }
