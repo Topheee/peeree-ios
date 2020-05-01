@@ -9,10 +9,10 @@
 import UIKit
 
 final class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
-    private static let FirstViewControllerID = "FirstViewController"
-    private static let SecondViewControllerID = "SecondViewController"
-    
-    private var firstViewController, secondViewController: UIViewController!
+	private static let FirstViewControllerID = "FirstViewController"
+	private static let SecondViewControllerID = "SecondViewController"
+	
+	private var firstViewController, secondViewController: UIViewController!
 	
 	@IBAction func unwindToOnboardingViewController(_ segue: UIStoryboardSegue) { }
 	
@@ -20,18 +20,18 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-        
-        firstViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.FirstViewControllerID)
-        secondViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.SecondViewControllerID)
-        
+		
+		firstViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.FirstViewControllerID)
+		secondViewController = storyboard!.instantiateViewController(withIdentifier: FirstLaunchViewController.SecondViewControllerID)
+		
 		// Configure the page view controller and add it as a child view controller.
 		pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
 		pageViewController.delegate = self
-        pageViewController.dataSource = self
+		pageViewController.dataSource = self
 		pageViewController.setViewControllers([firstViewController], direction: .forward, animated: false, completion: {done in })
-        
-        let pageView = pageViewController.view
-        
+		
+		let pageView = pageViewController.view
+		
 		self.addChild(pageViewController)
 		self.view.addSubview(pageView!)
 		
@@ -46,11 +46,11 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		
 		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
 		self.view.gestureRecognizers = pageViewController.gestureRecognizers
-    }
-    
-    override var prefersStatusBarHidden : Bool {
-        return true
-    }
+	}
+	
+	override var prefersStatusBarHidden : Bool {
+		return true
+	}
 	
 	// MARK: - UIPageViewControllerDelegate
 	

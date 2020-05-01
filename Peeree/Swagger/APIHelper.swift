@@ -48,10 +48,10 @@ public struct APIHelper {
 
     public static func mapValuesToQueryItems(_ source: [String:Any?]) -> [URLQueryItem]? {
         let destination = source.filter({ $0.value != nil}).reduce(into: [URLQueryItem]()) { (result, item) in
-			// the `Data` case is Peeree-specific
-			if let data = item.value as? Data {
-				result.append(URLQueryItem(name: item.key, value: String(data: data, encoding: .utf8)!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)))
-			} else if let collection = item.value as? Array<Any?> {
+            // the `Data` case is Peeree-specific
+            if let data = item.value as? Data {
+                result.append(URLQueryItem(name: item.key, value: String(data: data, encoding: .utf8)!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)))
+            } else if let collection = item.value as? Array<Any?> {
                 let value = collection.filter({ $0 != nil }).map({"\($0!)"}).joined(separator: ",")
                 result.append(URLQueryItem(name: item.key, value: value))
             } else if let value = item.value {

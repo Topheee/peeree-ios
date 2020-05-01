@@ -15,8 +15,8 @@ open class SwaggerClientAPI {
     public static var dataSource: SecurityDataSource?
     
     public static let `protocol` = "https"
-	public static let testHost = "<your-ip>:9443"
-	public static let host = "rest.peeree.de:39517" //testHost //"rest.peeree.de:9443"
+    public static let testHost = "<your-ip>:9443"
+    public static let host = "rest.peeree.de:39517" //testHost //"rest.peeree.de:9443"
     public static let basePath = "\(`protocol`)://\(host)/v1"
     public static let baseURL = URL(string: basePath)!
     public static var credential: URLCredential?
@@ -48,7 +48,7 @@ open class RequestBuilder<T> {
     var credential: URLCredential?
     var headers: [String:String]
     let parameters: [String:Any]?
-	public let isBody: Bool
+    public let isBody: Bool
     let httpBody: Data?
     let method: HTTPMethod
     let url: URL
@@ -60,20 +60,20 @@ open class RequestBuilder<T> {
 //    public var onProgressReady: ((Progress) -> ())?
 
     required public init(method: HTTPMethod, url: URL, parameters: [String:Any]?, isBody: Bool, headers: [String:String] = [:], body: Data? = nil, isValidated: Bool = true) {
-		var headers = headers
-		if let d = SwaggerClientAPI.dataSource {
-			var val = d.getPeerID()
-			if !val.isEmpty {
-				headers["peerID"] = val
-			}
-			if isValidated {
-				val = d.getSignature()
-				if !val.isEmpty {
-					headers["signature"] = val
-				}
-			}
-		}
-		
+        var headers = headers
+        if let d = SwaggerClientAPI.dataSource {
+            var val = d.getPeerID()
+            if !val.isEmpty {
+                headers["peerID"] = val
+            }
+            if isValidated {
+                val = d.getSignature()
+                if !val.isEmpty {
+                    headers["signature"] = val
+                }
+            }
+        }
+        
         self.method = method
         self.url = url
         self.parameters = parameters

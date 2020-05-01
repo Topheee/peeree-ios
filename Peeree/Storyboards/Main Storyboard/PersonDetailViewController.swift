@@ -16,10 +16,10 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	@IBOutlet private weak var verificationStatusLabel: UILabel!
 	@IBOutlet private weak var verificationImage: UIImageView!
 	@IBOutlet private weak var pinButton: UIButton!
-    @IBOutlet private weak var traitsButton: UIButton!
-    @IBOutlet private weak var gradientView: GradientView!
-    @IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
-    @IBOutlet private weak var findButtonItem: UIBarButtonItem!
+	@IBOutlet private weak var traitsButton: UIButton!
+	@IBOutlet private weak var gradientView: GradientView!
+	@IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
+	@IBOutlet private weak var findButtonItem: UIBarButtonItem!
 	@IBOutlet private weak var peerStackView: UIStackView!
 	@IBOutlet private weak var propertyStackView: UIStackView!
 	
@@ -32,17 +32,17 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	@IBOutlet private weak var messageTextView: UITextView!
 	@IBOutlet private weak var messageBottomConstraint: NSLayoutConstraint!
 	
-    private static let unwindSegueID = "unwindToBrowseViewController"
-    static let storyboardID = "PersonDetailViewController"
-    static let beaconSegueID = "beaconSegue"
+	private static let unwindSegueID = "unwindToBrowseViewController"
+	static let storyboardID = "PersonDetailViewController"
+	static let beaconSegueID = "beaconSegue"
 	
 	private var chatTableView: UITableView? { return chatTableViewContainer.subviews.first as? UITableView }
 	
 	private var timer: Timer?
-    
-    private var notificationObservers: [NSObjectProtocol] = []
-    
-    private var pictureProgressManager: ProgressManager?
+	
+	private var notificationObservers: [NSObjectProtocol] = []
+	
+	private var pictureProgressManager: ProgressManager?
 	
 	/// caches
 	private var displayedPeerInfo: PeerInfo?
@@ -83,19 +83,19 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			}
 		}
 	}
-    
-    @IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
-    
+	
+	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
+	
 	@IBAction func pinPeer(_ sender: UIButton) {
-        guard let peer = displayedPeerInfo else { return }
-        guard !peer.pinned else {
-            AccountController.shared.updatePinStatus(of: peer)
-            return
-        }
-        
-        AppDelegate.requestPin(of: peer)
-        updateState()
-    }
+		guard let peer = displayedPeerInfo else { return }
+		guard !peer.pinned else {
+			AccountController.shared.updatePinStatus(of: peer)
+			return
+		}
+		
+		AppDelegate.requestPin(of: peer)
+		updateState()
+	}
 	
 	@IBAction func tapImage(_ sender: Any) {
 		if messageTextView.isFirstResponder {
@@ -107,60 +107,60 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			layoutMetadata(isHorizontal: false)
 		}
 	}
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let charTraitVC = segue.destination as? CharacterTraitViewController {
-            charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
-            charTraitVC.userTraits = false
-        } else if let beaconVC = segue.destination as? BeaconViewController {
-            beaconVC.peerManager = peerManager
+	
+	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+		if let charTraitVC = segue.destination as? CharacterTraitViewController {
+			charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
+			charTraitVC.userTraits = false
+		} else if let beaconVC = segue.destination as? BeaconViewController {
+			beaconVC.peerManager = peerManager
 		} else if let messageViewController = segue.destination as? MessageTableViewController {
 			messageViewController.peerManager = peerManager
 		}
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+	}
+	
+	override func viewDidLoad() {
+		super.viewDidLoad()
 		for view in propertyStackView.arrangedSubviews {
 			view.layer.backgroundColor = AppTheme.tintColor.cgColor
 			view.layer.cornerRadius = view.layer.bounds.height / 2.0
 		}
-        pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
+		pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
 		messageBar.layer.borderWidth = 0.25
 		messageBar.layer.borderColor = UIColor.lightGray.cgColor
-    }
-    
+	}
+	
 	override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        // make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
-        if peerManager != nil {
-            displayedPeerInfo = peerManager.peerInfo ?? displayedPeerInfo
-        }
-        
-        updateState()
-        
-        let simpleStateUpdate = { [weak self] (notification: Notification) in
-            guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID, let strongSelf = self else { return }
-            guard strongSelf.displayedPeerInfo?.peerID == peerID else { return }
-            // as we have value semantics, our cached peer info does not change, so we have to get the updated one
-            strongSelf.displayedPeerInfo = strongSelf.peerManager.peerInfo ?? strongSelf.displayedPeerInfo
-            strongSelf.updateState()
-        }
-        
+		super.viewWillAppear(animated)
+		
+		// make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
+		if peerManager != nil {
+			displayedPeerInfo = peerManager.peerInfo ?? displayedPeerInfo
+		}
+		
+		updateState()
+		
+		let simpleStateUpdate = { [weak self] (notification: Notification) in
+			guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID, let strongSelf = self else { return }
+			guard strongSelf.displayedPeerInfo?.peerID == peerID else { return }
+			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
+			strongSelf.displayedPeerInfo = strongSelf.peerManager.peerInfo ?? strongSelf.displayedPeerInfo
+			strongSelf.updateState()
+		}
+		
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeerManager.Notifications.verified.addObserver(usingBlock: simpleStateUpdate))
 		
 		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinFailed, .pinStateUpdated, .peerReported]
-        for networkNotification in simpleHandledNotifications2 {
-            notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
-        }
-        
-        notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
-            simpleStateUpdate(notification)
+		for networkNotification in simpleHandledNotifications2 {
+			notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
+		}
+		
+		notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
+			simpleStateUpdate(notification)
 			self?.gradientView?.animateGradient = true
-        }))
+		}))
 
 		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { [weak self] (notification) in
 			simpleStateUpdate(notification)
@@ -171,11 +171,11 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		
 		// somehow sometimes it is still hidden from BrowseViewController
 		navigationController?.setNavigationBarHidden(false, animated: false)
-    }
+	}
 	
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        guard let peer = displayedPeerInfo else { return }
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		guard let peer = displayedPeerInfo else { return }
 		
 		let progress = PeeringController.shared.manager(for: peer.peerID).loadPicture()
 		portraitImageView.loadProgress = progress
@@ -190,21 +190,21 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
 		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
 		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
-    }
+	}
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
 		NotificationCenter.default.removeObserver(self)
-        for observer in notificationObservers { NotificationCenter.`default`.removeObserver(observer) }
-        notificationObservers.removeAll()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        pictureProgressManager = nil
+		for observer in notificationObservers { NotificationCenter.`default`.removeObserver(observer) }
+		notificationObservers.removeAll()
+	}
+	
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		pictureProgressManager = nil
 		gradientView.animateGradient = false
 		portraitImageView.loadProgress = nil
-        portraitImageView.image = nil
+		portraitImageView.image = nil
 		
 		// reset position from animation, if the user slides back in
 		timer?.invalidate()
@@ -214,7 +214,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		// reverse toolbar modifications, otherwise the toolbar disappears when going into Radar view and back
 		messageTextView.resignFirstResponder()
 		messageTableHeight.isActive = false
-    }
+	}
 	
 	// MARK: UITextFieldDelegate methods
 	
@@ -225,61 +225,61 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		return true
 	}
 	
-    // MARK: ProgressDelegate
-    
-	func progressDidPause(_ progress: Progress) {
-        // ignored
-    }
-    
-    func progressDidCancel(_ progress: Progress) {
-        if progress === pictureProgressManager?.progress {
-            pictureProgressManager = nil
-        }
-    }
-    
-    func progressDidResume(_ progress: Progress) {
-        // ignored
-    }
-    
-    func progressDidUpdate(_ progress: Progress) {
-        if progress === pictureProgressManager?.progress {
-            if progress.completedUnitCount == progress.totalUnitCount {
-                pictureProgressManager = nil
-                // as we have value semantics, our cached peer info does not change, so we have to get the updated one
-                displayedPeerInfo = peerManager.peerInfo
-                updateState()
-            }
-        }
-    }
-
-    // MARK: Private methods
+	// MARK: ProgressDelegate
 	
-    private func updateState() {
-        guard let peer = displayedPeerInfo, let state = peerManager else { return }
+	func progressDidPause(_ progress: Progress) {
+		// ignored
+	}
+	
+	func progressDidCancel(_ progress: Progress) {
+		if progress === pictureProgressManager?.progress {
+			pictureProgressManager = nil
+		}
+	}
+	
+	func progressDidResume(_ progress: Progress) {
+		// ignored
+	}
+	
+	func progressDidUpdate(_ progress: Progress) {
+		if progress === pictureProgressManager?.progress {
+			if progress.completedUnitCount == progress.totalUnitCount {
+				pictureProgressManager = nil
+				// as we have value semantics, our cached peer info does not change, so we have to get the updated one
+				displayedPeerInfo = peerManager.peerInfo
+				updateState()
+			}
+		}
+	}
+
+	// MARK: Private methods
+	
+	private func updateState() {
+		guard let peer = displayedPeerInfo, let state = peerManager else { return }
 		
 		messageBar.isHidden = !peer.pinMatched || state.isLocalPeer
 		if messageBar.isHidden { messageBar.resignFirstResponder() }
-        pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
-        pinButton.isEnabled = state.isAvailable && !state.isLocalPeer
-        pinButton.isSelected = state.pinState == .pinned
-//        traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
-        pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
-//        findButtonItem.isEnabled = peer.pinMatched
+		pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
+		pinButton.isEnabled = state.isAvailable && !state.isLocalPeer
+		pinButton.isSelected = state.pinState == .pinned
+//		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
+		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
+//		findButtonItem.isEnabled = peer.pinMatched
 		sendMessageButton.isEnabled = state.isAvailable && messageTextView.text?.count ?? 0 > 0
-        
-        title = peer.nickname
-        if state.isLocalPeer || state.isAvailable {
-            navigationItem.titleView = nil
-            navigationItem.title = peer.nickname
+		
+		title = peer.nickname
+		if state.isLocalPeer || state.isAvailable {
+			navigationItem.titleView = nil
+			navigationItem.title = peer.nickname
 			pinButton.layer.removeAllAnimations()
-        } else {
-            let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
-            titleLable.text = peer.nickname
-            titleLable.textColor = UIColor.lightGray
-            titleLable.textAlignment = .center
-            titleLable.lineBreakMode = .byTruncatingTail
-            navigationItem.titleView = titleLable
-        }
+		} else {
+			let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
+			titleLable.text = peer.nickname
+			titleLable.textColor = UIColor.lightGray
+			titleLable.textAlignment = .center
+			titleLable.lineBreakMode = .byTruncatingTail
+			navigationItem.titleView = titleLable
+		}
 		
 		ageLabel.text = peer.age.map { (theAge) -> String in "\(theAge)" }
 		ageLabel.isHidden = peer.age == nil
@@ -298,10 +298,10 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 				portraitImageView.image = #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
 				portraitEffectView.effect = nil
 		}
-        if #available(iOS 11.0, *) {
-            portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
-        }
-    }
+		if #available(iOS 11.0, *) {
+			portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
+		}
+	}
 	
 	// TODO merge with WelcomeViewController.animatePinButton()
 	@objc private func animatePinButton(timer: Timer?) {

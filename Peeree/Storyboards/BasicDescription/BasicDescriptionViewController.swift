@@ -15,24 +15,24 @@ final class BasicDescriptionViewController: UIViewController {
 	@IBOutlet private weak var descriptionTextView: UITextView!
 	
 	var dataSource: BasicDescriptionViewControllerDataSource?
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        guard let dataSource = dataSource else { return }
-        
-        headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
-        subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
-        descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        descriptionTextView.flashScrollIndicators()
-    }
-    
-    override var prefersStatusBarHidden : Bool {
-        return true
-    }
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		guard let dataSource = dataSource else { return }
+		
+		headingLabel.text = dataSource.headingOfBasicDescriptionViewController(self)
+		subHeadingLabel.text = dataSource.subHeadingOfBasicDescriptionViewController(self)
+		descriptionTextView.text = dataSource.descriptionOfBasicDescriptionViewController(self)
+	}
+	
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		descriptionTextView.flashScrollIndicators()
+	}
+	
+	override var prefersStatusBarHidden : Bool {
+		return true
+	}
 }
 
 protocol BasicDescriptionViewControllerDataSource {

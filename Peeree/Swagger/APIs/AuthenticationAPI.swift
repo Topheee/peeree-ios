@@ -48,7 +48,7 @@ open class AuthenticationAPI {
 
         let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getNonDecodableBuilder()
 
-		return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .DELETE, url: url.url!, parameters: parameters, isBody: false)
     }
 
     /**

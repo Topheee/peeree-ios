@@ -11,8 +11,8 @@ protocol JSONEncodable {
 }
 
 public enum ErrorResponse : Error {
-	/// Network Reachability reported not reachable error
-	case offline
+    /// Network Reachability reported not reachable error
+    case offline
     /// HTTP status code, response data and error
     case httpError(Int, Data?)
     /// HTTP status code, response data and URLSession provided error
@@ -22,9 +22,9 @@ public enum ErrorResponse : Error {
 }
 
 open class Response<T> {
-	public let statusCode: Int
-	public let header: [String: String]
-	public let body: T?
+    public let statusCode: Int
+    public let header: [String: String]
+    public let body: T?
 
     public init(statusCode: Int, header: [String: String], body: T?) {
         self.statusCode = statusCode
@@ -165,7 +165,7 @@ class Decoders {
             let sourceDictionary = source as! [AnyHashable: Any]
 
             let instance = Account(peerID: Decoders.decode(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject),
-								   sequenceNumber: Decoders.decode(clazz: Int32.self, source: sourceDictionary["sequenceNumber"] as AnyObject))
+                                   sequenceNumber: Decoders.decode(clazz: Int32.self, source: sourceDictionary["sequenceNumber"] as AnyObject))
             return instance
         }
 
@@ -192,8 +192,8 @@ class Decoders {
             let sourceDictionary = source as! [AnyHashable: Any]
 
             let instance = Pin(peerID: Decoders.decode(clazz: PeerID.self, source: sourceDictionary["peerID"] as AnyObject),
-							   publicKey: Decoders.decode(clazz: PublicKey.self, source: sourceDictionary["publicKey"] as AnyObject),
-							   match: Decoders.decode(clazz: Bool.self, source: sourceDictionary["match"] as AnyObject))
+                               publicKey: Decoders.decode(clazz: PublicKey.self, source: sourceDictionary["publicKey"] as AnyObject),
+                               match: Decoders.decode(clazz: Bool.self, source: sourceDictionary["match"] as AnyObject))
             return instance
         }
 

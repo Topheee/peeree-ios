@@ -48,9 +48,9 @@ open class ContentfilterAPI {
 
         let requestBuilder: RequestBuilder<[String]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-		return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
     }
-	
+    
     /**
      Report a portrait picture as objectional.
 
@@ -90,7 +90,7 @@ open class ContentfilterAPI {
     open class func putContentFilterPortraitReportWithRequestBuilder(body: Data, reportedPeerID: UUID, hash: String) -> RequestBuilder<Void> {
         let path = "/contentfilter/portrait/report"
         let URLString = SwaggerClientAPI.basePath + path
-		let parameters: [String:Any]? = nil // JSONEncodingHelper.encodingParameters(forEncodableObject: body)
+        let parameters: [String:Any]? = nil // JSONEncodingHelper.encodingParameters(forEncodableObject: body)
         var url = URLComponents(string: URLString)!
         url.queryItems = APIHelper.mapValuesToQueryItems([
                         "reportedPeerID": reportedPeerID,
@@ -98,8 +98,8 @@ open class ContentfilterAPI {
         ])
 
         let requestBuilder: RequestBuilder<Void>.Type = SwaggerClientAPI.requestBuilderFactory.getNonDecodableBuilder()
-		
-		return requestBuilder.init(method: .POST, url: url.url!, parameters: parameters, isBody: true, headers: ["Content-Type" : "image/jpeg"], body: body)
+        
+        return requestBuilder.init(method: .POST, url: url.url!, parameters: parameters, isBody: true, headers: ["Content-Type" : "image/jpeg"], body: body)
     }
 
 }

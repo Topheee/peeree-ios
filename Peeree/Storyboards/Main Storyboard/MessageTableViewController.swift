@@ -40,18 +40,18 @@ class MessageTableViewController: UITableViewController {
 		}
 	}
 	
-    // MARK: - Table view data source
+	// MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
+	override func numberOfSections(in tableView: UITableView) -> Int {
+		return 1
+	}
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        lastCount = peerManager?.transcripts.count ?? 0
+	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		lastCount = peerManager?.transcripts.count ?? 0
 		return lastCount
-    }
+	}
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		// Get the transcript for this row
 		let transcript = peerManager.transcripts[indexPath.row]
 		
@@ -61,7 +61,7 @@ class MessageTableViewController: UITableViewController {
 		}
 		cell.set(transcript: transcript)
 		return cell
-    }
+	}
 
 	// pragma mark - private methods
 	

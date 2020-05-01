@@ -14,9 +14,9 @@ final class SingleSelViewController: UIViewController {
 	var dataSource: SingleSelViewControllerDataSource? {
 		didSet {
 			guard selectionPickerView != nil else { return }
-            
-            selectionPickerView.dataSource = dataSource
-            selectionPickerView.delegate = dataSource
+			
+			selectionPickerView.dataSource = dataSource
+			selectionPickerView.delegate = dataSource
 		}
 	}
 	
@@ -30,21 +30,21 @@ final class SingleSelViewController: UIViewController {
 	}
 	
 	override func viewDidLoad() {
-        super.viewDidLoad()
+		super.viewDidLoad()
 		selectionPickerView.dataSource = dataSource
 		selectionPickerView.delegate = dataSource
 	}
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        guard let selection = dataSource?.initialPickerSelection(for: selectionPickerView) else { return }
-        
-        selectionPickerView.selectRow(selection.row, inComponent: selection.inComponent, animated: false)
-        selectionPickerView.isUserInteractionEnabled = dataSource?.selectionEditable(in: selectionPickerView) ?? false
-    }
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		guard let selection = dataSource?.initialPickerSelection(for: selectionPickerView) else { return }
+		
+		selectionPickerView.selectRow(selection.row, inComponent: selection.inComponent, animated: false)
+		selectionPickerView.isUserInteractionEnabled = dataSource?.selectionEditable(in: selectionPickerView) ?? false
+	}
 }
 
 protocol SingleSelViewControllerDataSource: BasicDescriptionViewControllerDataSource, UIPickerViewDataSource, UIPickerViewDelegate {
-    func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int)
-    func selectionEditable(in pickerView: UIPickerView) -> Bool
+	func initialPickerSelection(for pickerView: UIPickerView) -> (row: Int, inComponent: Int)
+	func selectionEditable(in pickerView: UIPickerView) -> Bool
 }

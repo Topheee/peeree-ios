@@ -7,7 +7,7 @@
 import Foundation
 
 class CustomRequestBuilderFactory: RequestBuilderFactory {
-	func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type {
+    func getNonDecodableBuilder<T>() -> RequestBuilder<T>.Type {
         return CustomRequestBuilder<T>.self
     }
 
@@ -28,7 +28,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
         }
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-			if SwaggerClientAPI.testHost.starts(with: challenge.protectionSpace.host) {
+            if SwaggerClientAPI.testHost.starts(with: challenge.protectionSpace.host) {
                 // for debug only!
                 guard let trust = challenge.protectionSpace.serverTrust else {
                     NSLog("no server trust found")
@@ -98,10 +98,10 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
             completionHandler(.performDefaultHandling, nil)
         }
     }
-	
-	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-		NSLog("ERROR: session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
-	}
+    
+    func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+        NSLog("ERROR: session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
+    }
 }
 
 open class CustomRequestBuilder<T>: RequestBuilder<T> {
@@ -110,14 +110,14 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
      May be overridden by a subclass if you want to control the session
      configuration.
      */
-	private lazy var sessionManager: URLSession = {
+    private lazy var sessionManager: URLSession = {
         let configuration = URLSessionConfiguration.default
 //        these are set for each request: configuration.httpAdditionalHeaders = buildHeaders()
 //        configuration.httpShouldUsePipelining = true
         configuration.timeoutIntervalForRequest = 5.0
         configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
 //        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-		return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
+        return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
     }()
 
     /**
@@ -135,12 +135,12 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
      May be overridden by a subclass if you want to control the request
      configuration (e.g. to override the cache policy).
      */
-	open func makeRequest(method: HTTPMethod) -> URLRequest {
+    open func makeRequest(method: HTTPMethod) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.allowsCellularAccess = true
         request.httpShouldHandleCookies = false
-		request.httpBody = httpBody
+        request.httpBody = httpBody
         for header in self.headers {
             request.setValue(header.value, forHTTPHeaderField: header.key)
         }
@@ -148,11 +148,11 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
     }
 
     override open func execute(_ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
-		guard Reachability.getNetworkStatus() != .notReachable else {
-			completion(nil, ErrorResponse.offline)
-			return
-		}
-		
+        guard Reachability.getNetworkStatus() != .notReachable else {
+            completion(nil, ErrorResponse.offline)
+            return
+        }
+        
         let managerId:String = UUID().uuidString
         // Create a new manager for each request to customize its request header
 
@@ -234,33 +234,33 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
         return self.headers
     }
 
-	
-	/* see https://stackoverflow.com/questions/26335656/how-to-upload-images-to-a-server-in-ios-with-swift and https://fluffy.es/upload-image-to-server/
-	//		let boundary = generateBoundaryString()
-	//		let body = createBodyWithParameters(filePathKey: "file.jpeg", imageDataKey: body, boundary: boundary)
-	//		return requestBuilder.init(method: .POST, url: url.url!, parameters: parameters, isBody: true, headers: ["Content-Type" : "multipart/form-data; boundary=\(boundary)"], body: body)
-	class func createBodyWithParameters(filePathKey: String, imageDataKey: Data, boundary: String) -> Data {
-		var body = Data()
+    
+    /* see https://stackoverflow.com/questions/26335656/how-to-upload-images-to-a-server-in-ios-with-swift and https://fluffy.es/upload-image-to-server/
+    //        let boundary = generateBoundaryString()
+    //        let body = createBodyWithParameters(filePathKey: "file.jpeg", imageDataKey: body, boundary: boundary)
+    //        return requestBuilder.init(method: .POST, url: url.url!, parameters: parameters, isBody: true, headers: ["Content-Type" : "multipart/form-data; boundary=\(boundary)"], body: body)
+    class func createBodyWithParameters(filePathKey: String, imageDataKey: Data, boundary: String) -> Data {
+        var body = Data()
 
-		let filename = "user-profile.jpg"
+        let filename = "user-profile.jpg"
 
-		let mimetype = "image/jpg"
+        let mimetype = "image/jpg"
 
-		body.append("--\(boundary)\r\n".data(using: .utf8)!)
-		body.append("Content-Disposition: form-data; name=\"\(filePathKey)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-		body.append("Content-Type: \(mimetype)\r\n\r\n".data(using: .utf8)!)
-		body.append(imageDataKey)
-		body.append("\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"\(filePathKey)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimetype)\r\n\r\n".data(using: .utf8)!)
+        body.append(imageDataKey)
+        body.append("\r\n".data(using: .utf8)!)
 
-		body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
-		return body
-	}
-	
-	class func generateBoundaryString() -> String {
-		return "Boundary-\(UUID().uuidString)"
-	}
-	*/
+        return body
+    }
+    
+    class func generateBoundaryString() -> String {
+        return "Boundary-\(UUID().uuidString)"
+    }
+    */
 }
 
 public enum DecodableRequestBuilderError: Error {
@@ -272,9 +272,9 @@ public enum DecodableRequestBuilderError: Error {
 
 open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
 
-	override fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
+    override fileprivate func processRequest(manager: URLSession, request: URLRequest, _ managerId: String, _ completion: @escaping (_ response: Response<T>?, _ error: ErrorResponse?) -> Void) {
 
-		let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
+        let taskCompletionHandler = { (data: Data?, response: URLResponse?, error: Error?) in
             if let error = error {
                 completion(nil, ErrorResponse.sessionTaskError((response as? HTTPURLResponse)?.statusCode, data, error))
             } else if let httpResponse = response as? HTTPURLResponse {
@@ -309,13 +309,13 @@ open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
                         return
                     }
 
-					guard let data = data, !data.isEmpty else {
-						completion(nil, ErrorResponse.sessionTaskError(-1, nil, DecodableRequestBuilderError.emptyDataResponse))
-						return
-					}
+                    guard let data = data, !data.isEmpty else {
+                        completion(nil, ErrorResponse.sessionTaskError(-1, nil, DecodableRequestBuilderError.emptyDataResponse))
+                        return
+                    }
 
-					var responseObj: Response<T>? = nil
-					
+                    var responseObj: Response<T>? = nil
+
 //					let decodeResult: (decodableObj: T?, error: Error?)
 //					if #available(iOS 13, *) {
 //						decodeResult = CodableHelper.decode(T.self, from: data)
@@ -342,15 +342,13 @@ open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
 //						}
 //
 //					}
-					
 
-					
-					let decodeResult: (decodableObj: T?, error: Error?) = CodableHelper.decode(T.self, from: data)
-					if decodeResult.error == nil {
-						responseObj = Response(response: httpResponse, body: decodeResult.decodableObj)
-					}
+                    let decodeResult: (decodableObj: T?, error: Error?) = CodableHelper.decode(T.self, from: data)
+                    if decodeResult.error == nil {
+                        responseObj = Response(response: httpResponse, body: decodeResult.decodableObj)
+                    }
 
-					completion(responseObj, decodeResult.error.map { ErrorResponse.sessionTaskError(-3, data, $0) })
+                    completion(responseObj, decodeResult.error.map { ErrorResponse.sessionTaskError(-3, data, $0) })
                 }
             } else {
                 completion(nil, ErrorResponse.sessionTaskError(-2, data, DecodableRequestBuilderError.nilHTTPResponse))
@@ -362,5 +360,5 @@ open class CustomDecodableRequestBuilder<T:Decodable>: CustomRequestBuilder<T> {
         } else {
             (manager.dataTask(with: request, completionHandler: taskCompletionHandler)).resume()
         }
-	}
+    }
 }
