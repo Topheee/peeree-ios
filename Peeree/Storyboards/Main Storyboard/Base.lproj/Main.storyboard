@@ -3,7 +3,7 @@
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -440,10 +440,17 @@
                         <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
                     </view>
                     <toolbarItems/>
-                    <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz"/>
+                    <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz">
+                        <barButtonItem key="rightBarButtonItem" title="Find" id="S8S-DB-afu">
+                            <connections>
+                                <segue destination="PIG-Ng-mYB" kind="show" id="lOo-De-0Sv"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
                         <outlet property="chatTableViewContainer" destination="Vq4-kH-h3A" id="fg6-en-yXb"/>
+                        <outlet property="findButtonItem" destination="S8S-DB-afu" id="jIe-rb-qH5"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
                         <outlet property="messageBar" destination="Lkr-13-Jfz" id="EqV-w5-kyP"/>

@@ -234,6 +234,7 @@ public class AccountController: SecurityDataSource {
 		guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
 		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
 			if let error = _error {
+				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
 			} else if let hexHashes = _hexHashes {
 				DispatchQueue.main.async {

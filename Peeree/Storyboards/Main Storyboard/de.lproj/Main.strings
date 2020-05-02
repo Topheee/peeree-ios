@@ -260,8 +260,8 @@
 /* Class = "UILabel"; text = "Go offline to change settings."; ObjectID = "rAH-3G-jWK"; */
 "rAH-3G-jWK.text" = "Gehe offline, um Einstellungen zu ändern.";
 
-/* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "sCY-WJ-efU"; */
-"sCY-WJ-efU.title" = "Radar";
+/* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "S8S-DB-afu"; */
+"S8S-DB-afu.title" = "Finden";
 
 /* Class = "UITextField"; accessibilityHint = "Your publicly visible name"; ObjectID = "sNx-nf-ozM"; */
 "sNx-nf-ozM.accessibilityHint" = "Dein öffentlich sichtbarer Name";

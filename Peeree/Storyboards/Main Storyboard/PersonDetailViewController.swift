@@ -264,7 +264,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		pinButton.isSelected = state.pinState == .pinned
 //		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
 		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
-//		findButtonItem.isEnabled = peer.pinMatched
+		findButtonItem.isEnabled = peer.pinMatched
 		sendMessageButton.isEnabled = state.isAvailable && messageTextView.text?.count ?? 0 > 0
 		
 		title = peer.nickname
