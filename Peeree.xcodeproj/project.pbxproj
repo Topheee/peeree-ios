@@ -72,6 +72,7 @@
 		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
 		9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */; };
 		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
+		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
 		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
 		9DEAE8CC1B640C5A00D4F6BF /* CharacterTrait.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */; };
 		9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFE8A961F33769700264CFE /* NetworkReachability.swift */; };
@@ -187,6 +188,7 @@
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessageTableViewController.swift; path = "Storyboards/Main Storyboard/MessageTableViewController.swift"; sourceTree = "<group>"; };
 		9DDFB87022837A1100E129E2 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessageCell.swift; path = View/MessageCell.swift; sourceTree = "<group>"; };
+		9DDFC2E5245C6EAE00311054 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProgressManager.swift; path = Peeree/Helpers/ProgressManager.swift; sourceTree = "<group>"; };
 		9DEAE8CB1B640C5A00D4F6BF /* CharacterTrait.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CharacterTrait.swift; path = Model/CharacterTrait.swift; sourceTree = "<group>"; };
 		9DFE8A961F33769700264CFE /* NetworkReachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkReachability.swift; path = Peeree/Helpers/NetworkReachability.swift; sourceTree = "<group>"; };
@@ -329,6 +331,8 @@
 		9DA0F7AC1B5C3AB800F3BA87 = {
 			isa = PBXGroup;
 			children = (
+				9DDFC2E5245C6EAE00311054 /* LICENSE.txt */,
+				9DCE94631F30EDBA00F31330 /* README.md */,
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
 				9DA0F7CF1B5C3AB900F3BA87 /* PeereeTests */,
 				9D2A76B81DC63E9D004E6386 /* PeereeUITests */,
@@ -356,7 +360,6 @@
 				9DEAE8C81B63ED3700D4F6BF /* Model */,
 				9D6F7B901BC82A70007CD234 /* View */,
 				9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */,
-				9DCE94631F30EDBA00F31330 /* README.md */,
 			);
 			path = Peeree;
 			sourceTree = "<group>";
@@ -598,6 +601,7 @@
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
+				9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */,
 				9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
 			);
