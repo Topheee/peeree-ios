@@ -8,7 +8,8 @@
 
 import UIKit
 
-class CircleMaskView: UIView {
+/// A view containing a filled circle, which applies itself to another view.
+final class CircleMaskView: UIView {
 	override func draw(_ rect: CGRect) {
 		let circle = UIBezierPath(ovalIn: rect)
 		let context = UIGraphicsGetCurrentContext()
@@ -28,14 +29,23 @@ class CircleMaskView: UIView {
 	}
 }
 
-class RoundedImageView: UIImageView {
-	override func layoutSubviews() {
-		super.layoutSubviews()
+extension UIView {
+	fileprivate func roundViewAndLayoutSubviews() {
+		layoutSubviews()
 		layer.cornerRadius = bounds.width / 2.0
 		layer.masksToBounds = true
 	}
 }
 
+class RoundedImageView: UIImageView {
+	override func layoutSubviews() { roundViewAndLayoutSubviews() }
+}
+
+final class RoundedVisualEffectView: UIVisualEffectView {
+	override func layoutSubviews() { roundViewAndLayoutSubviews() }
+}
+
+/// An image view drawing a placeholder and progress until the actual image is being loaded.
 final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 	private var progressManager: ProgressManager? = nil
 	private var circleLayer: CAShapeLayer!
@@ -140,25 +150,19 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 	}
 }
 
-final class RoundedVisualEffectView: UIVisualEffectView {
-	override func layoutSubviews() {
-		super.layoutSubviews()
-		layer.cornerRadius = bounds.width / 2.0
-		layer.masksToBounds = true
-	}
-}
-
-class GradientView: UIView {
-	open var gradient: CAGradientLayer? { return layer.sublayers?.first as? CAGradientLayer }
+/// Custom view displaying a pulsing two-color radial gradient.
+final class GradientView: UIView {
+	public var gradient: CAGradientLayer? { return layer.sublayers?.first as? CAGradientLayer }
 	
-	@IBInspectable open var startColor: UIColor = UIColor(white: 0.8, alpha: 1.0) {
+	@IBInspectable public var startColor: UIColor = UIColor(white: 0.8, alpha: 1.0) {
 		didSet { gradient?.colors = [startColor, endColor]; setNeedsDisplay() }
 	}
-	@IBInspectable open var endColor: UIColor = UIColor(white: 1.0, alpha: 1.0) {
+	@IBInspectable public var endColor: UIColor = UIColor(white: 1.0, alpha: 1.0) {
 		didSet { gradient?.colors = [startColor, endColor]; setNeedsDisplay() }
 	}
 	
-	open var animateGradient: Bool {
+	/// Displays and animates or removes the gradient from the view.
+	public var animateGradient: Bool {
 		get { gradient != nil }
 		set {
 			guard newValue != animateGradient else { return }
@@ -195,55 +199,3 @@ class GradientView: UIView {
 		gradient?.frame = bounds
 	}
 }
-
-//class GradientView: UIView {
-//	@IBInspectable open var startColor: UIColor = UIColor(white: 0.8, alpha: 1.0) {
-//		didSet { gradient?.colors = [startColor, endColor]; setNeedsDisplay() }
-//	}
-//	@IBInspectable open var endColor: UIColor = UIColor(white: 1.0, alpha: 1.0) {
-//		didSet { gradient?.colors = [startColor, endColor]; setNeedsDisplay() }
-//	}
-//
-//	private var gradient: CAGradientLayer? = nil
-//
-//	open var animateGradient: Bool {
-//		get { gradient != nil }
-//		set {
-//			guard newValue != animateGradient else { return }
-//			guard newValue else {
-//				gradient?.removeAllAnimations()
-//				gradient?.removeFromSuperlayer()
-//				gradient = nil
-//				return
-//			}
-//			let gradient = CAGradientLayer()
-//			gradient.frame = bounds
-//			gradient.type = CAGradientLayerType.radial
-//			gradient.startPoint = CGPoint(x: 0.5, y: 0.5)
-//			gradient.endPoint = CGPoint(x: 0.0, y: 1.0)
-//
-//			gradient.colors = [startColor, endColor]
-//			gradient.locations = [NSNumber(floatLiteral: 0.75), NSNumber(floatLiteral: 1.0)]
-//
-//			if !UIAccessibility.isReduceMotionEnabled {
-//				let opacityAnimation = CAKeyframeAnimation(keyPath: "opacity")
-//				opacityAnimation.values = [NSNumber(floatLiteral: 0.5), NSNumber(floatLiteral: 1.0), NSNumber(floatLiteral: 0.5)]
-//				opacityAnimation.duration = 3.0
-//				opacityAnimation.repeatCount = Float.greatestFiniteMagnitude
-//
-//				gradient.add(opacityAnimation, forKey: "opacity")
-//			}
-//
-//			//layer.insertSublayer(gradient, at: 0)
-//			layer.addSublayer(gradient)
-//			self.gradient = gradient
-//		}
-//	}
-//
-//	override func layoutSubviews() {
-//		super.layoutSubviews()
-//		gradient?.frame = bounds
-//		gradient?.setNeedsLayout()
-//		gradient?.setNeedsDisplay()
-//	}
-//}

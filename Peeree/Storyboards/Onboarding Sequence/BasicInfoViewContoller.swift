@@ -8,7 +8,8 @@
 
 import UIKit
 
-class BasicInfoViewContoller: UIViewController {
+/// Controls the informational text views in onboarding.
+final class BasicInfoViewContoller: UIViewController {
 	@IBOutlet private weak var backButton: UIButton!
 	
 	override func viewDidLoad() {

@@ -10,8 +10,8 @@ import UIKit
 import MobileCoreServices
 import Photos
 
-/// Base class for view controllers providing availablity to change the user's portrait image.
-class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+/// Base class for view controllers providing the ability to change the user's portrait image.
+open class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 	func showPicturePicker(_ allowCancel: Bool = false, destructiveActionName: String) {
 		let imagePicker = UIImagePickerController()
 		imagePicker.delegate = self
@@ -55,13 +55,13 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
 		alertController.present()
 	}
 	
-	func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+	public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
 		// picker.parentViewController is nil, but I don't know why
 		//		picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
 		self.dismiss(animated: true, completion: nil)
 	}
 	
-	func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+	public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
 		var originalImage, editedImage, imageToSave: UIImage?
 		
 		editedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage
@@ -97,7 +97,7 @@ class PortraitImagePickerController: UIViewController, UIImagePickerControllerDe
 		}
 	}
 	
-	func picked(image: UIImage?) {
+	open func picked(image: UIImage?) {
 		NSLog("WARN: picked(image:) should be overridden (or not called with super).")
 	}
 }
