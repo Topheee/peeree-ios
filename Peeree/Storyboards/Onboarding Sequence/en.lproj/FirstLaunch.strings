@@ -1,0 +1,111 @@
+
+/* Class = "UILabel"; text = "Headline"; ObjectID = "2uW-xz-nDp"; */
+"2uW-xz-nDp.text" = "Headline";
+
+/* Class = "UIButton"; accessibilityHint = "Pin a peer and mark him or her as interesting (sample)"; ObjectID = "53c-Ja-yW0"; */
+"53c-Ja-yW0.accessibilityHint" = "Pin a peer and mark him or her as interesting (sample)";
+
+/* Class = "UIButton"; accessibilityLabel = "Pin"; ObjectID = "53c-Ja-yW0"; */
+"53c-Ja-yW0.accessibilityLabel" = "Pin";
+
+/* Class = "UIViewController"; title = "Welcome Page"; ObjectID = "9TP-2c-bIB"; */
+"9TP-2c-bIB.title" = "Welcome Page";
+
+/* Class = "UIViewController"; title = "Setup Page"; ObjectID = "BiV-OX-JbO"; */
+"BiV-OX-JbO.title" = "Setup Page";
+
+/* Class = "UIButton"; accessibilityHint = "Opens webpage"; ObjectID = "CIc-zF-Z6d"; */
+"CIc-zF-Z6d.accessibilityHint" = "Opens webpage";
+
+/* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "CIc-zF-Z6d"; */
+"CIc-zF-Z6d.accessibilityLabel" = "View terms of use";
+
+/* Class = "UILabel"; text = "Your Profile"; ObjectID = "JLo-5M-7YM"; */
+"JLo-5M-7YM.text" = "Your Profile";
+
+/* Class = "UILabel"; text = "Pin people to show your interest."; ObjectID = "NTY-bS-98x"; */
+"NTY-bS-98x.text" = "Pin people to show your interest.";
+
+/* Class = "UISwitch"; accessibilityHint = "Agrees to terms of use"; ObjectID = "PJj-hH-ACO"; */
+"PJj-hH-ACO.accessibilityHint" = "Agrees to terms of use";
+
+/* Class = "UISwitch"; accessibilityLabel = "Accept terms of use"; ObjectID = "PJj-hH-ACO"; */
+"PJj-hH-ACO.accessibilityLabel" = "Accept terms of use";
+
+/* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
+"TFv-dL-32n.accessibilityLabel" = "Greeting";
+
+/* Class = "UILabel"; text = "Peeree"; ObjectID = "TFv-dL-32n"; */
+"TFv-dL-32n.text" = "Peeree";
+
+/* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "WkH-8i-IuH"; */
+"WkH-8i-IuH.accessibilityHint" = "Finishes introduction";
+
+/* Class = "UIButton"; accessibilityLabel = "Launch app"; ObjectID = "WkH-8i-IuH"; */
+"WkH-8i-IuH.accessibilityLabel" = "Launch app";
+
+/* Class = "UIButton"; normalTitle = "Get Started"; ObjectID = "WkH-8i-IuH"; */
+"WkH-8i-IuH.normalTitle" = "Get Started";
+
+/* Class = "UIButton"; accessibilityHint = "Read details about P2P"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.accessibilityHint" = "Read details about P2P";
+
+/* Class = "UIButton"; accessibilityLabel = "Describe Peer-to-Peer"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.accessibilityLabel" = "Describe Peer-to-Peer";
+
+/* Class = "UIButton"; normalTitle = "Learn more about how Peeree works"; ObjectID = "XwS-Db-Ixl"; */
+"XwS-Db-Ixl.normalTitle" = "Learn more about how Peeree works";
+
+/* Class = "UIButton"; normalTitle = "Portrait"; ObjectID = "YRI-ar-stS"; */
+"YRI-ar-stS.normalTitle" = "Portrait";
+
+/* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
+"b8Y-IF-X4f.normalTitle" = "Sounds great!";
+
+/* Class = "UIButton"; accessibilityHint = "Selects your portrait picture"; ObjectID = "bd8-Ey-isT"; */
+"bd8-Ey-isT.accessibilityHint" = "Selects your portrait picture";
+
+/* Class = "UIButton"; accessibilityLabel = "Choose portrait"; ObjectID = "bd8-Ey-isT"; */
+"bd8-Ey-isT.accessibilityLabel" = "Choose portrait";
+
+/* Class = "UILabel"; text = "Use this button to pin people:"; ObjectID = "fFz-HS-CaO"; */
+"fFz-HS-CaO.text" = "Use this button to pin people:";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[0] = "Male"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[0]" = "Male";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[1] = "Female"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[1]" = "Female";
+
+/* Class = "UISegmentedControl"; g3H-jE-mTR.segmentTitles[2] = "Queer"; ObjectID = "g3H-jE-mTR"; */
+"g3H-jE-mTR.segmentTitles[2]" = "Queer";
+
+/* Class = "UITextView"; text = "Content"; ObjectID = "ith-Hl-trz"; */
+"ith-Hl-trz.text" = "Content";
+
+/* Class = "UITextField"; accessibilityHint = "Your publicly visible name"; ObjectID = "maF-ir-g9C"; */
+"maF-ir-g9C.accessibilityHint" = "Your publicly visible name";
+
+/* Class = "UITextField"; accessibilityLabel = "Name"; ObjectID = "maF-ir-g9C"; */
+"maF-ir-g9C.accessibilityLabel" = "Name";
+
+/* Class = "UITextField"; placeholder = "Name"; ObjectID = "maF-ir-g9C"; */
+"maF-ir-g9C.placeholder" = "Name";
+
+/* Class = "UIButton"; accessibilityHint = "Display information about personal data usage"; ObjectID = "qr9-Ho-2bg"; */
+"qr9-Ho-2bg.accessibilityHint" = "Display information about personal data usage";
+
+/* Class = "UIButton"; accessibilityLabel = "Privacy Info"; ObjectID = "qr9-Ho-2bg"; */
+"qr9-Ho-2bg.accessibilityLabel" = "Privacy Info";
+
+/* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "qr9-Ho-2bg"; */
+"qr9-Ho-2bg.normalTitle" = "Peeree and Your Data";
+
+/* Class = "UILabel"; text = "This is Peeree, \na Social Peer-to-Peer App"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "This is Peeree, \na Social Peer-to-Peer App";
+
+/* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
+"skT-uK-VEP.text" = "This is how we protect your Privacy:";
+
+/* Class = "UIViewController"; title = "Details"; ObjectID = "u4v-7y-Tsp"; */
+"u4v-7y-Tsp.title" = "Details";
