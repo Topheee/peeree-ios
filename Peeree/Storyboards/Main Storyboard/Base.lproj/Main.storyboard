@@ -39,6 +39,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Zyb-6r-Dv9"/>
                     </view>
+                    <navigationItem key="navigationItem" id="3gh-9v-mbP"/>
                     <modalPageSheetSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <outlet property="selectionPickerView" destination="VD9-ZK-Mut" id="Dpi-dc-1nK"/>
@@ -213,7 +214,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
                                 <rect key="frame" x="8" y="64" width="304" height="282"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="86" y="0.0" width="132" height="132"/>
                                         <subviews>
                                             <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
@@ -246,14 +247,14 @@
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <constraints>
-                                            <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" id="1EP-07-K56"/>
-                                            <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" id="Avq-G7-1G6"/>
-                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" id="P8q-ve-RuT"/>
-                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" id="cPt-AY-8RY"/>
-                                            <constraint firstAttribute="trailing" secondItem="pRr-uE-8dC" secondAttribute="trailing" constant="16" id="dpC-E6-DKt"/>
-                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="oCn-tu-VM5"/>
-                                            <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" id="pZU-oO-ghk"/>
-                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" id="vMB-h8-hUl"/>
+                                            <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" identifier="portraitToSuperviewBottom" id="1EP-07-K56"/>
+                                            <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" identifier="portraitToSuperviewTrailing" id="Avq-G7-1G6"/>
+                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" identifier="portraitToSuperviewLeading" id="P8q-ve-RuT"/>
+                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" identifier="portraitToSuperviewLeading" id="cPt-AY-8RY"/>
+                                            <constraint firstAttribute="trailing" secondItem="pRr-uE-8dC" secondAttribute="trailing" constant="16" identifier="portraitToEffectTrailing" id="dpC-E6-DKt"/>
+                                            <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" identifier="portraitTopToSuperviewTop" id="oCn-tu-VM5"/>
+                                            <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" identifier="superviewToPortraitBottom" id="pZU-oO-ghk"/>
+                                            <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" identifier="portraitToTop" id="vMB-h8-hUl"/>
                                         </constraints>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="color" keyPath="startColor">
@@ -297,10 +298,10 @@
                                                     <constraint firstItem="jRR-HL-OFn" firstAttribute="width" secondItem="nS3-bX-bM2" secondAttribute="width" id="KVG-7O-OQn"/>
                                                 </constraints>
                                             </stackView>
-                                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
+                                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="749" verticalHuggingPriority="749" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
                                                 <rect key="frame" x="101.5" y="40" width="37" height="0.0"/>
                                             </activityIndicatorView>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
                                                 <rect key="frame" x="92" y="48" width="56" height="56"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Pin this person and mark him or her as interesting" label="Pin"/>
                                                 <constraints>
@@ -369,9 +370,9 @@
                                 </subviews>
                             </stackView>
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="354" width="320" height="73"/>
+                                <rect key="frame" x="0.0" y="354" width="320" height="57"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" id="VPu-gz-2Vl"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" identifier="messageTableHeight" id="VPu-gz-2Vl"/>
                                 </constraints>
                                 <variation key="default">
                                     <mask key="constraints">
@@ -383,13 +384,13 @@
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
-                                <rect key="frame" x="-1" y="427" width="322" height="34"/>
+                                <rect key="frame" x="-1" y="411" width="322" height="50"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="0.0" width="306" height="34"/>
+                                        <rect key="frame" x="8" y="0.0" width="306" height="50"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="262" height="34"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="262" height="50"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                 <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
@@ -405,7 +406,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="270" y="0.0" width="36" height="34"/>
+                                                <rect key="frame" x="270" y="0.0" width="36" height="50"/>
                                                 <state key="normal" title="Send"/>
                                                 <connections>
                                                     <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
@@ -416,26 +417,25 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="pns-Vh-qyy" secondAttribute="trailing" constant="8" id="USf-K3-oT8"/>
-                                    <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" id="Z1y-gy-KdT"/>
-                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="top" secondItem="Lkr-13-Jfz" secondAttribute="top" id="hYZ-dV-Pbe"/>
-                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="leading" secondItem="Lkr-13-Jfz" secondAttribute="leading" constant="8" id="wco-8B-5sd"/>
+                                    <constraint firstAttribute="trailing" secondItem="pns-Vh-qyy" secondAttribute="trailing" constant="8" identifier="messageStackViewToTrailing" id="USf-K3-oT8"/>
+                                    <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" identifier="messageStackViewToBottom" id="Z1y-gy-KdT"/>
+                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="top" secondItem="Lkr-13-Jfz" secondAttribute="top" identifier="messageStackViewToTop" id="hYZ-dV-Pbe"/>
+                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="leading" secondItem="Lkr-13-Jfz" secondAttribute="leading" constant="8" identifier="messageStackViewToLeading" id="wco-8B-5sd"/>
                                 </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" constant="-1" id="5XF-gF-5uE"/>
-                            <constraint firstItem="DbU-Tc-UDS" firstAttribute="top" secondItem="YYz-qE-CF7" secondAttribute="top" constant="8" id="8ir-l2-8hz"/>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="Lkr-13-Jfz" secondAttribute="trailing" constant="-1" id="BGH-8a-eUG"/>
-                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="trailing" secondItem="YYz-qE-CF7" secondAttribute="trailing" id="C07-qn-M91"/>
-                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="-1" id="FdN-Lg-oeE"/>
-                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" id="Rfa-Ie-qD9"/>
-                            <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" id="YHh-hk-aVc"/>
-                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" id="jJd-49-mLg"/>
-                            <constraint firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="mrE-0w-sGc"/>
-                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" id="n9E-Zf-Swe"/>
-                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" id="vMf-3d-C95"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" constant="-1" identifier="messageBarToBottom" id="5XF-gF-5uE"/>
+                            <constraint firstItem="DbU-Tc-UDS" firstAttribute="top" secondItem="YYz-qE-CF7" secondAttribute="top" constant="8" identifier="peerStackViewToTop" id="8ir-l2-8hz"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="Lkr-13-Jfz" secondAttribute="trailing" constant="-1" identifier="messageBarToTrailing" id="BGH-8a-eUG"/>
+                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="trailing" secondItem="YYz-qE-CF7" secondAttribute="trailing" identifier="chatTableViewTrailing" id="C07-qn-M91"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="-1" identifier="messageBarLeading" id="FdN-Lg-oeE"/>
+                            <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" identifier="peerStackViewToTrailing" id="Rfa-Ie-qD9"/>
+                            <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" identifier="peerStackViewLeading" id="YHh-hk-aVc"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" identifier="messageBarToChatTableView" id="jJd-49-mLg"/>
+                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" identifier="chatTableViewLeading" id="n9E-Zf-Swe"/>
+                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" identifier="chatTableViewToPeerStackViewBottom" id="vMf-3d-C95"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
                     </view>
@@ -485,7 +485,7 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="73"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="57"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
@@ -607,44 +607,63 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You have a" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="244-rB-aaA">
-                                            <rect key="frame" x="16" y="41.5" width="288" height="14"/>
-                                            <accessibility key="accessibilityConfiguration">
-                                                <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
-                                                <bool key="isElement" value="NO"/>
-                                            </accessibility>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RZ1-xL-Yml">
-                                            <rect key="frame" x="36.5" y="116.5" width="247" height="247"/>
-                                            <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person you just matched" label="Portrait">
-                                                <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
-                                                <bool key="isElement" value="YES"/>
-                                            </accessibility>
-                                            <constraints>
-                                                <constraint firstAttribute="width" secondItem="RZ1-xL-Yml" secondAttribute="height" multiplier="1:1" id="5en-Pn-mwE"/>
-                                                <constraint firstAttribute="width" constant="180" id="cwi-hW-q2O"/>
-                                                <constraint firstAttribute="height" constant="180" id="f09-FW-N7n"/>
-                                            </constraints>
-                                            <variation key="default">
-                                                <mask key="constraints">
-                                                    <exclude reference="cwi-hW-q2O"/>
-                                                    <exclude reference="f09-FW-N7n"/>
-                                                </mask>
-                                            </variation>
-                                        </imageView>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Person Name" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Eb-LT-XnB">
-                                            <rect key="frame" x="16" y="375.5" width="288" height="24"/>
-                                            <accessibility key="accessibilityConfiguration" hint="Name of your pin match" label="Person Name">
-                                                <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
-                                            </accessibility>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pje-ad-i9c">
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="HjH-aV-huy">
+                                            <rect key="frame" x="16" y="24" width="288" height="51"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You have a" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="244-rB-aaA">
+                                                    <rect key="frame" x="0.0" y="0.0" width="288" height="13.5"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                                        <bool key="isElement" value="NO"/>
+                                                    </accessibility>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="253" verticalHuggingPriority="253" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Pin Match!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mym-lw-7EQ">
+                                                    <rect key="frame" x="0.0" y="17.5" width="288" height="33.5"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="You and this person have mutual interest in each other" label="Pin Match Event">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
+                                                    </accessibility>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="EZQ-s8-xvp">
+                                            <rect key="frame" x="16" y="80" width="288" height="336"/>
+                                            <subviews>
+                                                <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RZ1-xL-Yml">
+                                                    <rect key="frame" x="0.0" y="0.0" width="288" height="288"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person you just matched" label="Portrait">
+                                                        <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
+                                                        <bool key="isElement" value="YES"/>
+                                                    </accessibility>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="RZ1-xL-Yml" secondAttribute="height" multiplier="1:1" id="5en-Pn-mwE"/>
+                                                        <constraint firstAttribute="width" constant="180" id="cwi-hW-q2O"/>
+                                                        <constraint firstAttribute="height" constant="180" id="f09-FW-N7n"/>
+                                                    </constraints>
+                                                    <variation key="default">
+                                                        <mask key="constraints">
+                                                            <exclude reference="cwi-hW-q2O"/>
+                                                            <exclude reference="f09-FW-N7n"/>
+                                                        </mask>
+                                                    </variation>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Person Name" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Eb-LT-XnB">
+                                                    <rect key="frame" x="0.0" y="312" width="288" height="24"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="Name of your pin match" label="Person Name">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                                    </accessibility>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                        <toolbar clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" translatesAutoresizingMaskIntoConstraints="NO" id="pje-ad-i9c">
                                             <rect key="frame" x="0.0" y="436" width="320" height="44"/>
                                             <items>
                                                 <barButtonItem image="PersonIcon" id="iTK-E8-ouT">
@@ -666,35 +685,17 @@
                                                 </barButtonItem>
                                             </items>
                                         </toolbar>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin Match!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mym-lw-7EQ">
-                                            <rect key="frame" x="16" y="58" width="288" height="33.5"/>
-                                            <accessibility key="accessibilityConfiguration" hint="You and this person have mutual interest in each other" label="Pin Match Event">
-                                                <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
-                                            </accessibility>
-                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Mym-lw-7EQ" secondAttribute="bottom" constant="25" id="88u-Dx-Lc4"/>
-                                        <constraint firstItem="Mym-lw-7EQ" firstAttribute="top" secondItem="EP0-kC-egm" secondAttribute="topMargin" constant="50" id="8xj-4n-gSG"/>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerX" secondItem="EP0-kC-egm" secondAttribute="centerX" id="D3i-I9-cwl"/>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerY" secondItem="EP0-kC-egm" secondAttribute="centerY" id="OZz-KS-4lH"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="EZQ-s8-xvp" secondAttribute="trailing" id="FY1-QP-PDZ"/>
+                                        <constraint firstItem="HjH-aV-huy" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="Ihs-fe-jzr"/>
+                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="Mgg-kI-xcq"/>
+                                        <constraint firstItem="HjH-aV-huy" firstAttribute="top" secondItem="EP0-kC-egm" secondAttribute="topMargin" constant="16" id="NvF-jZ-zw9"/>
                                         <constraint firstItem="pje-ad-i9c" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leading" id="OsU-WF-aYr"/>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="centerX" secondItem="EP0-kC-egm" secondAttribute="centerX" id="Unj-nx-3dZ"/>
-                                        <constraint firstItem="1Eb-LT-XnB" firstAttribute="top" secondItem="RZ1-xL-Yml" secondAttribute="bottom" constant="12" id="Vyo-RD-rY8"/>
-                                        <constraint firstItem="RZ1-xL-Yml" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="ZE3-SS-X8j"/>
-                                        <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="RZ1-xL-Yml" secondAttribute="trailing" id="gB1-zH-tFy"/>
-                                        <constraint firstItem="244-rB-aaA" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="jQ0-lA-dEr"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="Mym-lw-7EQ" secondAttribute="trailing" id="mc3-7H-1Bh"/>
-                                        <constraint firstAttribute="trailingMargin" secondItem="1Eb-LT-XnB" secondAttribute="trailing" id="mub-e7-QHb"/>
-                                        <constraint firstItem="1Eb-LT-XnB" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="niG-8c-wgc"/>
-                                        <constraint firstItem="Mym-lw-7EQ" firstAttribute="firstBaseline" secondItem="244-rB-aaA" secondAttribute="baseline" constant="32" symbolType="layoutAnchor" id="q8Z-b6-0Nm"/>
                                         <constraint firstAttribute="trailing" secondItem="pje-ad-i9c" secondAttribute="trailing" id="wAG-5h-I65"/>
-                                        <constraint firstItem="Mym-lw-7EQ" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="wAr-Xn-uV5"/>
+                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="centerY" secondItem="EP0-kC-egm" secondAttribute="centerY" constant="8" id="wDP-8Z-laG"/>
                                         <constraint firstAttribute="bottom" secondItem="pje-ad-i9c" secondAttribute="bottom" id="zDU-xd-K8i"/>
-                                        <constraint firstItem="244-rB-aaA" firstAttribute="trailing" secondItem="EP0-kC-egm" secondAttribute="trailingMargin" id="zr3-Ef-8p1"/>
+                                        <constraint firstAttribute="trailingMargin" secondItem="HjH-aV-huy" secondAttribute="trailing" id="zeZ-0y-TD6"/>
                                     </constraints>
                                 </view>
                                 <blurEffect style="light"/>
@@ -734,191 +735,177 @@
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hwZ-ru-5l0">
                                 <rect key="frame" x="0.0" y="108" width="320" height="352"/>
                                 <subviews>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="sNx-nf-ozM">
-                                        <rect key="frame" x="150" y="16" width="20" height="34"/>
-                                        <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES" textContentType="nickname"/>
-                                        <connections>
-                                            <outlet property="delegate" destination="8rJ-Kc-sve" id="RqL-vE-uCP"/>
-                                        </connections>
-                                    </textField>
-                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
-                                        <rect key="frame" x="105" y="106.5" width="110" height="30"/>
-                                        <accessibility key="accessibilityConfiguration">
-                                            <bool key="isElement" value="NO"/>
-                                        </accessibility>
-                                        <state key="normal" title="Character Traits">
-                                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <segue destination="kuI-R6-Fbl" kind="show" id="D5d-oe-2jg"/>
-                                        </connections>
-                                    </button>
-                                    <segmentedControl opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jMl-1T-kkd">
-                                        <rect key="frame" x="64.5" y="194.5" width="191" height="32"/>
-                                        <segments>
-                                            <segment title="Male"/>
-                                            <segment title="Female"/>
-                                            <segment title="Queer"/>
-                                        </segments>
-                                        <connections>
-                                            <action selector="changeGender:" destination="8rJ-Kc-sve" eventType="valueChanged" id="Qiy-Eh-mAc"/>
-                                        </connections>
-                                    </segmentedControl>
-                                    <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8E-hE-Mnd">
-                                        <rect key="frame" x="147.5" y="65.5" width="25" height="25"/>
-                                        <accessibility key="accessibilityConfiguration" hint="Selects your portrait picture" label="Choose portrait">
-                                            <accessibilityTraits key="traits" button="YES" image="YES"/>
-                                        </accessibility>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="200" id="Asg-nQ-ByB"/>
-                                            <constraint firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="height" multiplier="1:1" id="I0q-WC-qhu"/>
-                                            <constraint firstAttribute="width" constant="25" placeholder="YES" id="MUo-fh-KRt"/>
-                                            <constraint firstAttribute="height" constant="200" id="Zxs-SC-l2T"/>
-                                        </constraints>
-                                        <state key="normal" image="PortraitUnavailable"/>
-                                        <variation key="default">
-                                            <mask key="constraints">
-                                                <exclude reference="Asg-nQ-ByB"/>
-                                                <exclude reference="Zxs-SC-l2T"/>
-                                            </mask>
-                                        </variation>
-                                        <connections>
-                                            <action selector="changePicture:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="5MX-Kr-u8H"/>
-                                        </connections>
-                                    </button>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Birthday" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="KtY-qD-KuZ">
-                                        <rect key="frame" x="114" y="144.5" width="92.5" height="34"/>
-                                        <accessibility key="accessibilityConfiguration" hint="Safes your birthday" label="Set birthday"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numbersAndPunctuation" returnKeyType="done"/>
-                                        <connections>
-                                            <outlet property="delegate" destination="8rJ-Kc-sve" id="yXe-AV-KzP"/>
-                                        </connections>
-                                    </textField>
-                                    <textField opaque="NO" clipsSubviews="YES" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Mail" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYx-2Y-uq3">
-                                        <rect key="frame" x="64.5" y="247.5" width="191" height="34"/>
-                                        <accessibility key="accessibilityConfiguration">
-                                            <bool key="isElement" value="NO"/>
-                                        </accessibility>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done"/>
-                                        <connections>
-                                            <outlet property="delegate" destination="8rJ-Kc-sve" id="j1L-Uu-QAc"/>
-                                        </connections>
-                                    </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i05-bg-dKb">
-                                        <rect key="frame" x="109.5" y="270" width="101" height="30"/>
-                                        <accessibility key="accessibilityConfiguration" hint="Creates or deletes your Peeree identity" label="Peeree identity management"/>
-                                        <state key="normal" title="Create Identity"/>
-                                        <connections>
-                                            <action selector="createDeleteAccount:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gM0-WR-JPH"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
-                                        <rect key="frame" x="138.5" y="259" width="43" height="14.5"/>
-                                        <accessibility key="accessibilityConfiguration" hint="Your Peeree identity" label="Peer ID">
-                                            <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
-                                        </accessibility>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" text="Your email is necessary to recover your identity on a new device." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yg9-L6-t2V">
-                                        <rect key="frame" x="32" y="288.5" width="256" height="30.5"/>
-                                        <accessibility key="accessibilityConfiguration">
-                                            <bool key="isElement" value="NO"/>
-                                        </accessibility>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Go offline to change settings." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rAH-3G-jWK">
-                                        <rect key="frame" x="82.5" y="49" width="155.5" height="13.5"/>
-                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="7p6-cc-l1L">
-                                        <rect key="frame" x="83" y="308" width="154" height="26"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="9fe-8y-HDn">
+                                        <rect key="frame" x="8" y="8" width="304" height="363.5"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4iN-3s-iIx">
-                                                <rect key="frame" x="0.0" y="0.0" width="73" height="26"/>
-                                                <accessibility key="accessibilityConfiguration" hint="Opens the homepage in Safari" label="Peeree Website"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Go offline to change settings." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rAH-3G-jWK">
+                                                <rect key="frame" x="74.5" y="0.0" width="155.5" height="13.5"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <state key="normal" title="peeree.de"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="sNx-nf-ozM">
+                                                <rect key="frame" x="142" y="25.5" width="20" height="34"/>
+                                                <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" keyboardType="namePhonePad" returnKeyType="done" enablesReturnKeyAutomatically="YES" textContentType="nickname"/>
                                                 <connections>
-                                                    <action selector="browsePeereeURL:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="WGO-8T-B0A"/>
+                                                    <outlet property="delegate" destination="8rJ-Kc-sve" id="RqL-vE-uCP"/>
+                                                </connections>
+                                            </textField>
+                                            <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="200" verticalHuggingPriority="200" horizontalCompressionResistancePriority="700" verticalCompressionResistancePriority="700" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8E-hE-Mnd">
+                                                <rect key="frame" x="139.5" y="71.5" width="25" height="25"/>
+                                                <accessibility key="accessibilityConfiguration" hint="Selects your portrait picture" label="Choose portrait">
+                                                    <accessibilityTraits key="traits" button="YES" image="YES"/>
+                                                </accessibility>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="200" id="Asg-nQ-ByB"/>
+                                                    <constraint firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="height" multiplier="1:1" id="I0q-WC-qhu"/>
+                                                    <constraint firstAttribute="width" constant="25" placeholder="YES" id="MUo-fh-KRt"/>
+                                                    <constraint firstAttribute="height" constant="200" id="Zxs-SC-l2T"/>
+                                                </constraints>
+                                                <state key="normal" image="PortraitUnavailable"/>
+                                                <variation key="default">
+                                                    <mask key="constraints">
+                                                        <exclude reference="Asg-nQ-ByB"/>
+                                                        <exclude reference="Zxs-SC-l2T"/>
+                                                    </mask>
+                                                </variation>
+                                                <connections>
+                                                    <action selector="changePicture:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="5MX-Kr-u8H"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Pm-yd-i31">
-                                                <rect key="frame" x="81" y="0.0" width="73" height="26"/>
-                                                <accessibility key="accessibilityConfiguration" hint="Opens the privacy policy in Safari" label="Peeree Privacy Policy"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <state key="normal" title="Privacy Policy"/>
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
+                                                <rect key="frame" x="97" y="102.5" width="110" height="0.0"/>
+                                                <accessibility key="accessibilityConfiguration">
+                                                    <bool key="isElement" value="NO"/>
+                                                </accessibility>
+                                                <state key="normal" title="Character Traits">
+                                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                </state>
                                                 <connections>
-                                                    <action selector="browsePrivacyPolicyURL:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gaG-it-bGL"/>
+                                                    <segue destination="kuI-R6-Fbl" kind="show" id="D5d-oe-2jg"/>
                                                 </connections>
                                             </button>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Birthday" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="KtY-qD-KuZ">
+                                                <rect key="frame" x="106" y="108.5" width="92.5" height="34"/>
+                                                <accessibility key="accessibilityConfiguration" hint="Safes your birthday" label="Set birthday"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numbersAndPunctuation" returnKeyType="done"/>
+                                                <connections>
+                                                    <outlet property="delegate" destination="8rJ-Kc-sve" id="yXe-AV-KzP"/>
+                                                </connections>
+                                            </textField>
+                                            <segmentedControl opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jMl-1T-kkd">
+                                                <rect key="frame" x="56.5" y="154.5" width="191" height="32"/>
+                                                <segments>
+                                                    <segment title="Male"/>
+                                                    <segment title="Female"/>
+                                                    <segment title="Queer"/>
+                                                </segments>
+                                                <connections>
+                                                    <action selector="changeGender:" destination="8rJ-Kc-sve" eventType="valueChanged" id="Qiy-Eh-mAc"/>
+                                                </connections>
+                                            </segmentedControl>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="3ye-zn-ii5">
+                                                <rect key="frame" x="3" y="197.5" width="298.5" height="71.5"/>
+                                                <subviews>
+                                                    <textField opaque="NO" clipsSubviews="YES" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Mail" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYx-2Y-uq3">
+                                                        <rect key="frame" x="119.5" y="0.0" width="59.5" height="34"/>
+                                                        <accessibility key="accessibilityConfiguration">
+                                                            <bool key="isElement" value="NO"/>
+                                                        </accessibility>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done"/>
+                                                        <connections>
+                                                            <outlet property="delegate" destination="8rJ-Kc-sve" id="j1L-Uu-QAc"/>
+                                                        </connections>
+                                                    </textField>
+                                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" text="Your email is necessary to recover your identity on a new device." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yg9-L6-t2V">
+                                                        <rect key="frame" x="0.0" y="41" width="298.5" height="30.5"/>
+                                                        <accessibility key="accessibilityConfiguration">
+                                                            <bool key="isElement" value="NO"/>
+                                                        </accessibility>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="0TR-XP-6xO">
+                                                <rect key="frame" x="101.5" y="281" width="101" height="44.5"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7cg-KF-1BD">
+                                                        <rect key="frame" x="29" y="0.0" width="43" height="14.5"/>
+                                                        <accessibility key="accessibilityConfiguration" hint="Your Peeree identity" label="Peer ID">
+                                                            <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                                        </accessibility>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i05-bg-dKb">
+                                                        <rect key="frame" x="0.0" y="14.5" width="101" height="30"/>
+                                                        <accessibility key="accessibilityConfiguration" hint="Creates or deletes your Peeree identity" label="Peeree identity management"/>
+                                                        <state key="normal" title="Create Identity"/>
+                                                        <connections>
+                                                            <action selector="createDeleteAccount:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gM0-WR-JPH"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="7p6-cc-l1L">
+                                                <rect key="frame" x="75" y="337.5" width="154" height="26"/>
+                                                <subviews>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Oh9-xR-xMo">
+                                                        <rect key="frame" x="0.0" y="0.0" width="154" height="26"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4iN-3s-iIx">
+                                                                <rect key="frame" x="0.0" y="0.0" width="73" height="26"/>
+                                                                <accessibility key="accessibilityConfiguration" hint="Opens the homepage in Safari" label="Peeree Website"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                                <state key="normal" title="peeree.de"/>
+                                                                <connections>
+                                                                    <action selector="browsePeereeURL:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="WGO-8T-B0A"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Pm-yd-i31">
+                                                                <rect key="frame" x="81" y="0.0" width="73" height="26"/>
+                                                                <accessibility key="accessibilityConfiguration" hint="Opens the privacy policy in Safari" label="Peeree Privacy Policy"/>
+                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                                                <state key="normal" title="Privacy Policy"/>
+                                                                <connections>
+                                                                    <action selector="browsePrivacyPolicyURL:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="gaG-it-bGL"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstItem="sNx-nf-ozM" firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="width" multiplier="0.8" id="ZV2-p4-jqZ"/>
+                                        </constraints>
                                     </stackView>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="7p6-cc-l1L" firstAttribute="top" secondItem="i05-bg-dKb" secondAttribute="bottom" constant="8" id="1Yn-2L-se3"/>
-                                    <constraint firstItem="jMl-1T-kkd" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hwZ-ru-5l0" secondAttribute="leading" id="64K-ua-vIk"/>
-                                    <constraint firstItem="7cg-KF-1BD" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="7vQ-il-SNR"/>
-                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hwZ-ru-5l0" secondAttribute="leadingMargin" constant="20" id="9Lj-wd-lgP"/>
-                                    <constraint firstItem="jMl-1T-kkd" firstAttribute="top" secondItem="KtY-qD-KuZ" secondAttribute="bottom" constant="16" id="B7j-se-Qdj"/>
-                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="jMl-1T-kkd" secondAttribute="trailing" id="Bqy-CB-Lz5"/>
-                                    <constraint firstItem="yg9-L6-t2V" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="CvW-Su-8Nb"/>
-                                    <constraint firstItem="gYx-2Y-uq3" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="GTg-wL-YHv"/>
-                                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="b8E-hE-Mnd" secondAttribute="trailing" constant="20" id="HWF-vr-sUc"/>
-                                    <constraint firstItem="yg9-L6-t2V" firstAttribute="top" secondItem="gYx-2Y-uq3" secondAttribute="bottom" constant="7" id="O1U-Ga-ZDa"/>
-                                    <constraint firstItem="7DY-yh-Oap" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="R36-Fo-ZM4"/>
-                                    <constraint firstItem="KtY-qD-KuZ" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="VZS-E8-Lt4"/>
-                                    <constraint firstItem="7cg-KF-1BD" firstAttribute="top" secondItem="yg9-L6-t2V" secondAttribute="bottom" constant="-60" id="YNE-pd-YHL"/>
-                                    <constraint firstItem="7DY-yh-Oap" firstAttribute="top" secondItem="b8E-hE-Mnd" secondAttribute="bottom" constant="16" id="Ye7-Xx-cZs"/>
-                                    <constraint firstItem="i05-bg-dKb" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="Zbg-T3-T0v"/>
-                                    <constraint firstItem="gYx-2Y-uq3" firstAttribute="top" secondItem="jMl-1T-kkd" secondAttribute="bottom" constant="22" id="Zci-eb-Vr0"/>
-                                    <constraint firstItem="sNx-nf-ozM" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="a3G-Z1-gl4"/>
-                                    <constraint firstItem="rAH-3G-jWK" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="d22-2O-GJa"/>
-                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="top" secondItem="rAH-3G-jWK" secondAttribute="bottom" constant="3" id="dL1-m3-I72"/>
-                                    <constraint firstItem="sNx-nf-ozM" firstAttribute="width" secondItem="b8E-hE-Mnd" secondAttribute="width" multiplier="0.8" id="dhw-p0-DpG"/>
-                                    <constraint firstItem="KtY-qD-KuZ" firstAttribute="top" secondItem="7DY-yh-Oap" secondAttribute="bottom" constant="8" id="dp4-kh-eR6"/>
-                                    <constraint firstItem="jMl-1T-kkd" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="emK-Z8-i43"/>
-                                    <constraint firstItem="rAH-3G-jWK" firstAttribute="top" secondItem="sNx-nf-ozM" secondAttribute="bottom" constant="-1" id="gNn-1s-PVv"/>
-                                    <constraint firstItem="gYx-2Y-uq3" firstAttribute="width" secondItem="jMl-1T-kkd" secondAttribute="width" id="kYM-HR-3Cf"/>
-                                    <constraint firstAttribute="trailing" secondItem="b8E-hE-Mnd" secondAttribute="trailing" constant="195" placeholder="YES" id="lkk-xu-UC3"/>
-                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="mVo-4q-Y1T"/>
-                                    <constraint firstItem="b8E-hE-Mnd" firstAttribute="width" secondItem="hwZ-ru-5l0" secondAttribute="width" id="mbN-Kq-EPb"/>
-                                    <constraint firstItem="7p6-cc-l1L" firstAttribute="centerX" secondItem="hwZ-ru-5l0" secondAttribute="centerX" id="oJ2-x6-t10"/>
-                                    <constraint firstItem="sNx-nf-ozM" firstAttribute="top" secondItem="hwZ-ru-5l0" secondAttribute="topMargin" constant="8" id="qCZ-G7-TV6"/>
-                                    <constraint firstAttribute="bottom" secondItem="7p6-cc-l1L" secondAttribute="bottom" constant="12" id="tpg-kL-TUG"/>
-                                    <constraint firstItem="i05-bg-dKb" firstAttribute="firstBaseline" secondItem="7cg-KF-1BD" secondAttribute="baseline" constant="20" symbolType="layoutAnchor" id="ubK-ol-HUz"/>
+                                    <constraint firstItem="9fe-8y-HDn" firstAttribute="top" secondItem="hwZ-ru-5l0" secondAttribute="topMargin" id="Sqp-d3-d9F"/>
+                                    <constraint firstItem="9fe-8y-HDn" firstAttribute="trailing" secondItem="hwZ-ru-5l0" secondAttribute="trailingMargin" id="ZzK-nR-lE9"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="9fe-8y-HDn" secondAttribute="bottom" id="aqe-li-tQN"/>
+                                    <constraint firstItem="9fe-8y-HDn" firstAttribute="leading" secondItem="hwZ-ru-5l0" secondAttribute="leadingMargin" id="fCP-H1-eha"/>
                                 </constraints>
-                                <variation key="default">
-                                    <mask key="constraints">
-                                        <exclude reference="mbN-Kq-EPb"/>
-                                    </mask>
-                                </variation>
                             </scrollView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstItem="9fe-8y-HDn" firstAttribute="leading" secondItem="EPq-Ut-BKJ" secondAttribute="leading" constant="8" id="3Fv-EL-pbO"/>
+                            <constraint firstItem="EPq-Ut-BKJ" firstAttribute="trailing" secondItem="9fe-8y-HDn" secondAttribute="trailing" constant="8" id="DlV-1N-Z3N"/>
                             <constraint firstItem="EPq-Ut-BKJ" firstAttribute="trailing" secondItem="hwZ-ru-5l0" secondAttribute="trailing" id="Nj4-AX-BYS"/>
-                            <constraint firstItem="b8E-hE-Mnd" firstAttribute="width" secondItem="QS5-Rx-YEW" secondAttribute="width" multiplier="0.3" id="PLE-Ht-aaA"/>
-                            <constraint firstItem="yg9-L6-t2V" firstAttribute="width" secondItem="QS5-Rx-YEW" secondAttribute="width" constant="-64" id="Qmr-AW-8yk"/>
-                            <constraint firstItem="hwZ-ru-5l0" firstAttribute="leading" secondItem="EPq-Ut-BKJ" secondAttribute="leading" id="VIK-NB-bXo"/>
+                            <constraint firstItem="hwZ-ru-5l0" firstAttribute="leading" secondItem="EPq-Ut-BKJ" secondAttribute="leading" id="QRU-cY-aMB"/>
+                            <constraint firstItem="hwZ-ru-5l0" firstAttribute="top" secondItem="EPq-Ut-BKJ" secondAttribute="top" id="Xco-3U-nGn"/>
                             <constraint firstItem="EPq-Ut-BKJ" firstAttribute="bottom" secondItem="hwZ-ru-5l0" secondAttribute="bottom" id="Ydw-5b-EJD"/>
-                            <constraint firstItem="hwZ-ru-5l0" firstAttribute="top" secondItem="EPq-Ut-BKJ" secondAttribute="top" id="knk-CG-bM8"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="EPq-Ut-BKJ"/>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="PLE-Ht-aaA"/>
-                            </mask>
-                        </variation>
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Me" largeTitleDisplayMode="always" id="i5d-ig-BH3">
@@ -1128,7 +1115,7 @@
                             <tableViewSection headerTitle="Picture" footerTitle="Filter out people without a portrait" id="VhZ-Ja-vhb">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ftg-Zm-Bcc">
-                                        <rect key="frame" x="0.0" y="430.5" width="320" height="44"/>
+                                        <rect key="frame" x="0.0" y="386.5" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ftg-Zm-Bcc" id="Fhb-Tr-cMy">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
@@ -1195,17 +1182,17 @@
             <objects>
                 <viewController storyboardIdentifier="BeaconViewController" definesPresentationContext="YES" hidesBottomBarWhenPushed="YES" id="PIG-Ng-mYB" customClass="BeaconViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="zUf-Bc-QiJ" customClass="RootView" customModule="Peeree" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="404"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RNY-qo-bXL">
-                                <rect key="frame" x="96" y="177" width="128" height="128"/>
+                            <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleAspectFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RNY-qo-bXL">
+                                <rect key="frame" x="96" y="101" width="128" height="128"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" secondItem="RNY-qo-bXL" secondAttribute="height" multiplier="1:1" id="UPM-j6-ENO"/>
+                                    <constraint firstAttribute="width" secondItem="RNY-qo-bXL" secondAttribute="height" multiplier="1:1" identifier="remotePortraitAspect" id="UPM-j6-ENO"/>
                                 </constraints>
                             </imageView>
                             <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="eae-2q-6wg">
-                                <rect key="frame" x="96" y="328" width="128" height="128"/>
+                                <rect key="frame" x="96" y="252" width="128" height="128"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="height" multiplier="1:1" id="3M1-UD-qtB"/>
                                 </constraints>
@@ -1213,12 +1200,12 @@
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
-                            <constraint firstItem="eae-2q-6wg" firstAttribute="top" secondItem="RNY-qo-bXL" secondAttribute="bottom" constant="23" id="2zp-Ct-nOr"/>
-                            <constraint firstItem="r3q-Zm-aLy" firstAttribute="bottom" secondItem="eae-2q-6wg" secondAttribute="bottom" constant="24" id="GeR-iK-Gky"/>
-                            <constraint firstItem="eae-2q-6wg" firstAttribute="width" secondItem="zUf-Bc-QiJ" secondAttribute="width" multiplier="2/5" id="XPo-fL-FVc"/>
-                            <constraint firstItem="RNY-qo-bXL" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" id="eda-wd-B8w"/>
-                            <constraint firstItem="eae-2q-6wg" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" id="g6b-i3-Gf5"/>
-                            <constraint firstItem="RNY-qo-bXL" firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="width" id="t4q-nP-hNC"/>
+                            <constraint firstItem="eae-2q-6wg" firstAttribute="top" secondItem="RNY-qo-bXL" secondAttribute="bottom" constant="23" identifier="portraitDistance" id="2zp-Ct-nOr"/>
+                            <constraint firstItem="r3q-Zm-aLy" firstAttribute="bottom" secondItem="eae-2q-6wg" secondAttribute="bottom" constant="24" identifier="userPortraitBottom" id="GeR-iK-Gky"/>
+                            <constraint firstItem="eae-2q-6wg" firstAttribute="width" secondItem="zUf-Bc-QiJ" secondAttribute="width" multiplier="2/5" identifier="userPortraitWidth" id="XPo-fL-FVc"/>
+                            <constraint firstItem="RNY-qo-bXL" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" identifier="remotePortraitCenter" id="eda-wd-B8w"/>
+                            <constraint firstItem="eae-2q-6wg" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" identifier="userPortraitCenter" id="g6b-i3-Gf5"/>
+                            <constraint firstItem="RNY-qo-bXL" firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="width" identifier="remoteAndUserPortrait" id="t4q-nP-hNC"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="r3q-Zm-aLy"/>
                     </view>
@@ -1301,8 +1288,8 @@
     <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
-        <image name="MessageBubble" width="45.5" height="34"/>
-        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
+        <image name="MessageBubble" width="44.5" height="35.5"/>
+        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplate" width="180" height="180"/>
