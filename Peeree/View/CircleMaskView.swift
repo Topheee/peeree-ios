@@ -29,20 +29,20 @@ final class CircleMaskView: UIView {
 	}
 }
 
-extension UIView {
-	fileprivate func roundViewAndLayoutSubviews() {
-		layoutSubviews()
+class RoundedImageView: UIImageView {
+	override func layoutSubviews() {
+		super.layoutSubviews()
 		layer.cornerRadius = bounds.width / 2.0
 		layer.masksToBounds = true
 	}
 }
 
-class RoundedImageView: UIImageView {
-	override func layoutSubviews() { roundViewAndLayoutSubviews() }
-}
-
 final class RoundedVisualEffectView: UIVisualEffectView {
-	override func layoutSubviews() { roundViewAndLayoutSubviews() }
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		layer.cornerRadius = bounds.width / 2.0
+		layer.masksToBounds = true
+	}
 }
 
 /// An image view drawing a placeholder and progress until the actual image is being loaded.

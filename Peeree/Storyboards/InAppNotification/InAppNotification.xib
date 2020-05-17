@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -28,35 +28,37 @@
                 <rect key="frame" x="0.0" y="0.0" width="397" height="80"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DWl-Ta-mLV">
-                        <rect key="frame" x="12" y="12" width="373" height="20"/>
-                        <accessibility key="accessibilityConfiguration">
-                            <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
-                        </accessibility>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
-                        <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
-                        <nil key="highlightedColor"/>
-                    </label>
-                    <textView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" textAlignment="natural" adjustsFontForContentSizeCategory="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iwE-ah-D3B">
-                        <rect key="frame" x="12" y="32" width="373" height="40"/>
-                        <accessibility key="accessibilityConfiguration">
-                            <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
-                        </accessibility>
-                        <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</string>
-                        <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
-                        <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                    </textView>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="Gsn-pf-7Kk">
+                        <rect key="frame" x="12" y="12" width="373" height="60"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DWl-Ta-mLV">
+                                <rect key="frame" x="0.0" y="0.0" width="39.5" height="19.5"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
+                                </accessibility>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" textAlignment="natural" adjustsFontForContentSizeCategory="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iwE-ah-D3B">
+                                <rect key="frame" x="0.0" y="19.5" width="363.5" height="40.5"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                </accessibility>
+                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</string>
+                                <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                    </stackView>
                 </subviews>
                 <gestureRecognizers/>
                 <constraints>
-                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="leading" secondItem="zlq-8W-WKf" secondAttribute="leading" constant="12" id="5ud-KE-n2U"/>
-                    <constraint firstItem="iwE-ah-D3B" firstAttribute="top" secondItem="DWl-Ta-mLV" secondAttribute="bottom" id="Ioh-ZN-pKP"/>
-                    <constraint firstItem="iwE-ah-D3B" firstAttribute="trailing" secondItem="DWl-Ta-mLV" secondAttribute="trailing" id="MGF-b2-6yx"/>
-                    <constraint firstAttribute="bottom" secondItem="iwE-ah-D3B" secondAttribute="bottom" constant="8" id="QRq-xW-UOr"/>
-                    <constraint firstAttribute="trailing" secondItem="DWl-Ta-mLV" secondAttribute="trailing" constant="12" id="UDI-54-CO7"/>
-                    <constraint firstItem="iwE-ah-D3B" firstAttribute="leading" secondItem="DWl-Ta-mLV" secondAttribute="leading" id="Wc2-bn-yfQ"/>
-                    <constraint firstItem="DWl-Ta-mLV" firstAttribute="top" secondItem="zlq-8W-WKf" secondAttribute="top" constant="12" id="tgo-zS-aua"/>
+                    <constraint firstItem="Gsn-pf-7Kk" firstAttribute="leading" secondItem="zlq-8W-WKf" secondAttribute="leading" constant="12" id="7lJ-1H-fOl"/>
+                    <constraint firstAttribute="trailing" secondItem="Gsn-pf-7Kk" secondAttribute="trailing" constant="12" id="IZV-OI-18c"/>
+                    <constraint firstItem="Gsn-pf-7Kk" firstAttribute="top" secondItem="zlq-8W-WKf" secondAttribute="top" constant="12" id="azr-dE-xxd"/>
+                    <constraint firstAttribute="bottom" secondItem="Gsn-pf-7Kk" secondAttribute="bottom" constant="8" id="oi5-z8-CtS"/>
                 </constraints>
                 <connections>
                     <outletCollection property="gestureRecognizers" destination="VUO-yX-vAE" appends="YES" id="8bx-VE-Uxa"/>

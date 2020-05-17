@@ -20,8 +20,8 @@
 /* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "CIc-zF-Z6d"; */
 "CIc-zF-Z6d.accessibilityLabel" = "Zeige Nutzungsbedingungen";
 
-/* Class = "UILabel"; text = "Your Profile"; ObjectID = "JLo-5M-7YM"; */
-"JLo-5M-7YM.text" = "Dein Profil";
+/* Class = "UILabel"; text = "Create Your Profile"; ObjectID = "JLo-5M-7YM"; */
+"JLo-5M-7YM.text" = "Erstelle dein Profil";
 
 /* Class = "UILabel"; text = "Pin people to show your interest."; ObjectID = "NTY-bS-98x"; */
 "NTY-bS-98x.text" = "Pinne Leute, um dein Interesse zu zeigen.";
@@ -55,9 +55,6 @@
 
 /* Class = "UIButton"; normalTitle = "Learn more about how Peeree works"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.normalTitle" = "Erfahre, wie Peeree funktioniert";
-
-/* Class = "UIButton"; normalTitle = "Portrait"; ObjectID = "YRI-ar-stS"; */
-"YRI-ar-stS.normalTitle" = "Portrait";
 
 /* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
 "b8Y-IF-X4f.normalTitle" = "Klingt gut!";

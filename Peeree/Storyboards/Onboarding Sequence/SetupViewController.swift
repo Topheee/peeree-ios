@@ -13,7 +13,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	@IBOutlet private weak var launchAppButton: UIButton!
 	@IBOutlet private weak var nameTextField: UITextField!
 	@IBOutlet private weak var genderPicker: UISegmentedControl!
-	@IBOutlet private weak var pickPicButton: UIButton!
 	@IBOutlet private weak var termsSwitch: UISwitch!
 	@IBOutlet private weak var termsLinkButton: UIButton!
 	
@@ -102,7 +101,6 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 		if #available(iOS 11.0, *) {
 			picButton.accessibilityIgnoresInvertColors = image != nil
 		}
-		pickPicButton.isHidden = true
 	}
 	
 	// MARK: UITextFieldDelegate

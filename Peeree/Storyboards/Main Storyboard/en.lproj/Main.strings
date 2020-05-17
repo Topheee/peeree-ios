@@ -230,6 +230,9 @@
 /* Class = "UILabel"; text = "age"; ObjectID = "jRR-HL-OFn"; */
 "jRR-HL-OFn.text" = "age";
 
+/* Class = "UIButton"; normalTitle = "Send"; ObjectID = "kJ7-ps-KKx"; */
+"kJ7-ps-KKx.normalTitle" = "Send";
+
 /* Class = "UISlider"; accessibilityHint = "Filters out people below this age"; ObjectID = "kYd-92-VvC"; */
 "kYd-92-VvC.accessibilityHint" = "Filters out people below this age";
 
