@@ -8,6 +8,7 @@
 
 import UIKit
 import SafariServices
+import CoreHaptics
 
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
@@ -70,8 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
 		let safariController = SFSafariViewController(url: termsURL)
 		if #available(iOS 10.0, *) {
-			safariController.preferredBarTintColor = AppTheme.tintColor
-			safariController.preferredControlTintColor = AppTheme.backgroundColor
+			safariController.preferredControlTintColor = AppTheme.tintColor
 		}
 		if #available(iOS 11.0, *) {
 			safariController.dismissButtonStyle = .done
@@ -121,6 +121,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
 			self.setupManualAppearance()
 		}
+		_ = AccountController.Notifications.pinned.addObserver(usingBlock: { (_) in
+			AppDelegate.playHapticPin()
+		})
 
 		// reinstantiate CBManagers if there where some
 		// TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
@@ -238,6 +241,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 	}
 	
+	/// plays the haptic feedback when pinning a person
+	static func playHapticPin() {
+		if #available(iOS 13, *) {
+			do {
+				let engine = try CHHapticEngine()
+				try engine.start()
+				
+				let anotherPattern = try CHHapticPattern(events: [
+					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.5)], relativeTime: 0.0, duration: 0.1),
+					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.9)], relativeTime: 0.5, duration: 0.4)], parameters: [])
+				
+				let player = try engine.makePlayer(with: anotherPattern)
+
+				try player.start(atTime: 0)
+			} catch let error {
+				print("Engine Error: \(error). See CHHapticErrorCode for details.")
+			}
+		}
+	}
+	
 	static func requestPin(of peer: PeerInfo) {
 		let manager = PeeringController.shared.manager(for: peer.peerID)
 		if !manager.verified {
@@ -280,11 +303,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		if isActive && sufficientCondition {
 			InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { self.show(peerID: peerID) }
 		} else {
-			let note = UILocalNotification()
-			note.alertTitle = title
-			note.alertBody = body
-			note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
-			UIApplication.shared.presentLocalNotificationNow(note)
+			if #available(iOS 10, *) {
+				let center = UNUserNotificationCenter.current()
+				center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+					// Enable or disable features based on authorization.
+					guard error == nil else {
+						NSLog("ERROR: Error requesting user notification authorization: \(error!.localizedDescription)")
+						return
+					}
+					if granted {
+						let content = UNMutableNotificationContent()
+						content.title = title
+						content.body = body
+						content.sound = UNNotificationSound.default
+						content.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+						center.add(UNNotificationRequest(identifier: peerID.uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false))) { (_error) in
+							if let error = _error {
+								NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
+							}
+						}
+					}
+				}
+			} else {
+				let note = UILocalNotification()
+				note.alertTitle = title
+				note.alertBody = body
+				note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+				UIApplication.shared.presentLocalNotificationNow(note)
+			}
 		}
 	}
 	
@@ -323,12 +369,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 				}
 			}
 		} else {
-			let note = UILocalNotification()
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			note.alertBody = String(format: alertBodyFormat, peer.nickname)
-			note.applicationIconBadgeNumber = UIApplication.shared.applicationIconBadgeNumber + 1
-			note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
-			UIApplication.shared.presentLocalNotificationNow(note)
+			let alertBody = String(format: alertBodyFormat, peer.nickname)
+			let applicationIconBadgeNumber = UIApplication.shared.applicationIconBadgeNumber + 1
+			let userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
+			if #available(iOS 10, *) {
+				let center = UNUserNotificationCenter.current()
+				center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+					// Enable or disable features based on authorization.
+					guard error == nil else {
+						NSLog("ERROR: Error requesting user notification authorization: \(error!.localizedDescription)")
+						return
+					}
+					if granted {
+						let content = UNMutableNotificationContent()
+						content.body = alertBody
+						content.sound = UNNotificationSound.default
+						content.userInfo = userInfo
+						center.add(UNNotificationRequest(identifier: peer.peerID.uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false))) { (_error) in
+							if let error = _error {
+								NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
+							}
+						}
+					}
+				}
+			} else {
+				let note = UILocalNotification()
+				note.alertBody = alertBody
+				note.applicationIconBadgeNumber = applicationIconBadgeNumber
+				note.userInfo = userInfo
+				UIApplication.shared.presentLocalNotificationNow(note)
+			}
 		}
 	}
 	
@@ -337,9 +408,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 	
 	private func setupAppearance() {
-//		RootView.appearance().tintColor = theme.tintColor
-//		RootView.appearance().backgroundColor = theme.backgroundColor
-		
 		setupManualAppearance()
 
 		if #available(iOS 13.0, *) {

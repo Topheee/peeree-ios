@@ -569,7 +569,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 						peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
 						peerAppeared(peerID, peripheral: peripheral, again: false)
 					} else {
-						NSLog("WARNING: Creating peer info failed, disconnecting.")
+						NSLog("WARN: Creating peer info failed, disconnecting.")
 						// peer info is essential
 						disconnect(peripheral)
 					}

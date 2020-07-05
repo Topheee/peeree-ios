@@ -200,7 +200,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		NSLog("Did receive read on \(request.characteristic.uuid.uuidString.left(8)) from central \(centralID)")
 		if let data = UserPeerManager.instance.peer.getCharacteristicValue(of: request.characteristic.uuid) {
 			// dead code, as we provided those values when we created the mutable characteristics
-			if (request.offset > data.count) {
+			if (request.offset >= data.count) {
 				peripheral.respond(to: request, withResult: .invalidOffset)
 			} else {
 				request.value = data.subdata(in: request.offset..<data.count - request.offset)

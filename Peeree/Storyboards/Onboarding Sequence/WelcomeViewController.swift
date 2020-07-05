@@ -15,6 +15,7 @@ final class WelcomeViewController: UIViewController {
 	private var timer: Timer?
 	
 	@IBAction func pressPin(_ sender: Any) {
+		AppDelegate.playHapticPin()
 		pinButton.layer.removeAllAnimations()
 		pinButton.isSelected = !pinButton.isSelected
 	}

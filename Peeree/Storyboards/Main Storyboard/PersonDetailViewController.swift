@@ -22,6 +22,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	@IBOutlet private weak var findButtonItem: UIBarButtonItem!
 	@IBOutlet private weak var peerStackView: UIStackView!
 	@IBOutlet private weak var propertyStackView: UIStackView!
+	@IBOutlet private weak var peerIDLabel: UILabel!
 	
 	// Button for executing the message send.
 	@IBOutlet private weak var sendMessageButton: UIButton!
@@ -260,12 +261,13 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		messageBar.isHidden = !peer.pinMatched || state.isLocalPeer
 		if messageBar.isHidden { messageBar.resignFirstResponder() }
 		pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
-		pinButton.isEnabled = state.isAvailable && !state.isLocalPeer
+		pinButton.isEnabled = !state.isLocalPeer
 		pinButton.isSelected = state.pinState == .pinned
 //		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
 		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
 		findButtonItem.isEnabled = peer.pinMatched
 		sendMessageButton.isEnabled = state.isAvailable && messageTextView.text?.count ?? 0 > 0
+		peerIDLabel.text = peer.peerID.uuidString
 		
 		title = peer.nickname
 		if state.isLocalPeer || state.isAvailable {
@@ -366,6 +368,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal
 			self.propertyStackView.alignment = isHorizontal ? .leading : .center
 			self.chatTableViewContainer.isHidden = !isHorizontal
+			self.peerIDLabel.isHidden = isHorizontal
 		}, completion: nil)
 	}
 }

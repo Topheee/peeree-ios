@@ -18,17 +18,15 @@ final class BrowseViewController: UITableViewController {
 	private static let DelAnimation = UITableView.RowAnimation.automatic
 	
 	enum PeersSection: Int {
-		case matched = 0, inFilter, outFilter
+		case matched = 0, inFilter, recentlySeen, outFilter
 	}
 	
 	static let ViewPeerSegueID = "ViewPeerSegue"
 	
 	static var instance: BrowseViewController?
 	
-	private var activePlaceholderCell: UITableViewCell? = nil
-	
-	private var peerCache: [[PeerInfo]] = [[], [], []]
-	private var managerCache: [[PeerManager]] = [[], [], []]
+	private var peerCache: [[PeerInfo]] = [[], [], [], []]
+	private var managerCache: [[PeerManager]] = [[], [], [], []]
 	
 	private var notificationObservers: [NSObjectProtocol] = []
 	
@@ -102,6 +100,7 @@ final class BrowseViewController: UITableViewController {
 			
 			let cacheCount = strongSelf.peerCache.count
 			for i in 0..<cacheCount {
+				guard i != PeersSection.recentlySeen.rawValue else { continue }
 				strongSelf.peerCache[i].removeAll()
 				strongSelf.managerCache[i].removeAll()
 			}
@@ -156,15 +155,11 @@ final class BrowseViewController: UITableViewController {
 	// MARK: UITableViewDataSource
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return !placeholderCellActive ? peerCache.count : 1
+		return placeholderCellActive ? 1 : peerCache.count
 	}
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		if placeholderCellActive {
-			return 1
-		} else {
-			return peerCache[section].count
-		}
+		return placeholderCellActive ? 1 : peerCache[section].count
 	}
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -176,7 +171,6 @@ final class BrowseViewController: UITableViewController {
 				assertionFailure("well that didn't work out so well")
 				return UITableViewCell()
 			}
-			activePlaceholderCell = cell
 			let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleNetwork(_:)))
 			cell.addGestureRecognizer(gestureRecognizer)
 			
@@ -196,16 +190,18 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		guard !placeholderCellActive else { return nil }
+		guard !placeholderCellActive, peerCache[section].count > 0 else { return nil }
 		guard let peerSection = PeersSection(rawValue: section) else { return super.tableView(tableView, titleForHeaderInSection: section) }
 		
 		switch peerSection {
 		case .matched:
-			return peerCache[0].count > 0 ? NSLocalizedString("Pin Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.") : nil
+			return NSLocalizedString("Pin Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.")
 		case .inFilter:
-			return peerCache[1].count > 0 ? NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are nere around).") : nil
+			return NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are hear around).")
+		case .recentlySeen:
+			return NSLocalizedString("Last Seen Recently", comment: "Header of table view section in browse view, which contains entries for peers recently available on the network (so they are probably around).")
 		case .outFilter:
-			return peerCache[2].count > 0 ? NSLocalizedString("Filtered People", comment: "Header of table view section in browse view, which contains entries for people who are most likely not interesting for the user because they did not pass his filter.") : nil
+			return NSLocalizedString("Filtered People", comment: "Header of table view section in browse view, which contains entries for people who are most likely not interesting for the user because they did not pass his filter.")
 		}
 	}
 	
@@ -217,7 +213,7 @@ final class BrowseViewController: UITableViewController {
 		}
 	}
 	
-	func indexPath(of peerID: PeerID) -> IndexPath? {
+	private func indexPath(of peerID: PeerID) -> IndexPath? {
 		for i in 0..<peerCache.count  {
 			let row = peerCache[i].firstIndex { $0.peerID == peerID }
 			if row != nil {
@@ -284,19 +280,17 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	private func addToCache(peer: PeerInfo, manager: PeerManager) -> Int {
+		let section: PeersSection
 		if peer.pinMatched {
-			peerCache[PeersSection.matched.rawValue].insert(peer, at: 0)
-			managerCache[PeersSection.matched.rawValue].insert(manager, at: 0)
-			return PeersSection.matched.rawValue
+			section = .matched
 		} else if BrowseFilterSettings.shared.check(peer: peer) {
-			peerCache[PeersSection.inFilter.rawValue].insert(peer, at: 0)
-			managerCache[PeersSection.inFilter.rawValue].insert(manager, at: 0)
-			return PeersSection.inFilter.rawValue
+			section = manager.isAvailable ? .inFilter : .recentlySeen
 		} else {
-			peerCache[PeersSection.outFilter.rawValue].insert(peer, at: 0)
-			managerCache[PeersSection.outFilter.rawValue].insert(manager, at: 0)
-			return PeersSection.outFilter.rawValue
+			section = .outFilter
 		}
+		peerCache[section.rawValue].insert(peer, at: 0)
+		managerCache[section.rawValue].insert(manager, at: 0)
+		return section.rawValue
 	}
 	
 	private func addToView(peerID: PeerID, updateTable: Bool) {
@@ -328,30 +322,37 @@ final class BrowseViewController: UITableViewController {
 	
 	private func peerAppeared(_ peerID: PeerID) {
 		addToView(peerID: peerID, updateTable: true)
+		if let row = peerCache[PeersSection.recentlySeen.rawValue].firstIndex(where: { (peerInfo) -> Bool in
+			peerInfo.peerID == peerID
+		}) {
+			peerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
+			managerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
+			remove(row: row, section: PeersSection.recentlySeen.rawValue)
+		}
 	}
 	
 	private func peerDisappeared(_ peerID: PeerID) {
 		guard let peerPath = indexPath(of: peerID) else {
 			if PeeringController.shared.peering {
-				NSLog("WARNING: Unknown peer \(peerID.uuidString) disappeared")
+				NSLog("WARN: Unknown peer \(peerID.uuidString) disappeared.")
 			}
 			return
 		}
 		
-		let wasOne = peerCache[peerPath.section].count == 1
+		var alreadySeen = false
+		for peer in peerCache[PeersSection.recentlySeen.rawValue] {
+			alreadySeen = alreadySeen || peer.peerID == peerID
+		}
+		if !alreadySeen { addToView(peerID: peerID, updateTable: true) }
+		
 		peerCache[peerPath.section].remove(at: peerPath.row)
 		managerCache[peerPath.section].remove(at: peerPath.row)
-		
-		if wasOne && placeholderCellActive {
-			tableView.reloadData()
-		} else {
-			remove(row: peerPath.row, section: peerPath.section)
-		}
+		remove(row: peerPath.row, section: peerPath.section)
 	}
 	
 	private func messageReceivedOrRead(from peerID: PeerID) {
 		guard let peerPath = indexPath(of: peerID) else {
-			NSLog("WARNING: Received message from non-presented peer \(peerID.uuidString)")
+			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
 			return
 		}
 		tableView.reloadRows(at: [peerPath], with: .automatic)

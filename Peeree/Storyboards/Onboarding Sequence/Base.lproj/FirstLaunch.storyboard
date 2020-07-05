@@ -489,8 +489,9 @@ a Social Peer-to-Peer App</string>
                         <constraints>
                             <constraint firstItem="hps-Ul-cg4" firstAttribute="top" secondItem="Uph-Zc-IOq" secondAttribute="top" constant="24" id="4Ee-Ib-ugf"/>
                             <constraint firstAttribute="trailingMargin" secondItem="hps-Ul-cg4" secondAttribute="trailing" id="Fjk-dc-Yke"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="hps-Ul-cg4" secondAttribute="bottom" constant="8" id="QfL-GX-MjD"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="hps-Ul-cg4" secondAttribute="bottom" priority="750" constant="8" id="QfL-GX-MjD"/>
                             <constraint firstItem="hps-Ul-cg4" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="d8P-mU-2HI"/>
+                            <constraint firstItem="Uph-Zc-IOq" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="hps-Ul-cg4" secondAttribute="bottom" id="fvV-CP-9T5"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Uph-Zc-IOq"/>
                     </view>

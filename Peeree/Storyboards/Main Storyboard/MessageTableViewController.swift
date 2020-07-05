@@ -67,7 +67,7 @@ class MessageTableViewController: UITableViewController {
 	
 	// Helper method for inserting a sent/received message into the data source and reload the view.
 	// Make sure you call this on the main thread
-	func appendTranscript() {
+	private func appendTranscript() {
 		// Update the table view
 		let newIndexPath = IndexPath(row:(peerManager.transcripts.count - 1), section: 0)
 		self.tableView.insertRows(at: [newIndexPath], with: .fade)

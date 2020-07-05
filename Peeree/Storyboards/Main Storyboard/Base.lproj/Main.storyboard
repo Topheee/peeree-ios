@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -212,7 +212,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="8" y="64" width="304" height="282"/>
+                                <rect key="frame" x="8" y="64" width="304" height="312.5"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="86" y="0.0" width="132" height="132"/>
@@ -269,7 +269,7 @@
                                         </connections>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="MVp-Wy-cyC">
-                                        <rect key="frame" x="32" y="132" width="240" height="150"/>
+                                        <rect key="frame" x="32" y="132" width="240" height="180.5"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="BQJ-Fm-gFE">
                                                 <rect key="frame" x="0.0" y="0.0" width="240" height="32"/>
@@ -356,7 +356,7 @@
                                                 </subviews>
                                             </stackView>
                                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
-                                                <rect key="frame" x="65" y="150" width="110" height="0.0"/>
+                                                <rect key="frame" x="65" y="158" width="110" height="0.0"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <bool key="isElement" value="NO"/>
                                                 </accessibility>
@@ -365,12 +365,18 @@
                                                     <segue destination="kuI-R6-Fbl" kind="show" id="r7K-aS-PK5"/>
                                                 </connections>
                                             </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
+                                                <rect key="frame" x="104.5" y="166" width="31" height="14.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                         </subviews>
                                     </stackView>
                                 </subviews>
                             </stackView>
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="354" width="320" height="57"/>
+                                <rect key="frame" x="0.0" y="384.5" width="320" height="34.5"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" identifier="messageTableHeight" id="VPu-gz-2Vl"/>
                                 </constraints>
@@ -384,13 +390,13 @@
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
-                                <rect key="frame" x="-1" y="411" width="322" height="50"/>
+                                <rect key="frame" x="-1" y="419" width="322" height="42"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="0.0" width="306" height="50"/>
+                                        <rect key="frame" x="8" y="4" width="306" height="34"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="262" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="262" height="34"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                 <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
@@ -406,7 +412,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="270" y="0.0" width="36" height="50"/>
+                                                <rect key="frame" x="270" y="0.0" width="36" height="34"/>
                                                 <state key="normal" title="Send"/>
                                                 <connections>
                                                     <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
@@ -418,8 +424,8 @@
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="pns-Vh-qyy" secondAttribute="trailing" constant="8" identifier="messageStackViewToTrailing" id="USf-K3-oT8"/>
-                                    <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" identifier="messageStackViewToBottom" id="Z1y-gy-KdT"/>
-                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="top" secondItem="Lkr-13-Jfz" secondAttribute="top" identifier="messageStackViewToTop" id="hYZ-dV-Pbe"/>
+                                    <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" constant="4" identifier="messageStackViewToBottom" id="Z1y-gy-KdT"/>
+                                    <constraint firstItem="pns-Vh-qyy" firstAttribute="top" secondItem="Lkr-13-Jfz" secondAttribute="top" constant="4" identifier="messageStackViewToTop" id="hYZ-dV-Pbe"/>
                                     <constraint firstItem="pns-Vh-qyy" firstAttribute="leading" secondItem="Lkr-13-Jfz" secondAttribute="leading" constant="8" identifier="messageStackViewToLeading" id="wco-8B-5sd"/>
                                 </constraints>
                             </view>
@@ -457,6 +463,7 @@
                         <outlet property="messageBottomConstraint" destination="5XF-gF-5uE" id="Spd-Mg-uEj"/>
                         <outlet property="messageTableHeight" destination="VPu-gz-2Vl" id="qPO-hm-F35"/>
                         <outlet property="messageTextView" destination="7Il-00-It7" id="mCm-oy-uJz"/>
+                        <outlet property="peerIDLabel" destination="i9C-MG-2LW" id="bDX-sF-YUh"/>
                         <outlet property="peerStackView" destination="DbU-Tc-UDS" id="kcK-TX-9ic"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
@@ -485,7 +492,7 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="57"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="34.5"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <prototypes>
