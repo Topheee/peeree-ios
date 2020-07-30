@@ -358,16 +358,20 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		guard error == nil else {
-			NSLog("Error discovering characteristics: \(error!.localizedDescription)")
+			NSLog("ERROR: discovering characteristics failed: \(error!.localizedDescription)")
+			disconnect(peripheral)
+			return
+		}
+		guard let characteristics = service.characteristics else {
+			NSLog("ERROR: discovering characteristics failed: characteristics array is nil.")
 			disconnect(peripheral)
 			return
 		}
 
-		var found = service.uuid != CBUUID.PeereeServiceID // only search for uuid characteristic in the top service
-		// Again, we loop through the array, just in case.
-		for characteristic in service.characteristics! {
-			// And check if it's the right one
-			// NSLog("INFO: Peripheral \(peripheral.identifier.uuidString.left(8)): Discovered characteristic \(characteristic.uuid.uuidString.left(8)) of service \(service.uuid.uuidString.left(8))")
+		var found = false
+		for characteristic in characteristics {
+			NSLog("INFO: Peripheral \(peripheral.identifier.uuidString.left(8)): Discovered characteristic \(characteristic.uuid.uuidString.left(8)) of service \(service.uuid.uuidString.left(8))")
+/*
 			if let descriptors = characteristic.descriptors {
 				for descriptor in descriptors {
 					if let data = descriptor.value as? Data {
@@ -383,18 +387,23 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 					}
 				}
 			}
-			if characteristic.uuid == CBUUID.LocalPeerIDCharacteristicID {
-				// If it is, read it
+*/
+			switch characteristic.uuid {
+			case CBUUID.LocalPeerIDCharacteristicID:
 				peripheral.readValue(for: characteristic)
 				found = true
-			} else if characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
+			case CBUUID.RemoteUUIDCharacteristicID:
 				peripheral.writeValue(UserPeerManager.instance.peer.idData, for: characteristic, type: .withResponse)
+			case CBUUID.ConnectBackCharacteristicID:
+				peripheral.writeValue(true.binaryRepresentation, for: characteristic, type: .withResponse)
+			default:
+				break // characteristic will be used later
 			}
 		}
 		
 		if !found {
-			NSLog("WARN: No UUID characteristic found on peripheral \(peripheral).")
-			centralManager.cancelPeripheralConnection(peripheral)
+			NSLog("ERROR: No UUID characteristic found on peripheral \(peripheral). Disconnecting.")
+			disconnect(peripheral)
 		}
 	}
 	
