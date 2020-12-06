@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -27,7 +28,8 @@
                                 </connections>
                             </containerView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="Zyb-6r-Dv9"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="pcu-hx-Kx3" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" id="6Pr-83-WBT"/>
                             <constraint firstItem="VD9-ZK-Mut" firstAttribute="top" secondItem="pcu-hx-Kx3" secondAttribute="bottom" constant="8" id="CfI-sw-WWp"/>
@@ -37,7 +39,6 @@
                             <constraint firstItem="VD9-ZK-Mut" firstAttribute="leading" secondItem="iyu-mt-mGM" secondAttribute="leadingMargin" constant="-16" id="nJ3-Nb-OLz"/>
                             <constraint firstItem="pcu-hx-Kx3" firstAttribute="trailing" secondItem="iyu-mt-mGM" secondAttribute="trailingMargin" id="vbN-32-m3h"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="Zyb-6r-Dv9"/>
                     </view>
                     <navigationItem key="navigationItem" id="3gh-9v-mbP"/>
                     <modalPageSheetSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -56,8 +57,8 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="64" sectionHeaderHeight="28" sectionFooterHeight="28" id="ym8-vj-FZW">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="peerDisplayCell" textLabel="oo4-4n-i4a" detailTextLabel="wGc-0s-dzf" imageView="dS0-RK-aRi" style="IBUITableViewCellStyleSubtitle" id="va4-cj-nbf">
                                 <rect key="frame" x="0.0" y="28" width="320" height="64"/>
@@ -83,7 +84,7 @@
                                                 <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                             </accessibility>
                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                                            <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="textColor" systemColor="systemGrayColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="PersonIcon" id="dS0-RK-aRi">
@@ -179,10 +180,10 @@
                                 <segue destination="tIL-fs-ywz" kind="presentation" identifier="presentMeViewController" id="eck-AU-mm8"/>
                             </connections>
                         </barButtonItem>
-                        <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="6" width="100" height="32"/>
+                        <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="7aa-4S-buU">
+                            <rect key="frame" x="110" y="9" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                            <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
                             <state key="normal" title="Go Online"/>
                             <connections>
@@ -245,7 +246,7 @@
                                                 <blurEffect style="regular"/>
                                             </visualEffectView>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" identifier="portraitToSuperviewBottom" id="1EP-07-K56"/>
                                             <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" identifier="portraitToSuperviewTrailing" id="Avq-G7-1G6"/>
@@ -261,7 +262,7 @@
                                                 <color key="value" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             </userDefinedRuntimeAttribute>
                                             <userDefinedRuntimeAttribute type="color" keyPath="endColor">
-                                                <color key="value" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <color key="value" systemColor="systemBackgroundColor"/>
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                         <connections>
@@ -346,8 +347,8 @@
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4mf-uQ-o4f">
-                                                        <rect key="frame" x="126.5" y="0.0" width="47" height="30"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4mf-uQ-o4f">
+                                                        <rect key="frame" x="126" y="0.0" width="47" height="30"/>
                                                         <state key="normal" title="Report"/>
                                                         <connections>
                                                             <action selector="reportPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="gP4-Bq-iDM"/>
@@ -355,7 +356,7 @@
                                                     </button>
                                                 </subviews>
                                             </stackView>
-                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
                                                 <rect key="frame" x="65" y="158" width="110" height="0.0"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <bool key="isElement" value="NO"/>
@@ -365,8 +366,8 @@
                                                     <segue destination="kuI-R6-Fbl" kind="show" id="r7K-aS-PK5"/>
                                                 </connections>
                                             </button>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
-                                                <rect key="frame" x="104.5" y="166" width="31" height="14.5"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PeerID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
+                                                <rect key="frame" x="101" y="166" width="38" height="14.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
@@ -393,12 +394,12 @@
                                 <rect key="frame" x="-1" y="419" width="322" height="42"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="4" width="306" height="34"/>
+                                        <rect key="frame" x="8" y="4" width="306" height="30"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="262" height="34"/>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="262" height="30"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <color key="textColor" systemColor="labelColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 <userDefinedRuntimeAttributes>
@@ -411,8 +412,8 @@
                                                     <outlet property="delegate" destination="bgg-zV-1WC" id="zfH-o8-GrD"/>
                                                 </connections>
                                             </textView>
-                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="270" y="0.0" width="36" height="34"/>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
+                                                <rect key="frame" x="270" y="0.0" width="36" height="30"/>
                                                 <state key="normal" title="Send"/>
                                                 <connections>
                                                     <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
@@ -421,7 +422,7 @@
                                         </subviews>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="pns-Vh-qyy" secondAttribute="trailing" constant="8" identifier="messageStackViewToTrailing" id="USf-K3-oT8"/>
                                     <constraint firstAttribute="bottom" secondItem="pns-Vh-qyy" secondAttribute="bottom" constant="4" identifier="messageStackViewToBottom" id="Z1y-gy-KdT"/>
@@ -430,7 +431,8 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="YYz-qE-CF7" firstAttribute="bottom" secondItem="Lkr-13-Jfz" secondAttribute="bottom" constant="-1" identifier="messageBarToBottom" id="5XF-gF-5uE"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="top" secondItem="YYz-qE-CF7" secondAttribute="top" constant="8" identifier="peerStackViewToTop" id="8ir-l2-8hz"/>
@@ -443,13 +445,12 @@
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" identifier="chatTableViewLeading" id="n9E-Zf-Swe"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" identifier="chatTableViewToPeerStackViewBottom" id="vMf-3d-C95"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="YYz-qE-CF7"/>
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz">
                         <barButtonItem key="rightBarButtonItem" title="Find" id="S8S-DB-afu">
                             <connections>
-                                <segue destination="PIG-Ng-mYB" kind="show" id="lOo-De-0Sv"/>
+                                <segue destination="PIG-Ng-mYB" kind="show" identifier="beaconSegue" id="lOo-De-0Sv"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -492,9 +493,9 @@
             <objects>
                 <tableViewController title="Chat" id="XqI-Aj-cpS" customClass="MessageTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="HMd-SH-CAw">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="34.5"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="38.5"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="Message Cell" id="P8y-s7-Nks" customClass="MessageCell" customModule="Peeree" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="320" height="39.5"/>
@@ -526,7 +527,7 @@
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="zJh-NN-ZUA"/>
                                     </constraints>
                                 </tableViewCellContentView>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <connections>
                                     <outlet property="ballonLeadingEqual" destination="zJh-NN-ZUA" id="XZ9-nF-V1j"/>
                                     <outlet property="ballonLeadingGreaterOrEqual" destination="vqD-qB-iPn" id="BYZ-b6-hmO"/>
@@ -556,7 +557,7 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="39" sectionHeaderHeight="22" sectionFooterHeight="22" id="DaA-by-IuP">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="404"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="characterTraitCell" textLabel="BII-l4-Grc" detailTextLabel="57R-R9-5LU" rowHeight="39" style="IBUITableViewCellStyleValue1" id="bu5-95-g5B">
                                 <rect key="frame" x="0.0" y="28" width="320" height="39"/>
@@ -679,7 +680,7 @@
                                                     </connections>
                                                 </barButtonItem>
                                                 <barButtonItem systemItem="flexibleSpace" id="BP5-r4-b8w"/>
-                                                <barButtonItem enabled="NO" image="LeftRightRadarGlyph" id="9YV-Ru-0A8">
+                                                <barButtonItem image="LeftRightRadarGlyph" id="9YV-Ru-0A8">
                                                     <connections>
                                                         <action selector="findPeer:" destination="m9M-nD-Ibs" id="on2-Y5-hes"/>
                                                     </connections>
@@ -708,7 +709,8 @@
                                 <blurEffect style="light"/>
                             </visualEffectView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="JeQ-Xq-umV"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="JeQ-Xq-umV" firstAttribute="bottom" secondItem="873-c7-mHR" secondAttribute="bottom" id="RBq-kG-9Nv"/>
                             <constraint firstItem="eif-03-kRo" firstAttribute="top" secondItem="TXe-Ve-cd1" secondAttribute="top" id="TdB-sy-gdz"/>
@@ -719,7 +721,6 @@
                             <constraint firstItem="873-c7-mHR" firstAttribute="leading" secondItem="JeQ-Xq-umV" secondAttribute="leading" id="sw9-mm-rbe"/>
                             <constraint firstItem="JeQ-Xq-umV" firstAttribute="bottom" secondItem="eif-03-kRo" secondAttribute="bottom" id="zEJ-Eq-SXN"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="JeQ-Xq-umV"/>
                     </view>
                     <connections>
                         <outlet property="backgroundImageView" destination="eif-03-kRo" id="iRs-8j-eiC"/>
@@ -782,7 +783,7 @@
                                                     <action selector="changePicture:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="5MX-Kr-u8H"/>
                                                 </connections>
                                             </button>
-                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
+                                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
                                                 <rect key="frame" x="97" y="102.5" width="110" height="0.0"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <bool key="isElement" value="NO"/>
@@ -851,7 +852,7 @@
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i05-bg-dKb">
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="i05-bg-dKb">
                                                         <rect key="frame" x="0.0" y="14.5" width="101" height="30"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Creates or deletes your Peeree identity" label="Peeree identity management"/>
                                                         <state key="normal" title="Create Identity"/>
@@ -867,7 +868,7 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Oh9-xR-xMo">
                                                         <rect key="frame" x="0.0" y="0.0" width="154" height="26"/>
                                                         <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4iN-3s-iIx">
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4iN-3s-iIx">
                                                                 <rect key="frame" x="0.0" y="0.0" width="73" height="26"/>
                                                                 <accessibility key="accessibilityConfiguration" hint="Opens the homepage in Safari" label="Peeree Website"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
@@ -876,7 +877,7 @@
                                                                     <action selector="browsePeereeURL:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="WGO-8T-B0A"/>
                                                                 </connections>
                                                             </button>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Pm-yd-i31">
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5Pm-yd-i31">
                                                                 <rect key="frame" x="81" y="0.0" width="73" height="26"/>
                                                                 <accessibility key="accessibilityConfiguration" hint="Opens the privacy policy in Safari" label="Peeree Privacy Policy"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
@@ -903,7 +904,8 @@
                                 </constraints>
                             </scrollView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="EPq-Ut-BKJ"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="9fe-8y-HDn" firstAttribute="leading" secondItem="EPq-Ut-BKJ" secondAttribute="leading" constant="8" id="3Fv-EL-pbO"/>
                             <constraint firstItem="EPq-Ut-BKJ" firstAttribute="trailing" secondItem="9fe-8y-HDn" secondAttribute="trailing" constant="8" id="DlV-1N-Z3N"/>
@@ -912,7 +914,6 @@
                             <constraint firstItem="hwZ-ru-5l0" firstAttribute="top" secondItem="EPq-Ut-BKJ" secondAttribute="top" id="Xco-3U-nGn"/>
                             <constraint firstItem="EPq-Ut-BKJ" firstAttribute="bottom" secondItem="hwZ-ru-5l0" secondAttribute="bottom" id="Ydw-5b-EJD"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="EPq-Ut-BKJ"/>
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Me" largeTitleDisplayMode="always" id="i5d-ig-BH3">
@@ -952,8 +953,8 @@
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="Qaz-Dg-iiu">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
-                        <color key="sectionIndexBackgroundColor" systemColor="systemGroupedBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="sectionIndexBackgroundColor" systemColor="systemGroupedBackgroundColor"/>
                         <sections>
                             <tableViewSection headerTitle="Gender" id="eYi-0r-Sc8">
                                 <cells>
@@ -1205,7 +1206,8 @@
                                 </constraints>
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="r3q-Zm-aLy"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="eae-2q-6wg" firstAttribute="top" secondItem="RNY-qo-bXL" secondAttribute="bottom" constant="23" identifier="portraitDistance" id="2zp-Ct-nOr"/>
                             <constraint firstItem="r3q-Zm-aLy" firstAttribute="bottom" secondItem="eae-2q-6wg" secondAttribute="bottom" constant="24" identifier="userPortraitBottom" id="GeR-iK-Gky"/>
@@ -1214,7 +1216,6 @@
                             <constraint firstItem="eae-2q-6wg" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" identifier="userPortraitCenter" id="g6b-i3-Gf5"/>
                             <constraint firstItem="RNY-qo-bXL" firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="width" identifier="remoteAndUserPortrait" id="t4q-nP-hNC"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="r3q-Zm-aLy"/>
                     </view>
                     <navigationItem key="navigationItem" title="Radar" largeTitleDisplayMode="never" id="khg-QX-S1a"/>
                     <connections>
@@ -1288,6 +1289,11 @@
             <point key="canvasLocation" x="717" y="704"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="7Il-00-It7">
+            <size key="intrinsicContentSize" width="-1" height="30"/>
+        </designable>
+    </designables>
     <inferredMetricsTieBreakers>
         <segue reference="r7K-aS-PK5"/>
         <segue reference="7Nf-9B-BLi"/>
@@ -1295,8 +1301,8 @@
     <color key="tintColor" red="0.086274509803921567" green="0.56862745098039214" blue="0.396078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
-        <image name="MessageBubble" width="44.5" height="35.5"/>
-        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
+        <image name="MessageBubble" width="45.5" height="34"/>
+        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplate" width="180" height="180"/>
@@ -1305,5 +1311,17 @@
         <image name="PortraitUnavailable" width="512" height="512"/>
         <image name="UnverfiedIcon" width="512" height="512"/>
         <image name="VerfiedIcon" width="512" height="512"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGrayColor">
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGroupedBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>

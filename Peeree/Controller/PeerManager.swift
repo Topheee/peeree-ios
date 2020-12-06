@@ -103,7 +103,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		guard peerInfo?.pinMatched ?? false else { return }
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
 			// TODO either handle failure or make non-reliable
-			if let error = _error { NSLog("indicated pin match failed: \(error)") }
+			if let error = _error { NSLog("indicating pin match failed: \(error)") }
 		}
 	}
 	

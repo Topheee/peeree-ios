@@ -80,7 +80,10 @@ final class BrowseViewController: UITableViewController {
 		
 		connectionChangedState(PeeringController.shared.peering)
 		
-		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { [weak self] (peerID, _) in self?.peerAppeared(peerID) })
+		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { [weak self] (peerID, notification) in
+			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
+			self?.peerAppeared(peerID, again: again ?? false)
+		})
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
 			self?.connectionChangedState(PeeringController.shared.peering)
@@ -281,10 +284,12 @@ final class BrowseViewController: UITableViewController {
 	
 	private func addToCache(peer: PeerInfo, manager: PeerManager) -> Int {
 		let section: PeersSection
-		if peer.pinMatched {
+		if !manager.isAvailable {
+			section = .recentlySeen
+		} else if peer.pinMatched {
 			section = .matched
 		} else if BrowseFilterSettings.shared.check(peer: peer) {
-			section = manager.isAvailable ? .inFilter : .recentlySeen
+			section = .inFilter
 		} else {
 			section = .outFilter
 		}
@@ -320,14 +325,14 @@ final class BrowseViewController: UITableViewController {
 		tableView.deleteRows(at: [IndexPath(row: row, section: section)], with: BrowseViewController.DelAnimation)
 	}
 	
-	private func peerAppeared(_ peerID: PeerID) {
+	private func peerAppeared(_ peerID: PeerID, again: Bool) {
 		addToView(peerID: peerID, updateTable: true)
-		if let row = peerCache[PeersSection.recentlySeen.rawValue].firstIndex(where: { (peerInfo) -> Bool in
-			peerInfo.peerID == peerID
-		}) {
-			peerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
-			managerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
-			remove(row: row, section: PeersSection.recentlySeen.rawValue)
+		if again {
+			if let row = peerCache[PeersSection.recentlySeen.rawValue].firstIndex(where: { $0.peerID == peerID }) {
+				peerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
+				managerCache[PeersSection.recentlySeen.rawValue].remove(at: row)
+				remove(row: row, section: PeersSection.recentlySeen.rawValue)
+			}
 		}
 	}
 	

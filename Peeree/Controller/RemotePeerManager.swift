@@ -90,7 +90,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
 	
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
-	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(Bundle.main.bundleIdentifier!).cachedPeers")
+	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(AppDelegate.BundleID).cachedPeers")
 	private var peerInfoTransmissions = [PeerID : PeerData]()
 	private var remotePeerDelegates = [PeerID : RemotePeerDelegate]()
 	
@@ -102,7 +102,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	///	All readable remote peers the app is currently connected to. The keys are updated immediately when a new peripheral shows up, as we have to keep a reference to it. However, the values are not filled until the peripheral tell's us his ID.
 	private var _availablePeripherals = [CBPeripheral : PeerID?]()
 	/// Maps the identifieres of peripherals to the IDs of the peers they represent.
-	private var peripheralPeerIDs = SynchronizedDictionary<PeerID, CBPeripheral>(queueLabel: "\(Bundle.main.bundleIdentifier!).peripheralPeerIDs")
+	private var peripheralPeerIDs = SynchronizedDictionary<PeerID, CBPeripheral>(queueLabel: "\(AppDelegate.BundleID).peripheralPeerIDs")
 	
 	private var nonces = [CBPeripheral : Data]()
 	private var portraitSignatures = [PeerID : Data?]()
@@ -321,8 +321,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 			cancelTransmission(to: peripheral, of: characteristicID)
 		}
 		_ = nonces.removeValue(forKey: peripheral)
-		guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral) else { return }
-		guard let peerID = _peerID else { return }
+		guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral), let peerID = _peerID else { return }
 		if let peerData = peerInfoTransmissions.removeValue(forKey: peerID) {
 			peerData.progress.cancel()
 		}
@@ -510,11 +509,18 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				}
 				return
 			}
+
+			// sometimes (especially with Android) it happens that a device connects again while having the old connection still open
+			let _oldPeripheral = peripheralPeerIDs[peerID]
 			_availablePeripherals[peripheral] = peerID
 			peripheralPeerIDs[peerID] = peripheral
+
 			if cachedPeers[peerID] == nil {
 				guard let characteristics = peripheral.peereeService?.get(characteristics: [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.PeerIDSignatureCharacteristicID, CBUUID.AggregateSignatureCharacteristicID, CBUUID.NicknameSignatureCharacteristicID, CBUUID.PublicKeyCharacteristicID, CBUUID.LastChangedCharacteristicID]) else { break }
 				peripheral.readValues(for: characteristics)
+			} else if let oldPeripheral = _oldPeripheral, oldPeripheral.state == .connected || oldPeripheral.state == .connecting {
+				// we where already connected, so simply discard the old peripheral and silenty adopt the new one
+				disconnect(oldPeripheral)
 			} else {
 				// we discovered this one earlier but he went offline in between (modified services to nil or empty, resp.) but now he is back online again
 				peerAppeared(peerID, peripheral: peripheral, again: true)

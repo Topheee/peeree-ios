@@ -34,6 +34,7 @@ let AppTheme = VisualTheme()
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
 	static let PeerIDKey = "PeerIDKey"
+	static let BundleID = Bundle.main.bundleIdentifier ?? "de.peeree"
 	
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 	
@@ -83,6 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	var window: UIWindow?
 	
 	var isActive: Bool = false
+	private var onboardingPresented: Bool = false
 
 	/**
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
@@ -93,8 +95,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		AccountController.shared.delegate = self
 		
 		_ = PeeringController.Notifications.peerAppeared.addPeerObserver { peerID, notification  in
-			guard let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool else { return }
-			self.peerAppeared(peerID, again: again)
+			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
+			self.peerAppeared(peerID, again: again ?? false)
 		}
 		
 		_ = PeeringController.Notifications.peerDisappeared.addPeerObserver { peerID, _  in
@@ -154,14 +156,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 		isActive = true
 		
-		// trigger setting the correct colors for Dark Mode, as there is no `TraitCollectionDidChange` notification available
-//		setupAppearance()
-		
 		if UserDefaults.standard.object(forKey: UserPeerManager.PrefKey) == nil {
-			// this is the first launch of the app, so we show the first launch UI
-			let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
-			
-			window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
+			if !onboardingPresented {
+				onboardingPresented = true
+				// this is the first launch of the app, so we show the first launch UI
+				let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
+				
+				window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
+			}
 		} else {
 			for peerID in PeeringController.shared.remote.availablePeers {
 				let manager = PeeringController.shared.manager(for: peerID)
@@ -244,19 +246,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	/// plays the haptic feedback when pinning a person
 	static func playHapticPin() {
 		if #available(iOS 13, *) {
+			guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+
 			do {
 				let engine = try CHHapticEngine()
 				try engine.start()
-				
+
+				// The engine stopped; print out why
+				engine.stoppedHandler = { reason in
+					NSLog("INFO: The haptic engine stopped: \(reason.rawValue)")
+				}
+
+				// If something goes wrong, attempt to restart the engine immediately
+				engine.resetHandler = {
+					NSLog("ERROR: The haptic engine reset")
+
+//					do {
+//						try engine.start()
+//					} catch {
+//						print("Failed to restart the haptic engine: \(error)")
+//					}
+				}
+
 				let anotherPattern = try CHHapticPattern(events: [
 					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.5)], relativeTime: 0.0, duration: 0.1),
 					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.9)], relativeTime: 0.5, duration: 0.4)], parameters: [])
-				
+
 				let player = try engine.makePlayer(with: anotherPattern)
 
 				try player.start(atTime: 0)
 			} catch let error {
-				print("Engine Error: \(error). See CHHapticErrorCode for details.")
+				NSLog("ERROR: Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
 			}
 		}
 	}
