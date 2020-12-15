@@ -247,6 +247,14 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		writeNonce(to: peripheral, with: peerID, characteristic: characteristic)
 	}
 	
+	func authenticate(_ peerID: PeerID) {
+		guard let peripheral = peripheralPeerIDs[peerID], let characteristic = peripheral.peereeService?.get(characteristic: CBUUID.RemoteAuthenticationCharacteristicID) else {
+			NSLog("ERROR: Insufficient resources for reading Bluetooth nonce.")
+			return
+		}
+		peripheral.readValue(for: characteristic)
+	}
+	
 	// MARK: CBCentralManagerDelegate
 	
 //	@available(iOS 9.0, *)
@@ -542,6 +550,17 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: error)
 			}
 			
+		case CBUUID.RemoteAuthenticationCharacteristicID:
+			let nonce = chunk
+			do {
+				let signature = try UserPeerManager.instance.keyPair.sign(message: nonce)
+				
+				peripheral.writeValue(signature, for: characteristic, type: .withResponse)
+			} catch {
+				// TODO present an alert to the user that they won't be able to send messages
+				NSLog("ERROR: Signing Bluetooth remote nonce failed: \(error)")
+			}
+			
 		case CBUUID.PortraitCharacteristicID:
 			var size: CBCharacteristic.SplitCharacteristicSize = 0
 			withUnsafeMutableBytes(of: &size) { pointer in
@@ -710,12 +729,13 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		let writeType = CBCharacteristicWriteType.withResponse
 		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerManager.instance.keyPair.blockSize)
 		var nonce = Data(count: randomByteCount)
-		if nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) }) == 0 {
+		let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })
+		if status == 0 {
 			nonces[peripheral] = nonce
 			peripheral.writeValue(nonce, for: characteristic, type: writeType)
 		} else {
 			perror(nil)
-			remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Generating random Bluetooth nonce failed.", comment: "Error message during verification")]))
+			remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: Int(status), userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Generating random Bluetooth nonce failed.", comment: "Error message during verification")]))
 		}
 	}
 }

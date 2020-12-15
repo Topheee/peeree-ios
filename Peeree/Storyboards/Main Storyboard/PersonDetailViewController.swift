@@ -46,6 +46,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	private var pictureProgressManager: ProgressManager?
 	
 	/// caches
+	private var cachedState = PeerState()
 	private var displayedPeerInfo: PeerInfo?
 	var peerManager: PeerManager!
 	
@@ -222,7 +223,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	// Dynamically enables/disables the send button based on user typing
 	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
 		let length = (textView.text?.count ?? 0) - range.length + text.count;
-		self.sendMessageButton.isEnabled = length > 0
+		self.sendMessageButton.isEnabled = length > 0 && cachedState.isAvailable
 		return true
 	}
 	
@@ -257,7 +258,8 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	
 	private func updateState() {
 		guard let peer = displayedPeerInfo, let state = peerManager else { return }
-		
+
+		cachedState.isAvailable = state.isAvailable
 		messageBar.isHidden = !peer.pinMatched || state.isLocalPeer
 		if messageBar.isHidden { messageBar.resignFirstResponder() }
 		pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
@@ -266,11 +268,11 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 //		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
 		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
 		findButtonItem.isEnabled = peer.pinMatched
-		sendMessageButton.isEnabled = state.isAvailable && messageTextView.text?.count ?? 0 > 0
+		sendMessageButton.isEnabled = cachedState.isAvailable && messageTextView.text?.count ?? 0 > 0
 		peerIDLabel.text = peer.peerID.uuidString
 		
 		title = peer.nickname
-		if state.isLocalPeer || state.isAvailable {
+		if state.isLocalPeer || cachedState.isAvailable {
 			navigationItem.titleView = nil
 			navigationItem.title = peer.nickname
 			pinButton.layer.removeAllAnimations()
@@ -360,10 +362,11 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	
 	private func layoutMetadata(isHorizontal: Bool, animationDuration: TimeInterval = 0.25) {
 		guard self.peerStackView.axis == (isHorizontal ? .vertical : .horizontal) else { return /* nothing changed */ }
-		
+
+		// the pin button needs to be hidden at the beginning of animation
+		self.pinButton.isHidden = isHorizontal
+		self.pinIndicator.isHidden = true
 		UIView.animate(withDuration: animationDuration, animations: { () -> Void in
-			self.pinButton.isHidden = true
-			self.pinIndicator.isHidden = true
 			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical
 			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal
 			self.propertyStackView.alignment = isHorizontal ? .leading : .center
@@ -371,4 +374,8 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			self.peerIDLabel.isHidden = isHorizontal
 		}, completion: nil)
 	}
+}
+
+fileprivate struct PeerState {
+	var isAvailable = false
 }

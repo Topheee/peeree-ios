@@ -102,8 +102,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public func indicatePinMatch() {
 		guard peerInfo?.pinMatched ?? false else { return }
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
-			// TODO either handle failure or make non-reliable
-			if let error = _error { NSLog("indicating pin match failed: \(error)") }
+			// TODO handle failure
+			if let error = _error { NSLog("ERROR: indicating pin match failed: \(error)"); return }
 		}
 	}
 	
@@ -181,7 +181,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			receivedUnverifiedPinMatchIndication = true
 			return
 		}
-		
+
+		remotePeerManager.authenticate(peer.peerID)
 		AccountController.shared.updatePinStatus(of: peer)
 	}
 	

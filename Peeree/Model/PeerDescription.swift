@@ -41,7 +41,7 @@ public final class UserPeerManager: PeerManager {
 			if let provider = CGDataProvider(url: UserPeerManager.pictureResourceURL as CFURL) {
 				cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
 			} else {
-				NSLog("ERR: could not initialize CGDataProvider.")
+				NSLog("ERROR: could not initialize CGDataProvider.")
 			}
 		}
 		dirtied()
@@ -371,7 +371,7 @@ public struct PeerInfo: Equatable {
 			let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize)
 			self.init(peerID: peerID, publicKey: publicKey, aggregateData: aggregateData, nicknameData: nicknameData, lastChangedData: lastChangedData)
 		} catch {
-			NSLog("ERR: creating public key from data: \(error)")
+			NSLog("ERROR: creating public key from data: \(error)")
 			return nil
 		}
 	}

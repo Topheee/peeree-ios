@@ -9,6 +9,9 @@
 import Foundation
 import CoreBluetooth
 
+/// Values of this type are intended to contain <code>CBCentral.identifier</code>'s only.
+typealias CentralID = UUID
+
 protocol LocalPeerManagerDelegate: AnyObject {
 //	func networkTurnedOff()
 	func advertisingStarted()
@@ -31,10 +34,12 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
 	
 	// unfortunenately this will grow until we go offline as we do not get any disconnection notification...
-	// also, we CAN NOT rely on that the central really is the peer behind that PeerID, as we have no mechanism to prove it
-	private var _availableCentrals = [UUID : PeerID]()
+	private var _availableCentrals = [CentralID : PeerID]()
+	// we authenticate only pin matched centrals, because we take the public key from the AccountController instead of verifying with the central server each time (improving user privacy and speed)
+	private var authenticatedPinMatchedCentrals = [CentralID : PeerID]()
 	
-	private var nonces = [UUID : Data]()
+	private var nonces = [CentralID : Data]()
+	private var remoteNonces = [PeerID : Data]()
 	
 	weak var delegate: LocalPeerManagerDelegate?
 	
@@ -122,6 +127,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			// value nonce when read, signed nonce when written
 			// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
 			let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+			// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
+			let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
 			// value: String.data(prefixedEncoding:)
 			let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
 			
@@ -137,7 +144,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					portraitSignature = try UserPeerManager.instance.keyPair.sign(message: imageData)
 				}
 			} catch {
-				NSLog("ERR: Failed to create signature characteristics. (\(error.localizedDescription))")
+				NSLog("ERROR: Failed to create signature characteristics. (\(error.localizedDescription))")
 			}
 			let peerIDSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read], value: peerIDSignature, permissions: [.readable])
 			let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
@@ -145,7 +152,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
 			
 			let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-			peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic]
+			peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic]
 			peripheral.add(peereeService)
 		@unknown default:
 			// just wait
@@ -159,7 +166,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			return
 		}
 		
-		NSLog("ERR: Failed to start advertising. (\(theError.localizedDescription))")
+		NSLog("ERROR: Failed to start advertising. (\(theError.localizedDescription))")
 		stopAdvertising()
 	}
 	
@@ -171,7 +178,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				let data = try Data(contentsOf: UserPeerManager.pictureResourceURL)
 				send(data: data, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
 			} catch {
-				NSLog("ERR: Failed to read user portrait: \(error.localizedDescription)")
+				NSLog("ERROR: Failed to read user portrait: \(error.localizedDescription)")
 				NSLog("Removing picture from user info.")
 				UserPeerManager.instance.cgPicture = nil
 			}
@@ -221,10 +228,25 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					peripheral.respond(to: request, withResult: .success)
 				}
 			} catch {
-				NSLog("ERR: Signing Bluetooth nonce failed: \(error)")
+				NSLog("ERROR: Signing Bluetooth nonce failed: \(error)")
 				peripheral.respond(to: request, withResult: .requestNotSupported)
 			}
-			
+		} else if request.characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
+			guard let peerID = _availableCentrals[request.central.identifier] else {
+				peripheral.respond(to: request, withResult: .insufficientResources)
+				return
+			}
+			let randomByteCount = min(request.central.maximumUpdateValueLength, UserPeerManager.instance.keyPair.blockSize)
+			var nonce = Data(count: randomByteCount)
+			let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })
+			if status == errSecSuccess {
+				remoteNonces[peerID] = nonce
+				request.value = nonce
+				peripheral.respond(to: request, withResult: .success)
+			} else {
+				NSLog("ERROR: Generating random Bluetooth nonce failed.")
+				peripheral.respond(to: request, withResult: .unlikelyError)
+			}
 		} else {
 			NSLog("WARN: Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
 			peripheral.respond(to: request, withResult: .requestNotSupported)
@@ -249,7 +271,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			}
 			if request.characteristic.uuid == CBUUID.MessageCharacteristicID {
 				guard let message = String(dataPrefixedEncoding: data),
-					let peerID = _availableCentrals[request.central.identifier] else {
+					let peerID = authenticatedPinMatchedCentrals[request.central.identifier] else {
 					error = .unlikelyError
 					break
 				}
@@ -270,6 +292,38 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				_pin = (peerID, pinFlag != 0)
 			} else if request.characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
 				_nonce = (request.central, data)
+			} else if request.characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
+				guard let peerID = _availableCentrals[request.central.identifier],
+					  let nonce = remoteNonces.removeValue(forKey: peerID) else {
+					error = .unlikelyError
+					break
+				}
+				
+				let publicKeyData = AccountController.shared.publicKey(of: peerID)
+
+				let signature = data
+
+				// it is important that we use the same error code in both the "not a pin match" and "signature verification failed" cases, to prevent from the timing attack
+				// we should not use CBATTError.insufficientAuthentication as then the iPhone begins a pairing process
+				let authFailedError = CBATTError.insufficientAuthorization
+
+				// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
+				do {
+					// we use our public key as fake key, since we assume that our private key is not in the hands of the attacker (really!)
+					let publicKey = try publicKeyData.map { try AsymmetricPublicKey(from: $0, type: PeerInfo.KeyType, size: PeerInfo.KeySize) } ?? UserPeerManager.instance.keyPair.publicKey
+					try publicKey.verify(message: nonce, signature: signature)
+					// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
+					if !AccountController.shared.hasPinMatch(peerID) {
+						error = authFailedError // not a pin match
+						NSLog("WARN: the peer \(peerID) which did not pin match us tried to authenticate to us.")
+						break
+					}
+					authenticatedPinMatchedCentrals[request.central.identifier] = peerID
+				} catch let exc {
+					NSLog("ERROR: A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
+					error = authFailedError // signature verification failed
+					break
+				}
 			} else {
 				error = .requestNotSupported
 				break
@@ -287,7 +341,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				nonces[central.identifier] = nonce
 			}
 			if let (peerID, message) = _message {
-				// attack scenario: Eve sends us an indication with her or Bob's PeerID => we always validate with the server, and as we do not react to Eve directly, so Eve cannot derive sensitive information
+				// attack scenario: Eve sends us a message with Bob's PeerID => we do not validate the PeerID and thus she can fake messages from other peers
 				delegate?.localPeerDelegate(for: peerID).received(message: message)
 			}
 		}

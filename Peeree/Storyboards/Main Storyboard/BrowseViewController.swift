@@ -257,6 +257,11 @@ final class BrowseViewController: UITableViewController {
 	
 	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
 		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
+		if #available(iOS 13.0, *) {
+			cell.textLabel?.textColor = manager.isAvailable ? UIColor.label : UIColor.systemGray
+		} else {
+			cell.textLabel?.textColor = manager.isAvailable ? UIColor.black : UIColor.systemGray
+		}
 		cell.textLabel?.text = peer.nickname
 		cell.detailTextLabel?.text = peer.summary
 		guard let imageView = cell.imageView else { assertionFailure(); return }

@@ -123,6 +123,8 @@ public class AccountController: SecurityDataSource {
 	
 	public var delegate: AccountControllerDelegate?
 	
+	public func publicKey(of peerID: PeerID) -> Data? { return pinnedPeers[peerID] }
+	
 	/// Returns whether we have a pin match with that specific PeerID. Note, that this does NOT imply we have a match with a concrete PeerInfo of that PeerID, as that PeerInfo may be a malicious peer
 	public func hasPinMatch(_ peerID: PeerID) -> Bool {
 		// it is enough to check whether we are pinned by peerID, as we only know that if we matched
@@ -456,13 +458,13 @@ public class AccountController: SecurityDataSource {
 	private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
 		switch errorResponse {
 		case .httpError(403, let messageData):
-			NSLog("ERR: Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
+			NSLog("ERROR: Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
 			self.resetSequenceNumber()
 		case .parseError(_):
-			NSLog("ERR: Response could not be parsed.")
+			NSLog("ERROR: Response could not be parsed.")
 			break
 		case .sessionTaskError(let statusCode, _, let error):
-			NSLog("ERR: Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
+			NSLog("ERROR: Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
 			if (error as NSError).domain == NSURLErrorDomain {
 				if let sequenceNumber = _sequenceNumber {
 					// we did not even reach the server, so we have to decrement our sequenceNumber again
