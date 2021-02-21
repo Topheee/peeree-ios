@@ -8,7 +8,6 @@
 
 import UIKit
 import SafariServices
-import CoreHaptics
 
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
@@ -123,9 +122,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
 			self.setupManualAppearance()
 		}
-		_ = AccountController.Notifications.pinned.addObserver(usingBlock: { (_) in
-			AppDelegate.playHapticPin()
-		})
+		_ = AccountController.Notifications.pinned.addObserver { (_) in
+			if #available(iOS 13.0, *) { HapticController.playHapticPin() }
+		}
 
 		// reinstantiate CBManagers if there where some
 		// TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
@@ -243,44 +242,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 	}
 	
-	/// plays the haptic feedback when pinning a person
-	static func playHapticPin() {
-		if #available(iOS 13, *) {
-			guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-
-			do {
-				let engine = try CHHapticEngine()
-				try engine.start()
-
-				// The engine stopped; print out why
-				engine.stoppedHandler = { reason in
-					NSLog("INFO: The haptic engine stopped: \(reason.rawValue)")
-				}
-
-				// If something goes wrong, attempt to restart the engine immediately
-				engine.resetHandler = {
-					NSLog("ERROR: The haptic engine reset")
-
-//					do {
-//						try engine.start()
-//					} catch {
-//						print("Failed to restart the haptic engine: \(error)")
-//					}
-				}
-
-				let anotherPattern = try CHHapticPattern(events: [
-					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.5)], relativeTime: 0.0, duration: 0.1),
-					CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.9)], relativeTime: 0.5, duration: 0.4)], parameters: [])
-
-				let player = try engine.makePlayer(with: anotherPattern)
-
-				try player.start(atTime: 0)
-			} catch let error {
-				NSLog("ERROR: Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
-			}
-		}
-	}
-	
 	static func requestPin(of peer: PeerInfo) {
 		let manager = PeeringController.shared.manager(for: peer.peerID)
 		if !manager.verified {
@@ -366,7 +327,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		guard !again, let peer = PeeringController.shared.manager(for: peerID).peerInfo,
 			BrowseFilterSettings.shared.check(peer: peer) else { return }
 		if isActive {
-			_ = PeeringController.shared.manager(for: peer.peerID).loadPicture()
+			_ = PeeringController.shared.manager(for: peerID).loadPicture()
 		}
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, sufficientCondition: ((window?.rootViewController as? UINavigationController)?.visibleViewController as? BrowseViewController) == nil)

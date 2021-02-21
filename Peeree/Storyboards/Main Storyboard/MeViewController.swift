@@ -143,6 +143,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		let today = Date()
 		let datePicker = UIDatePicker()
 		datePicker.datePickerMode = .date
+		if #available(iOS 13.4, *) {
+			datePicker.preferredDatePickerStyle = .wheels
+		}
 		var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
 		minComponents.year = minComponents.year! - PeerInfo.MaxAge
 		var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)

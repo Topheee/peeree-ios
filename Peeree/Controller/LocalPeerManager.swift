@@ -40,6 +40,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	
 	private var nonces = [CentralID : Data]()
 	private var remoteNonces = [PeerID : Data]()
+	private var partialRemoteUUIDs = [CentralID : Data]()
 	
 	weak var delegate: LocalPeerManagerDelegate?
 	
@@ -266,26 +267,52 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			NSLog("Did receive write on \(request.characteristic.uuid.uuidString.left(8)) from central \(request.central.identifier)")
 			guard let data = request.value else {
 				// this probably never happens
-				error = .insufficientResources
+				NSLog("ERROR: received empty write request.")
+				error = .unlikelyError
 				break
 			}
 			if request.characteristic.uuid == CBUUID.MessageCharacteristicID {
-				guard let message = String(dataPrefixedEncoding: data),
-					let peerID = authenticatedPinMatchedCentrals[request.central.identifier] else {
-					error = .unlikelyError
+				guard let message = String(dataPrefixedEncoding: data) else {
+					error = .insufficientResources
+					break
+				}
+				var peerID: PeerID
+				if let _peerID = authenticatedPinMatchedCentrals[request.central.identifier] {
+					peerID = _peerID
+				} else if let _peerID = _availableCentrals[request.central.identifier] {
+					// we allow fall back to accept messages from unauthenticated centrals here, since they aren't displayed in the UI anyway
+					// and I got this behavior way too often that messages were sent before the mututal authentication took place
+					peerID = _peerID
+				} else {
+					error = .insufficientResources
 					break
 				}
 				_message = (peerID, message)
 			} else if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
-				guard let peerID = PeerID(data: data) else {
-					error = .unlikelyError
+				var peerIDData = data
+				if data.count < 36 {
+					// we assume that the data is always of the form "eeb9e7f2-5442-42cc-ac91-e25e10a8d6ee"
+					// or, it is chunked
+					if let firstPart = partialRemoteUUIDs.removeValue(forKey: request.central.identifier) {
+						// we only support a maximum of 2 chunks (because minimum update length seems to be 18 bytes, this fits exactly)
+						// note that we could also check for the offset to be 18 here
+						peerIDData = firstPart + data
+					} else {
+						partialRemoteUUIDs[request.central.identifier] = data
+						break
+					}
+					
+				}
+				
+				guard let peerID = PeerID(data: peerIDData) else {
+					error = .insufficientResources
 					break
 				}
 				
 				_peer = (peerID, request.central.identifier)
 			} else if request.characteristic.uuid == CBUUID.PinMatchIndicationCharacteristicID {
 				guard let pinFlag = data.first, let peerID = _availableCentrals[request.central.identifier] else {
-					error = .unlikelyError
+					error = .insufficientResources
 					break
 				}
 				
@@ -295,7 +322,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			} else if request.characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
 				guard let peerID = _availableCentrals[request.central.identifier],
 					  let nonce = remoteNonces.removeValue(forKey: peerID) else {
-					error = .unlikelyError
+					error = .insufficientResources
 					break
 				}
 				

@@ -1,0 +1,11 @@
+//
+//  CommonCrypto.xcconfig
+//  Peeree
+//
+//  Created by Christopher Kobusch on 21.02.21.
+//  Copyright © 2021 Kobusch. All rights reserved.
+//
+
+MODULEMAP_FILE[sdk=iphoneos*]        = $(SRCROOT)/CommonCrypto/iphoneos.modulemap
+MODULEMAP_FILE[sdk=iphonesimulator*] = $(SRCROOT)/CommonCrypto/iphonesimulator.modulemap
+MODULEMAP_FILE[sdk=macosx*]          = $(SRCROOT)/CommonCrypto/macosx.modulemap

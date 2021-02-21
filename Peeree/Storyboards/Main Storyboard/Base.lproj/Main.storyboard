@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -212,7 +212,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
+                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="247" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="747" axis="vertical" distribution="equalSpacing" alignment="center" spacing="16" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
                                 <rect key="frame" x="8" y="64" width="304" height="312.5"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
@@ -377,15 +377,7 @@
                                 </subviews>
                             </stackView>
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="384.5" width="320" height="34.5"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="42" identifier="messageTableHeight" id="VPu-gz-2Vl"/>
-                                </constraints>
-                                <variation key="default">
-                                    <mask key="constraints">
-                                        <exclude reference="VPu-gz-2Vl"/>
-                                    </mask>
-                                </variation>
+                                <rect key="frame" x="0.0" y="384.5" width="320" height="30.5"/>
                                 <connections>
                                     <segue destination="XqI-Aj-cpS" kind="embed" id="QbC-f3-IGm"/>
                                 </connections>
@@ -394,10 +386,10 @@
                                 <rect key="frame" x="-1" y="419" width="322" height="42"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="4" width="306" height="30"/>
+                                        <rect key="frame" x="8" y="4" width="306" height="34"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="262" height="30"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="262" height="34"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <color key="textColor" systemColor="labelColor"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
@@ -413,7 +405,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="270" y="0.0" width="36" height="30"/>
+                                                <rect key="frame" x="270" y="0.0" width="36" height="34"/>
                                                 <state key="normal" title="Send"/>
                                                 <connections>
                                                     <action selector="sendMessageTappedWithSender:" destination="bgg-zV-1WC" eventType="touchUpInside" id="2Bl-7k-wq7"/>
@@ -441,10 +433,16 @@
                             <constraint firstItem="Lkr-13-Jfz" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="-1" identifier="messageBarLeading" id="FdN-Lg-oeE"/>
                             <constraint firstItem="YYz-qE-CF7" firstAttribute="trailing" secondItem="DbU-Tc-UDS" secondAttribute="trailing" constant="8" identifier="peerStackViewToTrailing" id="Rfa-Ie-qD9"/>
                             <constraint firstItem="DbU-Tc-UDS" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" constant="8" identifier="peerStackViewLeading" id="YHh-hk-aVc"/>
-                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" identifier="messageBarToChatTableView" id="jJd-49-mLg"/>
+                            <constraint firstItem="Vq4-kH-h3A" firstAttribute="height" relation="greaterThanOrEqual" secondItem="DbU-Tc-UDS" secondAttribute="height" identifier="moveToolBar" id="fHu-7r-eab"/>
+                            <constraint firstItem="Lkr-13-Jfz" firstAttribute="top" secondItem="Vq4-kH-h3A" secondAttribute="bottom" constant="4" identifier="messageBarToChatTableView" id="jJd-49-mLg"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="leading" secondItem="YYz-qE-CF7" secondAttribute="leading" identifier="chatTableViewLeading" id="n9E-Zf-Swe"/>
                             <constraint firstItem="Vq4-kH-h3A" firstAttribute="top" secondItem="DbU-Tc-UDS" secondAttribute="bottom" constant="8" symbolic="YES" identifier="chatTableViewToPeerStackViewBottom" id="vMf-3d-C95"/>
                         </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="fHu-7r-eab"/>
+                            </mask>
+                        </variation>
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz">
@@ -462,7 +460,7 @@
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
                         <outlet property="messageBar" destination="Lkr-13-Jfz" id="EqV-w5-kyP"/>
                         <outlet property="messageBottomConstraint" destination="5XF-gF-5uE" id="Spd-Mg-uEj"/>
-                        <outlet property="messageTableHeight" destination="VPu-gz-2Vl" id="qPO-hm-F35"/>
+                        <outlet property="messageTableHeight" destination="fHu-7r-eab" id="9HQ-cW-gCN"/>
                         <outlet property="messageTextView" destination="7Il-00-It7" id="mCm-oy-uJz"/>
                         <outlet property="peerIDLabel" destination="i9C-MG-2LW" id="bDX-sF-YUh"/>
                         <outlet property="peerStackView" destination="DbU-Tc-UDS" id="kcK-TX-9ic"/>
@@ -1100,7 +1098,7 @@
                                                     </connections>
                                                 </switch>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Only with age available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sZh-Xd-jZD">
-                                                    <rect key="frame" x="24" y="12" width="175" height="20.5"/>
+                                                    <rect key="frame" x="24" y="12" width="174" height="20.5"/>
                                                     <accessibility key="accessibilityConfiguration">
                                                         <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                                     </accessibility>
@@ -1234,7 +1232,7 @@
                 <navigationController title="Radar Nav" extendedLayoutIncludesOpaqueBars="YES" id="BeP-GU-KG9" userLabel="Browse Nav" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" barStyle="black" largeTitles="YES" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

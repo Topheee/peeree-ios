@@ -25,7 +25,7 @@ protocol RemotePeerDelegate {
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
 final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate, CBPeripheralDelegate {
-	private struct PeerData {
+	private struct PeerInfoData {
 		var progress = Progress(totalUnitCount: 7)
 		var aggregateData: Data? = nil
 		var nicknameData: Data? = nil
@@ -91,7 +91,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
 	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(AppDelegate.BundleID).cachedPeers")
-	private var peerInfoTransmissions = [PeerID : PeerData]()
+	private var peerInfoTransmissions = [PeerID : PeerInfoData]()
 	private var remotePeerDelegates = [PeerID : RemotePeerDelegate]()
 	
 	private var activeTransmissions = [Transmission : (Progress, Data)]() // TODO if the synchronization through the dQueue is too slow, switch to a delegate model, where the delegate is being told when a transmission begins/ends. Also, inform new delegates (via didSet and then dQueue.aysnc) of ongoing transmissions by calling transmissionDidBegin for every current transmission.
@@ -142,6 +142,10 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		// 2. he finds me, but I do not find him, because my CentralManager does not report him, because we disconnected him
 		centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
 	}
+	
+	private var lostConnectionError: Error {
+		return NSError(domain: "Peeree", code: -2, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Lost connection to peripheral.", comment: "Error during reliable Bluetooth write operation")])
+	}
 
 	func stopScan() {
 		guard isScanning else { return }
@@ -152,6 +156,11 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				progress.cancel()
 			}
 			self.activeTransmissions.removeAll()
+			for (_, (queue, callback)) in self.reliableWriteProcesses {
+				queue.async {
+					callback(self.lostConnectionError)
+				}
+			}
 			self.reliableWriteProcesses.removeAll()
 			self.peerInfoTransmissions.removeAll()
 			for (peripheral, _) in self._availablePeripherals {
@@ -328,6 +337,11 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		for characteristicID in CBUUID.SplitCharacteristicIDs {
 			cancelTransmission(to: peripheral, of: characteristicID)
 		}
+		reliableWriteProcesses = reliableWriteProcesses.filter { entry in
+			let (queue, callback) = entry.value
+			queue.async { callback(self.lostConnectionError) }
+			return entry.key.peripheralID == peripheral.identifier
+		}
 		_ = nonces.removeValue(forKey: peripheral)
 		guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral), let peerID = _peerID else { return }
 		if let peerData = peerInfoTransmissions.removeValue(forKey: peerID) {
@@ -376,8 +390,9 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		}
 
 		var found = false
+		let charUUIDs = characteristics.map { $0.uuid.uuidString.left(8) }
+		NSLog("INFO: Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
 		for characteristic in characteristics {
-			NSLog("INFO: Peripheral \(peripheral.identifier.uuidString.left(8)): Discovered characteristic \(characteristic.uuid.uuidString.left(8)) of service \(service.uuid.uuidString.left(8))")
 /*
 			if let descriptors = characteristic.descriptors {
 				for descriptor in descriptors {
@@ -594,7 +609,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 //					cachedPeers[peerID]!.setCharacteristicValue(of: transmission.characteristicID, to: chunk)
 				}
 			} else {
-				var peerData = peerInfoTransmissions[peerID] ?? PeerData()
+				var peerData = peerInfoTransmissions[peerID] ?? PeerInfoData()
 				peerData.set(data: chunk, for: transmission.characteristicID)
 				if peerData.canConstruct {
 					peerInfoTransmissions.removeValue(forKey: peerID)

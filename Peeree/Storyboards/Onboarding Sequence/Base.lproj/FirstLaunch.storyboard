@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="76G-gL-j3x">
     <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -19,7 +20,7 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="130" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="4lW-Us-5R6">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="460"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="DescriptionParagraphCell" id="DeT-qu-RND" customClass="DescriptionParagraphCell" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="320" height="130"/>
@@ -29,13 +30,13 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="7KP-lA-9Sx">
-                                                    <rect key="frame" x="35" y="19" width="270" height="92"/>
+                                                    <rect key="frame" x="36" y="19" width="268" height="92"/>
                                                     <subviews>
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="TfN-Jw-cvL">
-                                                            <rect key="frame" x="0.0" y="0.0" width="232" height="64.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="230" height="64.5"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" text="Headline" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2uW-xz-nDp">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="232" height="26.5"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="230" height="26.5"/>
                                                                     <accessibility key="accessibilityConfiguration">
                                                                         <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
                                                                     </accessibility>
@@ -44,18 +45,18 @@
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="Content" adjustsFontForContentSizeCategory="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ith-Hl-trz">
-                                                                    <rect key="frame" x="0.0" y="26.5" width="232" height="38"/>
+                                                                    <rect key="frame" x="0.0" y="26.5" width="230" height="38"/>
                                                                     <accessibility key="accessibilityConfiguration">
                                                                         <accessibilityTraits key="traits" staticText="YES" summaryElement="YES" notEnabled="YES"/>
                                                                     </accessibility>
-                                                                    <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                                    <color key="textColor" systemColor="labelColor"/>
                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                                     <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
                                                                 </textView>
                                                             </subviews>
                                                         </stackView>
                                                         <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" image="ReadIconP2P" translatesAutoresizingMaskIntoConstraints="NO" id="mX9-d0-6ok">
-                                                            <rect key="frame" x="240" y="0.0" width="30" height="30"/>
+                                                            <rect key="frame" x="238" y="0.0" width="30" height="30"/>
                                                             <accessibility key="accessibilityConfiguration">
                                                                 <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
                                                             </accessibility>
@@ -110,7 +111,7 @@
                                                     </accessibility>
                                                 </imageView>
                                             </subviews>
-                                            <color key="backgroundColor" systemColor="systemGroupedBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="backgroundColor" systemColor="systemGroupedBackgroundColor"/>
                                             <constraints>
                                                 <constraint firstItem="oNN-tE-WOZ" firstAttribute="leading" secondItem="50U-xu-mqQ" secondAttribute="trailing" id="0NH-r9-aIz"/>
                                                 <constraint firstItem="0bS-2C-rGq" firstAttribute="width" secondItem="oNN-tE-WOZ" secondAttribute="width" id="24A-JB-XND"/>
@@ -147,7 +148,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="46"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <button opaque="NO" alpha="0.0" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8Y-IF-X4f">
+                                        <button opaque="NO" alpha="0.0" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8Y-IF-X4f">
                                             <rect key="frame" x="0.0" y="8" width="320" height="30"/>
                                             <state key="normal" title="Sounds great!"/>
                                             <connections>
@@ -175,6 +176,7 @@
                                 </vibrancyEffect>
                             </visualEffectView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="NvT-Xi-xEL"/>
                         <constraints>
                             <constraint firstItem="nDm-jF-iKj" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="3Bj-zf-kGj"/>
                             <constraint firstItem="NvT-Xi-xEL" firstAttribute="trailing" secondItem="4lW-Us-5R6" secondAttribute="trailing" id="CaW-D9-d21"/>
@@ -188,7 +190,6 @@
                             <constraint firstItem="PEg-cg-nW0" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="jhA-qs-me3"/>
                             <constraint firstItem="4lW-Us-5R6" firstAttribute="leading" secondItem="NvT-Xi-xEL" secondAttribute="leading" id="tyq-cg-FED"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="NvT-Xi-xEL"/>
                         <variation key="default">
                             <mask key="constraints">
                                 <exclude reference="eEk-Gd-udB"/>
@@ -216,8 +217,8 @@
                     <view key="view" contentMode="scaleToFill" id="Mhb-QC-SA2" customClass="RootView" customModule="Peeree" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="XGZ-Ba-9aM"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
                 </viewController>
@@ -251,7 +252,7 @@ a Social Peer-to-Peer App</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
                                 <rect key="frame" x="16" y="172" width="288" height="27"/>
                                 <accessibility key="accessibilityConfiguration" hint="Read details about P2P" label="Describe Peer-to-Peer">
                                     <accessibilityTraits key="traits" button="YES"/>
@@ -265,7 +266,7 @@ a Social Peer-to-Peer App</string>
                                     <segue destination="u4v-7y-Tsp" kind="show" id="2du-D3-2eY"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qr9-Ho-2bg">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qr9-Ho-2bg">
                                 <rect key="frame" x="16" y="428" width="288" height="44"/>
                                 <accessibility key="accessibilityConfiguration" hint="Display information about personal data usage" label="Privacy Info"/>
                                 <constraints>
@@ -309,7 +310,7 @@ a Social Peer-to-Peer App</string>
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
@@ -318,11 +319,12 @@ a Social Peer-to-Peer App</string>
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                <color key="textColor" systemColor="systemGrayColor" red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="hua-4t-hNt"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" identifier="titleTrailing" id="AIF-ce-Tez"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" constant="40" identifier="titleToSubTitle" id="Eii-xs-pTo"/>
@@ -350,7 +352,6 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="hua-4t-hNt" secondAttribute="centerX" identifier="pinButtonToCenter" id="ymi-3N-siT"/>
                             <constraint firstItem="skT-uK-VEP" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="privacyLabelLeading" id="zCY-4b-hTp"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="hua-4t-hNt"/>
                     </view>
                     <connections>
                         <outlet property="infoButton" destination="XwS-Db-Ixl" id="mjg-2n-5uh"/>
@@ -373,7 +374,7 @@ a Social Peer-to-Peer App</string>
                                 <rect key="frame" x="16" y="24" width="288" height="448"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create Your Profile" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLo-5M-7YM">
-                                        <rect key="frame" x="33" y="0.0" width="222.5" height="33.5"/>
+                                        <rect key="frame" x="32.5" y="0.0" width="223" height="33.5"/>
                                         <accessibility key="accessibilityConfiguration">
                                             <accessibilityTraits key="traits" staticText="YES" notEnabled="YES" header="YES"/>
                                         </accessibility>
@@ -383,7 +384,7 @@ a Social Peer-to-Peer App</string>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="KkO-a3-IYY">
                                         <rect key="frame" x="22.5" y="41.5" width="243" height="368.5"/>
                                         <subviews>
-                                            <textField autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
+                                            <textField autoresizesSubviews="NO" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Pick a Name!" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="maF-ir-g9C">
                                                 <rect key="frame" x="28.5" y="0.0" width="186.5" height="34"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -427,7 +428,7 @@ a Social Peer-to-Peer App</string>
                                             <stackView opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="HgF-aZ-Tke">
                                                 <rect key="frame" x="0.0" y="337.5" width="243" height="31"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CIc-zF-Z6d">
+                                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CIc-zF-Z6d">
                                                         <rect key="frame" x="0.0" y="0.0" width="186" height="31"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Opens webpage" label="View terms of use">
                                                             <accessibilityTraits key="traits" button="YES" link="YES"/>
@@ -471,7 +472,7 @@ a Social Peer-to-Peer App</string>
                                             <constraint firstItem="maF-ir-g9C" firstAttribute="width" secondItem="bd8-Ey-isT" secondAttribute="width" constant="-50" id="rj1-2F-aUV"/>
                                         </constraints>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WkH-8i-IuH">
                                         <rect key="frame" x="101.5" y="418" width="85" height="30"/>
                                         <accessibility key="accessibilityConfiguration" hint="Finishes introduction" label="Launch app"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
@@ -485,7 +486,8 @@ a Social Peer-to-Peer App</string>
                                 </subviews>
                             </stackView>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="Uph-Zc-IOq"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="hps-Ul-cg4" firstAttribute="top" secondItem="Uph-Zc-IOq" secondAttribute="top" constant="24" id="4Ee-Ib-ugf"/>
                             <constraint firstAttribute="trailingMargin" secondItem="hps-Ul-cg4" secondAttribute="trailing" id="Fjk-dc-Yke"/>
@@ -493,7 +495,6 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="hps-Ul-cg4" firstAttribute="leading" secondItem="m34-t7-ma0" secondAttribute="leadingMargin" id="d8P-mU-2HI"/>
                             <constraint firstItem="Uph-Zc-IOq" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="hps-Ul-cg4" secondAttribute="bottom" id="fvV-CP-9T5"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="Uph-Zc-IOq"/>
                     </view>
                     <connections>
                         <outlet property="genderPicker" destination="g3H-jE-mTR" id="Eg6-dD-7vi"/>
@@ -521,5 +522,17 @@ a Social Peer-to-Peer App</string>
         <image name="ReadIconBenefits" width="30" height="30"/>
         <image name="ReadIconP2P" width="30" height="30"/>
         <image name="ReadIconSocial" width="30" height="30"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGrayColor">
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGroupedBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
     </resources>
 </document>

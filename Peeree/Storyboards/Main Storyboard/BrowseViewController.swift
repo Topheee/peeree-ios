@@ -218,9 +218,8 @@ final class BrowseViewController: UITableViewController {
 	
 	private func indexPath(of peerID: PeerID) -> IndexPath? {
 		for i in 0..<peerCache.count  {
-			let row = peerCache[i].firstIndex { $0.peerID == peerID }
-			if row != nil {
-				return IndexPath(row: row!, section: i)
+			if let row = peerCache[i].firstIndex(where: { $0.peerID == peerID }) {
+				return IndexPath(row: row, section: i)
 			}
 		}
 		return nil
@@ -349,15 +348,21 @@ final class BrowseViewController: UITableViewController {
 			return
 		}
 		
-		var alreadySeen = false
-		for peer in peerCache[PeersSection.recentlySeen.rawValue] {
-			alreadySeen = alreadySeen || peer.peerID == peerID
-		}
-		if !alreadySeen { addToView(peerID: peerID, updateTable: true) }
-		
 		peerCache[peerPath.section].remove(at: peerPath.row)
 		managerCache[peerPath.section].remove(at: peerPath.row)
-		remove(row: peerPath.row, section: peerPath.section)
+		
+		if !(peerCache[PeersSection.recentlySeen.rawValue].contains { $0.peerID == peerID }) {
+			addToView(peerID: peerID, updateTable: false)
+			if !(peerCache[PeersSection.recentlySeen.rawValue].contains { $0.peerID == peerID }) {
+				NSLog("ERROR: YIKES!")
+				tableView.reloadData()
+			} else {
+				tableView.moveRow(at: peerPath, to: IndexPath(row: 0, section: PeersSection.recentlySeen.rawValue))
+				if peerCache[peerPath.section].count == 0 { tableView.reloadSections(IndexSet(integer: peerPath.section), with: .automatic) }
+			}
+		} else {
+			remove(row: peerPath.row, section: peerPath.section)
+		}
 	}
 	
 	private func messageReceivedOrRead(from peerID: PeerID) {

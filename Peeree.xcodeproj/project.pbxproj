@@ -66,6 +66,7 @@
 		9DD61F641EAE33B6004EB56A /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F5A1EAE33B6004EB56A /* Account.swift */; };
 		9DD61F671EAE33B6004EB56A /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F5D1EAE33B6004EB56A /* Pin.swift */; };
 		9DD61F681EAE33B6004EB56A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F5E1EAE33B6004EB56A /* Models.swift */; };
+		9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD7B83725E2D6E0005682CF /* HapticController.swift */; };
 		9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
 		9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */; };
@@ -136,7 +137,6 @@
 		9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonCrypto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonCrypto.h; sourceTree = "<group>"; };
 		9D9458A11F2A1B8800EBCB31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9D9458AB1F2A1BB000EBCB31 /* CommonCrypto.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = CommonCrypto.xcconfig; path = ../../../../macOS/cocoa/PeereeMac/CommonCrypto/CommonCrypto.xcconfig; sourceTree = "<group>"; };
 		9D9458B01F2A1C5100EBCB31 /* iphoneos.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphoneos.modulemap; sourceTree = "<group>"; };
 		9D9458B11F2A1C5100EBCB31 /* iphonesimulator.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphonesimulator.modulemap; sourceTree = "<group>"; };
 		9D9458B21F2A1C5100EBCB31 /* macosx.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = macosx.modulemap; sourceTree = "<group>"; };
@@ -182,6 +182,8 @@
 		9DD61F5A1EAE33B6004EB56A /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		9DD61F5D1EAE33B6004EB56A /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		9DD61F5E1EAE33B6004EB56A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Models.swift; path = Swagger/Models.swift; sourceTree = "<group>"; };
+		9DD7B83725E2D6E0005682CF /* HapticController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HapticController.swift; path = Controller/HapticController.swift; sourceTree = "<group>"; };
+		9DD7B83A25E2E9F5005682CF /* CommonCrypto.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = CommonCrypto.xcconfig; sourceTree = "<group>"; };
 		9DDA3A501D77B6EA00C2ADC8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BeaconViewController.swift; path = "Storyboards/Main Storyboard/BeaconViewController.swift"; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				9D9BC64F1E1C633600D031C5 /* PeerManager.swift */,
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
+				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -318,10 +321,10 @@
 		9D94589F1F2A1B8700EBCB31 /* CommonCrypto */ = {
 			isa = PBXGroup;
 			children = (
+				9DD7B83A25E2E9F5005682CF /* CommonCrypto.xcconfig */,
 				9D9458B01F2A1C5100EBCB31 /* iphoneos.modulemap */,
 				9D9458B11F2A1C5100EBCB31 /* iphonesimulator.modulemap */,
 				9D9458B21F2A1C5100EBCB31 /* macosx.modulemap */,
-				9D9458AB1F2A1BB000EBCB31 /* CommonCrypto.xcconfig */,
 				9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */,
 				9D9458A11F2A1B8800EBCB31 /* Info.plist */,
 			);
@@ -542,7 +545,7 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 0810;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9D94589D1F2A1B8700EBCB31 = {
@@ -653,6 +656,7 @@
 				9DD61F671EAE33B6004EB56A /* Pin.swift in Sources */,
 				9DD61F681EAE33B6004EB56A /* Models.swift in Sources */,
 				9DCE945D1F30EC4D00F31330 /* InAppNotificationViewController.swift in Sources */,
+				9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */,
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
 				9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
@@ -737,7 +741,6 @@
 /* Begin XCBuildConfiguration section */
 		9D9458A71F2A1B8800EBCB31 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9D9458AB1F2A1BB000EBCB31 /* CommonCrypto.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -774,7 +777,6 @@
 		};
 		9D9458A81F2A1B8800EBCB31 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9D9458AB1F2A1BB000EBCB31 /* CommonCrypto.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

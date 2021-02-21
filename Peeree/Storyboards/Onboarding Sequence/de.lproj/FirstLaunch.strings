@@ -87,7 +87,7 @@
 "maF-ir-g9C.accessibilityLabel" = "Name";
 
 /* Class = "UITextField"; placeholder = "Name"; ObjectID = "maF-ir-g9C"; */
-"maF-ir-g9C.placeholder" = "Name";
+"maF-ir-g9C.placeholder" = "Wähle einen Namen!";
 
 /* Class = "UIButton"; accessibilityHint = "Display information about personal data usage"; ObjectID = "qr9-Ho-2bg"; */
 "qr9-Ho-2bg.accessibilityHint" = "Zeige Informationen über die Benutzung persönlicher Daten";
