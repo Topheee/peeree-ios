@@ -24,7 +24,7 @@ class MessageCell: UITableViewCell {
 	@IBOutlet private weak var messageTrailing: NSLayoutConstraint!
 	
 	/// Fills the cell with the contents of <code>transcript</code>.
-	func set(transcript: Transcript) {
+	func set(transcript: Transcript, pending: Bool) {
 		let sent = transcript.direction == .send
 		messageLabel.text = transcript.message
 		ballonLeadingEqual.isActive = !sent
@@ -35,5 +35,10 @@ class MessageCell: UITableViewCell {
 		messageTrailing.constant = sent ? 24.0 : 8.0
 		messageLabel.setNeedsLayout()
 		balloonView.isHighlighted = !sent
+		if #available(iOS 13.0, *) {
+			messageLabel.textColor = pending ? UIColor.gray : UIColor.label
+		} else {
+			messageLabel.textColor = pending ? UIColor.gray : UIColor.black
+		}
 	}
 }

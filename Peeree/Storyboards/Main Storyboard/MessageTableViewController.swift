@@ -27,6 +27,10 @@ class MessageTableViewController: UITableViewController {
 		notificationObservers.append(PeerManager.Notifications.messageSent.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
 			self?.appendTranscript()
 		})
+
+		notificationObservers.append(PeerManager.Notifications.messageQueued.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+			self?.appendTranscript()
+		})
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -47,19 +51,30 @@ class MessageTableViewController: UITableViewController {
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		lastCount = peerManager?.transcripts.count ?? 0
+		if let manager = peerManager {
+			lastCount = manager.transcripts.count + manager.pendingMessages.count
+		} else {
+			lastCount = 0
+		}
 		return lastCount
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		// Get the transcript for this row
-		let transcript = peerManager.transcripts[indexPath.row]
-		
-		guard let cell = tableView.dequeueReusableCell(withIdentifier: "Message Cell", for: indexPath) as? MessageCell else {
+		guard let manager = peerManager,
+			  let cell = tableView.dequeueReusableCell(withIdentifier: "Message Cell", for: indexPath) as? MessageCell else {
 			assertionFailure("well that didn't message out so well")
 			return UITableViewCell()
 		}
-		cell.set(transcript: transcript)
+
+		// Get the transcript for this row
+		let overflow = indexPath.row - manager.transcripts.count
+		let transcript: Transcript
+		if overflow < 0 {
+			transcript = manager.transcripts[indexPath.row]
+		} else {
+			transcript = Transcript(direction: .send, message: manager.pendingMessages[overflow].message)
+		}
+		cell.set(transcript: transcript, pending: overflow >= 0)
 		return cell
 	}
 
@@ -68,10 +83,8 @@ class MessageTableViewController: UITableViewController {
 	// Helper method for inserting a sent/received message into the data source and reload the view.
 	// Make sure you call this on the main thread
 	private func appendTranscript() {
-		// Update the table view
-		let newIndexPath = IndexPath(row:(peerManager.transcripts.count - 1), section: 0)
-		self.tableView.insertRows(at: [newIndexPath], with: .fade)
-		
+		self.tableView.reloadData()
+
 		// Scroll to the bottom so we focus on the latest message
 		self.tableView.scrollToBottom(animated: true)
 	}

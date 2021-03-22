@@ -87,7 +87,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 	
 	func localPeerDelegate(for peerID: PeerID) -> LocalPeerDelegate {
-		return DispatchQueue.main.sync { self.manager(for: peerID) }
+		self.manager(for: peerID)
 	}
 	
 	// MARK: RemotePeerManagerDelegate

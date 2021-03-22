@@ -22,7 +22,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public enum Notifications: String {
 		case verified, verificationFailed
 		case pictureLoaded
-		case messageSent, messageReceived, unreadMessageCountChanged
+		case messageQueued, messageSent, messageReceived, unreadMessageCountChanged
 		
 		func post(_ peerID: PeerID) {
 			postAsNotification(object: nil, userInfo: [NotificationInfoKey.peerID.rawValue : peerID])
@@ -54,6 +54,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public var unreadMessages = 0 {
 		didSet { if oldValue != unreadMessages { Notifications.unreadMessageCountChanged.post(peerID) } }
 	}
+	/// access from main thread *only*!
+	public var pendingMessages = [(message: String, completion: (Error?) -> Void)]()
 	
 	public var peerInfo: PeerInfo? {
 		return remotePeerManager.getPeerInfo(of: peerID)
@@ -111,24 +113,37 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		verified = false
 		remotePeerManager.verify(peerID)
 	}
-	
-	// calls completion on main thread always
-	public func send(message: String, completion: @escaping (Error?) -> Void) {
+
+	/// call from main thread only!
+	private func dequeueMessage() {
+		guard let (message, completion) = self.pendingMessages.first, self.isAvailable else { return }
 		guard let data = message.data(prefixedEncoding: message.smallestEncoding) else {
-			DispatchQueue.main.async {
-				completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Could not encode message.", comment: "Error during bluetooth message sending")]))
-			}
+			completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Could not encode message.", comment: "Error during bluetooth message sending")]))
 			return
 		}
-		return remotePeerManager.reliablyWrite(data: data, to: CBUUID.MessageCharacteristicID, of: peerID, callbackQueue: DispatchQueue.main) { error in
+		guard !self.remotePeerManager.isReliablyWriting(to: CBUUID.MessageCharacteristicID, of: self.peerID) else {
+			return
+		}
+		self.remotePeerManager.reliablyWrite(data: data, to: CBUUID.MessageCharacteristicID, of: self.peerID, callbackQueue: DispatchQueue.main) { error in
 			if error == nil {
+				self.pendingMessages.removeFirst()
 				self.transcripts.append(Transcript(direction: .send, message: message))
 				Notifications.messageSent.post(self.peerID)
+				self.dequeueMessage()
 			}
 			completion(error)
 		}
 	}
-	
+
+	/// calls <code>completion</code> on main thread always
+	public func send(message: String, completion: @escaping (Error?) -> Void) {
+		DispatchQueue.main.async {
+			self.pendingMessages.append((message, completion))
+			Notifications.messageQueued.post(self.peerID)
+			self.dequeueMessage()
+		}
+	}
+
 	// MARK: RemotePeerDelegate
 	
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
@@ -172,7 +187,11 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			}
 		}
 	}
-	
+
+	func didRemoteVerify(_ peerID: PeerID) {
+		DispatchQueue.main.async { self.dequeueMessage() }
+	}
+
 	// MARK: LocalPeerDelegate
 	
 	func receivedPinMatchIndication() {

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%u messages.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@messages@</string>
+		<key>messages</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>zero</key>
+			<string>No messages.</string>
+			<key>one</key>
+			<string>One message.</string>
+			<key>two</key>
+			<string>Two messages.</string>
+			<key>few</key>
+			<string></string>
+			<key>many</key>
+			<string></string>
+			<key>other</key>
+			<string>%u messages.</string>
+		</dict>
+	</dict>
+	<key>%u pin matches.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@pinmatches@</string>
+		<key>pinmatches</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>zero</key>
+			<string>No pin matches.</string>
+			<key>one</key>
+			<string>One pin match.</string>
+			<key>two</key>
+			<string>Two pin matches.</string>
+			<key>few</key>
+			<string></string>
+			<key>many</key>
+			<string></string>
+			<key>other</key>
+			<string>%u pin matches.</string>
+		</dict>
+	</dict>
+	<key>%u new people.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@people@</string>
+		<key>people</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>zero</key>
+			<string>No new people.</string>
+			<key>one</key>
+			<string>One new person.</string>
+			<key>two</key>
+			<string></string>
+			<key>few</key>
+			<string></string>
+			<key>many</key>
+			<string></string>
+			<key>other</key>
+			<string>%u new people.</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

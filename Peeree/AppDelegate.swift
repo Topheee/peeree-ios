@@ -32,11 +32,12 @@ let AppTheme = VisualTheme()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
-	static let PeerIDKey = "PeerIDKey"
 	static let BundleID = Bundle.main.bundleIdentifier ?? "de.peeree"
 	
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
-	
+
+	private let notificationManager = NotificationManager()
+
 	static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
 		var notificationAction: (() -> Void)? = nil
 		var errorMessage: String
@@ -92,32 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		setupAppearance()
 		
 		AccountController.shared.delegate = self
-		
-		_ = PeeringController.Notifications.peerAppeared.addPeerObserver { peerID, notification  in
-			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
-			self.peerAppeared(peerID, again: again ?? false)
-		}
-		
-		_ = PeeringController.Notifications.peerDisappeared.addPeerObserver { peerID, _  in
-			self.peerDisappeared(peerID)
-		}
-		
-		_ = AccountController.Notifications.pinMatch.addPeerObserver { peerID, _  in
-			guard let peer = PeeringController.shared.manager(for: peerID).peerInfo else {
-				assertionFailure()
-				return
-			}
-			
-			self.pinMatchOccured(peer)
-		}
-		
-		_ = PeerManager.Notifications.messageReceived.addPeerObserver { peerID, _  in
-			self.messageReceived(from: peerID)
-		}
-		
-		_ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
-			UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil))
-		}
+		notificationManager.initialize()
 		
 		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
 			self.setupManualAppearance()
@@ -183,11 +159,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 	
 	func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-		guard application.applicationState == .inactive else { return }
-		guard let peerIDData = notification.userInfo?[AppDelegate.PeerIDKey] as? Data else { return }
-		guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else { return }
-		
-		show(peerID: peerID)
+		notificationManager.application(application, didReceive: notification)
 	}
 	
 	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
@@ -278,111 +250,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 	
 	// MARK: Private Methods
-	
-	/// shows an in-app or system (local) notification related to a peer
-	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, sufficientCondition: Bool) {
-		if isActive && sufficientCondition {
-			InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { self.show(peerID: peerID) }
-		} else {
-			if #available(iOS 10, *) {
-				let center = UNUserNotificationCenter.current()
-				center.requestAuthorization(options: [.alert, .sound]) { granted, error in
-					// Enable or disable features based on authorization.
-					guard error == nil else {
-						NSLog("ERROR: Error requesting user notification authorization: \(error!.localizedDescription)")
-						return
-					}
-					if granted {
-						let content = UNMutableNotificationContent()
-						content.title = title
-						content.body = body
-						content.sound = UNNotificationSound.default
-						content.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
-						center.add(UNNotificationRequest(identifier: peerID.uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false))) { (_error) in
-							if let error = _error {
-								NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
-							}
-						}
-					}
-				}
-			} else {
-				let note = UILocalNotification()
-				note.alertTitle = title
-				note.alertBody = body
-				note.userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
-				UIApplication.shared.presentLocalNotificationNow(note)
-			}
-		}
-	}
-	
-	private func messageReceived(from peerID: PeerID) {
-		let manager = PeeringController.shared.manager(for: peerID)
-		guard let peer = manager.peerInfo, let message = manager.transcripts.last?.message else { return }
-		let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
-		let title = String(format: titleFormat, peer.nickname)
-		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, sufficientCondition: ((window?.rootViewController as? UINavigationController)?.visibleViewController as? PersonDetailViewController)?.peerManager.peerID != peerID)
-	}
-	
-	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let peer = PeeringController.shared.manager(for: peerID).peerInfo,
-			BrowseFilterSettings.shared.check(peer: peer) else { return }
-		if isActive {
-			_ = PeeringController.shared.manager(for: peerID).loadPicture()
-		}
-		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, sufficientCondition: ((window?.rootViewController as? UINavigationController)?.visibleViewController as? BrowseViewController) == nil)
-	}
-	
-	private func peerDisappeared(_ peerID: PeerID) {
-		// ignored
-	}
-	
-	private func pinMatchOccured(_ peer: PeerInfo) {
-		if isActive {
-			let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
-			pinMatchVC.displayedPeer = peer
-			DispatchQueue.main.async {
-				if let presentingVC = self.window?.rootViewController?.presentedViewController {
-					// if Me screen is currently presented
-					presentingVC.present(pinMatchVC, animated: true, completion: nil)
-				} else {
-					self.window?.rootViewController?.present(pinMatchVC, animated: true, completion: nil)
-				}
-			}
-		} else {
-			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, peer.nickname)
-			let applicationIconBadgeNumber = UIApplication.shared.applicationIconBadgeNumber + 1
-			let userInfo = [AppDelegate.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peer.peerID)]
-			if #available(iOS 10, *) {
-				let center = UNUserNotificationCenter.current()
-				center.requestAuthorization(options: [.alert, .sound]) { granted, error in
-					// Enable or disable features based on authorization.
-					guard error == nil else {
-						NSLog("ERROR: Error requesting user notification authorization: \(error!.localizedDescription)")
-						return
-					}
-					if granted {
-						let content = UNMutableNotificationContent()
-						content.body = alertBody
-						content.sound = UNNotificationSound.default
-						content.userInfo = userInfo
-						center.add(UNNotificationRequest(identifier: peer.peerID.uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false))) { (_error) in
-							if let error = _error {
-								NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
-							}
-						}
-					}
-				}
-			} else {
-				let note = UILocalNotification()
-				note.alertBody = alertBody
-				note.applicationIconBadgeNumber = applicationIconBadgeNumber
-				note.userInfo = userInfo
-				UIApplication.shared.presentLocalNotificationNow(note)
-			}
-		}
-	}
 	
 	private func setupManualAppearance() {
 		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (AppTheme.tintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? AppTheme.tintColor) : AppTheme.tintColor

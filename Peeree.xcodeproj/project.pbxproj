@@ -30,6 +30,7 @@
 		9D8A59431B92FB5200164C9F /* SingleSelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */; };
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
+		9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */; };
 		9D91E0462405B131002BD814 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D91E0452405B131002BD814 /* JSONValue.swift */; };
 		9D9458A21F2A1B8800EBCB31 /* CommonCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -47,6 +48,7 @@
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAD8F951ECF512F00363016 /* PinPoints.swift */; };
+		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
 		9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3916C2049F6E100543F74 /* Main.storyboard */; };
 		9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F824030480005EECB3 /* PinsAPI.swift */; };
 		9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F724030480005EECB3 /* AccountAPI.swift */; };
@@ -133,6 +135,7 @@
 		9D8A59421B92FB5200164C9F /* SingleSelViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SingleSelViewController.swift; path = "Storyboards/Main Storyboard/SingleSelViewController.swift"; sourceTree = "<group>"; };
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
+		9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Controller/NotificationManager.swift; sourceTree = "<group>"; };
 		9D91E0452405B131002BD814 /* JSONValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONValue.swift; path = Swagger/JSONValue.swift; sourceTree = "<group>"; };
 		9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonCrypto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonCrypto.h; sourceTree = "<group>"; };
@@ -157,6 +160,8 @@
 		9DA0F7D21B5C3AB900F3BA87 /* PeereeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeTests.swift; sourceTree = "<group>"; };
 		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
 		9DAD8F951ECF512F00363016 /* PinPoints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinPoints.swift; sourceTree = "<group>"; };
+		9DB3499D25F3D2CF00FF2D56 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		9DB349A025F3D2F500FF2D56 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		9DB3916B2049F6E100543F74 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9DB3916E2049F74C00543F74 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		9DB677F724030480005EECB3 /* AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAPI.swift; sourceTree = "<group>"; };
@@ -220,6 +225,7 @@
 			children = (
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */,
+				9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */,
 				9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */,
 				9D9BC64F1E1C633600D031C5 /* PeerManager.swift */,
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
@@ -370,6 +376,7 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */,
 				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D1AF3D1204AA2CF00B616AF /* Localizable.strings */,
@@ -601,6 +608,7 @@
 				9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */,
 				9DCE945A1F30EB8600F31330 /* InAppNotification.xib in Resources */,
 				9D08E2D81C4030B30045388A /* BasicDescription.storyboard in Resources */,
+				9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
@@ -678,6 +686,7 @@
 				9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */,
 				9D404617244370990068D22F /* GrowingTextView.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
+				9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
 				9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
@@ -714,6 +723,15 @@
 			);
 			name = FirstLaunch.storyboard;
 			path = "Peeree/Storyboards/Onboarding Sequence";
+			sourceTree = "<group>";
+		};
+		9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9DB3499D25F3D2CF00FF2D56 /* en */,
+				9DB349A025F3D2F500FF2D56 /* de */,
+			);
+			name = Localizable.stringsdict;
 			sourceTree = "<group>";
 		};
 		9DB3916C2049F6E100543F74 /* Main.storyboard */ = {
@@ -921,6 +939,7 @@
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LLVM_LTO = YES_THIN;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
@@ -949,6 +968,7 @@
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_UNROLL_LOOPS = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LLVM_LTO = YES_THIN;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";

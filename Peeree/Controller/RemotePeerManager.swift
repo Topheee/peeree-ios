@@ -21,6 +21,7 @@ protocol RemotePeerDelegate {
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
 	func failedVerification(of peerID: PeerID, error: Error)
 	func didVerify(_ peerID: PeerID)
+	func didRemoteVerify(_ peerID: PeerID)
 }
 
 /// The RemotePeerManager singleton serves as an globally access point for information about all remote peers, whether they are currently in network range or were pinned in the past.
@@ -156,11 +157,6 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				progress.cancel()
 			}
 			self.activeTransmissions.removeAll()
-			for (_, (queue, callback)) in self.reliableWriteProcesses {
-				queue.async {
-					callback(self.lostConnectionError)
-				}
-			}
 			self.reliableWriteProcesses.removeAll()
 			self.peerInfoTransmissions.removeAll()
 			for (peripheral, _) in self._availablePeripherals {
@@ -339,8 +335,10 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		}
 		reliableWriteProcesses = reliableWriteProcesses.filter { entry in
 			let (queue, callback) = entry.value
-			queue.async { callback(self.lostConnectionError) }
-			return entry.key.peripheralID == peripheral.identifier
+			if entry.key.peripheralID == peripheral.identifier {
+				queue.async { callback(self.lostConnectionError) }
+			}
+			return entry.key.peripheralID != peripheral.identifier
 		}
 		_ = nonces.removeValue(forKey: peripheral)
 		guard let _peerID = _availablePeripherals.removeValue(forKey: peripheral), let peerID = _peerID else { return }
@@ -680,11 +678,14 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 			NSLog("Error writing \(characteristic.uuid.uuidString.left(8)) to PeerID \(peerID(of: peripheral)?.uuidString.left(8) ?? "unknown"): \(error!.localizedDescription).")
 			return
 		}
+		guard let peerID = peerID(of: peripheral) else { return }
 		if characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
-			guard let peerID = peerID(of: peripheral), getPeerInfo(of: peerID) != nil else { return }
+			guard getPeerInfo(of: peerID) != nil else { return }
 			// if we loaded the peer info, we can store the verification state
 			// if it is not loaded, reading the signed nonce is initiated on load
 			peripheral.readValue(for: characteristic)
+		} else if characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
+			remotePeerDelegates[peerID]?.didRemoteVerify(peerID)
 		}
 	}
 	

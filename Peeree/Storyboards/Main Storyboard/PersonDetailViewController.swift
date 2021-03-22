@@ -79,9 +79,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		self.sendMessageButton.isEnabled = false
 		peerManager.send(message: message) { error in
 			if let error = error {
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog"))
-				self.messageTextView.text = message
-				self.messageTextView.resignFirstResponder() // quick fix to toolbar disappearing bug (due to re-layouting when displaying the error)
+				NSLog("WARN: Sending Message Failed: \(error.localizedDescription)")
 			}
 		}
 	}
@@ -179,13 +177,13 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		super.viewDidAppear(animated)
 		guard let peer = displayedPeerInfo else { return }
 		
-		let progress = PeeringController.shared.manager(for: peer.peerID).loadPicture()
+		let progress = peerManager.loadPicture()
 		portraitImageView.loadProgress = progress
 		progress.map { pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
 		gradientView.animateGradient = peer.pinMatched
 		
-		if peerManager.transcripts.count > 0 {
-			layoutMetadata(isHorizontal: true)
+		if peer.pinMatched {
+			messageTextView.becomeFirstResponder()
 			chatTableView?.scrollToBottom(animated: true)
 		}
 		
@@ -223,7 +221,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	// Dynamically enables/disables the send button based on user typing
 	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
 		let length = (textView.text?.count ?? 0) - range.length + text.count;
-		self.sendMessageButton.isEnabled = length > 0 && cachedState.isAvailable
+		self.sendMessageButton.isEnabled = length > 0
 		return true
 	}
 	
@@ -268,7 +266,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 //		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
 		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
 		findButtonItem.isEnabled = peer.pinMatched
-		sendMessageButton.isEnabled = cachedState.isAvailable && messageTextView.text?.count ?? 0 > 0
+		sendMessageButton.isEnabled = messageTextView.text?.count ?? 0 > 0
 		peerIDLabel.text = peer.peerID.uuidString
 		
 		title = peer.nickname
