@@ -14,7 +14,7 @@ class MessageCell: UITableViewCell {
 	// Background image
 	@IBOutlet private weak var balloonView: UIImageView!
 	// Message text string
-	@IBOutlet private weak var messageLabel: UILabel!
+	@IBOutlet private weak var messageLabel: UITextView!
 	// these NSLayoutConstraints must not be `weak` because they get deallocated when inactive
 	@IBOutlet private var ballonLeadingEqual: NSLayoutConstraint!
 	@IBOutlet private var ballonTrailingEqual: NSLayoutConstraint!

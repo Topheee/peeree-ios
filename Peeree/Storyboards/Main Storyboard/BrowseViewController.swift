@@ -52,6 +52,7 @@ final class BrowseViewController: UITableViewController {
 			AccountController.shared.refreshBlockedContent { error in
 				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
 			}
+			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}

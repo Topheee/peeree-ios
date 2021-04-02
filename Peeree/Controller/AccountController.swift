@@ -143,7 +143,7 @@ public class AccountController: SecurityDataSource {
 	public func pin(_ peer: PeerInfo) {
 		guard accountExists else { return }
 		let peerID = peer.peerID
-		guard !isPinned(peer) && PeeringController.shared.remote.availablePeers.contains(peerID) && !(pinningPeers.contains(peerID)) else { return }
+		guard !isPinned(peer) && !(pinningPeers.contains(peerID)) else { return }
 		
 		self.pinningPeers.insert(peerID)
 		Notifications.pinningStarted.post(peerID)

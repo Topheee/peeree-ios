@@ -87,7 +87,11 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 			return peer
 		}
 	}
-	
+
+	public enum ReliableWriteError: Error {
+		case lostConnection, unknownPeripheralOrCharacteristic, valueTooLong, reliableWriteAlreadyInProgress, bleError(Error)
+	}
+
 	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
 	
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
@@ -96,7 +100,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	private var remotePeerDelegates = [PeerID : RemotePeerDelegate]()
 	
 	private var activeTransmissions = [Transmission : (Progress, Data)]() // TODO if the synchronization through the dQueue is too slow, switch to a delegate model, where the delegate is being told when a transmission begins/ends. Also, inform new delegates (via didSet and then dQueue.aysnc) of ongoing transmissions by calling transmissionDidBegin for every current transmission.
-	private var reliableWriteProcesses = [Transmission : (DispatchQueue, (Error?) -> Void)]()
+	private var reliableWriteProcesses = [Transmission : (DispatchQueue, (ReliableWriteError?) -> Void)]()
 	
 	private var centralManager: CBCentralManager!
 	
@@ -144,10 +148,6 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
 	}
 	
-	private var lostConnectionError: Error {
-		return NSError(domain: "Peeree", code: -2, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Lost connection to peripheral.", comment: "Error during reliable Bluetooth write operation")])
-	}
-
 	func stopScan() {
 		guard isScanning else { return }
 		
@@ -223,19 +223,23 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		}
 	}
 	
-	func reliablyWrite(data: Data, to characteristicID: CBUUID, of peerID: PeerID, callbackQueue: DispatchQueue, completion: @escaping (Error?) -> Void) {
+	func reliablyWrite(data: Data, to characteristicID: CBUUID, of peerID: PeerID, callbackQueue: DispatchQueue, completion: @escaping (ReliableWriteError?) -> Void) {
 		dQueue.async {
 			guard let peripheral = self.peripheralPeerIDs[peerID],
-				let characteristic = peripheral.peereeService?.get(characteristic: characteristicID) else { return }
+				let characteristic = peripheral.peereeService?.get(characteristic: characteristicID) else {
+				callbackQueue.async { completion(.unknownPeripheralOrCharacteristic) }
+				return
+			}
+			guard peripheral.maximumWriteValueLength(for: CBCharacteristicWriteType.withResponse) >= data.count else {
+				callbackQueue.async { completion(.valueTooLong) }
+				return
+			}
 			let transmission = Transmission(peripheralID: peripheral.identifier, characteristicID: characteristic.uuid)
 			if self.reliableWriteProcesses[transmission] == nil {
 				self.reliableWriteProcesses[transmission] = (callbackQueue, completion)
 				peripheral.writeValue(data, for: characteristic, type: .withResponse)
 			} else {
-				callbackQueue.async {
-					completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Reliable write already in progress.", comment: "Error during reliable bluetooth send operation")]))
-				}
-				
+				callbackQueue.async { completion(.reliableWriteAlreadyInProgress) }
 			}
 		}
 	}
@@ -336,7 +340,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		reliableWriteProcesses = reliableWriteProcesses.filter { entry in
 			let (queue, callback) = entry.value
 			if entry.key.peripheralID == peripheral.identifier {
-				queue.async { callback(self.lostConnectionError) }
+				queue.async { callback(.lostConnection) }
 			}
 			return entry.key.peripheralID != peripheral.identifier
 		}
@@ -672,7 +676,13 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	
 	func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
 		if let (callbackQueue, completion) = reliableWriteProcesses.removeValue(forKey: Transmission(peripheralID: peripheral.identifier, characteristicID: characteristic.uuid)) {
-			callbackQueue.async { completion(error) }
+			let completionError: ReliableWriteError?
+			if let error = error {
+				completionError = ReliableWriteError.bleError(error)
+			} else {
+				completionError = nil
+			}
+			callbackQueue.async { completion(completionError) }
 		}
 		guard error == nil else {
 			NSLog("Error writing \(characteristic.uuid.uuidString.left(8)) to PeerID \(peerID(of: peripheral)?.uuidString.left(8) ?? "unknown"): \(error!.localizedDescription).")

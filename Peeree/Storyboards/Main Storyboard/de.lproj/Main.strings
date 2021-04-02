@@ -149,8 +149,8 @@
 /* Class = "UIImageView"; accessibilityLabel = "Portrait"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityLabel" = "Portrait";
 
-/* Class = "UILabel"; text = "Message"; ObjectID = "Seq-55-m1S"; */
-"Seq-55-m1S.text" = "Nachricht";
+/* Class = "UITextView"; text = "Message"; ObjectID = "TSY-tA-LTd"; */
+"TSY-tA-LTd.text" = "Nachricht";
 
 /* Class = "UIBarButtonItem"; title = "Dismiss"; ObjectID = "TrO-49-JEM"; */
 "TrO-49-JEM.title" = "OK";

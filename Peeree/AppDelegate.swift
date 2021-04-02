@@ -15,9 +15,9 @@ let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.ht
 struct VisualTheme {
 	var tintColor: UIColor {
 		if #available(iOS 10, *) {
-			return UIColor(displayP3Red: 22.0/255.0, green: 145.0/255.0, blue: 101.0/255.0, alpha: 1.0)
+			return UIColor(displayP3Red: 21.0/255.0, green: 132.0/255.0, blue: 93.0/255.0, alpha: 1.0)
 		} else {
-			return UIColor(red: 22.0/255.0, green: 145.0/255.0, blue: 101.0/255.0, alpha: 1.0)
+			return UIColor(red: 21.0/255.0, green: 132.0/255.0, blue: 93.0/255.0, alpha: 1.0)
 		}
 	}
 	var backgroundColor: UIColor {

@@ -513,7 +513,7 @@ a Social Peer-to-Peer App</string>
     <inferredMetricsTieBreakers>
         <segue reference="eIi-gS-zjY"/>
     </inferredMetricsTieBreakers>
-    <color key="tintColor" red="0.087313823401927948" green="0.57054844798657722" blue="0.39422619342803955" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+    <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="PinButtonTemplate" width="180" height="180"/>
         <image name="PinButtonTemplatePressed" width="180" height="180"/>

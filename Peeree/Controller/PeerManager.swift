@@ -121,17 +121,31 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			completion(NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Could not encode message.", comment: "Error during bluetooth message sending")]))
 			return
 		}
-		guard !self.remotePeerManager.isReliablyWriting(to: CBUUID.MessageCharacteristicID, of: self.peerID) else {
-			return
-		}
 		self.remotePeerManager.reliablyWrite(data: data, to: CBUUID.MessageCharacteristicID, of: self.peerID, callbackQueue: DispatchQueue.main) { error in
-			if error == nil {
+			if let error = error {
+				switch error {
+				case .bleError(let bleError):
+					NSLog("WARN: Sending Message Failed with BLE error: \(bleError.localizedDescription)")
+				case .valueTooLong:
+					// split first message into two submessages and retry
+					let (tooLongMessage, completion) = self.pendingMessages.removeFirst()
+					let middleIndex = tooLongMessage.middleIndex
+					let middleWhitespace = tooLongMessage[middleIndex...].firstIndex { $0.isWhitespace } ?? middleIndex
+					let firstHalf = String(tooLongMessage[..<middleWhitespace])
+					let secondHalf = String(tooLongMessage[middleWhitespace...])
+					self.pendingMessages.insert((secondHalf, completion), at: 0)
+					self.pendingMessages.insert((firstHalf, completion), at: 0)
+					self.dequeueMessage()
+				default:
+					NSLog("WARN: Sending Message Failed: \(error.localizedDescription)")
+				}
+			} else {
 				self.pendingMessages.removeFirst()
 				self.transcripts.append(Transcript(direction: .send, message: message))
 				Notifications.messageSent.post(self.peerID)
 				self.dequeueMessage()
+				completion(error)
 			}
-			completion(error)
 		}
 	}
 

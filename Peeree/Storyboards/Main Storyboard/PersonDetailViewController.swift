@@ -79,7 +79,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		self.sendMessageButton.isEnabled = false
 		peerManager.send(message: message) { error in
 			if let error = error {
-				NSLog("WARN: Sending Message Failed: \(error.localizedDescription)")
+				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog"))
 			}
 		}
 	}
@@ -126,8 +126,9 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			view.layer.cornerRadius = view.layer.bounds.height / 2.0
 		}
 		pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
-		messageBar.layer.borderWidth = 0.25
+		messageBar.layer.borderWidth = 0.5
 		messageBar.layer.borderColor = UIColor.lightGray.cgColor
+		messageTextView.layer.cornerRadius = 15.0
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {

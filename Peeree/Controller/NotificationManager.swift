@@ -144,6 +144,17 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		case .peerAppearedPin:
 			peerManager.peerInfo.map { AccountController.shared.pin($0) }
 		}
+
+		// unschedule all notifications of this category
+		center.getDeliveredNotifications { (notifications) in
+			var identifiers = [String]()
+			for notification in notifications {
+				if notification.request.content.categoryIdentifier == response.notification.request.content.categoryIdentifier {
+					identifiers.append(notification.request.identifier)
+				}
+			}
+			center.removeDeliveredNotifications(withIdentifiers: identifiers)
+		}
 	}
 
 	@available(iOS 10.0, *)

@@ -161,6 +161,10 @@ extension String {
 		let leftEnd = index(endIndex, offsetBy: -count, limitedBy: startIndex) ?? startIndex
 		return String(self[leftEnd...])
 	}
+	
+	var middleIndex: String.Index {
+		return index(startIndex, offsetBy: count / 2, limitedBy: endIndex) ?? endIndex
+	}
 }
 
 // Hex string parsing, e. g. useful for interaction with PostgreSQL's bytea type
