@@ -21,7 +21,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	
 	public enum Notifications: String {
 		case verified, verificationFailed
-		case pictureLoaded
+		case pictureLoaded, biographyLoaded
 		case messageQueued, messageSent, messageReceived, unreadMessageCountChanged
 		
 		func post(_ peerID: PeerID) {
@@ -100,7 +100,16 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		guard let peer = peerInfo, peer.hasPicture && cgPicture == nil else { return nil }
 		return remotePeerManager.loadResource(of: peerID, characteristicID: CBUUID.PortraitCharacteristicID, signatureCharacteristicID: CBUUID.PortraitSignatureCharacteristicID)
 	}
-	
+
+	public func loadBio() -> Progress? {
+		return remotePeerManager.loadResource(of: peerID, characteristicID: CBUUID.BiographyCharacteristicID, signatureCharacteristicID: CBUUID.BiographySignatureCharacteristicID)
+	}
+
+	/// loads battery-intense characteristics
+	public func loadResources() -> (pictureProgress: Progress?, bioProgress: Progress?) {
+		return (loadPicture(), loadBio())
+	}
+
 	public func indicatePinMatch() {
 		guard peerInfo?.pinMatched ?? false else { return }
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
@@ -186,7 +195,11 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			Notifications.pictureLoaded.post(peerID)
 		}
 	}
-	
+
+	func loaded(biography: String, of peerID: PeerID) {
+		Notifications.biographyLoaded.post(peerID)
+	}
+
 	func failedVerification(of peerID: PeerID, error: Error) {
 		verified = false
 		Notifications.verificationFailed.post(peerID)

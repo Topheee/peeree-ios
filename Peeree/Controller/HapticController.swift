@@ -19,6 +19,14 @@ class HapticController {
 			return engine
 		} else {
 			let engine = try CHHapticEngine()
+			engine.stoppedHandler = { reason in NSLog("INFO: The haptic engine stopped: \(reason.rawValue)") }
+			engine.resetHandler = { NSLog("ERROR: The haptic engine reset") }
+			engine.notifyWhenPlayersFinished { (_error) -> CHHapticEngine.FinishedAction in
+				if let error = _error {
+					NSLog("ERROR: Haptic player finished with error: \(error.localizedDescription)")
+				}
+				return .stopEngine
+			}
 			try engine.start()
 			hapticEngine = engine
 			return engine
@@ -31,22 +39,6 @@ class HapticController {
 
 		do {
 			let engine = try getHapticEngine()
-
-			// The engine stopped; print out why
-			engine.stoppedHandler = { reason in
-				NSLog("INFO: The haptic engine stopped: \(reason.rawValue)")
-			}
-
-			// If something goes wrong, attempt to restart the engine immediately
-			engine.resetHandler = {
-				NSLog("ERROR: The haptic engine reset")
-
-//				do {
-//					try engine.start()
-//				} catch {
-//					print("Failed to restart the haptic engine: \(error)")
-//				}
-			}
 
 			let anotherPattern = try CHHapticPattern(events: [
 				CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.5)], relativeTime: 0.0, duration: 0.1),
@@ -66,12 +58,6 @@ class HapticController {
 
 		do {
 			let engine = try getHapticEngine()
-
-			// The engine stopped; print out why
-			engine.stoppedHandler = { reason in NSLog("INFO: The haptic engine stopped: \(reason.rawValue)") }
-
-			// If something goes wrong, attempt to restart the engine immediately
-			engine.resetHandler = { NSLog("ERROR: The haptic engine reset") }
 
 			let anotherPattern = try CHHapticPattern(events: [
 				CHHapticEvent(eventType: CHHapticEvent.EventType.hapticTransient, parameters: [CHHapticEventParameter(parameterID: CHHapticEvent.ParameterID.hapticIntensity, value: 0.7)], relativeTime: 0.0, duration: 0.1)], parameters: [])

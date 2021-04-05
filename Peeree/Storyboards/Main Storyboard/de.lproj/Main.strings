@@ -155,6 +155,9 @@
 /* Class = "UIBarButtonItem"; title = "Dismiss"; ObjectID = "TrO-49-JEM"; */
 "TrO-49-JEM.title" = "OK";
 
+/* Class = "UILabel"; text = "Bio"; ObjectID = "u8x-xh-rZR"; */
+"u8x-xh-rZR.text" = "Steckbrief";
+
 /* Class = "UITableViewSection"; headerTitle = "Picture"; ObjectID = "VhZ-Ja-vhb"; */
 "VhZ-Ja-vhb.headerTitle" = "Bild";
 
@@ -230,8 +233,8 @@
 /* Class = "UISegmentedControl"; jMl-1T-kkd.segmentTitles[2] = "Queer"; ObjectID = "jMl-1T-kkd"; */
 "jMl-1T-kkd.segmentTitles[2]" = "Divers";
 
-/* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "jRR-HL-OFn"; */
-"jRR-HL-OFn.accessibilityLabel" = "Details zur Person";
+/* Class = "UILabel"; accessibilityLabel = "Age"; ObjectID = "jRR-HL-OFn"; */
+"jRR-HL-OFn.accessibilityLabel" = "Alter";
 
 /* Class = "UILabel"; text = "age"; ObjectID = "jRR-HL-OFn"; */
 "jRR-HL-OFn.text" = "Alter";
@@ -251,8 +254,8 @@
 /* Class = "UITableViewController"; title = "Character Traits"; ObjectID = "kuI-R6-Fbl"; */
 "kuI-R6-Fbl.title" = "Charaktereigenschaften";
 
-/* Class = "UILabel"; accessibilityLabel = "Person Information Summary"; ObjectID = "nS3-bX-bM2"; */
-"nS3-bX-bM2.accessibilityLabel" = "Angaben zur Person";
+/* Class = "UILabel"; accessibilityLabel = "Gender"; ObjectID = "nS3-bX-bM2"; */
+"nS3-bX-bM2.accessibilityLabel" = "Geschlecht";
 
 /* Class = "UILabel"; text = "gender"; ObjectID = "nS3-bX-bM2"; */
 "nS3-bX-bM2.text" = "Geschlecht";
@@ -299,11 +302,23 @@
 /* Section Footer */
 "VhZ-Ja-vhb.footerTitle" = "Filtere Leute ohne Portrait.";
 
-/* Class = "UILabel"; accessibilityLabel = "Person Details"; ObjectID = "wGc-0s-dzf"; */
+/* Class = "UINavigationItem"; prompt = "Name"; ObjectID = "Vvs-dp-GcW"; */
+"Vvs-dp-GcW.prompt" = "Name";
+
+/* Class = "UILabel"; accessibilityLabel = "Summary"; ObjectID = "wGc-0s-dzf"; */
 "wGc-0s-dzf.accessibilityLabel" = "Details zur Person";
 
 /* Class = "UILabel"; text = "Female, 18, not verified"; ObjectID = "wGc-0s-dzf"; */
 "wGc-0s-dzf.text" = "Weiblich, 18, nicht verifiziert";
+
+/* Class = "UITextView"; accessibilityHint = "Your publicly visible biography"; ObjectID = "X6k-gy-LjE"; */
+"X6k-gy-LjE.accessibilityHint" = "Dein öffentlich sichtbarer Steckbrief";
+
+/* Class = "UITextView"; accessibilityLabel = "Biography"; ObjectID = "X6k-gy-LjE"; */
+"X6k-gy-LjE.accessibilityLabel" = "Steckbrief";
+
+/* Class = "UITextView"; text = "Your Biography."; ObjectID = "X6k-gy-LjE"; */
+"X6k-gy-LjE.text" = "Dein Steckbrief.";
 
 /* Class = "UISwitch"; accessibilityHint = "Filters out people with no picture set"; ObjectID = "xJk-Ke-rVF"; */
 "xJk-Ke-rVF.accessibilityHint" = "Filtert Leute heraus, die kein Bild gesetzt haben";

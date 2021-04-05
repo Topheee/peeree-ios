@@ -29,6 +29,111 @@ final class CircleMaskView: UIView {
 	}
 }
 
+/// A view containing a filled circle.
+@IBDesignable @objc
+final class CircleView: UIView {
+	override func draw(_ rect: CGRect) {
+		let circle = UIBezierPath(ovalIn: rect.inset(by: circleInsets))
+		let context = UIGraphicsGetCurrentContext()
+		if #available(iOS 13.0, *) {
+			context?.setFillColor(fillColor?.cgColor ?? UIColor.systemBackground.cgColor)
+		} else {
+			context?.setFillColor(fillColor?.cgColor ?? UIColor.white.cgColor)
+		}
+		circle.fill()
+	}
+	
+	@IBInspectable var fillColor: UIColor? {
+		didSet { setNeedsDisplay() }
+	}
+	
+	@IBInspectable var circleRadius: CGFloat = 24.0 {
+		didSet { setNeedsDisplay() }
+	}
+
+	@IBInspectable var topEdgeInset: CGFloat {
+		get { return circleInsets.top }
+		set { circleInsets.top = newValue
+		}
+	}
+	@IBInspectable var leftEdgeInset: CGFloat {
+		get { return circleInsets.left }
+		set { circleInsets.left = newValue
+		}
+	}
+	@IBInspectable var bottomEdgeInset: CGFloat {
+		get { return circleInsets.bottom }
+		set { circleInsets.bottom = newValue
+		}
+	}
+	@IBInspectable var rightEdgeInset: CGFloat {
+		get { return circleInsets.right }
+		set { circleInsets.right = newValue
+		}
+	}
+
+	var circleInsets: UIEdgeInsets = .zero {
+		didSet { setNeedsDisplay() }
+	}
+
+	override var intrinsicContentSize: CGSize {
+		return CGSize(width: circleRadius, height: circleRadius)
+	}
+}
+
+/// A view containing a filled circle.
+@IBDesignable @objc
+final class RoundedRectView: UIView {
+	override func draw(_ rect: CGRect) {
+		let roundedRect = rect.inset(by: circleInsets)
+		let circle = UIBezierPath(roundedRect: roundedRect, cornerRadius: cornerRadius < 0.0 ? roundedRect.height / 2.0 : cornerRadius)
+		let context = UIGraphicsGetCurrentContext()
+		if #available(iOS 13.0, *) {
+			context?.setFillColor(fillColor?.cgColor ?? UIColor.systemBackground.cgColor)
+		} else {
+			context?.setFillColor(fillColor?.cgColor ?? UIColor.white.cgColor)
+		}
+		circle.fill()
+	}
+	
+	@IBInspectable var fillColor: UIColor? {
+		didSet { setNeedsDisplay() }
+	}
+
+	@IBInspectable var cornerRadius: CGFloat = 0.0 {
+		didSet { setNeedsDisplay() }
+	}
+
+	@IBInspectable var topEdgeInset: CGFloat {
+		get { return circleInsets.top }
+		set { circleInsets.top = newValue
+		}
+	}
+	@IBInspectable var leftEdgeInset: CGFloat {
+		get { return circleInsets.left }
+		set { circleInsets.left = newValue
+		}
+	}
+	@IBInspectable var bottomEdgeInset: CGFloat {
+		get { return circleInsets.bottom }
+		set { circleInsets.bottom = newValue
+		}
+	}
+	@IBInspectable var rightEdgeInset: CGFloat {
+		get { return circleInsets.right }
+		set { circleInsets.right = newValue
+		}
+	}
+
+	var circleInsets: UIEdgeInsets = .zero {
+		didSet { setNeedsDisplay() }
+	}
+
+	override var intrinsicContentSize: CGSize {
+		return CGSize(width: 28.0, height: 28.0)
+	}
+}
+
 class RoundedImageView: UIImageView {
 	override func layoutSubviews() {
 		super.layoutSubviews()

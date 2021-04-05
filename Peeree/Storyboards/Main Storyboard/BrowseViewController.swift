@@ -13,6 +13,7 @@ final class BrowseViewController: UITableViewController {
 
 	private static let PresentMeSegueID = "presentMeViewController"
 	private static let PeerDisplayCellID = "peerDisplayCell"
+	private static let MatchedPeerCellID = "matchedPeerCell"
 	private static let OfflineModeCellID = "placeholderCell"
 	private static let AddAnimation = UITableView.RowAnimation.automatic
 	private static let DelAnimation = UITableView.RowAnimation.automatic
@@ -22,6 +23,7 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	static let ViewPeerSegueID = "ViewPeerSegue"
+	static let MessagePeerSegueID = "MessagePeerSegue"
 	
 	static var instance: BrowseViewController?
 	
@@ -60,20 +62,15 @@ final class BrowseViewController: UITableViewController {
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
-		defer {
-			// we need to defer this, otherwise tableView.indexPath(for: tappedCell) doesn't work
-			navigationController?.setNavigationBarHidden(false, animated: true)
-		}
-		guard let personDetailVC = segue.destination as? PersonDetailViewController else { return }
+		guard let peerVC = segue.destination as? PeerViewController else { return }
 		guard let tappedCell = sender as? UITableViewCell else {
 			if let peerID = sender as? PeerID {
-				personDetailVC.peerManager = PeeringController.shared.manager(for: peerID)
+				peerVC.peerManager = PeeringController.shared.manager(for: peerID)
 			}
 			return
 		}
-		guard tappedCell.reuseIdentifier == BrowseViewController.PeerDisplayCellID else { return }
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-		personDetailVC.peerManager = managerCache[cellPath.section][cellPath.row]
+		peerVC.peerManager = managerCache[cellPath.section][cellPath.row]
 	}
 	
 	override func viewDidLoad() {
@@ -186,10 +183,15 @@ final class BrowseViewController: UITableViewController {
 			cell.setContent(mode: PeeringController.shared.peering ? .alone : .offline)
 			return cell
 		}
-		
-//		let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID, for: indexPath)
-		let cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
-		fill(cell: cell, peer: peerCache[indexPath.section][indexPath.row], manager: managerCache[indexPath.section][indexPath.row])
+
+		let cell: UITableViewCell
+		if indexPath.section == PeersSection.matched.rawValue {
+			cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.MatchedPeerCellID)!
+			fill(cell: cell, peer: peerCache[indexPath.section][indexPath.row], manager: managerCache[indexPath.section][indexPath.row])
+		} else {
+			cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
+			(cell as? PeerTableViewCell)?.fill(with: managerCache[indexPath.section][indexPath.row])
+		}
 		return cell
 	}
 	
@@ -229,15 +231,23 @@ final class BrowseViewController: UITableViewController {
 	// MARK: UITableViewDelegate
 	
 	@available(iOS 11.0, *)
-	override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-		guard !placeholderCellActive && indexPath.section != PeersSection.matched.rawValue else { return nil }
+	override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+		guard !placeholderCellActive else { return nil }
 		let peer = self.peerCache[indexPath.section][indexPath.row]
-		guard !peer.pinned else { return nil }
-		let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
-			AccountController.shared.pin(peer)
-			completion(true)
+		if peer.pinned {
+			let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (action, view, completion) in
+				AccountController.shared.unpin(peer: peer)
+				completion(true)
+			}
+			return UISwipeActionsConfiguration(actions: [unpinAction])
+		} else {
+			let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
+				AccountController.shared.pin(peer)
+				completion(true)
+			}
+			pinAction.backgroundColor = AppTheme.tintColor
+			return UISwipeActionsConfiguration(actions: [pinAction])
 		}
-		return UISwipeActionsConfiguration(actions: [pinAction])
 	}
 	
 	// MARK: UIScollViewDelegate
@@ -263,7 +273,12 @@ final class BrowseViewController: UITableViewController {
 			cell.textLabel?.textColor = manager.isAvailable ? UIColor.black : UIColor.systemGray
 		}
 		cell.textLabel?.text = peer.nickname
-		cell.detailTextLabel?.text = peer.summary
+		let unreadMessages = manager.unreadMessages
+		if unreadMessages > 0 {
+			cell.detailTextLabel?.text = "\(manager.unreadMessages) 📫\t\(manager.transcripts.last?.message ?? "")"
+		} else {
+			cell.detailTextLabel?.text = "📭\t\(manager.transcripts.last?.message ?? "")"
+		}
 		guard let imageView = cell.imageView else { assertionFailure(); return }
 		imageView.image = manager.pictureClassification == .none ? manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
 		guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
@@ -402,7 +417,10 @@ final class BrowseViewController: UITableViewController {
 	private func pinMatchOccurred(peerID: PeerID) {
 		let manager = PeeringController.shared.manager(for: peerID)
 		guard let peer = manager.peerInfo else { return }
-		assert(peerCache[PeersSection.matched.rawValue].firstIndex(of: peer) == nil, "The following code assumes it is executed only once for one peer at maximum. If this is not correct any more, a guard check of this assertion would be enough here (since then nothing has to be done).")
+		guard peerCache[PeersSection.matched.rawValue].firstIndex(of: peer) == nil else {
+			// this can happen if a peer was unpinned and then immediately pinned again in person view, which does not update the browse view
+			return
+		}
 		
 		var _row: Int? = nil
 		var _sec: Int? = nil

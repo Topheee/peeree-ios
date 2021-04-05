@@ -12,6 +12,8 @@ import CoreGraphics
 import ImageIO
 import CoreServices
 
+let BundleID = Bundle.main.bundleIdentifier ?? "de.peeree"
+
 extension CBPeripheral {
 	var peereeService: CBService? {
 		return services?.first { $0.uuid == CBUUID.PeereeServiceID }
@@ -97,18 +99,19 @@ extension CBUUID {
 	static let RemoteAuthenticationCharacteristicID = CBUUID(string: "21AA8B5C-34E7-4694-B3E6-8F51A79811F3")
 	static let MessageCharacteristicID = CBUUID(string: "B7C906FB-56F9-44DA-BBD1-1C27B7EF946B")
 	static let ConnectBackCharacteristicID = CBUUID(string: "D14F4899-CF39-4F26-8C3E-E81FA3803393")
-	
+	static let BiographyCharacteristicID = CBUUID(string: "08EC3C63-CB96-466B-A591-40F8E214BE74")
+
 	static let PeerIDSignatureCharacteristicID = CBUUID(string: "D05A4FA4-F203-4A76-A6EA-560152AD74A5")
 	static let AggregateSignatureCharacteristicID = CBUUID(string: "17B23EC4-F543-48C6-A8B8-F806FE035F10")
 	static let NicknameSignatureCharacteristicID = CBUUID(string: "B69EB678-ABAC-4134-828D-D79868A6CB4A")
 	static let PortraitSignatureCharacteristicID = CBUUID(string: "44BFB98E-56AB-4436-9F14-7277C5D6A8CA")
-	
-	static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, RemoteAuthenticationCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID, MessageCharacteristicID, ConnectBackCharacteristicID]
-	static let SplitCharacteristicIDs = [PortraitCharacteristicID]
+	static let BiographySignatureCharacteristicID = CBUUID(string: "1198D287-23DD-4F8A-8F08-0EB6B77FBF29")
+
+	static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, BiographyCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, RemoteAuthenticationCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID, BiographySignatureCharacteristicID, MessageCharacteristicID, ConnectBackCharacteristicID]
+	static let SplitCharacteristicIDs = [PortraitCharacteristicID, BiographyCharacteristicID]
 }
 
 extension CGImage {
-	// TODO check whether it really returns correctly formatted JPEG data
 	func jpgData() throws -> Data {
 		let jpgDataBuffer = NSMutableData()
 		

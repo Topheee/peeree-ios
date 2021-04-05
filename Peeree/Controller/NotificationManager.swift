@@ -67,7 +67,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 
 		_ = AccountController.Notifications.pinMatch.addPeerObserver { peerID, _  in
-			PeeringController.shared.manager(for: peerID).peerInfo.map { self.pinMatchOccured($0) }
+			self.pinMatchOccured(peerID)
 		}
 
 		_ = PeerManager.Notifications.messageReceived.addPeerObserver { peerID, _  in
@@ -105,7 +105,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		guard let peerIDData = notification.userInfo?[NotificationManager.PeerIDKey] as? Data else { return }
 		guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else { return }
 		
-		AppDelegate.shared.show(peerID: peerID)
+		AppDelegate.shared.showOrMessage(peerID: peerID)
 	}
 
 	// MARK: UNUserNotificationCenterDelegate
@@ -123,7 +123,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		guard let action = NotificationActions(rawValue: response.actionIdentifier) else {
 			switch response.actionIdentifier {
 			case UNNotificationDefaultActionIdentifier:
-				AppDelegate.shared.show(peerID: peerID)
+				AppDelegate.shared.showOrMessage(peerID: peerID)
 			case UNNotificationDismissActionIdentifier:
 				return
 			default:
@@ -210,15 +210,15 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
 			title = String(format: titleFormat, peer.nickname)
 		}
-		let peerNotVisible = ((AppDelegate.shared.window?.rootViewController as? UINavigationController)?.visibleViewController as? PersonDetailViewController)?.peerManager.peerID != peerID
-		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: peerNotVisible)
+		let messagesNotVisible = ((AppDelegate.shared.window?.rootViewController as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerManager.peerID != peerID
+		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: messagesNotVisible)
 	}
 
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
 		guard !again, let peer = PeeringController.shared.manager(for: peerID).peerInfo,
 			BrowseFilterSettings.shared.check(peer: peer) else { return }
 		if AppDelegate.shared.isActive {
-			_ = PeeringController.shared.manager(for: peerID).loadPicture()
+			_ = PeeringController.shared.manager(for: peerID).loadResources()
 		}
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 		let notBrowsing = ((AppDelegate.shared.window?.rootViewController as? UINavigationController)?.visibleViewController as? BrowseViewController) == nil
@@ -229,10 +229,11 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		// ignored
 	}
 
-	private func pinMatchOccured(_ peer: PeerInfo) {
+	private func pinMatchOccured(_ peerID: PeerID) {
+		let manager = PeeringController.shared.manager(for: peerID)
 		if AppDelegate.shared.isActive {
 			let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
-			pinMatchVC.displayedPeer = peer
+			pinMatchVC.peerManager = manager
 			DispatchQueue.main.async {
 				if let presentingVC = AppDelegate.shared.window?.rootViewController?.presentedViewController {
 					// if Me screen is currently presented
@@ -244,8 +245,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		} else {
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, peer.nickname)
-			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peer.peerID, category: .pinMatch, displayInApp: true)
+			let alertBody = String(format: alertBodyFormat, manager.peerInfo?.nickname ?? "😇")
+			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch, displayInApp: true)
 		}
 	}
 }

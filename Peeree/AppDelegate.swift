@@ -32,8 +32,6 @@ let AppTheme = VisualTheme()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
-	static let BundleID = Bundle.main.bundleIdentifier ?? "de.peeree"
-	
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
 	private let notificationManager = NotificationManager()
@@ -143,7 +141,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			for peerID in PeeringController.shared.remote.availablePeers {
 				let manager = PeeringController.shared.manager(for: peerID)
 				guard let peer = manager.peerInfo, BrowseFilterSettings.shared.check(peer: peer) else { continue }
-				_ = manager.loadPicture()
+				_ = manager.loadResources()
 			}
 		}
 		
@@ -166,6 +164,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		PeeringController.shared.peering = false
 	}
 	
+	func showOrMessage(peerID: PeerID) {
+		if PeeringController.shared.manager(for: peerID).peerInfo?.pinMatched ?? false {
+			displayMessageViewController(for: peerID)
+		} else {
+			show(peerID: peerID)
+		}
+	}
+
 	func show(peerID: PeerID) {
 		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
 		
@@ -181,7 +187,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 		browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
 	}
-	
+
+	func displayMessageViewController(for peerID: PeerID) {
+		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
+
+		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+
+		var browseVC: BrowseViewController? = nil
+		for vc in browseNavVC.viewControllers {
+			if vc is BrowseViewController {
+				browseVC = vc as? BrowseViewController
+			} else if let messageVC = vc as? MessagingViewController {
+				guard messageVC.peerManager.peerID != peerID else { return }
+			}
+		}
+		browseVC?.performSegue(withIdentifier: BrowseViewController.MessagePeerSegueID, sender: peerID)
+	}
+
 	func find(peer: PeerInfo) {
 		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
 		

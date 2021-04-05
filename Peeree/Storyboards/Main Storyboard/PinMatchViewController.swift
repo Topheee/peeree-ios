@@ -8,27 +8,25 @@
 
 import UIKit
 
-class PinMatchViewController: UIViewController {
+class PinMatchViewController: PeerViewController {
 	@IBOutlet private weak var portraitView: UIImageView!
 	@IBOutlet private weak var backgroundImageView: UIImageView!
 	@IBOutlet private weak var peerNameLabel: UILabel!
 	
 	static let StoryboardID = "PinMatch"
-	
-	var displayedPeer: PeerInfo? {
-		didSet {
-			displayPeer()
-		}
+
+	override var peerManager: PeerManager! {
+		didSet { displayPeer() }
 	}
 	
 	@IBAction func showProfile(_ sender: AnyObject) {
 		cancelMatchmaking(sender)
-		displayedPeer.map { AppDelegate.shared.show(peerID: $0.peerID) }
+		AppDelegate.shared.displayMessageViewController(for: peerManager.peerID)
 	}
 	
 	@IBAction func findPeer(_ sender: AnyObject) {
-		guard let peer = displayedPeer else { return }
-		
+		guard let peer = peerManager.peerInfo else { return }
+
 		cancelMatchmaking(sender)
 		AppDelegate.shared.find(peer: peer)
 	}
@@ -71,8 +69,7 @@ class PinMatchViewController: UIViewController {
 	}
 	
 	private func displayPeer() {
-		guard let peer = displayedPeer else { return }
-		let manager = PeeringController.shared.manager(for: peer.peerID)
+		guard let manager = peerManager, let peer = manager.peerInfo else { return }
 		peerNameLabel?.text = peer.nickname
 		
 		guard portraitView != nil else { return }

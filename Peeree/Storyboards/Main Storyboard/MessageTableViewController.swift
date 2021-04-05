@@ -15,10 +15,10 @@ class MessageTableViewController: UITableViewController {
 	private var lastCount = 0
 	
 	private var notificationObservers: [NSObjectProtocol] = []
-	
-	override func viewDidLoad() {
-		super.viewDidLoad()
-		
+
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+
 		notificationObservers.append(PeerManager.Notifications.messageReceived.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
 			self?.peerManager.unreadMessages = 0
 			self?.appendTranscript()
@@ -37,11 +37,14 @@ class MessageTableViewController: UITableViewController {
 		super.viewDidAppear(animated)
 		peerManager.unreadMessages = 0
 	}
-	
-	deinit {
+
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+
 		for observer in notificationObservers {
 			NotificationCenter.default.removeObserver(observer)
 		}
+		notificationObservers.removeAll()
 	}
 	
 	// MARK: - Table view data source

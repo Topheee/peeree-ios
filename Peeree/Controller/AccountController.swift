@@ -71,7 +71,7 @@ public class AccountController: SecurityDataSource {
 	/// stores acknowledged pin matched peers
 	private var pinnedByPeers: SynchronizedSet<PeerID>
 	
-	private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(AppDelegate.BundleID).pinningPeers")
+	private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(BundleID).pinningPeers")
 	
 	// only access these only from the main thread!
 	private var objectionableImageHashes: Set<Data>
@@ -441,9 +441,9 @@ public class AccountController: SecurityDataSource {
 	
 	private init() {
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
-		pinnedByPeers = SynchronizedSet(queueLabel: "\(AppDelegate.BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
+		pinnedByPeers = SynchronizedSet(queueLabel: "\(BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
 		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
-		pinnedPeers = SynchronizedDictionary(queueLabel: "\(AppDelegate.BundleID).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
+		pinnedPeers = SynchronizedDictionary(queueLabel: "\(BundleID).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
 		let nsObjectionableImageHashes: NSSet? = unarchiveObjectFromUserDefs(AccountController.ObjectionableImageHashesKey)
 		objectionableImageHashes = nsObjectionableImageHashes as? Set<Data> ?? Set()
 		let nsPendingObjectionableImageHashes: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PendingObjectionableImageHashesKey)

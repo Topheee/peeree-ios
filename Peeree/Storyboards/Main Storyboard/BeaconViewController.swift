@@ -10,7 +10,7 @@ import UIKit
 import CoreBluetooth
 import CoreLocation
 
-final class BeaconViewController: UIViewController {
+final class BeaconViewController: PeerViewController {
 	static let storyboardID = "BeaconViewController"
 
 	@IBOutlet private weak var remotePortrait: UIImageView!
@@ -20,9 +20,7 @@ final class BeaconViewController: UIViewController {
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var currentDistance = PeerDistance.unknown
-	
-	var peerManager: PeerManager?
-	
+
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		

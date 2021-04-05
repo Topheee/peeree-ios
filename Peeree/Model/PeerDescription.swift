@@ -141,9 +141,14 @@ public final class UserPeerManager: PeerManager {
 		guard let mainData = decode(aDecoder, characteristicID: CBUUID.AggregateCharacteristicID) else { return nil }
 		guard let nicknameData = decode(aDecoder, characteristicID: CBUUID.NicknameCharacteristicID) else { return nil }
 		guard let keyPair = try? KeyPair(fromKeychainWith: UserPeerManager.KeyLabel, privateTag: UserPeerManager.PrivateKeyTag, publicTag: UserPeerManager.PublicKeyTag, type: PeerInfo.KeyType, size: PeerInfo.KeySize) else { return nil }
-		let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID)
-		
-		guard let peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data, lastChangedData: lastChangedData as Data?) else { return nil }
+
+		guard var peer = PeerInfo(peerID: peerID as PeerID, publicKey: keyPair.publicKey, aggregateData: mainData as Data, nicknameData: nicknameData as Data) else { return nil }
+		if let biographyData = decode(aDecoder, characteristicID: CBUUID.BiographyCharacteristicID) {
+			peer.biographyData = biographyData as Data
+		}
+		if let lastChangedData = decode(aDecoder, characteristicID: CBUUID.LastChangedCharacteristicID) {
+			peer.lastChangedData = lastChangedData as Data
+		}
 		_peer = peer
 		_keyPair = keyPair
 		
@@ -153,7 +158,7 @@ public final class UserPeerManager: PeerManager {
 	
 	@objc public func encode(with aCoder: NSCoder) {
 		aCoder.encode(peer.peerID, forKey: CBUUID.LocalPeerIDCharacteristicID.uuidString)
-		for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.LastChangedCharacteristicID] {
+		for characteristicID in [CBUUID.AggregateCharacteristicID, CBUUID.NicknameCharacteristicID, CBUUID.BiographyCharacteristicID, CBUUID.LastChangedCharacteristicID] {
 			guard let data = peer.getCharacteristicValue(of: characteristicID) else { continue }
 			encodeIt(aCoder, characteristicID: characteristicID, data: data)
 		}
@@ -224,6 +229,7 @@ public struct PeerInfo: Equatable {
 //	var authenticationStatus: AuthenticationStatus = []
 	
 	public var nickname = ""
+	public var biography = ""
 	
 	public var gender = Gender.queer
 	public var age: Int? = nil
@@ -245,21 +251,7 @@ public struct PeerInfo: Equatable {
 	public var pinned: Bool {
 		return AccountController.shared.isPinned(self)
 	}
-	
-	public var summary: String {
-		let manager = PeeringController.shared.manager(for: peerID)
-		var summary: String
-		if let age = self.age {
-			let format = NSLocalizedString("fullsummary", comment: "Text describing the peers age, gender and verification status")
-			summary = String(format: format, age, gender.localizedRawValue, manager.verificationStatus)
-		} else {
-			let format = NSLocalizedString("smallsummary", comment: "Text describing the peers gender and verification status")
-			summary = String(format: format, gender.localizedRawValue, manager.verificationStatus)
-		}
-		if manager.unreadMessages > 0 { summary = "\(summary) - 📫 (\(manager.unreadMessages))" }
-		return summary
-	}
-	
+
 	var aggregateData: Data {
 		get {
 			let ageByte = UInt8(age ?? 0)
@@ -302,7 +294,12 @@ public struct PeerInfo: Equatable {
 			nickname = String(dataPrefixedEncoding: newValue) ?? ""
 		}
 	}
-	
+
+	public var biographyData: Data {
+		get { return biography.data(prefixedEncoding: biography.smallestEncoding)! }
+		set { biography = String(dataPrefixedEncoding: newValue) ?? "😬" }
+	}
+
 	var publicKeyData: Data { return try! publicKey.externalRepresentation() }
 	
 	var idData: Data { return peerID.encode() }
@@ -333,6 +330,8 @@ public struct PeerInfo: Equatable {
 			return lastChangedData
 		case CBUUID.NicknameCharacteristicID:
 			return nicknameData
+		case CBUUID.BiographyCharacteristicID:
+			return biographyData
 		case CBUUID.PublicKeyCharacteristicID:
 			return publicKeyData
 		default:
@@ -348,6 +347,8 @@ public struct PeerInfo: Equatable {
 			lastChangedData = to
 		case CBUUID.NicknameCharacteristicID:
 			nicknameData = to
+		case CBUUID.BiographyCharacteristicID:
+			biographyData = to
 		default:
 			break
 		}
@@ -366,17 +367,17 @@ public struct PeerInfo: Equatable {
 		self.hasPicture = hasPicture
 	}
 	
-	init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
+	init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data) {
 		do {
 			let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeerInfo.KeyType, size: PeerInfo.KeySize)
-			self.init(peerID: peerID, publicKey: publicKey, aggregateData: aggregateData, nicknameData: nicknameData, lastChangedData: lastChangedData)
+			self.init(peerID: peerID, publicKey: publicKey, aggregateData: aggregateData, nicknameData: nicknameData)
 		} catch {
 			NSLog("ERROR: creating public key from data: \(error)")
 			return nil
 		}
 	}
 	
-	init?(peerID: PeerID, publicKey: AsymmetricPublicKey, aggregateData: Data, nicknameData: Data, lastChangedData: Data?) {
+	init?(peerID: PeerID, publicKey: AsymmetricPublicKey, aggregateData: Data, nicknameData: Data) {
 		guard aggregateData.count > 2 else { return nil }
 		self.peerID = peerID
 		// same as self.aggregateData = aggregateData
@@ -410,16 +411,6 @@ public struct PeerInfo: Equatable {
 		if nickname == "" { return nil }
 		
 		self.publicKey = publicKey
-		
-		// same as self.lastChangedData = lastChangedData
-		guard let changedData = lastChangedData else { return }
-		guard changedData.count >= MemoryLayout<TimeInterval>.size else { return }
-		
-		var changed: TimeInterval = 0.0
-		withUnsafeMutableBytes(of: &changed) { pointer in
-			pointer.copyBytes(from: changedData)
-		}
-		lastChanged = Date(timeIntervalSince1970: changed)
 	}
 }
 

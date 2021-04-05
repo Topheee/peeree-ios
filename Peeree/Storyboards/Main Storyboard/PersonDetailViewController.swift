@@ -8,47 +8,40 @@
 
 import UIKit
 
-final class PersonDetailViewController: UIViewController, ProgressManagerDelegate, UITextViewDelegate {
+final class PersonDetailViewController: PeerViewController, ProgressManagerDelegate, UITextViewDelegate {
 	@IBOutlet private weak var portraitImageView: ProgressImageView!
 	@IBOutlet private weak var portraitEffectView: RoundedVisualEffectView!
 	@IBOutlet private weak var ageLabel: UILabel!
 	@IBOutlet private weak var genderLabel: UILabel!
-	@IBOutlet private weak var verificationStatusLabel: UILabel!
-	@IBOutlet private weak var verificationImage: UIImageView!
 	@IBOutlet private weak var pinButton: UIButton!
 	@IBOutlet private weak var traitsButton: UIButton!
 	@IBOutlet private weak var gradientView: GradientView!
 	@IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
 	@IBOutlet private weak var findButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var peerStackView: UIStackView!
-	@IBOutlet private weak var propertyStackView: UIStackView!
 	@IBOutlet private weak var peerIDLabel: UILabel!
+	@IBOutlet private weak var bioTextView: UITextView!
+	@IBOutlet private weak var reportButton: UIBarButtonItem!
 	
-	// Button for executing the message send.
-	@IBOutlet private weak var sendMessageButton: UIButton!
-	@IBOutlet private weak var messageTableHeight: NSLayoutConstraint!
-	@IBOutlet private weak var chatTableViewContainer: UIView!
-	@IBOutlet private weak var messageBar: UIView!
-	// Text field used for typing text messages to send to peers
-	@IBOutlet private weak var messageTextView: UITextView!
-	@IBOutlet private weak var messageBottomConstraint: NSLayoutConstraint!
-	
+	@IBOutlet private weak var ageTagView: RoundedRectView!
+	// label constraints
+	@IBOutlet private weak var genderLabelTop: NSLayoutConstraint!
+	@IBOutlet private weak var genderLabelLeading: NSLayoutConstraint!
+	@IBOutlet private weak var ageLabelTrailing: NSLayoutConstraint!
+	@IBOutlet private weak var ageLabelBottom: NSLayoutConstraint!
+
 	private static let unwindSegueID = "unwindToBrowseViewController"
 	static let storyboardID = "PersonDetailViewController"
 	static let beaconSegueID = "beaconSegue"
-	
-	private var chatTableView: UITableView? { return chatTableViewContainer.subviews.first as? UITableView }
 	
 	private var timer: Timer?
 	
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var pictureProgressManager: ProgressManager?
-	
+	private var bioProgressManager: ProgressManager?
+
 	/// caches
-	private var cachedState = PeerState()
 	private var displayedPeerInfo: PeerInfo?
-	var peerManager: PeerManager!
 	
 	@IBAction func reportPeer(_ sender: Any) {
 		guard let manager = self.peerManager, let peer = manager.peerInfo else { return }
@@ -69,21 +62,7 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		
 		alertController.present()
 	}
-	
-	// Action method when user presses "send"
-	@IBAction func sendMessageTapped(sender: Any) {
-		guard let message = messageTextView.text, message != "" else { return }
-		
-		self.messageTextView.text = ""
-		
-		self.sendMessageButton.isEnabled = false
-		peerManager.send(message: message) { error in
-			if let error = error {
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog"))
-			}
-		}
-	}
-	
+
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
 	
 	@IBAction func pinPeer(_ sender: UIButton) {
@@ -96,39 +75,24 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		AppDelegate.requestPin(of: peer)
 		updateState()
 	}
-	
-	@IBAction func tapImage(_ sender: Any) {
-		if messageTextView.isFirstResponder {
-			// provide more space for the chat
-			messageTextView.resignFirstResponder()
-			portraitImageView.setNeedsLayout()
-		} else {
-			// show greater picture
-			layoutMetadata(isHorizontal: false)
-		}
-	}
-	
+
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-		if let charTraitVC = segue.destination as? CharacterTraitViewController {
+		if let beaconVC = segue.destination as? BeaconViewController {
+			beaconVC.peerManager = peerManager
+		} else if let charTraitVC = segue.destination as? CharacterTraitViewController {
 			charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
 			charTraitVC.userTraits = false
-		} else if let beaconVC = segue.destination as? BeaconViewController {
-			beaconVC.peerManager = peerManager
-		} else if let messageViewController = segue.destination as? MessageTableViewController {
-			messageViewController.peerManager = peerManager
 		}
 	}
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		for view in propertyStackView.arrangedSubviews {
-			view.layer.backgroundColor = AppTheme.tintColor.cgColor
-			view.layer.cornerRadius = view.layer.bounds.height / 2.0
-		}
 		pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
-		messageBar.layer.borderWidth = 0.5
-		messageBar.layer.borderColor = UIColor.lightGray.cgColor
-		messageTextView.layer.cornerRadius = 15.0
+		if #available(iOS 14, *) {
+			// SF-Symbols work
+		} else {
+			reportButton.title = NSLocalizedString("Report", comment: "Report Bar Button Title")
+		}
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -151,7 +115,6 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
-		notificationObservers.append(PeerManager.Notifications.verified.addObserver(usingBlock: simpleStateUpdate))
 		
 		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinFailed, .pinStateUpdated, .peerReported]
 		for networkNotification in simpleHandledNotifications2 {
@@ -163,31 +126,31 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 			self?.gradientView?.animateGradient = true
 		}))
 
-		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { [weak self] (notification) in
+		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
-			self?.messageTextView?.resignFirstResponder()
 		}))
 		
-		registerForKeyboardNotifications()
-		
-		// somehow sometimes it is still hidden from BrowseViewController
-		navigationController?.setNavigationBarHidden(false, animated: false)
+		UIView.animate(withDuration: 2.0) {
+			// 0.707106781186548 = sin(45°)
+			let r = (self.portraitImageView.bounds.width + 16.0) / 2.0
+			let edgeDistance = r - 0.707106781186548 * r
+			self.genderLabelTop.constant = edgeDistance
+			self.genderLabelLeading.constant = edgeDistance - self.genderLabel.bounds.width / 2.0
+			self.ageLabelBottom?.constant = edgeDistance
+			self.ageLabelTrailing?.constant = edgeDistance - self.ageLabel.bounds.width / 2.0
+		}
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 		guard let peer = displayedPeerInfo else { return }
 		
-		let progress = peerManager.loadPicture()
-		portraitImageView.loadProgress = progress
-		progress.map { pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
+		let (pictureProgress, bioProgress) = peerManager.loadResources()
+		portraitImageView.loadProgress = pictureProgress
+		pictureProgress.map { pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
+		bioProgress.map { bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
 		gradientView.animateGradient = peer.pinMatched
-		
-		if peer.pinMatched {
-			messageTextView.becomeFirstResponder()
-			chatTableView?.scrollToBottom(animated: true)
-		}
-		
+
 		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
 		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
 		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
@@ -195,7 +158,6 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
-		NotificationCenter.default.removeObserver(self)
 		for observer in notificationObservers { NotificationCenter.`default`.removeObserver(observer) }
 		notificationObservers.removeAll()
 	}
@@ -211,21 +173,8 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		timer?.invalidate()
 		timer = nil
 		pinButton.layer.removeAllAnimations()
-		
-		// reverse toolbar modifications, otherwise the toolbar disappears when going into Radar view and back
-		messageTextView.resignFirstResponder()
-		messageTableHeight.isActive = false
 	}
-	
-	// MARK: UITextFieldDelegate methods
-	
-	// Dynamically enables/disables the send button based on user typing
-	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-		let length = (textView.text?.count ?? 0) - range.length + text.count;
-		self.sendMessageButton.isEnabled = length > 0
-		return true
-	}
-	
+
 	// MARK: ProgressDelegate
 	
 	func progressDidPause(_ progress: Progress) {
@@ -235,6 +184,8 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	func progressDidCancel(_ progress: Progress) {
 		if progress === pictureProgressManager?.progress {
 			pictureProgressManager = nil
+		} else if progress === pictureProgressManager?.progress {
+			bioProgressManager = nil
 		}
 	}
 	
@@ -243,13 +194,15 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	}
 	
 	func progressDidUpdate(_ progress: Progress) {
-		if progress === pictureProgressManager?.progress {
-			if progress.completedUnitCount == progress.totalUnitCount {
+		if progress.completedUnitCount == progress.totalUnitCount {
+			if progress === pictureProgressManager?.progress {
 				pictureProgressManager = nil
-				// as we have value semantics, our cached peer info does not change, so we have to get the updated one
-				displayedPeerInfo = peerManager.peerInfo
-				updateState()
+			} else if progress === bioProgressManager?.progress {
+				bioProgressManager = nil
 			}
+			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
+			displayedPeerInfo = peerManager.peerInfo
+			updateState()
 		}
 	}
 
@@ -258,20 +211,16 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 	private func updateState() {
 		guard let peer = displayedPeerInfo, let state = peerManager else { return }
 
-		cachedState.isAvailable = state.isAvailable
-		messageBar.isHidden = !peer.pinMatched || state.isLocalPeer
-		if messageBar.isHidden { messageBar.resignFirstResponder() }
-		pinButton.isHidden = state.pinState == .pinning || peerStackView.axis == .horizontal
+		pinButton.isHidden = state.pinState == .pinning
 		pinButton.isEnabled = !state.isLocalPeer
 		pinButton.isSelected = state.pinState == .pinned
-//		traitsButton.isHidden = state.peerInfoDownloadState != .downloaded
-		pinIndicator.isHidden = state.pinState != .pinning || peerStackView.axis == .horizontal
+		pinIndicator.isHidden = state.pinState != .pinning
 		findButtonItem.isEnabled = peer.pinMatched
-		sendMessageButton.isEnabled = messageTextView.text?.count ?? 0 > 0
 		peerIDLabel.text = peer.peerID.uuidString
-		
+		bioTextView.text = peer.biography
+
 		title = peer.nickname
-		if state.isLocalPeer || cachedState.isAvailable {
+		if state.isLocalPeer || state.isAvailable {
 			navigationItem.titleView = nil
 			navigationItem.title = peer.nickname
 			pinButton.layer.removeAllAnimations()
@@ -285,11 +234,15 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		}
 		
 		ageLabel.text = peer.age.map { (theAge) -> String in "\(theAge)" }
-		ageLabel.isHidden = peer.age == nil
+		ageTagView.isHidden = peer.age == nil
 		genderLabel.text = peer.gender.localizedRawValue
-		verificationStatusLabel.text = state.verificationStatus
-		verificationImage.isHighlighted = state.verified
-		verificationImage.tintColor = state.verified ? UIColor.green : UIColor.red
+		if #available(iOS 13.0, *) {
+			portraitImageView.layer.shadowColor = peer.pinMatched ? AppTheme.tintColor.cgColor : UIColor.systemBackground.cgColor
+		} else {
+			portraitImageView.layer.shadowColor = peer.pinMatched ? AppTheme.tintColor.cgColor : UIColor.black.cgColor
+		}
+		portraitImageView.layer.shadowPath = UIBezierPath(ovalIn: portraitImageView.layer.bounds).cgPath
+		portraitImageView.layer.shadowOpacity = 0.8
 		switch state.pictureClassification {
 			case .none:
 				portraitImageView.image = state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
@@ -314,67 +267,4 @@ final class PersonDetailViewController: UIViewController, ProgressManagerDelegat
 		}, completion: nil)
 		self.timer = nil
 	}
-	
-	private func registerForKeyboardNotifications() {
-		// TODO UIResponder.keyboardDidChangeFrameNotification / keyboardWillChangeFrameNotification
-		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-	}
-	
-	/// Called when the UIKeyboardWillShowNotification is sent.
-	@objc private func keyboardWillShow(notification: Notification) {
-		let animationDuration = notification.userInfo![UIResponder.keyboardAnimationDurationUserInfoKey] as! NSNumber
-		self.layoutMetadata(isHorizontal: true, animationDuration: animationDuration.doubleValue)
-		// move the toolbar frame up as keyboard animates into view
-		self.moveToolBar(up: true, for: notification)
-	}
-	
-	/// Called when the UIKeyboardWillHideNotification is sent
-	@objc private func keyboardWillHide(notification: Notification) {
-		// move the toolbar frame down as keyboard animates into view
-		self.moveToolBar(up: false, for: notification)
-	}
-	
-	// pragma mark - Toolbar animation helpers
-	
-	// Helper method for moving the toolbar frame based on user action
-	private func moveToolBar(up: Bool, for keyboardNotification: Notification) {
-		guard let userInfo = keyboardNotification.userInfo else { return }
-		
-		let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! CGRect
-		let inset: CGFloat
-		if #available(iOS 11.0, *) {
-			inset = view.safeAreaInsets.bottom
-		} else {
-			inset = 0.0
-		}
-
-		messageBottomConstraint.constant = -1.0 + (up ? keyboardFrame.size.height - inset : 0.0)
-		UIView.animateAlongKeyboard(notification: keyboardNotification, animations: {
-			self.view.layoutIfNeeded()
-		}, completion: nil)
-		messageTableHeight.isActive = up
-		if up {
-			chatTableView?.scrollToBottom(animated: true)
-		}
-	}
-	
-	private func layoutMetadata(isHorizontal: Bool, animationDuration: TimeInterval = 0.25) {
-		guard self.peerStackView.axis == (isHorizontal ? .vertical : .horizontal) else { return /* nothing changed */ }
-
-		// the pin button needs to be hidden at the beginning of animation
-		self.pinButton.isHidden = isHorizontal
-		self.pinIndicator.isHidden = true
-		UIView.animate(withDuration: animationDuration, animations: { () -> Void in
-			self.peerStackView.axis = isHorizontal ? .horizontal : .vertical
-			self.propertyStackView.axis = isHorizontal ? .vertical : .horizontal
-			self.propertyStackView.alignment = isHorizontal ? .leading : .center
-			self.chatTableViewContainer.isHidden = !isHorizontal
-			self.peerIDLabel.isHidden = isHorizontal
-		}, completion: nil)
-	}
-}
-
-fileprivate struct PeerState {
-	var isAvailable = false
 }

@@ -17,6 +17,7 @@ protocol RemotePeerManagerDelegate: AnyObject {
 }
 
 protocol RemotePeerDelegate {
+	func loaded(biography: String, of peerID: PeerID)
 	func loaded(picture: CGImage, of peerID: PeerID, hash: Data)
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?)
 	func failedVerification(of peerID: PeerID, error: Error)
@@ -70,7 +71,8 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		func construct(with peerID: PeerID) -> PeerInfo? {
 			guard canConstruct else { return nil }
 			
-			guard let peer = PeerInfo(peerID: peerID, publicKeyData: publicKeyData!, aggregateData: aggregateData!, nicknameData: nicknameData!, lastChangedData: lastChangedData) else { return nil }
+			guard var peer = PeerInfo(peerID: peerID, publicKeyData: publicKeyData!, aggregateData: aggregateData!, nicknameData: nicknameData!) else { return nil }
+			if let data = lastChangedData { peer.lastChangedData = data }
 			
 			do {
 				for (data, signature) in [(peer.idData, peerIDSignatureData), (aggregateData, aggregateSignatureData), (nicknameData, nicknameSignatureData)] {
@@ -95,7 +97,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
 	
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
-	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(AppDelegate.BundleID).cachedPeers")
+	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(BundleID).cachedPeers")
 	private var peerInfoTransmissions = [PeerID : PeerInfoData]()
 	private var remotePeerDelegates = [PeerID : RemotePeerDelegate]()
 	
@@ -107,10 +109,11 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	///	All readable remote peers the app is currently connected to. The keys are updated immediately when a new peripheral shows up, as we have to keep a reference to it. However, the values are not filled until the peripheral tell's us his ID.
 	private var _availablePeripherals = [CBPeripheral : PeerID?]()
 	/// Maps the identifieres of peripherals to the IDs of the peers they represent.
-	private var peripheralPeerIDs = SynchronizedDictionary<PeerID, CBPeripheral>(queueLabel: "\(AppDelegate.BundleID).peripheralPeerIDs")
+	private var peripheralPeerIDs = SynchronizedDictionary<PeerID, CBPeripheral>(queueLabel: "\(BundleID).peripheralPeerIDs")
 	
 	private var nonces = [CBPeripheral : Data]()
 	private var portraitSignatures = [PeerID : Data?]()
+	private var biographySignatures = [PeerID : Data?]()
 	
 	weak var delegate: RemotePeerManagerDelegate?
 	
@@ -480,14 +483,14 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				// and drop the transmission
 				activeTransmissions.removeValue(forKey: transmission)
 			}
-			
+
+			guard let peerID = peerID(of: peripheral), let peer = cachedPeers[peerID] else {
+				NSLog("Loaded \(characteristic.uuid.uuidString) resource characteristic of unknown peripheral \(peripheral).")
+				progress.cancel()
+				return
+			}
 			switch characteristic.uuid {
 			case CBUUID.PortraitCharacteristicID:
-				guard let peerID = peerID(of: peripheral), let peer = cachedPeers[peerID] else {
-					NSLog("Loaded portrait of unknown peripheral \(peripheral).")
-					progress.cancel()
-					return
-				}
 				guard let _signature = portraitSignatures.removeValue(forKey: peerID), let signature = _signature else {
 					NSLog("No signature for loaded portrait provided")
 					progress.cancel()
@@ -508,6 +511,28 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 					break
 				}
 				remotePeerDelegates[peerID]?.loaded(picture: image, of: peerID, hash: data.sha256())
+			case CBUUID.BiographyCharacteristicID:
+				guard let _signature = biographySignatures.removeValue(forKey: peerID), let signature = _signature else {
+					NSLog("ERROR: No signature for loaded portrait provided.")
+					progress.cancel()
+					return
+				}
+				
+				do {
+					try peer.publicKey.verify(message: data, signature: signature)
+				} catch {
+					NSLog("ERROR: Verification for loaded biography failed: \(error.localizedDescription)")
+					progress.cancel()
+					return
+				}
+				
+				guard let biography = String(dataPrefixedEncoding: data) else {
+					NSLog("ERROR: Failed to create biography with data \(data).")
+					progress.cancel()
+					break
+				}
+				cachedPeers[peerID]?.biography = biography
+				remotePeerDelegates[peerID]?.loaded(biography: biography, of: peerID)
 			default:
 				break
 			}
@@ -578,7 +603,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				NSLog("ERROR: Signing Bluetooth remote nonce failed: \(error)")
 			}
 			
-		case CBUUID.PortraitCharacteristicID:
+		case CBUUID.PortraitCharacteristicID, CBUUID.BiographyCharacteristicID:
 			var size: CBCharacteristic.SplitCharacteristicSize = 0
 			withUnsafeMutableBytes(of: &size) { pointer in
 				pointer.copyBytes(from: chunk)
@@ -593,6 +618,9 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		case CBUUID.PortraitSignatureCharacteristicID:
 			guard let peerID = peerID(of: peripheral) else { break }
 			portraitSignatures[peerID] = chunk
+		case CBUUID.BiographySignatureCharacteristicID:
+			guard let peerID = peerID(of: peripheral) else { break }
+			biographySignatures[peerID] = chunk
 		default:
 			guard let peerID = peerID(of: peripheral) else { return }
 			if cachedPeers[peerID] != nil {

@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class MeViewController: PortraitImagePickerController, UITextFieldDelegate {
+final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UITextViewDelegate {
 	@IBOutlet private weak var connectionNoteLabel: UILabel!
 	@IBOutlet private weak var accountButton: UIButton!
 	@IBOutlet private weak var accountIDLabel: UILabel!
@@ -19,8 +19,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	@IBOutlet private weak var genderControl: UISegmentedControl!
 	@IBOutlet private weak var birthdayInput: UITextField!
 	@IBOutlet private weak var scrollView: UIScrollView!
-	
-	private var activeField: UITextField! = nil
+	@IBOutlet private weak var bioTextView: UITextView!
+
+	private var activeField: (view: UIView, inputView: UIView?)? = nil
 	private var connectionStateObserver: NSObjectProtocol? = nil
 	
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
@@ -223,9 +224,28 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
 	
 	func textFieldDidBeginEditing(_ textField: UITextField) {
-		activeField = textField
+		activeField = (textField, textField.inputView)
 	}
-	
+
+	// MARK: UITextViewDelegate
+
+	func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+		textView.text = UserPeerManager.instance.peer.biography
+		if let font = textView.font {
+			let descriptor = font.fontDescriptor
+			if let newDescriptor = descriptor.withSymbolicTraits(descriptor.symbolicTraits.subtracting(UIFontDescriptor.SymbolicTraits.traitItalic)) {
+				textView.font = UIFont(descriptor: newDescriptor, size: 0.0)
+			}
+		}
+		activeField = (textView, textView.inputView)
+		return true
+	}
+
+	func textViewDidEndEditing(_ textView: UITextView) {
+		UserPeerManager.instance.peer.biography = textView.text
+		activeField = nil
+	}
+
 	// MARK: Private Methods
 	
 	override func picked(image: UIImage?) {
@@ -244,6 +264,15 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			birthdayInput.text = nil
 		}
 		picked(image: UserPeerManager.instance.picture)
+		let bio = UserPeerManager.instance.peer.biography
+		if bio != "" {
+			bioTextView.text = bio
+		} else if let font = bioTextView.font {
+			let descriptor = font.fontDescriptor
+			if let newDescriptor = descriptor.withSymbolicTraits(descriptor.symbolicTraits.union(UIFontDescriptor.SymbolicTraits.traitItalic)) {
+				bioTextView.font = UIFont(descriptor: newDescriptor, size: 0.0)
+			}
+		}
 	}
 	
 	private func registerForKeyboardNotifications() {
@@ -253,11 +282,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	
 	/// Called when the UIKeyboardDidShowNotification is sent.
 	@objc private func keyboardWasShown(aNotification: Notification) {
-		guard let info = aNotification.userInfo, let fieldToShow = activeField else { return }
+		guard let info = aNotification.userInfo, let (viewToShow, inputToShow) = activeField else { return }
 		
 		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
 		// TEST with iOS < 11
-		let accessoryHeight = fieldToShow.inputView?.inputAccessoryView?.frame.height ?? 0.0
+		let accessoryHeight = inputToShow?.inputAccessoryView?.frame.height ?? 0.0
 		let inputHeight = (info[UIResponder.keyboardFrameBeginUserInfoKey] as! CGRect).height
 		let keyboardHeight = accessoryHeight + inputHeight
 
@@ -268,8 +297,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		// If active text field is hidden by keyboard, scroll it so it's visible
 		var aRect = self.view.frame
 		aRect.size.height -= keyboardHeight
-		if (!aRect.contains(fieldToShow.frame.origin) ) {
-			scrollView.scrollRectToVisible(fieldToShow.frame, animated: true)
+		if (!aRect.contains(viewToShow.frame.origin) ) {
+			scrollView.scrollRectToVisible(viewToShow.frame, animated: true)
 		}
 	}
 	
@@ -310,9 +339,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	
 	/// do not allow changes to UserPeerManager while peering
 	private func lockView() {
+		let locked = !PeeringController.shared.peering
 		for control: UIControl in [nameTextField, portraitImageButton, genderControl, birthdayInput] {
-			control.isEnabled = !PeeringController.shared.peering
+			control.isEnabled = locked
 		}
-		connectionNoteLabel.isHidden = !PeeringController.shared.peering
+		bioTextView.isEditable = locked
+		connectionNoteLabel.isHidden = locked
 	}
 }

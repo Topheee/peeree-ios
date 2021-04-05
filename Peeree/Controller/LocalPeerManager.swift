@@ -132,14 +132,16 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
 			// value: String.data(prefixedEncoding:)
 			let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-			
+			// value: String.data(prefixedEncoding:)
+			let biographyCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographyCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+
 			// provide signature characteristics
-			
-			var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil
+			var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil, biographySignature: Data? = nil
 			do {
 				peerIDSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.idData)
 				aggregateSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.aggregateData)
 				nicknameSignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.nicknameData)
+				biographySignature = try UserPeerManager.instance.keyPair.sign(message: UserPeerManager.instance.peer.biographyData)
 				if UserPeerManager.instance.peer.hasPicture {
 					let imageData = try Data(contentsOf: UserPeerManager.pictureResourceURL)
 					portraitSignature = try UserPeerManager.instance.keyPair.sign(message: imageData)
@@ -151,9 +153,10 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
 			let aggregateSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateSignatureCharacteristicID, properties: [.read], value: aggregateSignature, permissions: [.readable])
 			let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
-			
+			let biographySignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographySignatureCharacteristicID, properties: [.read], value: biographySignature, permissions: [.readable])
+
 			let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-			peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic]
+			peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
 			peripheral.add(peereeService)
 		@unknown default:
 			// just wait
@@ -174,6 +177,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
 		NSLog("Central read size: \(central.maximumUpdateValueLength)")
 		switch characteristic.uuid {
+		case CBUUID.BiographyCharacteristicID:
+			send(data: UserPeerManager.instance.peer.biographyData, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
 		case CBUUID.PortraitCharacteristicID:
 			do {
 				let data = try Data(contentsOf: UserPeerManager.pictureResourceURL)
