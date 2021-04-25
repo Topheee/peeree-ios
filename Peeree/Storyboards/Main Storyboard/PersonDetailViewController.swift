@@ -9,32 +9,55 @@
 import UIKit
 
 final class PersonDetailViewController: PeerViewController, ProgressManagerDelegate, UITextViewDelegate {
+	@IBOutlet private weak var picturePinStackView: UIStackView!
 	@IBOutlet private weak var portraitImageView: ProgressImageView!
 	@IBOutlet private weak var portraitEffectView: RoundedVisualEffectView!
 	@IBOutlet private weak var ageLabel: UILabel!
 	@IBOutlet private weak var genderLabel: UILabel!
 	@IBOutlet private weak var pinButton: UIButton!
+	@IBOutlet private weak var pinCircleView: CircleView!
 	@IBOutlet private weak var traitsButton: UIButton!
 	@IBOutlet private weak var gradientView: GradientView!
 	@IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
 	@IBOutlet private weak var findButtonItem: UIBarButtonItem!
 	@IBOutlet private weak var peerIDLabel: UILabel!
 	@IBOutlet private weak var bioTextView: UITextView!
+	@IBOutlet private weak var bioHeadingLabel: UILabel!
 	@IBOutlet private weak var reportButton: UIBarButtonItem!
+	@IBOutlet private weak var signatureLabel: UILabel!
 	
+	@IBOutlet private weak var portraitContainer: UIView!
 	@IBOutlet private weak var ageTagView: RoundedRectView!
-	// label constraints
-	@IBOutlet private weak var genderLabelTop: NSLayoutConstraint!
-	@IBOutlet private weak var genderLabelLeading: NSLayoutConstraint!
-	@IBOutlet private weak var ageLabelTrailing: NSLayoutConstraint!
-	@IBOutlet private weak var ageLabelBottom: NSLayoutConstraint!
+	@IBOutlet private weak var genderTagView: RoundedRectView!
+
+	@IBOutlet private weak var pinStackView: UIStackView!
+
+	// outer label constraints - strong reference as we may deactivate them, which would destroy them
+	@IBOutlet private var genderLabelTop: NSLayoutConstraint!
+	@IBOutlet private var genderLabelLeading: NSLayoutConstraint!
+	@IBOutlet private var ageLabelTrailing: NSLayoutConstraint!
+	@IBOutlet private var ageLabelBottom: NSLayoutConstraint!
+
+	// inner label constraints
+	@IBOutlet private weak var ageStackLeading: NSLayoutConstraint!
+	@IBOutlet private weak var ageStackTrailing: NSLayoutConstraint!
+	@IBOutlet private weak var genderStackLeading: NSLayoutConstraint!
+	@IBOutlet private weak var genderStackTrailing: NSLayoutConstraint!
+
+	//pin constraints
+	@IBOutlet private weak var pinToCircleTop: NSLayoutConstraint!
+	@IBOutlet private weak var pinToCircleLeading: NSLayoutConstraint!
+	@IBOutlet private weak var pinToCircleBottom: NSLayoutConstraint!
+	@IBOutlet private weak var pinToCircleTrailing: NSLayoutConstraint!
+
+	@IBOutlet private weak var signatureToBioConstraint: NSLayoutConstraint!
+
+	private var compactLabelStackView: UIStackView? = nil
 
 	private static let unwindSegueID = "unwindToBrowseViewController"
 	static let storyboardID = "PersonDetailViewController"
 	static let beaconSegueID = "beaconSegue"
-	
-	private var timer: Timer?
-	
+
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var pictureProgressManager: ProgressManager?
@@ -76,6 +99,82 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		updateState()
 	}
 
+	@IBAction func tapBiography(_ sender: Any) {
+		let wasCompact = picturePinStackView.axis == .horizontal
+		let oldBackgroundColor = pinCircleView.backgroundColor
+		pinCircleView.backgroundColor = nil
+		pinCircleView.isOpaque = false
+		bioTextView.isHidden = false
+		signatureLabel.isHidden = false
+		peerIDLabel.isHidden = wasCompact
+
+		UIView.animate(withDuration: 0.30, delay: 0.0, options: [.curveEaseInOut]) { [self] in
+			signatureLabel.alpha = wasCompact ? 0.0 : 1.0
+		} completion: { [self] (completed) in
+			signatureLabel.isHidden = wasCompact
+		}
+
+		let mainAnimationDuration = 0.45
+		UIView.animate(withDuration: mainAnimationDuration, delay: 0.0, options: [.curveEaseInOut]) { [self] in
+			picturePinStackView.axis = wasCompact ? .vertical : .horizontal
+			picturePinStackView.alignment = wasCompact ? .center : .fill
+
+			signatureToBioConstraint.constant = wasCompact ? -60.0 : 8.0
+			bioTextView.alpha = wasCompact ? 0.0 : 1.0
+
+			let circleInset: CGFloat = wasCompact ? 5.0 : 26.0
+			let constraintInset = circleInset + 3.0
+			pinToCircleTop.constant = constraintInset
+			pinToCircleLeading.constant = constraintInset
+			pinToCircleTrailing.constant = constraintInset
+			pinToCircleBottom.constant = constraintInset
+			pinCircleView.circleInsets = UIEdgeInsets(top: circleInset, left: circleInset, bottom: circleInset, right: circleInset)
+
+			// substitue pin with tags if pinned and compact
+			let substitutePin = /* pinCircleView.isHidden && */ !wasCompact
+			compactLabelStackView?.removeFromSuperview()
+
+			// tie tag circle to anchored side (TODO make this whole thing leading/trailing aware)
+			if let genderStackView = genderTagView.subviews.first as? UIStackView {
+				if substitutePin {
+					if let label = genderStackView.arrangedSubviews.first as? UILabel {
+						genderStackView.removeArrangedSubview(label)
+						genderStackView.addArrangedSubview(label)
+					}
+				} else if let circle = genderStackView.arrangedSubviews.first as? CircleView {
+					genderStackView.removeArrangedSubview(circle)
+					genderStackView.addArrangedSubview(circle)
+				}
+				genderStackLeading.constant = substitutePin ? 2.0 : 8.0
+				genderStackTrailing.constant = substitutePin ? 8.0 : 2.0
+			}
+			if substitutePin {
+				let tagStackView = UIStackView(arrangedSubviews: [UIView(frame: CGRect.zero), genderTagView, ageTagView, UIView(frame: CGRect.zero)])
+				tagStackView.axis = .vertical
+				tagStackView.alignment = .leading
+				tagStackView.distribution = .equalSpacing
+				tagStackView.spacing = 12.0
+				compactLabelStackView = tagStackView
+				pinStackView.insertArrangedSubview(tagStackView, at: 0)
+			} else {
+				portraitContainer.addSubview(genderTagView)
+				portraitContainer.addSubview(ageTagView)
+			}
+			genderLabelTop.isActive = !substitutePin
+			genderLabelLeading.isActive = !substitutePin
+			ageLabelTrailing.isActive = !substitutePin
+			ageLabelBottom.isActive = !substitutePin
+		} completion: { [self] (_) in
+			pinCircleView.isOpaque = true
+			pinCircleView.backgroundColor = oldBackgroundColor
+			bioTextView.isHidden = wasCompact
+			bioTextView.superview?.setNeedsDisplay()
+			// reset animation because frame size changed
+			animatePinButton()
+			updatePinCircleWidth()
+		}
+	}
+
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		if let beaconVC = segue.destination as? BeaconViewController {
 			beaconVC.peerManager = peerManager
@@ -111,6 +210,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
 			strongSelf.displayedPeerInfo = strongSelf.peerManager.peerInfo ?? strongSelf.displayedPeerInfo
 			strongSelf.updateState()
+			strongSelf.animatePinButton()
 		}
 		
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver(usingBlock: simpleStateUpdate))
@@ -126,19 +226,22 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			self?.gradientView?.animateGradient = true
 		}))
 
+		notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
+			simpleStateUpdate(notification)
+			self?.gradientView?.animateGradient = true
+		}))
+
 		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))
 		
-		UIView.animate(withDuration: 2.0) {
-			// 0.707106781186548 = sin(45°)
-			let r = (self.portraitImageView.bounds.width + 16.0) / 2.0
-			let edgeDistance = r - 0.707106781186548 * r
-			self.genderLabelTop.constant = edgeDistance
-			self.genderLabelLeading.constant = edgeDistance - self.genderLabel.bounds.width / 2.0
-			self.ageLabelBottom?.constant = edgeDistance
-			self.ageLabelTrailing?.constant = edgeDistance - self.ageLabel.bounds.width / 2.0
-		}
+		// 0.707106781186548 = sin(45°)
+		let r = (self.portraitImageView.bounds.width + 16.0) / 2.0
+		let edgeDistance = r - 0.707106781186548 * r
+		self.genderLabelTop.constant = edgeDistance
+		self.genderLabelLeading.constant = edgeDistance - self.genderLabel.bounds.width / 2.0
+		self.ageLabelBottom?.constant = edgeDistance
+		self.ageLabelTrailing?.constant = edgeDistance - self.ageLabel.bounds.width / 2.0
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -151,9 +254,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		bioProgress.map { bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
 		gradientView.animateGradient = peer.pinMatched
 
-		// somehow the animation does not work directly when viewDidAppear is called for the first time, probably because AppDelegate instantiates it via code
-		guard !UIAccessibility.isReduceMotionEnabled && peer.pinned else { return }
-		timer = Timer.scheduledTimer(timeInterval: peer.pinned ? 0.5 : 5.0, target: self, selector: #selector(animatePinButton(timer:)), userInfo: nil, repeats: false)
+		animatePinButton()
+		updatePinCircleWidth()
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -170,9 +272,12 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		portraitImageView.image = nil
 		
 		// reset position from animation, if the user slides back in
-		timer?.invalidate()
-		timer = nil
-		pinButton.layer.removeAllAnimations()
+		clearPinAnimations()
+	}
+
+	func clearPinAnimations() {
+		pinCircleView?.layer.removeAllAnimations()
+		pinButton?.layer.removeAllAnimations()
 	}
 
 	// MARK: ProgressDelegate
@@ -207,10 +312,19 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	// MARK: Private methods
-	
+
 	private func updateState() {
 		guard let peer = displayedPeerInfo, let state = peerManager else { return }
 
+		let headerCompact = picturePinStackView.axis == .horizontal
+		let hideBioContent = !(headerCompact || state.pinState == .pinned)
+
+		updatePinCircleWidth()
+		bioHeadingLabel.isEnabled = peer.biography != ""
+		pinCircleView.isHidden = state.pinState == .pinned
+		bioTextView.isHidden = hideBioContent
+		peerIDLabel.isHidden = hideBioContent
+		signatureLabel.isHidden = hideBioContent
 		pinButton.isHidden = state.pinState == .pinning
 		pinButton.isEnabled = !state.isLocalPeer
 		pinButton.isSelected = state.pinState == .pinned
@@ -223,7 +337,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		if state.isLocalPeer || state.isAvailable {
 			navigationItem.titleView = nil
 			navigationItem.title = peer.nickname
-			pinButton.layer.removeAllAnimations()
 		} else {
 			let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
 			titleLable.text = peer.nickname
@@ -232,17 +345,11 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			titleLable.lineBreakMode = .byTruncatingTail
 			navigationItem.titleView = titleLable
 		}
-		
+
+		signatureLabel.text = peer.nickname
 		ageLabel.text = peer.age.map { (theAge) -> String in "\(theAge)" }
 		ageTagView.isHidden = peer.age == nil
 		genderLabel.text = peer.gender.localizedRawValue
-		if #available(iOS 13.0, *) {
-			portraitImageView.layer.shadowColor = peer.pinMatched ? AppTheme.tintColor.cgColor : UIColor.systemBackground.cgColor
-		} else {
-			portraitImageView.layer.shadowColor = peer.pinMatched ? AppTheme.tintColor.cgColor : UIColor.black.cgColor
-		}
-		portraitImageView.layer.shadowPath = UIBezierPath(ovalIn: portraitImageView.layer.bounds).cgPath
-		portraitImageView.layer.shadowOpacity = 0.8
 		switch state.pictureClassification {
 			case .none:
 				portraitImageView.image = state.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
@@ -258,13 +365,26 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
 		}
 	}
-	
+
+	private func updatePinCircleWidth() {
+		pinCircleView.strokeWidth = pinCircleView.bounds.width * 0.03
+	}
+
 	// TODO merge with WelcomeViewController.animatePinButton()
-	@objc private func animatePinButton(timer: Timer?) {
-		guard let peer = displayedPeerInfo else { return }
-		UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: peer.pinned ? [] : [.autoreverse, .repeat, .allowUserInteraction], animations: {
-			self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -3.0)
-		}, completion: nil)
-		self.timer = nil
+	private func animatePinButton() {
+		clearPinAnimations()
+		guard peerManager.pinState != .pinned else { return }
+
+		if let pinView = pinButton, let circleView = pinCircleView, !UIAccessibility.isReduceMotionEnabled {
+			UIView.animate(withDuration: 1.2, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.autoreverse, .allowUserInteraction, .repeat, .curveEaseInOut]) {
+				// how much the circle is scaled down
+				let scaleFactor: CGFloat = -0.05
+				let circleFrame = circleView.frame
+				pinView.frame = pinView.frame.offsetBy(dx: -circleFrame.width * scaleFactor, dy: 0.0)
+				circleView.frame = circleView.frame.insetBy(dx: circleFrame.width * scaleFactor, dy: circleFrame.height * scaleFactor)
+			} completion: { (completed) in
+				// ignored
+			}
+		}
 	}
 }

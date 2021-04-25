@@ -12,11 +12,19 @@ import CoreGraphics
 // MARK: - Functions
 
 func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
+	#if TESTING
+	PeereeTests.UserDefaultsMock.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	#else
 	UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	#endif
 }
 
 func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
+	#if TESTING
+	guard let data = UserDefaultsMock.standard.object(forKey: forKey) as? Data else { return nil }
+	#else
 	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+	#endif
 	
 	return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
 }

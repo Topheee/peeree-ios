@@ -34,20 +34,32 @@ final class CircleMaskView: UIView {
 final class CircleView: UIView {
 	override func draw(_ rect: CGRect) {
 		let circle = UIBezierPath(ovalIn: rect.inset(by: circleInsets))
-		let context = UIGraphicsGetCurrentContext()
+		guard let context = UIGraphicsGetCurrentContext() else { return }
 		if #available(iOS 13.0, *) {
-			context?.setFillColor(fillColor?.cgColor ?? UIColor.systemBackground.cgColor)
+			context.setFillColor(fillColor?.cgColor ?? UIColor.systemBackground.cgColor)
 		} else {
-			context?.setFillColor(fillColor?.cgColor ?? UIColor.white.cgColor)
+			context.setFillColor(fillColor?.cgColor ?? UIColor.white.cgColor)
 		}
 		circle.fill()
+		if let color = strokeColor {
+			circle.lineWidth = strokeWidth
+			context.setStrokeColor(color.cgColor)
+			circle.stroke()
+		}
 	}
 	
 	@IBInspectable var fillColor: UIColor? {
 		didSet { setNeedsDisplay() }
 	}
+	@IBInspectable var strokeColor: UIColor? {
+		didSet { setNeedsDisplay() }
+	}
 	
 	@IBInspectable var circleRadius: CGFloat = 24.0 {
+		didSet { setNeedsDisplay() }
+	}
+
+	@IBInspectable var strokeWidth: CGFloat = 1.0 {
 		didSet { setNeedsDisplay() }
 	}
 

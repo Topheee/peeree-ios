@@ -101,6 +101,18 @@
 /* Section Footer */
 "dfr-MX-xyY.footerTitle" = "Filter out people who are too young or old, or have no age set.";
 
+/* Class = "UILabel"; accessibilityLabel = "Signature"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.accessibilityLabel" = "Signature";
+
+/* Class = "UILabel"; accessibilityHint = "Name of the person in hand writing like font"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.accessibilityHint" = "Name of the person in hand writing like font";
+
+/* Class = "UILabel"; text = "Signature"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.text" = "Signature";
+
+/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
+"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
+
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Safes your birthday";
 
@@ -212,11 +224,8 @@
 /* Class = "UIButton"; normalTitle = "Create Identity"; ObjectID = "i05-bg-dKb"; */
 "i05-bg-dKb.normalTitle" = "Create Identity";
 
-/* Class = "UINavigationItem"; title = "Me"; ObjectID = "i5d-ig-BH3"; */
-"i5d-ig-BH3.title" = "Me";
-
-/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
-"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
+/* Class = "UINavigationItem"; title = "My Profile"; ObjectID = "i5d-ig-BH3"; */
+"i5d-ig-BH3.title" = "My Profile";
 
 /* Class = "UILabel"; text = "Peer ID"; ObjectID = "i9C-MG-2LW"; */
 "i9C-MG-2LW.text" = "Peer ID";

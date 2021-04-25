@@ -234,14 +234,13 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
-                                <rect key="frame" x="16" y="113.5" width="288" height="54.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Connecting People" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rNF-0l-DWJ">
+                                <rect key="frame" x="16" y="73.5" width="288" height="26.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
-                                <string key="text">This is Peeree, 
-a Social Peer-to-Peer App</string>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Peeree" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TFv-dL-32n">
@@ -253,7 +252,7 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XwS-Db-Ixl">
-                                <rect key="frame" x="16" y="172" width="288" height="27"/>
+                                <rect key="frame" x="16" y="326" width="288" height="27"/>
                                 <accessibility key="accessibilityConfiguration" hint="Read details about P2P" label="Describe Peer-to-Peer">
                                     <accessibilityTraits key="traits" button="YES"/>
                                 </accessibility>
@@ -267,10 +266,10 @@ a Social Peer-to-Peer App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qr9-Ho-2bg">
-                                <rect key="frame" x="16" y="428" width="288" height="44"/>
+                                <rect key="frame" x="16" y="432" width="288" height="40"/>
                                 <accessibility key="accessibilityConfiguration" hint="Display information about personal data usage" label="Privacy Info"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="1Nq-h4-7Ke"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40" id="1Nq-h4-7Ke"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <state key="normal" title="Peeree and Your Data"/>
@@ -279,12 +278,12 @@ a Social Peer-to-Peer App</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="53c-Ja-yW0">
-                                <rect key="frame" x="135" y="260" width="50" height="50"/>
+                                <rect key="frame" x="110" y="210" width="100" height="100"/>
                                 <accessibility key="accessibilityConfiguration" hint="Pin a peer and mark him or her as interesting (sample)" label="Pin">
                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                 </accessibility>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="50" identifier="pinButtonWidth" id="0b9-3r-uf6">
+                                    <constraint firstAttribute="width" constant="100" identifier="pinButtonWidth" id="0b9-3r-uf6">
                                         <variation key="heightClass=regular-widthClass=regular" constant="75"/>
                                     </constraint>
                                     <constraint firstAttribute="width" secondItem="53c-Ja-yW0" secondAttribute="height" multiplier="1:1" identifier="pinButtonAspect" id="1L7-UW-3SU"/>
@@ -297,7 +296,7 @@ a Social Peer-to-Peer App</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use this button to pin people:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fFz-HS-CaO">
-                                <rect key="frame" x="16" y="212.5" width="288" height="19.5"/>
+                                <rect key="frame" x="16" y="178.5" width="288" height="19.5"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
@@ -305,7 +304,7 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This is how we protect your Privacy:" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skT-uK-VEP">
-                                <rect key="frame" x="16" y="404" width="288" height="16"/>
+                                <rect key="frame" x="16" y="408" width="288" height="16"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
@@ -314,7 +313,7 @@ a Social Peer-to-Peer App</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pin people to show your interest." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NTY-bS-98x">
-                                <rect key="frame" x="16" y="232" width="288" height="16"/>
+                                <rect key="frame" x="16" y="161" width="288" height="16"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                 </accessibility>
@@ -327,16 +326,16 @@ a Social Peer-to-Peer App</string>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" identifier="titleTrailing" id="AIF-ce-Tez"/>
-                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" constant="40" identifier="titleToSubTitle" id="Eii-xs-pTo"/>
+                            <constraint firstItem="rNF-0l-DWJ" firstAttribute="top" secondItem="TFv-dL-32n" secondAttribute="bottom" identifier="titleToSubTitle" id="Eii-xs-pTo"/>
                             <constraint firstItem="hua-4t-hNt" firstAttribute="bottom" secondItem="qr9-Ho-2bg" secondAttribute="bottom" constant="8" identifier="privacyButtonBottom" id="Exs-pl-PgT"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="titleLeading" id="JHQ-V2-gUb"/>
                             <constraint firstItem="XwS-Db-Ixl" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" id="LEH-dk-b47"/>
-                            <constraint firstItem="53c-Ja-yW0" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" constant="12" identifier="pinSubLabelToPinButton" id="Lzc-G9-AcD"/>
-                            <constraint firstItem="NTY-bS-98x" firstAttribute="centerY" secondItem="bRA-E3-VRs" secondAttribute="centerY" id="MZf-UA-Uhc"/>
-                            <constraint firstItem="NTY-bS-98x" firstAttribute="top" secondItem="fFz-HS-CaO" secondAttribute="bottom" identifier="pinLabelToPinSublabel" id="MgW-HG-Fs5"/>
                             <constraint firstItem="NTY-bS-98x" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="pinSubLabelLeading" id="OCq-bq-ySI"/>
+                            <constraint firstItem="skT-uK-VEP" firstAttribute="top" relation="greaterThanOrEqual" secondItem="XwS-Db-Ixl" secondAttribute="bottom" constant="8" id="Pdp-lT-Xn4"/>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="pinLabelLeading" id="Pg8-dM-E2i"/>
-                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="rNF-0l-DWJ" secondAttribute="bottom" constant="4" identifier="subtitleToInfoButton" id="Whm-4j-UaB"/>
+                            <constraint firstItem="XwS-Db-Ixl" firstAttribute="top" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="16" id="VaG-Py-CFk"/>
+                            <constraint firstItem="fFz-HS-CaO" firstAttribute="top" secondItem="NTY-bS-98x" secondAttribute="bottom" constant="1.5" id="bha-rb-J7C"/>
+                            <constraint firstItem="53c-Ja-yW0" firstAttribute="centerY" secondItem="hua-4t-hNt" secondAttribute="centerY" constant="20" id="dWi-aa-UnC"/>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="privacyButtonLeading" id="eQf-Q4-VxB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rNF-0l-DWJ" secondAttribute="trailing" identifier="subtitleTrailing" id="fJU-DB-Kod"/>
                             <constraint firstAttribute="trailingMargin" secondItem="NTY-bS-98x" secondAttribute="trailing" identifier="pinSubLabelTrailing" id="ihi-an-ghz"/>
@@ -344,9 +343,8 @@ a Social Peer-to-Peer App</string>
                             <constraint firstItem="fFz-HS-CaO" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" identifier="pinLabelTrailing" id="jOd-fJ-VsJ"/>
                             <constraint firstItem="rNF-0l-DWJ" firstAttribute="leading" secondItem="bRA-E3-VRs" secondAttribute="leadingMargin" identifier="subtitleLeading" id="mE9-QB-jIc"/>
                             <constraint firstItem="TFv-dL-32n" firstAttribute="top" secondItem="hua-4t-hNt" secondAttribute="top" constant="40" identifier="titleTop" id="mQq-Dp-Szr"/>
-                            <constraint firstItem="fFz-HS-CaO" firstAttribute="top" relation="greaterThanOrEqual" secondItem="XwS-Db-Ixl" secondAttribute="bottom" constant="8" symbolic="YES" identifier="infoButtonToPinLabel" id="n98-PA-05M"/>
                             <constraint firstItem="qr9-Ho-2bg" firstAttribute="top" secondItem="skT-uK-VEP" secondAttribute="bottom" constant="8" symbolic="YES" identifier="privacyLabelToPrivacyButton" id="op9-Gr-JL0"/>
-                            <constraint firstItem="skT-uK-VEP" firstAttribute="top" relation="greaterThanOrEqual" secondItem="53c-Ja-yW0" secondAttribute="bottom" constant="8" identifier="pinButtonToPrivacyLabel" id="sxf-wP-9pz"/>
+                            <constraint firstItem="53c-Ja-yW0" firstAttribute="top" secondItem="fFz-HS-CaO" secondAttribute="bottom" constant="12" id="uTU-YV-F7q"/>
                             <constraint firstAttribute="trailingMargin" secondItem="XwS-Db-Ixl" secondAttribute="trailing" id="vha-Ih-v4f"/>
                             <constraint firstItem="skT-uK-VEP" firstAttribute="trailing" secondItem="bRA-E3-VRs" secondAttribute="trailingMargin" identifier="privacyLabelTrailing" id="wWU-Zb-3mw"/>
                             <constraint firstItem="53c-Ja-yW0" firstAttribute="centerX" secondItem="hua-4t-hNt" secondAttribute="centerX" identifier="pinButtonToCenter" id="ymi-3N-siT"/>
@@ -515,8 +513,8 @@ a Social Peer-to-Peer App</string>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
-        <image name="PinButtonTemplate" width="180" height="180"/>
-        <image name="PinButtonTemplatePressed" width="180" height="180"/>
+        <image name="PinButtonTemplate" width="1024" height="1024"/>
+        <image name="PinButtonTemplatePressed" width="1024" height="1024"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>
         <image name="PortraitUnavailable" width="512" height="512"/>
         <image name="ReadIconBenefits" width="30" height="30"/>

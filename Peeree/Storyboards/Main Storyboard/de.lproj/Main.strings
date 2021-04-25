@@ -101,6 +101,18 @@
 /* Section Footer */
 "dfr-MX-xyY.footerTitle" = "Filtere zu junge oder alte Leute, oder Leute mit unbekanntem Alter.";
 
+/* Class = "UILabel"; accessibilityLabel = "Signature"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.accessibilityLabel" = "Unterschrift";
+
+/* Class = "UILabel"; accessibilityHint = "Name of the person in hand writing like font"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.accessibilityHint" = "Name der Person in angedeuteter Handschrift";
+
+/* Class = "UILabel"; text = "Unterschrift"; ObjectID = "eGm-zA-15S"; */
+"eGm-zA-15S.text" = "Unterschrift";
+
+/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
+"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
+
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Speichert deinen Geburtstag";
 
@@ -212,8 +224,8 @@
 /* Class = "UIButton"; normalTitle = "Create Identity"; ObjectID = "i05-bg-dKb"; */
 "i05-bg-dKb.normalTitle" = "Identität erstellen";
 
-/* Class = "UINavigationItem"; title = "Me"; ObjectID = "i5d-ig-BH3"; */
-"i5d-ig-BH3.title" = "Ich";
+/* Class = "UINavigationItem"; title = "My Profile"; ObjectID = "i5d-ig-BH3"; */
+"i5d-ig-BH3.title" = "Mein Profil";
 
 /* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
 "i9C-MG-2LW.accessibilityLabel" = "Einzigartige Peeree Identität";

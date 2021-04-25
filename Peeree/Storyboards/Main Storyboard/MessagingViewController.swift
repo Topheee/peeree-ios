@@ -68,7 +68,15 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		
 		guard let manager = peerManager else { return }
 		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: manager.peerID) { [weak self] _ in
-			self?.peerManager.map { self?.setPortraitButtonImage(manager: $0) }
+			self?.setPortraitButtonImage(manager: manager)
+		})
+
+		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+			self?.portraitImageButton?.isHighlighted = false
+		})
+
+		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+			self?.portraitImageButton?.isHighlighted = true
 		})
 	}
 

@@ -53,10 +53,6 @@ final class WelcomeViewController: UIViewController {
 		pinButton.layer.removeAllAnimations()
 	}
 	
-	override var prefersStatusBarHidden : Bool {
-		return true
-	}
-	
 	@objc func animatePinButton(timer: Timer?) {
 		UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.autoreverse, .repeat, .allowUserInteraction], animations: {
 			self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -3.0)

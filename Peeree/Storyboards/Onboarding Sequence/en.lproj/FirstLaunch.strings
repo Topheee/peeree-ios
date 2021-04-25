@@ -98,8 +98,8 @@
 /* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "qr9-Ho-2bg"; */
 "qr9-Ho-2bg.normalTitle" = "Peeree and Your Data";
 
-/* Class = "UILabel"; text = "This is Peeree, \na Social Peer-to-Peer App"; ObjectID = "rNF-0l-DWJ"; */
-"rNF-0l-DWJ.text" = "This is Peeree, \na Social Peer-to-Peer App";
+/* Class = "UILabel"; text = "Connecting People"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "Connecting People";
 
 /* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
 "skT-uK-VEP.text" = "This is how we protect your Privacy:";
