@@ -27,17 +27,21 @@ class BrowseFilterSettingsTests: XCTestCase {
 		filter.gender = .male
 		filter.onlyWithAge = true
 		filter.onlyWithPicture = true
-		let archiver = NSKeyedArchiver(requiringSecureCoding: true)
-		filter.encode(with: archiver)
-		let data = archiver.encodedData
-		let unarchiver = try NSKeyedUnarchiver(forReadingFrom: data)
-		let decodedFilter = BrowseFilterSettings(coder: unarchiver)
-		XCTAssertNotNil(decodedFilter)
-		XCTAssertEqual(filter.ageMin, decodedFilter!.ageMin)
-		XCTAssertEqual(filter.ageMax, decodedFilter!.ageMax)
-		XCTAssertEqual(filter.gender, decodedFilter!.gender)
-		XCTAssertEqual(filter.onlyWithAge, decodedFilter!.onlyWithAge)
-		XCTAssertEqual(filter.onlyWithPicture, decodedFilter!.onlyWithPicture)
+		if #available(iOS 11.0, *) {
+			let archiver = NSKeyedArchiver(requiringSecureCoding: true)
+			filter.encode(with: archiver)
+			let data = archiver.encodedData
+			let unarchiver = try NSKeyedUnarchiver(forReadingFrom: data)
+			let decodedFilter = BrowseFilterSettings(coder: unarchiver)
+			XCTAssertNotNil(decodedFilter)
+			XCTAssertEqual(filter.ageMin, decodedFilter!.ageMin)
+			XCTAssertEqual(filter.ageMax, decodedFilter!.ageMax)
+			XCTAssertEqual(filter.gender, decodedFilter!.gender)
+			XCTAssertEqual(filter.onlyWithAge, decodedFilter!.onlyWithAge)
+			XCTAssertEqual(filter.onlyWithPicture, decodedFilter!.onlyWithPicture)
+		} else {
+			// Fallback on earlier versions
+		}
 	}
 
 	func testPerformanceExample() throws {

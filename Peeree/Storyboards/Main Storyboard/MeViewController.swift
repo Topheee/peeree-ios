@@ -125,6 +125,12 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		lockView()
 		navigationController?.isToolbarHidden = true
 	}
+
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+
+		bioTextView.resignFirstResponder()
+	}
 	
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()

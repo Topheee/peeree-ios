@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeP-GU-KG9">
     <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
@@ -234,8 +234,8 @@
                                                                                     </userDefinedRuntimeAttributes>
                                                                                 </view>
                                                                                 <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Ta-SF-xsS">
-                                                                                    <rect key="frame" x="16" y="2.5" width="21" height="14.5"/>
-                                                                                    <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                                                    <rect key="frame" x="16" y="3" width="19.5" height="13.5"/>
+                                                                                    <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                                     <accessibility key="accessibilityConfiguration" label="Person Details"/>
                                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                                                     <nil key="textColor"/>
@@ -262,7 +262,7 @@
                                                                             <real key="value" value="-1"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                         <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                                            <color key="value" systemColor="secondarySystemBackgroundColor"/>
+                                                                            <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                     </userDefinedRuntimeAttributes>
                                                                 </view>
@@ -299,8 +299,8 @@
                                                                                     </userDefinedRuntimeAttributes>
                                                                                 </view>
                                                                                 <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="gender" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Um-0U-pgr">
-                                                                                    <rect key="frame" x="16" y="2.5" width="40" height="14.5"/>
-                                                                                    <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                                                    <rect key="frame" x="16" y="3" width="37.5" height="13.5"/>
+                                                                                    <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                                     <accessibility key="accessibilityConfiguration" label="Person Details"/>
                                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                                                     <nil key="textColor"/>
@@ -327,7 +327,7 @@
                                                                             <real key="value" value="-1"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                         <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                                            <color key="value" systemColor="secondarySystemBackgroundColor"/>
+                                                                            <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         </userDefinedRuntimeAttribute>
                                                                     </userDefinedRuntimeAttributes>
                                                                 </view>
@@ -454,8 +454,8 @@
                                                         <rect key="frame" x="8" y="0.0" width="86.5" height="28"/>
                                                         <subviews>
                                                             <label userInteractionEnabled="NO" contentMode="left" text="gender" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nS3-bX-bM2">
-                                                                <rect key="frame" x="0.0" y="2" width="62.5" height="24"/>
-                                                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                                <rect key="frame" x="0.0" y="4" width="54.5" height="20.5"/>
+                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <color key="tintColor" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <accessibility key="accessibilityConfiguration" label="Person Details"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
@@ -499,7 +499,7 @@
                                                         <real key="value" value="-1"/>
                                                     </userDefinedRuntimeAttribute>
                                                     <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                        <color key="value" systemColor="secondarySystemBackgroundColor"/>
+                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
@@ -533,8 +533,8 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jRR-HL-OFn">
-                                                                <rect key="frame" x="24" y="2" width="32.5" height="24"/>
-                                                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                                                <rect key="frame" x="24" y="4" width="28.5" height="20.5"/>
+                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <accessibility key="accessibilityConfiguration" label="Age"/>
                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                                                 <nil key="textColor"/>
@@ -559,7 +559,7 @@
                                                         <real key="value" value="-1"/>
                                                     </userDefinedRuntimeAttribute>
                                                     <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                        <color key="value" systemColor="secondarySystemBackgroundColor"/>
+                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
@@ -729,7 +729,7 @@
                                         <rect key="frame" x="20" y="-16" width="280" height="31.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="BradleyHandITCTT-Bold" family="Bradley Hand" pointSize="25"/>
-                                        <color key="textColor" red="0.08235294118" green="0.086274509799999996" blue="0.57254901960000004" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="textColor" red="0.08235294118" green="0.086274509799999996" blue="0.58829430820179629" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
@@ -747,7 +747,7 @@
                                     <constraint firstAttribute="trailing" secondItem="UYZ-np-Imj" secondAttribute="trailing" constant="20" symbolic="YES" id="Abu-NM-VAr"/>
                                     <constraint firstItem="DUz-ZH-MqE" firstAttribute="top" secondItem="cqN-Sb-ZzT" secondAttribute="top" constant="10" id="F60-Pj-s3t"/>
                                     <constraint firstItem="UYZ-np-Imj" firstAttribute="leading" secondItem="cqN-Sb-ZzT" secondAttribute="leading" constant="20" symbolic="YES" id="FcK-x2-Ouk"/>
-                                    <constraint firstItem="eGm-zA-15S" firstAttribute="top" secondItem="UYZ-np-Imj" secondAttribute="bottom" constant="-60" id="NHL-Rh-auq"/>
+                                    <constraint firstItem="eGm-zA-15S" firstAttribute="top" secondItem="UYZ-np-Imj" secondAttribute="bottom" constant="-50" id="NHL-Rh-auq"/>
                                     <constraint firstItem="i9C-MG-2LW" firstAttribute="leading" secondItem="cqN-Sb-ZzT" secondAttribute="leading" constant="20" symbolic="YES" id="RM3-uk-CDh"/>
                                     <constraint firstItem="eGm-zA-15S" firstAttribute="leading" secondItem="UYZ-np-Imj" secondAttribute="leading" id="Vcg-4E-4eP"/>
                                     <constraint firstItem="UYZ-np-Imj" firstAttribute="top" secondItem="DUz-ZH-MqE" secondAttribute="bottom" constant="8" id="dVv-6A-IY1"/>

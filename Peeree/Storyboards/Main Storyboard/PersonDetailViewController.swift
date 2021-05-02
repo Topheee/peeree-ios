@@ -102,16 +102,18 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	@IBAction func tapBiography(_ sender: Any) {
 		let wasCompact = picturePinStackView.axis == .horizontal
 		let oldBackgroundColor = pinCircleView.backgroundColor
+		let hideBioContent = hideBioContent(for: wasCompact ? .vertical : .horizontal)
 		pinCircleView.backgroundColor = nil
 		pinCircleView.isOpaque = false
 		bioTextView.isHidden = false
 		signatureLabel.isHidden = false
-		peerIDLabel.isHidden = wasCompact
+		peerIDLabel.isHidden = hideBioContent
+		pinStackView.isHidden = pinButton.isSelected && wasCompact
 
 		UIView.animate(withDuration: 0.30, delay: 0.0, options: [.curveEaseInOut]) { [self] in
-			signatureLabel.alpha = wasCompact ? 0.0 : 1.0
+			signatureLabel.alpha = hideBioContent ? 0.0 : 1.0
 		} completion: { [self] (completed) in
-			signatureLabel.isHidden = wasCompact
+			signatureLabel.isHidden = hideBioContent
 		}
 
 		let mainAnimationDuration = 0.45
@@ -119,8 +121,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			picturePinStackView.axis = wasCompact ? .vertical : .horizontal
 			picturePinStackView.alignment = wasCompact ? .center : .fill
 
-			signatureToBioConstraint.constant = wasCompact ? -60.0 : 8.0
-			bioTextView.alpha = wasCompact ? 0.0 : 1.0
+			signatureToBioConstraint.constant = wasCompact ? -50.0 : 8.0
+			bioTextView.alpha = hideBioContent ? 0.0 : 1.0
 
 			let circleInset: CGFloat = wasCompact ? 5.0 : 26.0
 			let constraintInset = circleInset + 3.0
@@ -130,13 +132,11 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			pinToCircleBottom.constant = constraintInset
 			pinCircleView.circleInsets = UIEdgeInsets(top: circleInset, left: circleInset, bottom: circleInset, right: circleInset)
 
-			// substitue pin with tags if pinned and compact
-			let substitutePin = /* pinCircleView.isHidden && */ !wasCompact
 			compactLabelStackView?.removeFromSuperview()
 
 			// tie tag circle to anchored side (TODO make this whole thing leading/trailing aware)
 			if let genderStackView = genderTagView.subviews.first as? UIStackView {
-				if substitutePin {
+				if !wasCompact {
 					if let label = genderStackView.arrangedSubviews.first as? UILabel {
 						genderStackView.removeArrangedSubview(label)
 						genderStackView.addArrangedSubview(label)
@@ -145,10 +145,10 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 					genderStackView.removeArrangedSubview(circle)
 					genderStackView.addArrangedSubview(circle)
 				}
-				genderStackLeading.constant = substitutePin ? 2.0 : 8.0
-				genderStackTrailing.constant = substitutePin ? 8.0 : 2.0
+				genderStackLeading.constant = wasCompact ? 8.0 : 2.0
+				genderStackTrailing.constant = wasCompact ? 2.0 : 8.0
 			}
-			if substitutePin {
+			if !wasCompact {
 				let tagStackView = UIStackView(arrangedSubviews: [UIView(frame: CGRect.zero), genderTagView, ageTagView, UIView(frame: CGRect.zero)])
 				tagStackView.axis = .vertical
 				tagStackView.alignment = .leading
@@ -160,14 +160,14 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 				portraitContainer.addSubview(genderTagView)
 				portraitContainer.addSubview(ageTagView)
 			}
-			genderLabelTop.isActive = !substitutePin
-			genderLabelLeading.isActive = !substitutePin
-			ageLabelTrailing.isActive = !substitutePin
-			ageLabelBottom.isActive = !substitutePin
+			genderLabelTop.isActive = wasCompact
+			genderLabelLeading.isActive = wasCompact
+			ageLabelTrailing.isActive = wasCompact
+			ageLabelBottom.isActive = wasCompact
 		} completion: { [self] (_) in
 			pinCircleView.isOpaque = true
 			pinCircleView.backgroundColor = oldBackgroundColor
-			bioTextView.isHidden = wasCompact
+			bioTextView.isHidden = hideBioContent
 			bioTextView.superview?.setNeedsDisplay()
 			// reset animation because frame size changed
 			animatePinButton()
@@ -313,18 +313,26 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 	// MARK: Private methods
 
-	private func updateState() {
-		guard let peer = displayedPeerInfo, let state = peerManager else { return }
-
+	private func hideOrShowPinRelatedViews() {
 		let headerCompact = picturePinStackView.axis == .horizontal
-		let hideBioContent = !(headerCompact || state.pinState == .pinned)
+		// we use pinButton.isSelected instead of peerManager.pinState here, so that we do not depend on the peerManager
+		let pinned = pinButton.isSelected
+		let hideBioContent = hideBioContent(for: picturePinStackView.axis)
 
-		updatePinCircleWidth()
-		bioHeadingLabel.isEnabled = peer.biography != ""
-		pinCircleView.isHidden = state.pinState == .pinned
+		pinStackView.isHidden = pinned && !headerCompact
 		bioTextView.isHidden = hideBioContent
 		peerIDLabel.isHidden = hideBioContent
 		signatureLabel.isHidden = hideBioContent
+	}
+
+	private func hideBioContent(for axis: NSLayoutConstraint.Axis) -> Bool {
+		return !(axis == .horizontal || pinButton.isSelected)
+	}
+
+	private func updateState() {
+		guard let peer = displayedPeerInfo, let state = peerManager else { return }
+
+		updatePinCircleWidth()
 		pinButton.isHidden = state.pinState == .pinning
 		pinButton.isEnabled = !state.isLocalPeer
 		pinButton.isSelected = state.pinState == .pinned
@@ -332,6 +340,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		findButtonItem.isEnabled = peer.pinMatched
 		peerIDLabel.text = peer.peerID.uuidString
 		bioTextView.text = peer.biography
+		hideOrShowPinRelatedViews()
 
 		title = peer.nickname
 		if state.isLocalPeer || state.isAvailable {

@@ -44,7 +44,7 @@ final class BrowseViewController: UITableViewController {
 	
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
 		guard AccountController.shared.accountExists else {
-			InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Peeree Identity Needed", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("You need a unique Peeree identity to participate.", comment: "The user lacks a Peeree account")) {
+			InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap to create your Peeree identity.", comment: "The user lacks a Peeree account")) {
 				self.performSegue(withIdentifier: BrowseViewController.PresentMeSegueID, sender: self)
 			}
 			return
