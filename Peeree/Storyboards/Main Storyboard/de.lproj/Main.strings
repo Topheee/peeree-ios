@@ -110,9 +110,6 @@
 /* Class = "UILabel"; text = "Unterschrift"; ObjectID = "eGm-zA-15S"; */
 "eGm-zA-15S.text" = "Unterschrift";
 
-/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
-"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
-
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Speichert deinen Geburtstag";
 
@@ -310,6 +307,9 @@
 
 /* Class = "UISwitch"; accessibilityLabel = "Age available filter"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityLabel" = "Altersangabe-Filter";
+
+/* Class = "UITextView"; accessibilityLabel = "Biography"; ObjectID = "UYZ-np-Imj"; */
+"UYZ-np-Imj.accessibilityLabel" = "Steckbrief";
 
 /* Section Footer */
 "VhZ-Ja-vhb.footerTitle" = "Filtere Leute ohne Portrait.";

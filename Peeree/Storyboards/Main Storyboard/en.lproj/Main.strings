@@ -308,6 +308,9 @@
 /* Class = "UISwitch"; accessibilityLabel = "Age available filter"; ObjectID = "txc-3f-6Q0"; */
 "txc-3f-6Q0.accessibilityLabel" = "Age available filter";
 
+/* Class = "UITextView"; accessibilityLabel = "Biography"; ObjectID = "UYZ-np-Imj"; */
+"UYZ-np-Imj.accessibilityLabel" = "Biography";
+
 /* Section Footer */
 "VhZ-Ja-vhb.footerTitle" = "Filter out people without a portrait.";
 
