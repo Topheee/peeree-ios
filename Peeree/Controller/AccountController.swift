@@ -48,13 +48,11 @@ public class AccountController: SecurityDataSource {
 		}
 		case pinned, pinningStarted, pinFailed, pinMatch
 		case pinStateUpdated, unpinned, unpinFailed
-		case accountCreated
+		case accountCreated, accountDeleted
 		case peerReported
 		
 		func post(_ peerID: PeerID) {
-			DispatchQueue.main.async {
-				NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: AccountController.shared, userInfo: [UserInfo.peerID.rawValue : peerID])
-			}
+			postAsNotification(object: AccountController.shared, userInfo: [UserInfo.peerID.rawValue : peerID])
 		}
 	}
 	
@@ -207,10 +205,10 @@ public class AccountController: SecurityDataSource {
 				let str = jpgData[jpgData.startIndex...jpgData.startIndex.advanced(by: 20)].hexString()
 				NSLog("INFO: sending \(str)")
 			} else {
-				jpgData = try portrait.jpgData()
+				jpgData = try portrait.jpgData(compressionQuality: AccountController.UploadCompressionQuality)
 			}
 			#else
-			jpgData = try portrait.jpgData()
+			jpgData = try portrait.jpgData(compressionQuality: AccountController.UploadCompressionQuality)
 			#endif
 		} catch let error {
 			errorCallback(error)
@@ -385,10 +383,18 @@ public class AccountController: SecurityDataSource {
 		guard !_isDeletingAccount else { return }
 		_isDeletingAccount = true
 		PeeringController.shared.peering = false
-		AccountAPI.deleteAccount { (_, _error)  in
+		AccountAPI.deleteAccount { (_, _error) in
+			var reportedError = _error
 			if let error = _error {
-				self.preprocessAuthenticatedRequestError(error)
-			} else {
+				switch error {
+				case .httpError(403, let messageData):
+					NSLog("ERROR: Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
+					reportedError = nil
+				default:
+					self.preprocessAuthenticatedRequestError(error)
+				}
+			}
+			if reportedError == nil {
 				PeeringController.shared.peering = false
 				self._accountEmail = nil
 				self._sequenceNumber = nil
@@ -396,9 +402,10 @@ public class AccountController: SecurityDataSource {
 				DispatchQueue.main.sync {
 					UserPeerManager.delete()
 				}
+				Notifications.accountDeleted.postAsNotification(object: self)
 			}
 			self._isDeletingAccount = false
-			completion(_error)
+			completion(reportedError)
 		}
 	}
 	
@@ -440,6 +447,8 @@ public class AccountController: SecurityDataSource {
 	// MARK: Private Functions
 	
 	private init() {
+		// TODO PERFORMANCE (startup time): read from UserDefs and decode on background queue
+		// TODO move big objects out of UserDefaults into file system (see PinMatchesController)
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
 		pinnedByPeers = SynchronizedSet(queueLabel: "\(BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
 		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
@@ -450,6 +459,7 @@ public class AccountController: SecurityDataSource {
 		pendingObjectionableImageHashes = nsPendingObjectionableImageHashes as? Dictionary<Data,Date> ?? Dictionary<Data,Date>()
 		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
 		_accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
+		// TODO move sequence number into keychain
 		_sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
 		SwaggerClientAPI.dataSource = self
 	}
@@ -488,4 +498,9 @@ public class AccountController: SecurityDataSource {
 		_sequenceNumber = _sequenceNumber!.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
 		return try UserPeerManager.instance.keyPair.sign(message: sequenceNumberData).base64EncodedString()
 	}
+}
+
+extension PeerInfo {
+	public var pinMatched: Bool { AccountController.shared.hasPinMatch(peerID) }
+	public var pinned: Bool { AccountController.shared.isPinned(self) }
 }

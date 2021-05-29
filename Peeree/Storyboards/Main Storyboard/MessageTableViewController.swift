@@ -19,23 +19,26 @@ class MessageTableViewController: UITableViewController {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
-		notificationObservers.append(PeerManager.Notifications.messageReceived.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+		guard let peerID = peerManager?.peerID else {
+			return
+		}
+		notificationObservers.append(PeerManager.Notifications.messageReceived.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.peerManager.unreadMessages = 0
 			self?.appendTranscript()
 		})
 		
-		notificationObservers.append(PeerManager.Notifications.messageSent.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+		notificationObservers.append(PeerManager.Notifications.messageSent.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.appendTranscript()
 		})
 
-		notificationObservers.append(PeerManager.Notifications.messageQueued.addPeerObserver(for: peerManager.peerID) { [weak self] _ in
+		notificationObservers.append(PeerManager.Notifications.messageQueued.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.appendTranscript()
 		})
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		peerManager.unreadMessages = 0
+		peerManager?.unreadMessages = 0
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {

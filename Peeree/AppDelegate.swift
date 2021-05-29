@@ -31,7 +31,10 @@ struct VisualTheme {
 let AppTheme = VisualTheme()
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate {
+	static let BrowseTabBarIndex = 0
+	static let PinMatchesTabBarIndex = 1
+	static let MeTabBarIndex = 2
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
 	private let notificationManager = NotificationManager()
@@ -107,6 +110,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
 			PeeringController.shared.peering = true
 		}
+
+		PeeringController.shared.delegate = self
 		
 		return true
 	}
@@ -173,8 +178,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func show(peerID: PeerID) {
-		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
-		
+		guard let tabBarVC = window?.rootViewController as? UITabBarController,
+			  let browseNavVC = tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController else { return }
+
 		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
 		
 		var browseVC: BrowseViewController? = nil
@@ -189,24 +195,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func displayMessageViewController(for peerID: PeerID) {
-		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
+		guard let tabBarVC = window?.rootViewController as? UITabBarController,
+			  let pinMatchNavVC = tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController else { return }
 
-		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+		pinMatchNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
 
-		var browseVC: BrowseViewController? = nil
-		for vc in browseNavVC.viewControllers {
-			if vc is BrowseViewController {
-				browseVC = vc as? BrowseViewController
+		var pinMatchVC: PinMatchTableViewController? = nil
+		for vc in pinMatchNavVC.viewControllers {
+			if vc is PinMatchTableViewController {
+				pinMatchVC = vc as? PinMatchTableViewController
 			} else if let messageVC = vc as? MessagingViewController {
 				guard messageVC.peerManager.peerID != peerID else { return }
 			}
 		}
-		browseVC?.performSegue(withIdentifier: BrowseViewController.MessagePeerSegueID, sender: peerID)
+		guard let pinMatchesTableVC = pinMatchVC else { return }
+		tabBarVC.selectedIndex = AppDelegate.PinMatchesTabBarIndex
+		pinMatchesTableVC.performSegue(withIdentifier: PinMatchTableViewController.MessagePeerSegueID, sender: peerID)
 	}
 
 	func find(peer: PeerInfo) {
-		guard let browseNavVC = window?.rootViewController as? UINavigationController else { return }
-		
+		guard let tabBarVC = window?.rootViewController as? UITabBarController,
+			  let browseNavVC = tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController else { return }
+
 		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
 		
 		var _browseVC: BrowseViewController? = nil
@@ -269,6 +279,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	
 	func sequenceNumberResetFailed(error: ErrorResponse) {
 		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
+	}
+
+	// MARK: PeeringControllerDelegate
+
+	func serverChatLoginFailed(with error: Error) {
+		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
+	}
+
+	func serverChatLogoutFailed(with error: Error) {
+		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Logout from Server Chat Failed", comment: "Error message title"))
 	}
 	
 	// MARK: Private Methods

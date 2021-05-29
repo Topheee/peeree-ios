@@ -11,6 +11,8 @@ import CoreBluetooth
 import CoreLocation
 
 final class BeaconViewController: PeerViewController {
+	static private let waveColor: CGColor = AppTheme.tintColor.cgColor
+	static private let valleyColor = AppTheme.backgroundColor.cgColor
 	static let storyboardID = "BeaconViewController"
 
 	@IBOutlet private weak var remotePortrait: UIImageView!
@@ -18,41 +20,21 @@ final class BeaconViewController: PeerViewController {
 	@IBOutlet private weak var userPortrait: UIImageView!
 	
 	private var notificationObservers: [NSObjectProtocol] = []
+	private let gradient = CAGradientLayer()
 	
 	private var currentDistance = PeerDistance.unknown
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
-		let waveColor: CGColor = AppTheme.tintColor.cgColor
-		let valleyColor = AppTheme.backgroundColor.cgColor
-		
-		let gradient = CAGradientLayer()
+
 		gradient.frame = view.frame
 		gradient.bounds = view.bounds
 		gradient.type = CAGradientLayerType.radial
 		gradient.startPoint = CGPoint(x: 0.5, y: 1.0)
 		gradient.endPoint = CGPoint(x: 1 + 1/CGFloat.pi, y: -1/CGFloat.pi)
 		
-		gradient.colors = [waveColor, valleyColor, waveColor]
+		gradient.colors = [BeaconViewController.waveColor, BeaconViewController.valleyColor, BeaconViewController.waveColor]
 		gradient.locations = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.5), NSNumber(floatLiteral: 1.0)]
-		
-		if !UIAccessibility.isReduceMotionEnabled {
-			let locationAnimation = CABasicAnimation(keyPath: "locations")
-			locationAnimation.fromValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.1), NSNumber(floatLiteral: 0.7)]
-			locationAnimation.toValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.7), NSNumber(floatLiteral: 1.0)]
-			locationAnimation.duration = 3.0
-			locationAnimation.repeatCount = Float.greatestFiniteMagnitude
-			
-			let colorsAnimation = CABasicAnimation(keyPath: "colors")
-			colorsAnimation.fromValue = [valleyColor, waveColor, valleyColor]
-			colorsAnimation.toValue = [waveColor, valleyColor, valleyColor]
-			colorsAnimation.duration = 3.0
-			colorsAnimation.repeatCount = Float.greatestFiniteMagnitude
-			
-			gradient.add(locationAnimation, forKey: "locations")
-			gradient.add(colorsAnimation, forKey: "colors")
-		}
 		
 		view.layer.insertSublayer(gradient, at: 0)
 	}
@@ -86,6 +68,23 @@ final class BeaconViewController: PeerViewController {
 		
 		_ = CircleMaskView(maskedView: userPortrait)
 		_ = CircleMaskView(maskedView: remotePortrait)
+
+		if !UIAccessibility.isReduceMotionEnabled {
+			let locationAnimation = CABasicAnimation(keyPath: "locations")
+			locationAnimation.fromValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.1), NSNumber(floatLiteral: 0.7)]
+			locationAnimation.toValue = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.7), NSNumber(floatLiteral: 1.0)]
+			locationAnimation.duration = 3.0
+			locationAnimation.repeatCount = Float.greatestFiniteMagnitude
+
+			let colorsAnimation = CABasicAnimation(keyPath: "colors")
+			colorsAnimation.fromValue = [BeaconViewController.valleyColor, BeaconViewController.waveColor, BeaconViewController.valleyColor]
+			colorsAnimation.toValue = [BeaconViewController.waveColor, BeaconViewController.valleyColor, BeaconViewController.valleyColor]
+			colorsAnimation.duration = 3.0
+			colorsAnimation.repeatCount = Float.greatestFiniteMagnitude
+
+			gradient.add(locationAnimation, forKey: "locations")
+			gradient.add(colorsAnimation, forKey: "colors")
+		}
 	}
 	
 	override func viewWillDisappear(_ animated: Bool) {
@@ -124,13 +123,6 @@ final class BeaconViewController: PeerViewController {
 		}, completion: nil)
 		
 		stopBeacon()
-		
-//		let titleLable = UILabel(frame: CGRect(x:0, y:0, width: 200, height: 45))
-//		titleLable.text = self.searchedPeer?.nickname
-//		titleLable.textColor = UIColor(white: 0.5, alpha: 1.0)
-//		titleLable.textAlignment = .center
-//		titleLable.lineBreakMode = .byTruncatingTail
-//		self.navigationItem.titleView = titleLable
 	}
 	
 	private func showPeerAvailable() {
@@ -139,9 +131,6 @@ final class BeaconViewController: PeerViewController {
 		}, completion: nil)
 		
 		startBeacon()
-		
-//		self.navigationItem.titleView = nil
-//		self.navigationItem.title = self.searchedPeer?.nickname
 	}
 	
 	private func startBeacon() {

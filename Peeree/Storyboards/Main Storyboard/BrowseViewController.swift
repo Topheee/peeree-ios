@@ -11,19 +11,16 @@ import UIKit
 final class BrowseViewController: UITableViewController {
 	@IBOutlet private weak var networkButton: UIButton!
 
-	private static let PresentMeSegueID = "presentMeViewController"
 	private static let PeerDisplayCellID = "peerDisplayCell"
-	private static let MatchedPeerCellID = "matchedPeerCell"
 	private static let OfflineModeCellID = "placeholderCell"
 	private static let AddAnimation = UITableView.RowAnimation.automatic
 	private static let DelAnimation = UITableView.RowAnimation.automatic
 	
 	enum PeersSection: Int {
-		case matched = 0, inFilter, recentlySeen, outFilter
+		case inFilter = 0, recentlySeen, outFilter
 	}
 	
 	static let ViewPeerSegueID = "ViewPeerSegue"
-	static let MessagePeerSegueID = "MessagePeerSegue"
 	
 	static var instance: BrowseViewController?
 	
@@ -45,7 +42,7 @@ final class BrowseViewController: UITableViewController {
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
 		guard AccountController.shared.accountExists else {
 			InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap to create your Peeree identity.", comment: "The user lacks a Peeree account")) {
-				self.performSegue(withIdentifier: BrowseViewController.PresentMeSegueID, sender: self)
+				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
 			}
 			return
 		}
@@ -86,16 +83,14 @@ final class BrowseViewController: UITableViewController {
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
 			self?.connectionChangedState(PeeringController.shared.peering)
 		})
-		notificationObservers.append(PeerManager.Notifications.unreadMessageCountChanged.addPeerObserver { [weak self] peerID, _  in
-			self?.messageReceivedOrRead(from: peerID)
-		})
-		
-		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] (peerID, _) in self?.pinMatchOccurred(peerID: peerID) })
-		notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-		notificationObservers.append(PeerManager.Notifications.verified.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-		notificationObservers.append(PeerManager.Notifications.verificationFailed.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
-		
+
+		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
+		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.pinned.addPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeerManager.Notifications.verified.addPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeerManager.Notifications.verificationFailed.addPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(usingBlock: reloadBlock))
+
 		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
 			guard let strongSelf = self else { return }
 			
@@ -184,14 +179,8 @@ final class BrowseViewController: UITableViewController {
 			return cell
 		}
 
-		let cell: UITableViewCell
-		if indexPath.section == PeersSection.matched.rawValue {
-			cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.MatchedPeerCellID)!
-			fill(cell: cell, peer: peerCache[indexPath.section][indexPath.row], manager: managerCache[indexPath.section][indexPath.row])
-		} else {
-			cell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
-			(cell as? PeerTableViewCell)?.fill(with: managerCache[indexPath.section][indexPath.row])
-		}
+		let cell: UITableViewCell = tableView.dequeueReusableCell(withIdentifier: BrowseViewController.PeerDisplayCellID)!
+		(cell as? PeerTableViewCell)?.fill(with: managerCache[indexPath.section][indexPath.row])
 		return cell
 	}
 	
@@ -200,8 +189,6 @@ final class BrowseViewController: UITableViewController {
 		guard let peerSection = PeersSection(rawValue: section) else { return super.tableView(tableView, titleForHeaderInSection: section) }
 		
 		switch peerSection {
-		case .matched:
-			return NSLocalizedString("Pin Matches", comment: "Header of table view section in browse view, which contains entries for pin matched peers.")
 		case .inFilter:
 			return NSLocalizedString("People Around", comment: "Header of table view section in browse view, which contains entries for peers currently available on the network (so they are hear around).")
 		case .recentlySeen:
@@ -306,8 +293,6 @@ final class BrowseViewController: UITableViewController {
 		let section: PeersSection
 		if !manager.isAvailable {
 			section = .recentlySeen
-		} else if peer.pinMatched {
-			section = .matched
 		} else if BrowseFilterSettings.shared.check(peer: peer) {
 			section = .inFilter
 		} else {
@@ -381,14 +366,6 @@ final class BrowseViewController: UITableViewController {
 		}
 	}
 	
-	private func messageReceivedOrRead(from peerID: PeerID) {
-		guard let peerPath = indexPath(of: peerID) else {
-			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
-			return
-		}
-		tableView.reloadRows(at: [peerPath], with: .automatic)
-	}
-	
 	private func connectionChangedState(_ nowOnline: Bool) {
 		tableView.reloadData()
 		if nowOnline {
@@ -413,41 +390,6 @@ final class BrowseViewController: UITableViewController {
 		peerCache[indexPath.section][indexPath.row] = peer
 		tableView.reloadRows(at: [indexPath], with: .automatic)
 	}
-	
-	private func pinMatchOccurred(peerID: PeerID) {
-		let manager = PeeringController.shared.manager(for: peerID)
-		guard let peer = manager.peerInfo else { return }
-		guard peerCache[PeersSection.matched.rawValue].firstIndex(of: peer) == nil else {
-			// this can happen if a peer was unpinned and then immediately pinned again in person view, which does not update the browse view
-			return
-		}
-		
-		var _row: Int? = nil
-		var _sec: Int? = nil
-		var wasOne = false
-		
-		for section in [PeersSection.outFilter.rawValue, PeersSection.inFilter.rawValue] {
-			if let idx = peerCache[section].firstIndex(of: peer) {
-				peerCache[section].remove(at: idx)
-				managerCache[section].remove(at: idx)
-				wasOne = peerCache[section].count == 0
-				_row = idx
-				_sec = section
-				break
-			}
-		}
-		
-		guard let row = _row else { return }
-		
-		let oldPath = IndexPath(row: row, section: _sec!)
-		let newPath = IndexPath(row: 0, section: addToCache(peer: peer, manager: manager))
-		tableView.moveRow(at: oldPath, to: newPath)
-		tableView.scrollToRow(at: newPath, at: .none, animated: true)
-		tableView.reloadRows(at: [newPath], with: .automatic)
-		if wasOne {
-			tableView.reloadSections(IndexSet(integer: _sec!), with: .automatic)
-		}
-	}
 }
 
 final class OfflineTableViewCell: UITableViewCell {
@@ -455,9 +397,7 @@ final class OfflineTableViewCell: UITableViewCell {
 	@IBOutlet private weak var subheadLabel: UILabel!
 	@IBOutlet private weak var vibrancyEffectView: UIVisualEffectView!
 	@IBOutlet private weak var blurEffectView: UIVisualEffectView!
-	
-	private var navigationBarTimer: Timer?
-	
+
 	enum Mode { case offline, alone }
 	
 	func setContent(mode: Mode) {

@@ -644,7 +644,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				if peerData.canConstruct {
 					peerInfoTransmissions.removeValue(forKey: peerID)
 					if let peer = peerData.construct(with: peerID) {
-						cachedPeers[peerID] = peer /* LocalPeerInfo(peer: peer) */
+						cachedPeers[peerID] = peer
 						peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
 						peerAppeared(peerID, peripheral: peripheral, again: false)
 					} else {
@@ -782,14 +782,12 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 	private func writeNonce(to peripheral: CBPeripheral, with peerID: PeerID, characteristic: CBCharacteristic) {
 		let writeType = CBCharacteristicWriteType.withResponse
 		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerManager.instance.keyPair.blockSize)
-		var nonce = Data(count: randomByteCount)
-		let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })
-		if status == 0 {
+		do {
+			let nonce = try generateRandomData(length: randomByteCount)
 			nonces[peripheral] = nonce
 			peripheral.writeValue(nonce, for: characteristic, type: writeType)
-		} else {
-			perror(nil)
-			remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: NSError(domain: "Peeree", code: Int(status), userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Generating random Bluetooth nonce failed.", comment: "Error message during verification")]))
+		} catch let error {
+			remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: error)
 		}
 	}
 }

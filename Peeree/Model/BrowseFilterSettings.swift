@@ -12,7 +12,7 @@ import Foundation
  *  This class encapsulates all values with which the remote peers are filtered before they are presented to the user.
  *  Except for the Singleton it is NOT thread-safe, and as there is currently only one writing entity there is no need to implement this.ssss
  */
-final class BrowseFilterSettings: NSObject, NSSecureCoding {
+public final class BrowseFilterSettings: NSObject, NSSecureCoding {
 	private static let PrefKey = "peeree-prefs-browse-filter"
 	
 	private static let AgeMinKey = "ageMin"
@@ -28,12 +28,12 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		static var sharedInstance: BrowseFilterSettings!
 	}
 	
-	static var shared: BrowseFilterSettings {
+	public static var shared: BrowseFilterSettings {
 		_ = BrowseFilterSettings.__once
 		return Singleton.sharedInstance
 	}
 	
-	static var supportsSecureCoding : Bool {
+	public static var supportsSecureCoding : Bool {
 		return true
 	}
 	
@@ -45,23 +45,23 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		}
 	}
 	
-	enum GenderType: Int {
+	public enum GenderType: Int {
 		case unspecified = 0, male, female, queer
 	}
 	
 	/// range from 10..100
-	var ageMin: Float = 10.0
+	public var ageMin: Float = 10.0
 	/// range from 10..100 or 0, where 0 means ∞
-	var ageMax: Float = 0.0
+	public var ageMax: Float = 0.0
 	
-	var gender: GenderType = .unspecified
+	public var gender: GenderType = .unspecified
 	
-	var onlyWithAge: Bool = false
-	var onlyWithPicture: Bool = false
+	public var onlyWithAge: Bool = false
+	public var onlyWithPicture: Bool = false
 	
 	private override init() {}
 	
-	@objc required init?(coder aDecoder: NSCoder) {
+	@objc required public init?(coder aDecoder: NSCoder) {
 		gender = GenderType(rawValue: aDecoder.decodeInteger(forKey: BrowseFilterSettings.GenderKey))!
 		ageMin = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMinKey)
 		ageMax = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMaxKey)
@@ -69,7 +69,7 @@ final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		onlyWithPicture = aDecoder.decodeBool(forKey: BrowseFilterSettings.OnlyWithPictureKey)
 	}
 	
-	@objc func encode(with aCoder: NSCoder) {
+	@objc public func encode(with aCoder: NSCoder) {
 		aCoder.encode(ageMin, forKey: BrowseFilterSettings.AgeMinKey)
 		aCoder.encode(ageMax, forKey: BrowseFilterSettings.AgeMaxKey)
 		aCoder.encode(gender.rawValue, forKey: BrowseFilterSettings.GenderKey)

@@ -13,6 +13,11 @@ public protocol RemotePeering {
 	var isBluetoothOn: Bool { get }
 }
 
+public protocol PeeringControllerDelegate {
+	func serverChatLoginFailed(with error: Error)
+	func serverChatLogoutFailed(with error: Error)
+}
+
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about pinned peers.
 public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate {
 	public static let shared = PeeringController()
@@ -44,6 +49,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private var peerManagers = SynchronizedDictionary<PeerID, PeerManager>(queueLabel: "com.peeree.peerManagers")
 	
 	public let remote: RemotePeering
+
+	public var delegate: PeeringControllerDelegate? = nil
 	
 	public var peering: Bool {
 		get {
@@ -71,6 +78,24 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				return manager
 			}
 			return _manager
+		}
+	}
+
+	public func managers(for peerIDs: [PeerID], completion: @escaping ([PeerManager]) -> Void) -> Void {
+		return peerManagers.accessAsync { (managers) in
+			let userPeerManager = UserPeerManager.instance
+			let userPeerID = userPeerManager.peerID
+
+			completion(peerIDs.map { peerID in
+				guard peerID != userPeerID else { return userPeerManager }
+
+				guard let _manager = managers[peerID] else {
+					let manager = PeerManager(peerID: peerID)
+					managers[peerID] = manager
+					return manager
+				}
+				return _manager
+			})
 		}
 	}
 	
@@ -115,5 +140,23 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	
 	private func connectionChangedState() {
 		Notifications.connectionChangedState.postAsNotification(object: nil)
+		if peering {
+			ServerChatController.getOrSetupInstance { result in
+				switch result {
+				case .failure(let error):
+					self.delegate?.serverChatLoginFailed(with: error)
+				case .success(_):
+					break
+				}
+			}
+		} else {
+			ServerChatController.withInstance { _instance in
+				_instance?.logout(completion: { _error in
+					if let error = _error {
+						self.delegate?.serverChatLogoutFailed(with: error)
+					}
+				})
+			}
+		}
 	}
 }

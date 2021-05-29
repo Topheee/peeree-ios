@@ -29,9 +29,16 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		}
 	}
 	
+
+	private var pictureResourceURL: URL {
+		// Create a file path to our documents directory
+		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+		return URL(fileURLWithPath: paths[0]).appendingPathComponent("\(peerID.uuidString).jpeg", isDirectory: false)
+	}
+
 	public let peerID: PeerID
-	private var remotePeerManager: RemotePeerManager { return PeeringController.shared._remote }
-	private var localPeerManager: LocalPeerManager { return PeeringController.shared._local }
+	private let remotePeerManager = PeeringController.shared._remote
+	private let localPeerManager = PeeringController.shared._local
 	
 	init(peerID: PeerID) {
 		self.peerID = peerID
@@ -40,8 +47,8 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	private var rangeBlock: ((PeerID, PeerDistance) -> Void)? = nil
 	
 	private var receivedUnverifiedPinMatchIndication: Bool = false
-	
-	/// thread-safety: write-synced (only writes are assured to be on the same thread
+
+	/// thread-safety: write-synced (only writes are guaranteed to be on the same thread)
 	private(set) var verified = false
 	
 	public var pictureClassification: AccountController.ContentClassification = .none
@@ -95,7 +102,20 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public func stopRanging() {
 		rangeBlock = nil
 	}
-	
+
+	public func loadLocalPicture(completion: @escaping (_ loaded: Bool) -> Void) {
+		DispatchQueue.global(qos: .background).async {
+			if let provider = CGDataProvider(url: self.pictureResourceURL as CFURL),
+			   let decodedPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent),
+			   let data = provider.data as Data? {
+				self.loaded(picture: decodedPicture, of: self.peerID, hash: data.sha256())
+				completion(true)
+			} else {
+				completion(false)
+			}
+		}
+	}
+
 	public func loadPicture() -> Progress? {
 		guard let peer = peerInfo, peer.hasPicture && cgPicture == nil else { return nil }
 		return remotePeerManager.loadResource(of: peerID, characteristicID: CBUUID.PortraitCharacteristicID, signatureCharacteristicID: CBUUID.PortraitSignatureCharacteristicID)
@@ -112,6 +132,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 
 	public func indicatePinMatch() {
 		guard peerInfo?.pinMatched ?? false else { return }
+		savePicture()
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
 			// TODO handle failure
 			if let error = _error { NSLog("ERROR: indicating pin match failed: \(error)"); return }
@@ -160,10 +181,27 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 
 	/// calls <code>completion</code> on main thread always
 	public func send(message: String, completion: @escaping (Error?) -> Void) {
-		DispatchQueue.main.async {
-			self.pendingMessages.append((message, completion))
-			Notifications.messageQueued.post(self.peerID)
-			self.dequeueMessage()
+		ServerChatController.withInstance { _serverChatController in
+			// we are now on the main queue
+			if self.isAvailable || _serverChatController == nil {
+				// always prefer sending via Bluetooth
+				self.pendingMessages.append((message, completion))
+				Notifications.messageQueued.post(self.peerID)
+				self.dequeueMessage()
+			} else if let serverChatController = _serverChatController {
+				serverChatController.send(message: message, to: self.peerID) { result in
+					switch result {
+					case .success(_):
+						DispatchQueue.main.async {
+							self.transcripts.append(Transcript(direction: .send, message: message))
+							Notifications.messageSent.post(self.peerID)
+							completion(nil)
+						}
+					case .failure(let error):
+						completion(error)
+					}
+				}
+			}
 		}
 	}
 
@@ -186,12 +224,43 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 		}
 	}
+
+	// call only from main thread!
+	private func savePicture() {
+		guard let picture = cgPicture else { return }
+
+		DispatchQueue.global(qos: .background).async {
+			// TODO use compression quality from original image
+			do {
+				try picture.save(to: self.pictureResourceURL, compressionQuality: 1.0)
+			} catch let error {
+				NSLog("ERROR: Saving portrait failed: \(error.localizedDescription)")
+			}
+		}
+	}
+
+	private func deletePicture() {
+		DispatchQueue.global(qos: .background).async {
+			let fileManager = FileManager.default
+			if fileManager.fileExists(atPath: self.pictureResourceURL.path) {
+				do {
+					try fileManager.removeItem(at: self.pictureResourceURL)
+				} catch let error {
+					NSLog("ERROR: Couldn't delete portrait: \(error.localizedDescription)")
+				}
+			}
+		}
+	}
 	
 	func loaded(picture: CGImage, of peerID: PeerID, hash: Data) {
-		cgPicture = picture
-		pictureHash = hash
+		// TODO PERFORMANCE: we save here again even if its the same image
 		AccountController.shared.containsObjectionableContent(imageHash: hash) { containsObjectionableContent in
+			self.cgPicture = picture
+			self.pictureHash = hash
 			self.pictureClassification = containsObjectionableContent
+			if AccountController.shared.hasPinMatch(peerID) {
+				self.savePicture()
+			}
 			Notifications.pictureLoaded.post(peerID)
 		}
 	}

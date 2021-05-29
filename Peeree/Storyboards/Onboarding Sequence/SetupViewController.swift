@@ -45,7 +45,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 		launchAppButton.layer.removeAllAnimations()
 		launchAppButton.transform = CGAffineTransform.identity
 		if termsSwitch.isOn && nameTextField.text != nil && nameTextField.text != "" {
-			UIView.animate(withDuration: 1.0, delay: 0.8, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
+			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 				self.launchAppButton.alpha = 1.0
 			}, completion: { finished in
 				guard !UIAccessibility.isReduceMotionEnabled else { return }
@@ -54,7 +54,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 				}, completion: nil)
 			})
 		} else {
-			UIView.animate(withDuration: 1.0, delay: 0.8, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
+			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
 				self.launchAppButton.alpha = 0.0
 			}, completion: nil)
 		}

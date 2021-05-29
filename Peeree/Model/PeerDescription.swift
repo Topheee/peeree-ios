@@ -182,7 +182,7 @@ private func encodeIt(_ aCoder: NSCoder, characteristicID: CBUUID, data: Data) {
 	return aCoder.encode(data as NSData, forKey: characteristicID.uuidString)
 }
 
-public struct PeerInfo: Equatable {
+public struct PeerInfo: Codable, Equatable {
 	public static let MinAge = 18, MaxAge = 80
 	/// postgres can store strings up to this length very efficiently
 	public static let MaxEmailSize = 126
@@ -190,8 +190,8 @@ public struct PeerInfo: Equatable {
 	public static let MaxNicknameSize = 184
 	public static let KeyType = kSecAttrKeyTypeEC
 	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
-	
-	public enum Gender: String, CaseIterable {
+
+	public enum Gender: String, CaseIterable, Codable {
 		case male, female, queer
 		
 		/*
@@ -233,8 +233,7 @@ public struct PeerInfo: Equatable {
 	
 	public var gender = Gender.queer
 	public var age: Int? = nil
-	
-	public var characterTraits: [CharacterTrait] = CharacterTrait.standardTraits
+
 	/**
 	 *	Version information with the same format as Apple's dylib version format. This is used to test the compatibility of two Peeree apps exchanging data via bluetooth.
 	 */
@@ -243,14 +242,6 @@ public struct PeerInfo: Equatable {
 	public var lastChanged = Date.distantPast
 	
 	public var hasPicture: Bool = false
-	
-	public var pinMatched: Bool {
-		return AccountController.shared.hasPinMatch(peerID)
-	}
-	
-	public var pinned: Bool {
-		return AccountController.shared.isPinned(self)
-	}
 
 	var aggregateData: Data {
 		get {
@@ -358,7 +349,7 @@ public struct PeerInfo: Equatable {
 		return PeerInfo(peerID: to, publicKey: publicKey, nickname: nickname, gender: gender, age: age, hasPicture: hasPicture)
 	}
 	
-	init(peerID: PeerID, publicKey: AsymmetricPublicKey, nickname: String, gender: PeerInfo.Gender, age: Int?, hasPicture: Bool) {
+	public init(peerID: PeerID, publicKey: AsymmetricPublicKey, nickname: String, gender: PeerInfo.Gender, age: Int?, hasPicture: Bool) {
 		self.peerID = peerID
 		self.publicKey = publicKey
 		self.nickname = nickname
@@ -424,6 +415,11 @@ func ==(lhs: PeerInfo, rhs: PeerID) -> Bool {
 
 func ==(lhs: PeerID, rhs: PeerInfo) -> Bool {
 	return lhs == rhs.peerID
+}
+
+extension PeerInfo: Hashable {
+	public var hashValue: Int { return peerID.hashValue }
+	public func hash(into hasher: inout Hasher) { peerID.hash(into: &hasher) }
 }
 
 public struct Transcript {

@@ -210,7 +210,12 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
 			title = String(format: titleFormat, peer.nickname)
 		}
-		let messagesNotVisible = ((AppDelegate.shared.window?.rootViewController as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerManager.peerID != peerID
+		var messagesNotVisible = true
+		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
+			if tabBarVC.selectedIndex == AppDelegate.PinMatchesTabBarIndex {
+				messagesNotVisible = ((tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerManager.peerID != peerID
+			}
+		}
 		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: messagesNotVisible)
 	}
 
@@ -221,7 +226,12 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			_ = PeeringController.shared.manager(for: peerID).loadResources()
 		}
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-		let notBrowsing = ((AppDelegate.shared.window?.rootViewController as? UINavigationController)?.visibleViewController as? BrowseViewController) == nil
+		var notBrowsing = true
+		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
+			if tabBarVC.selectedIndex == AppDelegate.BrowseTabBarIndex {
+				notBrowsing = (tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController)?.visibleViewController as? BrowseViewController == nil
+			}
+		}
 		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, category: peer.pinMatched ? .none : .peerAppeared, displayInApp: notBrowsing)
 	}
 
@@ -234,14 +244,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		if AppDelegate.shared.isActive {
 			let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
 			pinMatchVC.peerManager = manager
-			DispatchQueue.main.async {
-				if let presentingVC = AppDelegate.shared.window?.rootViewController?.presentedViewController {
-					// if Me screen is currently presented
-					presentingVC.present(pinMatchVC, animated: true, completion: nil)
-				} else {
-					AppDelegate.shared.window?.rootViewController?.present(pinMatchVC, animated: true, completion: nil)
-				}
-			}
+			pinMatchVC.presentInFrontMostViewController(true, completion: nil)
 		} else {
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")

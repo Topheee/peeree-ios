@@ -178,9 +178,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		if let beaconVC = segue.destination as? BeaconViewController {
 			beaconVC.peerManager = peerManager
-		} else if let charTraitVC = segue.destination as? CharacterTraitViewController {
-			charTraitVC.characterTraits = displayedPeerInfo?.characterTraits
-			charTraitVC.userTraits = false
 		}
 	}
 	

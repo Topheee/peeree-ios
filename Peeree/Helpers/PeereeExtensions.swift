@@ -9,8 +9,6 @@
 import Foundation
 import CoreBluetooth
 import CoreGraphics
-import ImageIO
-import CoreServices
 
 let BundleID = Bundle.main.bundleIdentifier ?? "de.peeree"
 
@@ -109,34 +107,4 @@ extension CBUUID {
 
 	static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, BiographyCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, RemoteAuthenticationCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID, BiographySignatureCharacteristicID, MessageCharacteristicID, ConnectBackCharacteristicID]
 	static let SplitCharacteristicIDs = [PortraitCharacteristicID, BiographyCharacteristicID]
-}
-
-extension CGImage {
-	func jpgData() throws -> Data {
-		let jpgDataBuffer = NSMutableData()
-		
-		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, kUTTypeJPEG, 1, nil) else {
-			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data destination", code: -502)
-		}
-		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(0.3)] as CFDictionary)
-		
-		if let src  = CGImageSourceCreateWithURL(UserPeerManager.pictureResourceURL as CFURL, nil) {
-			if let properties = CGImageSourceCopyProperties(src, nil) {
-				NSLog("INFO: obtained properties \(properties)")
-				CGImageDestinationSetProperties(dest, properties)
-			} else {
-				NSLog("WARN: could not create source properties")
-			}
-			CGImageDestinationAddImageFromSource(dest, src, 0, nil)
-		} else {
-			NSLog("WARN: could not create source")
-			CGImageDestinationAddImage(dest, self, nil)
-		}
-		
-		guard CGImageDestinationFinalize(dest) else {
-			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -503)
-		}
-		
-		return jpgDataBuffer as Data
-	}
 }

@@ -243,14 +243,13 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				return
 			}
 			let randomByteCount = min(request.central.maximumUpdateValueLength, UserPeerManager.instance.keyPair.blockSize)
-			var nonce = Data(count: randomByteCount)
-			let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, randomByteCount, $0) })
-			if status == errSecSuccess {
+			do {
+				let nonce = try generateRandomData(length: randomByteCount)
 				remoteNonces[peerID] = nonce
 				request.value = nonce
 				peripheral.respond(to: request, withResult: .success)
-			} else {
-				NSLog("ERROR: Generating random Bluetooth nonce failed.")
+			} catch let error {
+				NSLog("ERROR: Generating random Bluetooth nonce failed: \(error.localizedDescription).")
 				peripheral.respond(to: request, withResult: .unlikelyError)
 			}
 		} else {

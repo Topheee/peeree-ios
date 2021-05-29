@@ -111,9 +111,13 @@ public class KeychainStore {
 	
 }
 
-public class AsymmetricKey {
+public class AsymmetricKey: Codable {
 	fileprivate static let signaturePadding: SecPadding = [], encryptionPadding: SecPadding = [] // .PKCS1SHA256
-	
+
+	enum CodingKeys: String, CodingKey {
+		case key, keyClass, type, size
+	}
+
 	fileprivate let key: SecKey
 	public let keyClass: CFString, type: CFString, size: Int
 	
@@ -142,10 +146,7 @@ public class AsymmetricKey {
 		}
 	}
 	
-	fileprivate init(from data: Data, type: CFString, size: Int, keyClass: CFString) throws {
-		self.type = type
-		self.size = size
-		self.keyClass = keyClass
+	fileprivate convenience init(from data: Data, type: CFString, size: Int, keyClass: CFString) throws {
 		if #available(macOS 10.12.1, iOS 10.0, *) {
 			let attributes: [String : Any] = [
 				kSecAttrKeyType as String:			type,
@@ -155,8 +156,8 @@ public class AsymmetricKey {
 			guard let key = SecKeyCreateWithData(data as CFData, attributes as CFDictionary, &error) else {
 				throw error!.takeRetainedValue()
 			}
-			
-			self.key = key
+
+			self.init(key: key, type: type, keyClass: keyClass, size: size)
 		} else {
 			let temporaryLabel = "de.kobusch.tempkey"
 			let tag = temporaryLabel.data(using: .utf8)!
@@ -184,8 +185,8 @@ public class AsymmetricKey {
 										   kSecReturnRef as String: NSNumber(value: true)]
 			var item: CFTypeRef?
 			try SecKey.check(status: SecItemAdd(addquery as CFDictionary, &item), localizedError: NSLocalizedString("Adding key data to keychain failed.", comment: "Writing raw key data to the keychain produced an error."))
-			
-			self.key = item as! SecKey
+
+			self.init(key: item as! SecKey, type: type, keyClass: keyClass, size: size)
 		}
 	}
 	
@@ -195,18 +196,38 @@ public class AsymmetricKey {
 		self.key = key
 		self.keyClass = keyClass
 	}
+
+	required public convenience init(from decoder: Decoder) throws {
+		let values = try decoder.container(keyedBy: CodingKeys.self)
+		try self.init(from: try values.decode(Data.self, forKey: .key),
+					  type: try values.decode(String.self, forKey: .type) as CFString,
+					  size: try values.decode(Int.self, forKey: .size),
+					  keyClass: try values.decode(String.self, forKey: .keyClass) as CFString)
+	}
+
+	public func encode(to encoder: Encoder) throws {
+		var container = encoder.container(keyedBy: CodingKeys.self)
+		try container.encode(externalRepresentation(), forKey: .key)
+		try container.encode(type as String, forKey: .type)
+		try container.encode(size, forKey: .size)
+		try container.encode(keyClass as String, forKey: .keyClass)
+	}
 }
 
 public class AsymmetricPublicKey: AsymmetricKey {
-	
-	public init(from data: Data, type: CFString, size: Int) throws {
-		try super.init(from: data, type: type, size: size, keyClass: kSecAttrKeyClassPublic)
+	private override init(key: SecKey, type: CFString, keyClass: CFString, size: Int) {
+		// we need to override (all) the superclasses designated initializers to inherit its convenience initializers (and thus the Codable initializer we want)
+		super.init(key: key, type: type, keyClass: kSecAttrKeyClassPublic, size: size)
+	}
+
+	public convenience init(from data: Data, type: CFString, size: Int) throws {
+		try self.init(from: data, type: type, size: size, keyClass: kSecAttrKeyClassPublic)
 	}
 	
 	fileprivate init(key: SecKey, type: CFString, size: Int) {
 		super.init(key: key, type: type, keyClass: kSecAttrKeyClassPublic, size: size)
 	}
-	
+
 	public func verify(message data: Data, signature: Data) throws {
 		if #available(macOS 10.12.1, iOS 10.0, *) {
 			let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
@@ -282,14 +303,19 @@ public class AsymmetricPublicKey: AsymmetricKey {
 }
 
 public class AsymmetricPrivateKey: AsymmetricKey {
-	public init(from data: Data, type: CFString, size: Int) throws {
-		try super.init(from: data, type: type, size: size, keyClass: kSecAttrKeyClassPrivate)
-	}
-	
-	fileprivate init(key: SecKey, type: CFString, size: Int) {
+	private override init(key: SecKey, type: CFString, keyClass: CFString, size: Int) {
+		// we need to override (all) the superclasses designated initializers to inherit its convenience initializers (and thus the Codable initializer we want)
 		super.init(key: key, type: type, keyClass: kSecAttrKeyClassPrivate, size: size)
 	}
-	
+
+	public convenience init(from data: Data, type: CFString, size: Int) throws {
+		try self.init(from: data, type: type, size: size, keyClass: kSecAttrKeyClassPrivate)
+	}
+
+	fileprivate init(key: SecKey, type: CFString, size: Int) {
+		super.init(key: key, type: type, keyClass: kSecAttrKeyClassPublic, size: size)
+	}
+
 	public func sign(message data: Data) throws -> Data {
 		if #available(macOS 10.12.1, iOS 10.0, *) {
 			let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
@@ -362,19 +388,10 @@ public class AsymmetricPrivateKey: AsymmetricKey {
 extension SecKey {
 	static func check(status: OSStatus, localizedError: String) throws {
 		guard status != errSecSuccess else { return }
-		
-		let msg: String
-		#if os(OSX)
-			msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
-		#else
-			if #available(iOS 11.3, *) {
-				msg = "\(localizedError) - \(SecCopyErrorMessageString(status, nil) ?? "" as CFString)"
-			} else {
-				msg = localizedError
-			}
-		#endif
+
+		let msg = errorMessage(for: status)
 		NSLog("INFO: OSStatus \(status) check failed: \(msg)")
-		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : msg])
+		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
 	}
 }
 

@@ -31,11 +31,29 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	@IBAction func changePicture(_ sender: AnyObject) {
 		showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Button caption for removing the users portrait image"))
 	}
+
+	private func deleteServerChatAccount() {
+		ServerChatController.getOrSetupInstance(onlyLogin: true) { result in
+			switch result {
+			case .success(let serverChatController):
+				serverChatController.deleteAccount { _error in
+					if let error = _error {
+						AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
+						try? ServerChatController.removePasswordFromKeychain()
+					}
+				}
+			case .failure(let error):
+				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
+				NSLog("ERROR: Couldn't delete server chat account, this will probably lead to a zombie account on the server! Reason: \(error.localizedDescription)")
+			}
+		}
+	}
 	
 	@IBAction func createDeleteAccount(_ sender: Any) {
 		if AccountController.shared.accountExists {
 			let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
 			alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
+				self.deleteServerChatAccount()
 				AccountController.shared.deleteAccount { (_ _error: Error?) in
 					self.restCompletion(_error) {
 						self.loadUserPeerInfo()
@@ -75,9 +93,13 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	@IBAction func browsePeereeURL(_ sender: Any) {
 		UIApplication.shared.openURL(URL(string: wwwHomeURL)!)
 	}
-	
+
 	@IBAction func browsePrivacyPolicyURL(_ sender: Any) {
 		UIApplication.shared.openURL(URL(string: wwwPrivacyPolicyURL)!)
+	}
+
+	@IBAction func deleteServerChatAccount(_ sender: Any) {
+		deleteServerChatAccount()
 	}
 	
 	private func fillBirthdayInput(with date: Date) {
@@ -104,9 +126,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		super.prepare(for: segue, sender: sender)
 		if let personDetailVC = segue.destination as? PersonDetailViewController {
 			personDetailVC.peerManager = UserPeerManager.instance
-		} else if let charTraitVC = segue.destination as? CharacterTraitViewController {
-			charTraitVC.characterTraits = UserPeerManager.instance.peer.characterTraits
-			charTraitVC.userTraits = true
 		}
 	}
 	

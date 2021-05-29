@@ -9,7 +9,7 @@
 import Foundation
 
 class UserDefaultsMock {
-	static let `default` = UserDefaultsMock()
+	static let standard = UserDefaultsMock()
 
 	private var values = [String : Any]()
 

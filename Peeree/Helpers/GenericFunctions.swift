@@ -40,6 +40,31 @@ func createApplicationError(localizedDescription: String, code: Int = -1) -> Err
 	return NSError(domain: "Peeree", code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
 }
 
+func errorMessage(for status: OSStatus) -> String {
+	let fallbackMessage = "OSStatus \(status)"
+	let msg: String
+	#if os(OSX)
+		msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
+	#else
+		if #available(iOS 11.3, *) {
+			msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
+		} else {
+			perror(nil)
+			msg = fallbackMessage
+		}
+	#endif
+	return msg
+}
+
+func generateRandomData(length: Int) throws -> Data {
+	var nonce = Data(count: length)
+	let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, length, $0) })
+	if status == errSecSuccess {
+		return nonce
+	} else {
+		throw createApplicationError(localizedDescription: errorMessage(for: status), code: Int(status))
+	}
+}
 
 //"Swift 2" - not working
 ///// Objective-C __bridge cast
@@ -195,9 +220,7 @@ extension Data {
 			self.append(num)
 		}
 	}
-}
 
-extension Data {
 	struct EmptyError: Error {}
 	/**
 	replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
@@ -256,5 +279,45 @@ extension CGColor {
 			invertedComponents[index] = 1.0 - invertedComponents[index]
 		}
 		return CGColor(colorSpace: colorSpace!, components: invertedComponents)
+	}
+}
+
+
+import ImageIO
+import CoreServices
+extension CGImage {
+	static func from(url: URL) throws -> CGImage? {
+		guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data source", code: -502)
+		}
+		return CGImageSourceCreateImageAtIndex(src, 0, nil)
+	}
+
+	func jpgData(compressionQuality: CGFloat) throws -> Data {
+		let jpgDataBuffer = NSMutableData()
+
+		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, kUTTypeJPEG, 1, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data destination", code: -503)
+		}
+		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)
+		CGImageDestinationAddImage(dest, self, nil)
+
+		guard CGImageDestinationFinalize(dest) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -504)
+		}
+
+		return jpgDataBuffer as Data
+	}
+
+	func save(to url: URL, compressionQuality: CGFloat) throws {
+		guard let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeJPEG, 1, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG URL destination", code: -503)
+		}
+		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)
+		CGImageDestinationAddImage(dest, self, nil)
+
+		guard CGImageDestinationFinalize(dest) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -504)
+		}
 	}
 }

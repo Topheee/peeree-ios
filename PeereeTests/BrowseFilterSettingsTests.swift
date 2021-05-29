@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Peeree
 
 class BrowseFilterSettingsTests: XCTestCase {
 

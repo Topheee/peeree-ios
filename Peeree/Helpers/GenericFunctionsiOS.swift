@@ -51,11 +51,11 @@ extension UIImage {
 
 extension UIViewController {
 	func presentInFrontMostViewController(_ animated: Bool, completion: (() -> Void)?) {
-		guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else { return }
-		
+		guard let rootVC = UIApplication.shared.windows.first?.rootViewController else { return }
+
 		var vc = rootVC
-		while vc.presentedViewController != nil {
-			vc = vc.presentedViewController!
+		while let presentedVC = vc.presentedViewController {
+			vc = presentedVC
 		}
 		DispatchQueue.main.async {
 			vc.present(self, animated: animated, completion: completion)
