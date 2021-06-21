@@ -24,7 +24,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 
 	// Action method when user presses "send"
 	@IBAction func sendMessageTapped(sender: Any) {
-		guard let message = messageTextView.text, message != "" else { return }
+		guard let message = messageTextView.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), message != "" else { return }
 
 		self.messageTextView.text = ""
 
@@ -53,7 +53,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		guard let manager = peerManager, let peerInfo = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == manager.peerID }) else { return }
+		guard let manager = peerManager, let peerInfo = PinMatchesController.shared.peerInfo(for: manager.peerID) else { return }
 		setPortraitButtonImage(manager: manager)
 		navigationItem.prompt = peerInfo.nickname
 	}
@@ -69,14 +69,6 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		guard let manager = peerManager else { return }
 		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: manager.peerID) { [weak self] _ in
 			self?.setPortraitButtonImage(manager: manager)
-		})
-
-		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver(for: manager.peerID) { [weak self] _ in
-			self?.portraitImageButton?.isHighlighted = false
-		})
-
-		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver(for: manager.peerID) { [weak self] _ in
-			self?.portraitImageButton?.isHighlighted = true
 		})
 	}
 

@@ -187,7 +187,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			}
 		} else {
 			if AppDelegate.shared.isActive && displayInApp {
-				InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { AppDelegate.shared.show(peerID: peerID) }
+				InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { AppDelegate.shared.showOrMessage(peerID: peerID) }
 			} else {
 				let note = UILocalNotification()
 				note.alertTitle = title

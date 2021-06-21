@@ -98,10 +98,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		UIApplication.shared.openURL(URL(string: wwwPrivacyPolicyURL)!)
 	}
 
-	@IBAction func deleteServerChatAccount(_ sender: Any) {
-		deleteServerChatAccount()
-	}
-	
 	private func fillBirthdayInput(with date: Date) {
 		let dateFormatter = DateFormatter()
 		dateFormatter.timeStyle = .none
@@ -120,6 +116,10 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	@objc func ageOmitted(_ sender: UIBarButtonItem) {
 		birthdayInput.text = nil
 		birthdayInput.resignFirstResponder()
+	}
+
+	@objc func bioConfirmed(_ sender: UIBarButtonItem) {
+		bioTextView.resignFirstResponder()
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -262,6 +262,17 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 				textView.font = UIFont(descriptor: newDescriptor, size: 0.0)
 			}
 		}
+
+		let saveToolBar = UIToolbar()
+		let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .done, target: self, action: #selector(bioConfirmed))
+
+		saveToolBar.isTranslucent = true
+		saveToolBar.sizeToFit()
+		saveToolBar.setItems([spaceButton,doneButton], animated: false)
+		saveToolBar.isUserInteractionEnabled = true
+
+		textView.inputAccessoryView = saveToolBar
 		activeField = (textView, textView.inputView)
 		return true
 	}

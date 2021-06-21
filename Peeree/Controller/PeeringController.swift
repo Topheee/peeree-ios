@@ -16,6 +16,7 @@ public protocol RemotePeering {
 public protocol PeeringControllerDelegate {
 	func serverChatLoginFailed(with error: Error)
 	func serverChatLogoutFailed(with error: Error)
+	func peeringControllerIsReadyToGoOnline()
 }
 
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about pinned peers.
@@ -116,6 +117,10 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 	
 	// MARK: RemotePeerManagerDelegate
+
+	func remotePeerManagerIsReady() {
+		delegate?.peeringControllerIsReadyToGoOnline()
+	}
 	
 	func peerAppeared(_ peerID: PeerID, again: Bool) -> RemotePeerDelegate {
 		Notifications.peerAppeared.post(peerID, again: again)

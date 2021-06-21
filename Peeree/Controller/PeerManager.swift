@@ -192,16 +192,19 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 				serverChatController.send(message: message, to: self.peerID) { result in
 					switch result {
 					case .success(_):
-						DispatchQueue.main.async {
-							self.transcripts.append(Transcript(direction: .send, message: message))
-							Notifications.messageSent.post(self.peerID)
-							completion(nil)
-						}
+						completion(nil)
 					case .failure(let error):
 						completion(error)
 					}
 				}
 			}
+		}
+	}
+
+	public func didSend(message: String) {
+		DispatchQueue.main.async {
+			self.transcripts.append(Transcript(direction: .send, message: message))
+			Notifications.messageSent.post(self.peerID)
 		}
 	}
 
@@ -239,7 +242,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		}
 	}
 
-	private func deletePicture() {
+	public func deletePicture() {
 		DispatchQueue.global(qos: .background).async {
 			let fileManager = FileManager.default
 			if fileManager.fileExists(atPath: self.pictureResourceURL.path) {

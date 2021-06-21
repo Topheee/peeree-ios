@@ -23,14 +23,22 @@ func peerIDFrom(serverChatUserId userId: UserID) -> PeerID? {
 		  let atIndex = userId.firstIndex(of: "@"),
 		  let colonIndex = userId.firstIndex(of: ":") else { return nil }
 
-	return PeerID(uuidString: String(userId[atIndex..<colonIndex]))
+	return PeerID(uuidString: String(userId[userId.index(after: atIndex)..<colonIndex]))
 }
 
 func serverChatUserName(for peerID: PeerID) -> String {
 	return peerID.uuidString.lowercased()
 }
 
-class ServerChatController {
+func unexpectedNilError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)
+}
+
+func unexpectedEnumValueError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
+}
+
+final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
 	static let userId = serverChatUserId(for: UserPeerManager.instance.peerID)
 	// we need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
@@ -81,7 +89,7 @@ class ServerChatController {
 	private static func setupInstance(with credentials: MXCredentials, completion: @escaping (Result<ServerChatController, Error>) -> Void) {
 		let c = ServerChatController(credentials: credentials)
 		_instance = c
-		c.sync { _error in
+		c.start { _error in
 			if let error = _error {
 				completion(.failure(error))
 			} else {
@@ -124,7 +132,7 @@ class ServerChatController {
 				// TODO save device_id and re-use it for subsequent logins in order to support E2E encryption
 				completion(.success(credentials))
 			@unknown default:
-				completion(.failure(NSError(domain: "Peeree", code: -1, userInfo: nil)))
+				completion(.failure(unexpectedEnumValueError()))
 			}
 		}
 	}
@@ -187,7 +195,7 @@ class ServerChatController {
 									kSecAttrAccount as String: userId,
 									kSecAttrServer as String: homeServer,
 									kSecValueData as String: password]
-		try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding Server Chat Credentials to Keychain Failed", comment: "SecItemAdd failed"))
+		try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding Server Chat credentials to Keychain failed", comment: "SecItemAdd failed"))
 	}
 
 	private static func passwordFromKeychain() throws -> String {
@@ -202,7 +210,7 @@ class ServerChatController {
 
 		guard let passwordData = item as? Data,
 			  let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
-			throw NSError(domain: "Peeree", code: -1, userInfo: nil)
+			throw createApplicationError(localizedDescription: "passwordData is nil or not UTF-8 encoded.")
 		}
 
 		return password
@@ -220,7 +228,6 @@ class ServerChatController {
 
 	private let session: MXSession
 	private var roomsForPeerIDs = [PeerID : MXRoom]()
-	private var eventListeners = [Any]()
 
 	func logout(completion: @escaping (Error?) -> Void) {
 		DispatchQueue.main.async {
@@ -255,34 +262,37 @@ class ServerChatController {
 		}
 	}
 
+	private var notificationObservers: [Any] = []
+
 	private init(credentials: MXCredentials) {
-		MXSDKOptions.sharedInstance().enableCryptoWhenStartingMXSession = true
+		MXSDKOptions.sharedInstance().enableCryptoWhenStartingMXSession = false
 		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
 		session = MXSession(matrixRestClient: restClient)!
-
-		_ = session.listenToEvents([.roomCreate]) { event, direction, state in
-			switch event.eventType {
-			case .roomCreate:
-				guard let createContent = MXRoomCreateContent(fromJSON: event.content) else {
-					NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
-					return
-				}
-				guard let creatorID = createContent.creatorUserId else {
-					NSLog("ERROR: Creator property is not available: \(String(describing: event.content["creator"]))")
-					return
-				}
-				guard creatorID != ServerChatController.userId else { return }
-				guard let creatorPeerID = peerIDFrom(serverChatUserId: creatorID) else {
-					NSLog("ERROR: cannot construct PeerID from room creator userId \(creatorID).")
-					return
-				}
-				// TODO test whether roomId really is the one of the new room
-				self.addRoomAndListenToEvents(MXRoom(roomId: event.roomId, andMatrixSession: self.session), for: creatorPeerID)
-			default:
-				NSLog("WARN: Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
-				break
+		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { [weak self] peerID, _ in
+			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
+			room.leave { leaveRoomResponse in
+				NSLog("DEBUG: Left room: \(leaveRoomResponse).")
 			}
-		}
+		})
+		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomSummaryDidChange, object: nil, queue: nil) { [weak self] notification in
+			// THIS IS MORE THAN STUPID: we would just need to get notified after the initial sync?! or when the room is added?! But NO!
+			guard let strongSelf = self else { return }
+			for room in strongSelf.session.rooms {
+				guard let userId = room.directUserId else {
+					NSLog("ERROR: Found non-direct room.")
+					return
+				}
+				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+					NSLog("ERROR: Found room with non-PeerID \(userId).")
+					return
+				}
+				self?.addRoomAndListenToEvents(room, for: peerID)
+			}
+		})
+	}
+
+	deinit {
+		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
 	}
 
 	// MARK: Server Messages
@@ -294,37 +304,56 @@ class ServerChatController {
 		if let room = session.directJoinedRoom(withUserId: peerUserId) {
 			completion(.success(room))
 		} else {
-			guard session.user(withUserId: peerUserId) != nil else {
-				DispatchQueue.main.async {
-					let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
-					let peerName = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == peerID })?.nickname ?? peerID.uuidString
-					let description = String(format: format, peerName)
-					completion(.failure(createApplicationError(localizedDescription: description)))
+			// FUCK THIS SHIT: session.matrixRestClient.profile(forUser: peerUserId) crashes on my iPad with iOS 9.2
+			if #available(iOS 10, *) {
+				session.matrixRestClient.profile(forUser: peerUserId) { response in
+					guard response.isSuccess else {
+						DispatchQueue.main.async {
+							let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
+							let peerName = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == peerID })?.nickname ?? peerID.uuidString
+							let description = String(format: format, peerName)
+							completion(.failure(createApplicationError(localizedDescription: description)))
+						}
+						return
+					}
+
+					self.session.createRoom(parameters: roomParameters) { response in
+						guard let roomResponse = response.value else {
+							completion(.failure(response.error!))
+							return
+						}
+						guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
+							completion(.failure(unexpectedNilError()))
+							return
+						}
+						self.addRoomAndListenToEvents(room, for: peerID)
+						completion(.success(room))
+					}
 				}
-				return
-			}
-			session.canEnableE2EByDefaultInNewRoom(withUsers: [peerUserId]) { canEnableE2E in
-				if canEnableE2E {
-					roomParameters.initialStateEvents = [MXRoomCreationParameters.initialStateEventForEncryption(withAlgorithm: kMXCryptoMegolmAlgorithm)]
-				}
+			} else {
 				self.session.createRoom(parameters: roomParameters) { response in
 					guard let roomResponse = response.value else {
 						completion(.failure(response.error!))
 						return
 					}
-					self.addRoomAndListenToEvents(roomResponse, for: peerID)
-					completion(.success(roomResponse))
+					guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
+						completion(.failure(unexpectedNilError()))
+						return
+					}
+					self.addRoomAndListenToEvents(room, for: peerID) // we probably do this twice -> we cannot delete this here, since we need it to send the message to the room
+					completion(.success(room))
 				}
-			} failure: { _error in
-				completion(.failure(_error ?? NSError(domain: "Peeree", code: -1, userInfo: nil)))
 			}
 		}
 	}
 
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
-		guard roomsForPeerIDs[peerID] == nil else {
+		if let oldRoom = roomsForPeerIDs[peerID] {
 			NSLog("WARN: Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
-			return
+			guard oldRoom.roomId != room.roomId else { return }
+			oldRoom.leave { leaveRoomResponse in
+				NSLog("DEBUG: Left old room: \(leaveRoomResponse).")
+			}
 		}
 		roomsForPeerIDs[peerID] = room
 		room.liveTimeline { _timeline in
@@ -343,7 +372,6 @@ class ServerChatController {
 					// @TODO handle encryption
 					break
 				case .roomMessage:
-					guard event.sender != ServerChatController.userId else { return }
 					guard event.content["format"] as? String != kMXRoomMessageFormatHTML else {
 						NSLog("ERROR: Body is HTML, ignoring.")
 						return
@@ -357,7 +385,11 @@ class ServerChatController {
 						NSLog("ERROR: Message body not a string: \(event.content["body"] ?? "<nil>").")
 						return
 					}
-					peerManager.received(message: message)
+					if event.sender == ServerChatController.userId {
+						peerManager.didSend(message: message)
+					} else {
+						peerManager.received(message: message)
+					}
 					break
 				default:
 					NSLog("WARN: Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
@@ -377,21 +409,96 @@ class ServerChatController {
 		}
 	}
 
-	private func sync(completion: @escaping (Error?) -> Void) {
-		// TODO: sync only back to last went offline
-		let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 42)!
-		session.start(withSyncFilter: filter) { response in
-			completion(response.error)
-			for room in self.session.rooms {
-				guard let userId = room.directUserId else {
-					NSLog("ERROR: Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
-					continue
+	private func start(completion: @escaping (Error?) -> Void) {
+		//let store = MXNoStore()
+		let store = MXMemoryStore()
+		session.setStore(store) { setStoreResponse in
+			guard setStoreResponse.isSuccess else {
+				completion(setStoreResponse.error ?? unexpectedNilError())
+				return
+			}
+			// TODO: sync only back to last went offline
+			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
+			self.session.start(withSyncFilter: filter) { response in
+				guard response.isSuccess else {
+					completion(response.error ?? unexpectedNilError())
+					return
 				}
-				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					NSLog("ERROR: Server chat userId \(userId) is not a PeerID.")
-					continue
+				for room in self.session.rooms {
+					guard let userId = room.directUserId else {
+						NSLog("ERROR: Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
+						continue
+					}
+					guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+						NSLog("ERROR: Server chat userId \(userId) is not a PeerID.")
+						continue
+					}
+					self.addRoomAndListenToEvents(room, for: peerID)
 				}
-				self.addRoomAndListenToEvents(room, for: peerID)
+
+				self.session.listenToEvents { event, direction, customObject in
+					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
+				}
+				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
+					switch event.eventType {
+					case .roomMember:
+						guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
+							NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
+							return
+						}
+						switch memberContent.membership {
+						case kMXMembershipStringJoin:
+							guard let userId = event.stateKey, userId != ServerChatController.userId else {
+								// we are only interested in joins from other people
+								NSLog("WARN: Received our join event.")
+								return
+							}
+							guard let room = self.session.room(withRoomId: event.roomId) else {
+								NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
+								return
+							}
+							guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+								NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
+								return
+							}
+							self.addRoomAndListenToEvents(room, for: peerID)
+						case kMXMembershipStringInvite:
+							guard event.stateKey == ServerChatController.userId else {
+								// we are only interested in invites for us
+								NSLog("WARN: Received invite event from sender other than us.")
+								return
+							}
+							self.session.joinRoom(event.roomId) { joinResponse in
+								guard joinResponse.isSuccess else {
+									NSLog("ERROR: Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
+									return
+								}
+								guard let room = self.session.room(withRoomId: event.roomId) else {
+									NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
+									return
+								}
+								guard let userId = room.directUserId else {
+									NSLog("ERROR: No direct userId in room \(room.roomId ?? "<nil>").")
+									return
+								}
+								guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+									NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
+									return
+								}
+								self.addRoomAndListenToEvents(room, for: peerID)
+							}
+						case kMXMembershipStringLeave:
+							// ignored
+							break
+						default:
+							NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
+						}
+					default:
+						NSLog("WARN: Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
+						break
+					}
+				}
+				completion(response.error)
 			}
 		}
 	}
@@ -402,10 +509,10 @@ extension MXResponse {
 		switch self {
 		case .failure(let error):
 			return .failure(error)
-		case .success(let credentials):
-			return .success(credentials)
+		case .success(let value):
+			return .success(value)
 		@unknown default:
-			return .failure(NSError(domain: "Peeree", code: -1, userInfo: nil))
+			return .failure(unexpectedEnumValueError())
 		}
 	}
 }

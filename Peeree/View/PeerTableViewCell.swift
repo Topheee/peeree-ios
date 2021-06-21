@@ -8,7 +8,7 @@
 
 import UIKit
 
-class PeerTableViewCell: UITableViewCell {
+final class PeerTableViewCell: UITableViewCell {
 	@IBOutlet private weak var portraitImageView: RoundedImageView!
 	@IBOutlet private weak var nameLabel: UILabel!
 	@IBOutlet private weak var ageTagView: RoundedRectView!
@@ -22,6 +22,7 @@ class PeerTableViewCell: UITableViewCell {
 		portraitImageView.image = portraitImageView.image?.roundedCropped(cropRect: portraitImageView.bounds, backgroundColor: AppTheme.backgroundColor)
 		nameLabel.text = peerInfo.nickname
 		ageTagView.isHidden = peerInfo.age == nil
+		ageTagView.setNeedsLayout()
 		ageLabel.text = "\(peerInfo.age ?? 0)"
 		genderLabel.text = peerInfo.gender.localizedRawValue
 	}

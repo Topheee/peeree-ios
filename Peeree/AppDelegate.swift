@@ -112,7 +112,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 
 		PeeringController.shared.delegate = self
-		
+		_ = PinMatchesController.shared
 		return true
 	}
 
@@ -157,6 +157,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 *  Stops networking and synchronizes preferences
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
+		ServerChatController.withInstance { _instance in
+			_instance?.logout(completion: { _error in
+				if let error = _error {
+					// do not call this as we are terminating anyway: self.serverChatLogoutFailed(with: error)
+					NSLog("ERROR: Server chat logout failed: \(error.localizedDescription)")
+				}
+			})
+		}
 		PeeringController.shared.peering = false
 		UserDefaults.standard.synchronize()
 	}
@@ -282,6 +290,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	// MARK: PeeringControllerDelegate
+
+	func peeringControllerIsReadyToGoOnline() {
+		PeeringController.shared.peering = true
+	}
 
 	func serverChatLoginFailed(with error: Error) {
 		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))

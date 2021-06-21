@@ -10,8 +10,7 @@ import CoreGraphics
 import CoreBluetooth
 
 protocol RemotePeerManagerDelegate: AnyObject {
-//	func scanningStarted()
-//	func scanningStopped()
+	func remotePeerManagerIsReady()
 	func peerAppeared(_ peerID: PeerID, again: Bool) -> RemotePeerDelegate
 	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID)
 }
@@ -303,6 +302,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 				peripheral.readValue(for: characteristics[1])
 				peripheral.writeValue(UserPeerManager.instance.peer.idData, for: characteristics[2], type: .withResponse)
 			}
+			delegate?.remotePeerManagerIsReady()
 		default:
 			break
 		}

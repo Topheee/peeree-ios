@@ -129,9 +129,9 @@ public class AsymmetricKey: Codable {
 			}
 			return data
 		} else {
-			let temporaryLabel = "de.kobusch.tempkey2"
-			let temporaryTag = temporaryLabel.data(using: .utf8)!
-			
+			let temporaryTag = try generateRandomData(length: 4)
+			let temporaryLabel = temporaryTag.base64EncodedString()
+
 			defer {
 				// always try to remove key from keychain
 				do {
@@ -159,9 +159,9 @@ public class AsymmetricKey: Codable {
 
 			self.init(key: key, type: type, keyClass: keyClass, size: size)
 		} else {
-			let temporaryLabel = "de.kobusch.tempkey"
-			let tag = temporaryLabel.data(using: .utf8)!
-			
+			let tag = try generateRandomData(length: 4)
+			let temporaryLabel = tag.base64EncodedString()
+
 			// always try to remove key from keychain before we add it again
 			try? KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
 			

@@ -242,9 +242,9 @@ final class BrowseViewController: UITableViewController {
 	@available(iOS 11.0, *)
 	override func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
 		// throws 'unrecognized selector': super.scrollViewDidChangeAdjustedContentInset(scrollView)
-		
-		if placeholderCellActive {
-			DispatchQueue.main.async {
+
+		DispatchQueue.main.async {
+			if self.placeholderCellActive {
 				self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .fade)
 			}
 		}

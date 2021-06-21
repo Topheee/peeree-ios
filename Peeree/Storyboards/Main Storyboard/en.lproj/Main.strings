@@ -230,11 +230,41 @@
 /* Class = "UIButton"; normalTitle = "Create Identity"; ObjectID = "i05-bg-dKb"; */
 "i05-bg-dKb.normalTitle" = "Create Identity";
 
-/* Class = "UINavigationItem"; title = "My Profile"; ObjectID = "i5d-ig-BH3"; */
-"i5d-ig-BH3.title" = "My Profile";
+/* Class = "UINavigationItem"; title = "Your Profile"; ObjectID = "i5d-ig-BH3"; */
+"i5d-ig-BH3.title" = "Your Profile";
 
 /* Class = "UILabel"; text = "Peer ID"; ObjectID = "i9C-MG-2LW"; */
 "i9C-MG-2LW.text" = "Peer ID";
+
+/* Class = "UILabel"; accessibilityLabel = "Gender"; ObjectID = "5Um-0U-pgr"; */
+"5Um-0U-pgr.accessibilityLabel" = "Gender";
+
+/* Class = "UILabel"; text = "gender"; ObjectID = "5Um-0U-pgr"; */
+"5Um-0U-pgr.text" = "gender";
+
+/* Class = "UILabel"; accessibilityLabel = "Age"; ObjectID = "7Ta-SF-xsS"; */
+"7Ta-SF-xsS.accessibilityLabel" = "Age";
+
+/* Class = "UILabel"; text = "age"; ObjectID = "7Ta-SF-xsS"; */
+"7Ta-SF-xsS.text" = "age";
+
+/* Class = "UILabel"; accessibilityLabel = "Pin Match Status"; ObjectID = "8ZE-zA-bDJ"; */
+"8ZE-zA-bDJ.accessibilityLabel" = "Pin Match Status";
+
+/* Class = "UILabel"; text = "Pin Match Status"; ObjectID = "8ZE-zA-bDJ"; */
+"8ZE-zA-bDJ.text" = "Pin Match Status";
+
+/* Class = "UILabel"; accessibilityLabel = "Status Details"; ObjectID = "fwb-zW-3rU"; */
+"fwb-zW-3rU.accessibilityLabel" = "Status Details";
+
+/* Class = "UILabel"; text = "Status Details"; ObjectID = "fwb-zW-3rU"; */
+"fwb-zW-3rU.text" = "Status Details";
+
+/* Class = "UILabel"; accessibilityLabel = "Name"; ObjectID = "K43-43-CyP"; */
+"K43-43-CyP.accessibilityLabel" = "Name";
+
+/* Class = "UILabel"; text = "Peer Name"; ObjectID = "K43-43-CyP"; */
+"K43-43-CyP.text" = "Peer Name";
 
 /* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
 "i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";

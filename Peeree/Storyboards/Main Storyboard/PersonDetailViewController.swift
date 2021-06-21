@@ -67,7 +67,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	private var displayedPeerInfo: PeerInfo?
 	
 	@IBAction func reportPeer(_ sender: Any) {
-		guard let manager = self.peerManager, let peer = manager.peerInfo else { return }
+		guard let manager = self.peerManager, let peer = displayedPeerInfo else { return }
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
@@ -195,17 +195,18 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		super.viewWillAppear(animated)
 		
 		// make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
-		if peerManager != nil {
-			displayedPeerInfo = peerManager.peerInfo ?? displayedPeerInfo
+		if let manager = peerManager {
+			displayedPeerInfo = manager.peerInfo ?? PinMatchesController.shared.peerInfo(for: manager.peerID) ?? displayedPeerInfo
 		}
 		
 		updateState()
 		
 		let simpleStateUpdate = { [weak self] (notification: Notification) in
-			guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID, let strongSelf = self else { return }
-			guard strongSelf.displayedPeerInfo?.peerID == peerID else { return }
+			guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID,
+				  let strongSelf = self, let manager = strongSelf.peerManager else { return }
+			guard manager.peerID == peerID else { return }
 			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
-			strongSelf.displayedPeerInfo = strongSelf.peerManager.peerInfo ?? strongSelf.displayedPeerInfo
+			strongSelf.displayedPeerInfo = manager.peerInfo ?? PinMatchesController.shared.peerInfo(for: manager.peerID) ?? strongSelf.displayedPeerInfo
 			strongSelf.updateState()
 			strongSelf.animatePinButton()
 		}

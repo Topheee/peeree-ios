@@ -16,7 +16,7 @@ final class PinMatchesController {
 	}
 
 	public enum Notifications: String {
-		case pinMatchedPeersLoaded
+		case pinMatchedPeersUpdated
 	}
 
 	static let shared = PinMatchesController()
@@ -35,38 +35,47 @@ final class PinMatchesController {
 				let decodedPeers = try decoder.decode(Set<PeerInfo>.self, from: data)
 				DispatchQueue.main.async {
 					self.pinMatchedPeers = decodedPeers
-					Notifications.pinMatchedPeersLoaded.postAsNotification(object: self)
+					Notifications.pinMatchedPeersUpdated.postAsNotification(object: self)
 				}
 			} catch let error {
 				NSLog("ERROR: Couldn't decode pinMatchedPeers: \(error.localizedDescription)")
 			}
 		}
 
-		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { [weak self] (peerID, notification) in
+		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { (peerID, notification) in
 			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
-			if !again { self?.reload(peerID: peerID) }
+			if !again { self.reload(peerID: peerID) }
 		})
-		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] peerID, _ in
-			guard let strongSelf = self,
-				  let peer = PeeringController.shared.manager(for: peerID).peerInfo else { return }
-			strongSelf.pinMatchedPeers.insert(peer)
-			strongSelf.savePinMatchedPeers()
+		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { peerID, _ in
+			guard let peer = PeeringController.shared.manager(for: peerID).peerInfo else { return }
+			DispatchQueue.main.async {
+				self.pinMatchedPeers.insert(peer)
+				self.savePinMatchedPeers()
+			}
 		})
-		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { [weak self] peerID, _ in
-			guard let strongSelf = self else { return }
+		notificationObservers.append(AccountController.Notifications.accountDeleted.addObserver { _ in
+			DispatchQueue.main.async {
+				PeeringController.shared.managers(for: self.pinMatchedPeers.map { $0.peerID }) { peerManagers in
+					peerManagers.forEach { $0.deletePicture() }
+				}
+				self.pinMatchedPeers = []
+				self.savePinMatchedPeers()
+			}
+		})
+		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { peerID, _ in
 			if let peer = PeeringController.shared.manager(for: peerID).peerInfo {
 				DispatchQueue.main.async {
-					if strongSelf.pinMatchedPeers.remove(peer) != nil {
-						strongSelf.savePinMatchedPeers()
+					if self.pinMatchedPeers.remove(peer) != nil {
+						self.savePinMatchedPeers()
 					}
 				}
 			} else {
 				DispatchQueue.main.async {
-					guard let index = (strongSelf.pinMatchedPeers.firstIndex { peer in
+					guard let index = (self.pinMatchedPeers.firstIndex { peer in
 						return peer.peerID == peerID
 					}) else { return }
-					strongSelf.pinMatchedPeers.remove(at: index)
-					strongSelf.savePinMatchedPeers()
+					self.pinMatchedPeers.remove(at: index)
+					self.savePinMatchedPeers()
 				}
 			}
 
@@ -79,10 +88,9 @@ final class PinMatchesController {
 		}
 	}
 
-	func clear() {
-		DispatchQueue.main.async {
-			self.pinMatchedPeers.removeAll()
-		}
+	/// thread-safety: call only from main thread!
+	func peerInfo(for peerID: PeerID) -> PeerInfo? {
+		return pinMatchedPeers.first { $0.peerID == peerID }
 	}
 
 	// MARK: Private Methods
@@ -102,6 +110,8 @@ final class PinMatchesController {
 				NSLog("ERROR: Couldn't encode JSON: \(error.localizedDescription)")
 			}
 		}
+		// TODO PERFORMANCE: only inform about the changed peer(s)
+		Notifications.pinMatchedPeersUpdated.postAsNotification(object: self)
 	}
 
 	private func reload(peerID: PeerID) {
@@ -110,7 +120,7 @@ final class PinMatchesController {
 		DispatchQueue.main.async {
 			// TODO PERFORMANCE: only replace and save if really something changed
 			self.pinMatchedPeers.remove(peer)
-			self.pinMatchedPeers.insert(peer)
+			if peer.pinMatched { self.pinMatchedPeers.insert(peer) }
 			self.savePinMatchedPeers()
 		}
 	}

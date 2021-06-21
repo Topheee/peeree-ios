@@ -21,7 +21,6 @@
 		9D4C8250265B1BA1006F472B /* PinMatchesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824F265B1BA1006F472B /* PinMatchesController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
-		9D6AFE57264C23170065262D /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6AFE56264C23170065262D /* MatrixSDK */; };
 		9D6AFE59264C23E90065262D /* ServerChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6AFE58264C23E90065262D /* ServerChatController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
@@ -37,8 +36,8 @@
 		9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94021026188BBD00F78027 /* MessagingViewController.swift */; };
 		9D9402152618C50400F78027 /* PeerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9402142618C50400F78027 /* PeerViewController.swift */; };
 		9D9458A21F2A1B8800EBCB31 /* CommonCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		9D9458A61F2A1B8800EBCB31 /* CommonCrypto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; platformFilter = ios; settings = {ATTRIBUTES = (Weak, ); }; };
+		9D9458A61F2A1B8800EBCB31 /* CommonCrypto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */; };
 		9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
 		9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
@@ -84,6 +83,7 @@
 		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
 		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
 		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
+		9DFD343D266D512D002F102F /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DFD343C266D512D002F102F /* MatrixSDK */; };
 		9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFE8A961F33769700264CFE /* NetworkReachability.swift */; };
 /* End PBXBuildFile section */
 
@@ -183,6 +183,7 @@
 		9DB677F724030480005EECB3 /* AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAPI.swift; sourceTree = "<group>"; };
 		9DB677F824030480005EECB3 /* PinsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinsAPI.swift; sourceTree = "<group>"; };
 		9DB677F924030480005EECB3 /* AuthenticationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationAPI.swift; sourceTree = "<group>"; };
+		9DBC9F912676A4E900B68395 /* Peeree.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Peeree.entitlements; sourceTree = "<group>"; };
 		9DC00AA62662ED2200C1DA3C /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsymmetricCryptoTests.swift; sourceTree = "<group>"; };
 		9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
@@ -229,7 +230,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D6AFE57264C23170065262D /* MatrixSDK in Frameworks */,
+				9DFD343D266D512D002F102F /* MatrixSDK in Frameworks */,
 				9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -402,6 +403,7 @@
 		9DA0F7B71B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXGroup;
 			children = (
+				9DBC9F912676A4E900B68395 /* Peeree.entitlements */,
 				9DD61F3C1EAE3356004EB56A /* Swagger */,
 				9D883A481C26B56400702F9A /* Utility */,
 				9D8A59291B92EB7800164C9F /* Storyboards */,
@@ -552,7 +554,7 @@
 			);
 			name = Peeree;
 			packageProductDependencies = (
-				9D6AFE56264C23170065262D /* MatrixSDK */,
+				9DFD343C266D512D002F102F /* MatrixSDK */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -605,6 +607,8 @@
 					};
 					9DC00AA52662ED2200C1DA3C = {
 						CreatedOnToolsVersion = 12.5;
+						DevelopmentTeam = 86J6LQ96WM;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
 					};
 				};
@@ -620,7 +624,7 @@
 			);
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			packageReferences = (
-				9D6AFE55264C23170065262D /* XCRemoteSwiftPackageReference "MatrixSDK" */,
+				9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -758,6 +762,7 @@
 /* Begin PBXTargetDependency section */
 		9D9458A41F2A1B8800EBCB31 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = 9D94589D1F2A1B8700EBCB31 /* CommonCrypto */;
 			targetProxy = 9D9458A31F2A1B8800EBCB31 /* PBXContainerItemProxy */;
 		};
@@ -1010,6 +1015,7 @@
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
+				CODE_SIGN_ENTITLEMENTS = Peeree/Peeree.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -1018,6 +1024,7 @@
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1028,7 +1035,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -1042,6 +1051,7 @@
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				CLANG_USE_OPTIMIZATION_PROFILE = YES;
+				CODE_SIGN_ENTITLEMENTS = Peeree/Peeree.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -1052,6 +1062,7 @@
 				GCC_UNROLL_LOOPS = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1062,9 +1073,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};
@@ -1086,7 +1099,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1098,7 +1111,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};
 			name = Debug;
@@ -1119,7 +1132,7 @@
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1129,7 +1142,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.kobusch.christopher.PeereeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};
 			name = Release;
@@ -1176,20 +1189,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9D6AFE55264C23170065262D /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
+		9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/niochat/MatrixSDK";
+			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.18.4;
+				minimumVersion = 0.19.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9D6AFE56264C23170065262D /* MatrixSDK */ = {
+		9DFD343C266D512D002F102F /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9D6AFE55264C23170065262D /* XCRemoteSwiftPackageReference "MatrixSDK" */;
+			package = 9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

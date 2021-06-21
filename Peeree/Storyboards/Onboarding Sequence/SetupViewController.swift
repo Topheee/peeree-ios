@@ -21,8 +21,7 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 
 		AccountController.shared.createAccount { (_error) in
 			if let error = _error {
-				// we do not inform the user about this as we initiated it silently
-				NSLog("Error creating account: \(error)")
+				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
 			}
 		}
 		

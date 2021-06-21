@@ -25,23 +25,26 @@ class PinMatchTableViewController: UITableViewController {
 
 	private var notificationObservers: [NSObjectProtocol] = []
 
-	private func updateCache(reload: Bool = true) {
+	private func updateCache(isInitial: Bool = false) {
 		let newPeerCache = Array(PinMatchesController.shared.pinMatchedPeers)
-		managerCache.removeAll(keepingCapacity: true)
+		guard !(isInitial && newPeerCache.count == 0) else { return }
+
 		PeeringController.shared.managers(for: newPeerCache.map { $0.peerID }) { peerManagers in
 			peerManagers.forEach { $0.loadLocalPicture {_ in } }
 			DispatchQueue.main.async {
 				self.peerCache = newPeerCache
 				self.managerCache = peerManagers
-				if reload { self.tableView?.reloadData() }
+				self.tableView?.reloadData()
 			}
 		}
 	}
 
 	private func listenForNotifications() {
-		notificationObservers.append(PeerManager.Notifications.unreadMessageCountChanged.addPeerObserver { [weak self] peerID, _  in
-			self?.messageReceivedOrRead(from: peerID)
-		})
+		for notificationType: PeerManager.Notifications in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
+			notificationObservers.append(notificationType.addPeerObserver { [weak self] peerID, _  in
+				self?.messageReceivedSentOrRead(from: peerID)
+			})
+		}
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
 		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(usingBlock: reloadBlock))
@@ -60,7 +63,7 @@ class PinMatchTableViewController: UITableViewController {
 		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver { [weak self] _ in
 			self?.tableView.reloadData()
 		})
-		notificationObservers.append(PinMatchesController.Notifications.pinMatchedPeersLoaded.addObserver { [weak self] _ in
+		notificationObservers.append(PinMatchesController.Notifications.pinMatchedPeersUpdated.addObserver { [weak self] _ in
 			self?.updateCache()
 		})
 	}
@@ -68,9 +71,9 @@ class PinMatchTableViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
+		updateCache(isInitial: true)
 		listenForNotifications()
 		tableView.scrollsToTop = true
-		updateCache(reload: false)
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -128,8 +131,8 @@ class PinMatchTableViewController: UITableViewController {
 	override func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
 		// throws 'unrecognized selector': super.scrollViewDidChangeAdjustedContentInset(scrollView)
 
-		if placeholderCellActive {
-			DispatchQueue.main.async {
+		DispatchQueue.main.async {
+			if self.placeholderCellActive {
 				self.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .fade)
 			}
 		}
@@ -171,7 +174,7 @@ class PinMatchTableViewController: UITableViewController {
 		}
 	}
 
-	private func messageReceivedOrRead(from peerID: PeerID) {
+	private func messageReceivedSentOrRead(from peerID: PeerID) {
 		guard let peerPath = indexPath(of: peerID) else {
 			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
 			return
