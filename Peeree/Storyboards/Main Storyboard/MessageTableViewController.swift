@@ -9,45 +9,26 @@
 
 import UIKit
 
-class MessageTableViewController: UITableViewController {
-	var peerManager: PeerManager!
-	
+class MessageTableViewController: PeerTableViewController, PeerMessagingObserver {
 	private var lastCount = 0
 	
-	private var notificationObservers: [NSObjectProtocol] = []
-
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
-		guard let peerID = peerManager?.peerID else {
-			return
-		}
-		notificationObservers.append(PeerManager.Notifications.messageReceived.addPeerObserver(for: peerID) { [weak self] _ in
-			self?.peerManager.unreadMessages = 0
-			self?.appendTranscript()
-		})
-		
-		notificationObservers.append(PeerManager.Notifications.messageSent.addPeerObserver(for: peerID) { [weak self] _ in
-			self?.appendTranscript()
-		})
-
-		notificationObservers.append(PeerManager.Notifications.messageQueued.addPeerObserver(for: peerID) { [weak self] _ in
-			self?.appendTranscript()
-		})
+		peerObserver.messagingObserver = self
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		peerManager?.unreadMessages = 0
+
+		tableView.reloadData()
+		peerManager.unreadMessages = 0
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
 
-		for observer in notificationObservers {
-			NotificationCenter.default.removeObserver(observer)
-		}
-		notificationObservers.removeAll()
+		peerObserver.messagingObserver = nil
 	}
 	
 	// MARK: - Table view data source
@@ -57,34 +38,40 @@ class MessageTableViewController: UITableViewController {
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		if let manager = peerManager {
-			lastCount = manager.transcripts.count + manager.pendingMessages.count
-		} else {
-			lastCount = 0
-		}
+		lastCount = peerManager.transcripts.count + peerManager.pendingMessages.count
 		return lastCount
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		guard let manager = peerManager,
-			  let cell = tableView.dequeueReusableCell(withIdentifier: "Message Cell", for: indexPath) as? MessageCell else {
+		guard let cell = tableView.dequeueReusableCell(withIdentifier: "Message Cell", for: indexPath) as? MessageCell else {
 			assertionFailure("well that didn't message out so well")
 			return UITableViewCell()
 		}
 
 		// Get the transcript for this row
-		let overflow = indexPath.row - manager.transcripts.count
+		let overflow = indexPath.row - peerManager.transcripts.count
 		let transcript: Transcript
 		if overflow < 0 {
-			transcript = manager.transcripts[indexPath.row]
+			transcript = peerManager.transcripts[indexPath.row]
 		} else {
-			transcript = Transcript(direction: .send, message: manager.pendingMessages[overflow].message)
+			transcript = Transcript(direction: .send, message: peerManager.pendingMessages[overflow].message)
 		}
 		cell.set(transcript: transcript, pending: overflow >= 0)
 		return cell
 	}
 
-	// pragma mark - private methods
+	// MARK: - PeerMessagingObserver
+
+	func messageQueued() {
+		peerManager.unreadMessages = 0
+		appendTranscript()
+	}
+
+	func messageReceived() { appendTranscript() }
+	func messageSent() { appendTranscript() }
+	func unreadMessageCountChanged() { /* ignored */ }
+
+	// MARK: - Private Methods
 	
 	// Helper method for inserting a sent/received message into the data source and reload the view.
 	// Make sure you call this on the main thread

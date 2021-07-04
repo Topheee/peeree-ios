@@ -65,7 +65,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public var pendingMessages = [(message: String, completion: (Error?) -> Void)]()
 	
 	public var peerInfo: PeerInfo? {
-		return remotePeerManager.getPeerInfo(of: peerID)
+		return remotePeerManager.getPeerInfo(of: peerID) ?? PinMatchesController.shared.peerInfo(for: peerID)
 	}
 	
 	public var pictureLoadProgress: Progress? {

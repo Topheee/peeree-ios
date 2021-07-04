@@ -54,7 +54,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 	private var compactLabelStackView: UIStackView? = nil
 
-	private static let unwindSegueID = "unwindToBrowseViewController"
 	static let storyboardID = "PersonDetailViewController"
 	static let beaconSegueID = "beaconSegue"
 
@@ -67,27 +66,25 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	private var displayedPeerInfo: PeerInfo?
 	
 	@IBAction func reportPeer(_ sender: Any) {
-		guard let manager = self.peerManager, let peer = displayedPeerInfo else { return }
+		guard let peer = displayedPeerInfo else { return }
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
 			AccountController.shared.unpin(peer: peer)
 		}
-		unpinAction.isEnabled = !manager.isLocalPeer && peer.pinned
+		unpinAction.isEnabled = !peerManager.isLocalPeer && peer.pinned
 		alertController.addAction(unpinAction)
 		let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
-			AccountController.shared.report(manager: manager) { (error) in
+			AccountController.shared.report(manager: self.peerManager) { (error) in
 				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
 			}
 		}
-		reportAction.isEnabled = !manager.isLocalPeer && peer.hasPicture && manager.cgPicture != nil && manager.pictureClassification == .none
+		reportAction.isEnabled = !peerManager.isLocalPeer && peer.hasPicture && peerManager.cgPicture != nil && peerManager.pictureClassification == .none
 		alertController.addAction(reportAction)
 		
 		alertController.present()
 	}
 
-	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) {}
-	
 	@IBAction func pinPeer(_ sender: UIButton) {
 		guard let peer = displayedPeerInfo else { return }
 		guard !peer.pinned else {
@@ -176,9 +173,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-		if let beaconVC = segue.destination as? BeaconViewController {
-			beaconVC.peerManager = peerManager
-		}
+		(segue.destination as? PeerObserverContainer)?.peerID = peerID
 	}
 	
 	override func viewDidLoad() {
@@ -195,15 +190,14 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		super.viewWillAppear(animated)
 		
 		// make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
-		if let manager = peerManager {
-			displayedPeerInfo = manager.peerInfo ?? PinMatchesController.shared.peerInfo(for: manager.peerID) ?? displayedPeerInfo
-		}
-		
+		displayedPeerInfo = peerManager.peerInfo ?? PinMatchesController.shared.peerInfo(for: peerID) ?? displayedPeerInfo
+
 		updateState()
 		
 		let simpleStateUpdate = { [weak self] (notification: Notification) in
 			guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID,
-				  let strongSelf = self, let manager = strongSelf.peerManager else { return }
+				  let strongSelf = self else { return }
+			let manager = strongSelf.peerManager
 			guard manager.peerID == peerID else { return }
 			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
 			strongSelf.displayedPeerInfo = manager.peerInfo ?? PinMatchesController.shared.peerInfo(for: manager.peerID) ?? strongSelf.displayedPeerInfo
@@ -219,11 +213,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
 		}
 		
-		notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
-			simpleStateUpdate(notification)
-			self?.gradientView?.animateGradient = true
-		}))
-
 		notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
 			simpleStateUpdate(notification)
 			self?.gradientView?.animateGradient = true
@@ -328,7 +317,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	private func updateState() {
-		guard let peer = displayedPeerInfo, let state = peerManager else { return }
+		guard let peer = displayedPeerInfo else { return }
+		let state = peerManager
 
 		updatePinCircleWidth()
 		pinButton.isHidden = state.pinState == .pinning

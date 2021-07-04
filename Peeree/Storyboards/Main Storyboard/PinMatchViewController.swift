@@ -15,20 +15,18 @@ class PinMatchViewController: PeerViewController {
 	
 	static let StoryboardID = "PinMatch"
 
-	override var peerManager: PeerManager! {
+	override var peerID: PeerID {
 		didSet { displayPeer() }
 	}
 	
 	@IBAction func showProfile(_ sender: AnyObject) {
 		cancelMatchmaking(sender)
-		AppDelegate.shared.displayMessageViewController(for: peerManager.peerID)
+		AppDelegate.shared.displayMessageViewController(for: peerID)
 	}
 	
 	@IBAction func findPeer(_ sender: AnyObject) {
-		guard let peer = peerManager.peerInfo else { return }
-
 		cancelMatchmaking(sender)
-		AppDelegate.shared.find(peer: peer)
+		AppDelegate.shared.find(peerID: peerID)
 	}
 	
 	@IBAction func cancelMatchmaking(_ sender: AnyObject) {
@@ -69,15 +67,15 @@ class PinMatchViewController: PeerViewController {
 	}
 	
 	private func displayPeer() {
-		guard let manager = peerManager, let peer = manager.peerInfo else { return }
+		guard let peer = peerManager.peerInfo else { return }
 		peerNameLabel?.text = peer.nickname
 		
 		guard portraitView != nil else { return }
-		portraitView.image = manager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+		portraitView.image = peerManager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
 		portraitView.layoutIfNeeded()
 		_ = CircleMaskView(maskedView: portraitView)
 		if #available(iOS 11.0, *) {
-			portraitView.accessibilityIgnoresInvertColors = manager.picture != nil
+			portraitView.accessibilityIgnoresInvertColors = peerManager.picture != nil
 		}
 	}
 }

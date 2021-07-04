@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MessagingViewController: PeerViewController, UITextViewDelegate {
+class MessagingViewController: PeerViewController, UITextViewDelegate, ConnectionStateObserver {
 	// Button for executing the message send.
 	@IBOutlet private weak var sendMessageButton: UIButton!
 	@IBOutlet private weak var chatTableViewContainer: UIView!
@@ -36,8 +36,9 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		}
 	}
 	
-	private func setPortraitButtonImage(manager: PeerManager) {
-		portraitImageButton.setImage(manager.createRoundedOpaquePicture(cropRect: portraitImageButton.bounds, backgroundColor: navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor), for: .normal)
+	private func setPortraitButtonImage() {
+		// background color of navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor does not work (at least) on iPhone SE 2 (it has a different color than the bar)
+		portraitImageButton.setImage(peerManager.createRoundedPicture(cropRect: portraitImageButton.bounds, backgroundColor: nil), for: .normal)
 	}
 
 	override func viewDidLoad() {
@@ -53,22 +54,18 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		guard let manager = peerManager, let peerInfo = PinMatchesController.shared.peerInfo(for: manager.peerID) else { return }
-		setPortraitButtonImage(manager: manager)
+		guard let peerInfo = PinMatchesController.shared.peerInfo(for: peerID) else { return }
+		setPortraitButtonImage()
 		navigationItem.prompt = peerInfo.nickname
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: manager.peerID) { [weak self] _ in
-			self?.setPortraitButtonImage(manager: manager)
-		})
-		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber else { return }
-			self?.updateConnectionState(state.boolValue)
+		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.setPortraitButtonImage()
 		})
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		updateConnectionState(PeeringController.shared.peering)
+		connectionChangedState(PeeringController.shared.peering)
 
 		registerForKeyboardNotifications()
 
@@ -91,11 +88,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-		if let messageViewController = segue.destination as? MessageTableViewController {
-			messageViewController.peerManager = peerManager
-		} else if let peerVC = segue.destination as? PeerViewController {
-			peerVC.peerManager = peerManager
-		}
+		(segue.destination as? PeerObserverContainer)?.peerID = peerID
 	}
 
 	// MARK: UITextFieldDelegate methods
@@ -125,7 +118,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		self.moveToolBar(up: false, for: notification)
 	}
 
-	// pragma mark - Toolbar animation helpers
+	// MARK: - Toolbar animation helpers
 
 	// Helper method for moving the toolbar frame based on user action
 	private func moveToolBar(up: Bool, for keyboardNotification: Notification) {
@@ -148,8 +141,10 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		}
 	}
 
-	private func updateConnectionState(_ online: Bool) {
+	// MARK: ConnectionStateObserver
+
+	func connectionChangedState(_ online: Bool) {
 		canSendMessages = online
-		if !online { sendMessageButton.isEnabled = online }
+		sendMessageButton.isEnabled = online && messageTextView.text != nil && messageTextView.text != ""
 	}
 }

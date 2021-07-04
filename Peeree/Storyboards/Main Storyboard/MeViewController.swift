@@ -140,7 +140,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
 		if let personDetailVC = segue.destination as? PersonDetailViewController {
-			personDetailVC.peerManager = UserPeerManager.instance
+			personDetailVC.peerID = UserPeerManager.instance.peerID
 		}
 	}
 	

@@ -18,7 +18,6 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private static let PeerIDKey = "PeerIDKey"
 
 	func initialize() {
-
 		_ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
 			if #available(iOS 10.0, *) {
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
@@ -60,10 +59,6 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		_ = PeeringController.Notifications.peerAppeared.addPeerObserver { peerID, notification  in
 			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
 			self.peerAppeared(peerID, again: again ?? false)
-		}
-
-		_ = PeeringController.Notifications.peerDisappeared.addPeerObserver { peerID, _  in
-			self.peerDisappeared(peerID)
 		}
 
 		_ = AccountController.Notifications.pinMatch.addPeerObserver { peerID, _  in
@@ -213,7 +208,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		var messagesNotVisible = true
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
 			if tabBarVC.selectedIndex == AppDelegate.PinMatchesTabBarIndex {
-				messagesNotVisible = ((tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerManager.peerID != peerID
+				messagesNotVisible = ((tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerID != peerID
 			}
 		}
 		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: messagesNotVisible)
@@ -235,17 +230,13 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, category: peer.pinMatched ? .none : .peerAppeared, displayInApp: notBrowsing)
 	}
 
-	private func peerDisappeared(_ peerID: PeerID) {
-		// ignored
-	}
-
 	private func pinMatchOccured(_ peerID: PeerID) {
-		let manager = PeeringController.shared.manager(for: peerID)
 		if AppDelegate.shared.isActive {
 			let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
-			pinMatchVC.peerManager = manager
+			pinMatchVC.peerID = peerID
 			pinMatchVC.presentInFrontMostViewController(true, completion: nil)
 		} else {
+			let manager = PeeringController.shared.manager(for: peerID)
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
 			let alertBody = String(format: alertBodyFormat, manager.peerInfo?.nickname ?? "😇")

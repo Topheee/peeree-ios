@@ -59,15 +59,15 @@ final class BrowseViewController: UITableViewController {
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
-		guard let peerVC = segue.destination as? PeerViewController else { return }
+		guard let peerVC = segue.destination as? PeerObserverContainer else { return }
 		guard let tappedCell = sender as? UITableViewCell else {
 			if let peerID = sender as? PeerID {
-				peerVC.peerManager = PeeringController.shared.manager(for: peerID)
+				peerVC.peerID = peerID
 			}
 			return
 		}
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-		peerVC.peerManager = managerCache[cellPath.section][cellPath.row]
+		peerVC.peerID = managerCache[cellPath.section][cellPath.row].peerID
 	}
 	
 	override func viewDidLoad() {

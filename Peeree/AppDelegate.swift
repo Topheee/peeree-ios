@@ -196,7 +196,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			if vc is BrowseViewController {
 				browseVC = vc as? BrowseViewController
 			} else if let personVC = vc as? PersonDetailViewController {
-				guard personVC.peerManager.peerID != peerID else { return }
+				guard personVC.peerID != peerID else { return }
 			}
 		}
 		browseVC?.performSegue(withIdentifier: BrowseViewController.ViewPeerSegueID, sender: peerID)
@@ -213,7 +213,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			if vc is PinMatchTableViewController {
 				pinMatchVC = vc as? PinMatchTableViewController
 			} else if let messageVC = vc as? MessagingViewController {
-				guard messageVC.peerManager.peerID != peerID else { return }
+				guard messageVC.peerID != peerID else { return }
 			}
 		}
 		guard let pinMatchesTableVC = pinMatchVC else { return }
@@ -221,23 +221,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		pinMatchesTableVC.performSegue(withIdentifier: PinMatchTableViewController.MessagePeerSegueID, sender: peerID)
 	}
 
-	func find(peer: PeerInfo) {
+	func find(peerID: PeerID) {
 		guard let tabBarVC = window?.rootViewController as? UITabBarController,
 			  let browseNavVC = tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController else { return }
 
 		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
-		
+
+		// find possibly existing VCs displaying regarded PeerID
 		var _browseVC: BrowseViewController? = nil
 		var _personVC: PersonDetailViewController? = nil
 		for vc in browseNavVC.viewControllers {
 			if vc is BrowseViewController {
 				_browseVC = vc as? BrowseViewController
 			} else if let somePersonVC = vc as? PersonDetailViewController {
-				if somePersonVC.peerManager.peerID == peer.peerID {
+				if somePersonVC.peerID == peerID {
 					_personVC = somePersonVC
 				}
 			} else if let someBeaconVC = vc as? BeaconViewController {
-				guard someBeaconVC.peerManager?.peerInfo != peer else { return }
+				guard someBeaconVC.peerManager.peerInfo?.peerID != peerID else { return }
 			}
 		}
 		
@@ -246,10 +247,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		} else if let browseVC = _browseVC {
 			guard let personVC = browseVC.storyboard?.instantiateViewController(withIdentifier: PersonDetailViewController.storyboardID) as? PersonDetailViewController,
 				let findVC = browseVC.storyboard?.instantiateViewController(withIdentifier: BeaconViewController.storyboardID) as? BeaconViewController else { return }
-			let manager = PeeringController.shared.manager(for: peer.peerID)
-			personVC.peerManager = manager
+			personVC.peerID = peerID
 			browseNavVC.pushViewController(personVC, animated: false)
-			findVC.peerManager = manager
+			findVC.peerID = peerID
 			browseNavVC.pushViewController(findVC, animated: false)
 		}
 	}

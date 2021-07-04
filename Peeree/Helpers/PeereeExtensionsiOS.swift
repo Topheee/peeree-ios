@@ -18,7 +18,7 @@ extension PeerManager {
 		}
 	}
 
-	public func createRoundedOpaquePicture(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
+	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor?) -> UIImage? {
 		let image = pictureClassification == .none ? picture ?? (peerInfo?.hasPicture ?? false ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
 		return image.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}
