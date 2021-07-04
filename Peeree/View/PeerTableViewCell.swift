@@ -22,7 +22,7 @@ final class PeerTableViewCell: UITableViewCell {
 		portraitImageView.image = portraitImageView.image?.roundedCropped(cropRect: portraitImageView.bounds, backgroundColor: AppTheme.backgroundColor)
 		nameLabel.text = peerInfo.nickname
 		ageTagView.isHidden = peerInfo.age == nil
-		ageTagView.setNeedsLayout()
+		ageTagView.setNeedsDisplay()
 		ageLabel.text = "\(peerInfo.age ?? 0)"
 		genderLabel.text = peerInfo.gender.localizedRawValue
 	}

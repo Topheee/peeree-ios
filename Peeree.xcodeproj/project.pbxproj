@@ -83,8 +83,8 @@
 		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
 		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
 		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
-		9DFD343D266D512D002F102F /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DFD343C266D512D002F102F /* MatrixSDK */; };
 		9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFE8A961F33769700264CFE /* NetworkReachability.swift */; };
+		9DFF60EF2691BA1600FEA957 /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DFF60EE2691BA1600FEA957 /* MatrixSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -230,7 +230,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DFD343D266D512D002F102F /* MatrixSDK in Frameworks */,
+				9DFF60EF2691BA1600FEA957 /* MatrixSDK in Frameworks */,
 				9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -554,7 +554,7 @@
 			);
 			name = Peeree;
 			packageProductDependencies = (
-				9DFD343C266D512D002F102F /* MatrixSDK */,
+				9DFF60EE2691BA1600FEA957 /* MatrixSDK */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -624,7 +624,7 @@
 			);
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			packageReferences = (
-				9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */,
+				9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -1189,20 +1189,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
+		9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.19.0;
+				minimumVersion = 0.19.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9DFD343C266D512D002F102F /* MatrixSDK */ = {
+		9DFF60EE2691BA1600FEA957 /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9DFD343B266D512D002F102F /* XCRemoteSwiftPackageReference "MatrixSDK" */;
+			package = 9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
 		};
 /* End XCSwiftPackageProductDependency section */

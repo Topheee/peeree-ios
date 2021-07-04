@@ -179,12 +179,12 @@ class PinMatchTableViewController: UITableViewController {
 			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
 			return
 		}
-		guard peerPath.row != 0 else { return }
-
-		peerCache.swapAt(0, peerPath.row)
-		managerCache.swapAt(0, peerPath.row)
 		let topIndexPath = IndexPath(row: 0, section: 0)
-		tableView.moveRow(at: peerPath, to: topIndexPath)
+		if peerPath.row != 0 {
+			peerCache.swapAt(0, peerPath.row)
+			managerCache.swapAt(0, peerPath.row)
+			tableView.moveRow(at: peerPath, to: topIndexPath)
+		}
 		tableView.reloadRows(at: [topIndexPath], with: .automatic)
 	}
 

@@ -252,43 +252,6 @@ final class BrowseViewController: UITableViewController {
 	
 	// MARK: Private Methods
 	
-	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
-		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
-		if #available(iOS 13.0, *) {
-			cell.textLabel?.textColor = manager.isAvailable ? UIColor.label : UIColor.systemGray
-		} else {
-			cell.textLabel?.textColor = manager.isAvailable ? UIColor.black : UIColor.systemGray
-		}
-		cell.textLabel?.text = peer.nickname
-		let unreadMessages = manager.unreadMessages
-		if unreadMessages > 0 {
-			cell.detailTextLabel?.text = "\(manager.unreadMessages) 📫\t\(manager.transcripts.last?.message ?? "")"
-		} else {
-			cell.detailTextLabel?.text = "📭\t\(manager.transcripts.last?.message ?? "")"
-		}
-		guard let imageView = cell.imageView else { assertionFailure(); return }
-		imageView.image = manager.pictureClassification == .none ? manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
-		guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
-		
-		let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
-		guard let croppedImage = imageView.image?.cropped(to: CGRect(x: (originalImageSize.width - minImageEdgeLength) / 2, y: (originalImageSize.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { assertionFailure(); return }
-		
-		let imageRect = CGRect(squareEdgeLength: cell.contentView.marginFrame.height)
-		
-		UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cell.contentView.marginFrame.height), true, UIScreen.main.scale)
-		AppTheme.backgroundColor.setFill()
-		UIRectFill(imageRect)
-		croppedImage.draw(in: imageRect)
-		imageView.image = UIGraphicsGetImageFromCurrentImageContext()
-		UIGraphicsEndImageContext()
-		
-		let maskView = CircleMaskView(maskedView: imageView)
-		maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
-		if #available(iOS 11.0, *) {
-			imageView.accessibilityIgnoresInvertColors = manager.picture != nil
-		}
-	}
-	
 	private func addToCache(peer: PeerInfo, manager: PeerManager) -> Int {
 		let section: PeersSection
 		if !manager.isAvailable {

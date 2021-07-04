@@ -67,7 +67,22 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			present(alertController, animated: true, completion: nil)
 		} else {
 			let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
-			let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
+			let alertController: UIAlertController
+			if #available(iOS 14.0, *) {
+				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
+					// actionSheet doesn't work here
+					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
+				} else {
+					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
+				}
+			} else {
+				if UIDevice.current.userInterfaceIdiom == .pad {
+					// actionSheet doesn't work here
+					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
+				} else {
+					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
+				}
+			}
 			let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
 				AccountController.shared.createAccount { (_ _error: Error?) in
 					self.restCompletion(_error) {

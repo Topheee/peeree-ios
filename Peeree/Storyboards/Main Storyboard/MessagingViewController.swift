@@ -11,7 +11,6 @@ import UIKit
 class MessagingViewController: PeerViewController, UITextViewDelegate {
 	// Button for executing the message send.
 	@IBOutlet private weak var sendMessageButton: UIButton!
-	//@IBOutlet private weak var messageTableHeight: NSLayoutConstraint!
 	@IBOutlet private weak var chatTableViewContainer: UIView!
 	// Text field used for typing text messages to send to peers
 	@IBOutlet private weak var messageTextView: UITextView!
@@ -19,6 +18,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 	@IBOutlet private weak var portraitImageButton: UIButton!
 
 	private var notificationObservers: [NSObjectProtocol] = []
+	private var canSendMessages = false // cache of PeeringController.shared.peering
 
 	private var chatTableView: UITableView? { return chatTableViewContainer.subviews.first as? UITableView }
 
@@ -56,20 +56,24 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		guard let manager = peerManager, let peerInfo = PinMatchesController.shared.peerInfo(for: manager.peerID) else { return }
 		setPortraitButtonImage(manager: manager)
 		navigationItem.prompt = peerInfo.nickname
+		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: manager.peerID) { [weak self] _ in
+			self?.setPortraitButtonImage(manager: manager)
+		})
+		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber else { return }
+			self?.updateConnectionState(state.boolValue)
+		})
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
+		updateConnectionState(PeeringController.shared.peering)
+
 		registerForKeyboardNotifications()
 
 		chatTableView?.scrollToBottom(animated: true)
 		messageTextView.becomeFirstResponder()
-		
-		guard let manager = peerManager else { return }
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: manager.peerID) { [weak self] _ in
-			self?.setPortraitButtonImage(manager: manager)
-		})
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -99,7 +103,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 	// Dynamically enables/disables the send button based on user typing
 	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
 		let length = (textView.text?.count ?? 0) - range.length + text.count;
-		self.sendMessageButton.isEnabled = length > 0
+		self.sendMessageButton.isEnabled = canSendMessages && length > 0
 		return true
 	}
 
@@ -142,5 +146,10 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		if up {
 			chatTableView?.scrollToBottom(animated: true)
 		}
+	}
+
+	private func updateConnectionState(_ online: Bool) {
+		canSendMessages = online
+		if !online { sendMessageButton.isEnabled = online }
 	}
 }

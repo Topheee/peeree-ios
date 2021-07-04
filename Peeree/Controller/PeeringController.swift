@@ -24,7 +24,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	public static let shared = PeeringController()
 	
 	public enum NotificationInfoKey: String {
-		case peerID, again
+		case peerID, again, connectionState
 	}
 	
 	public enum Notifications: String {
@@ -144,8 +144,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 	
 	private func connectionChangedState() {
-		Notifications.connectionChangedState.postAsNotification(object: nil)
-		if peering {
+		let newState = peering
+		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
+		if newState {
 			ServerChatController.getOrSetupInstance { result in
 				switch result {
 				case .failure(let error):

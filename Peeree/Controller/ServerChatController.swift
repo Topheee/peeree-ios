@@ -9,16 +9,13 @@
 import Foundation
 import MatrixSDK
 
-public typealias RoomID = String
-public typealias UserID = String
-
 let serverChatDomain = "chat.peeree.de"
 
 func serverChatUserId(for peerID: PeerID) -> String {
 	return "@\(serverChatUserName(for: peerID)):\(serverChatDomain)"
 }
 
-func peerIDFrom(serverChatUserId userId: UserID) -> PeerID? {
+func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 	guard userId.count > 0,
 		  let atIndex = userId.firstIndex(of: "@"),
 		  let colonIndex = userId.firstIndex(of: ":") else { return nil }
@@ -40,7 +37,7 @@ func unexpectedEnumValueError() -> Error {
 
 final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
-	static let userId = serverChatUserId(for: UserPeerManager.instance.peerID)
+	static var userId: String { return serverChatUserId(for: UserPeerManager.instance.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
 	// we need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
 	static let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
 		NSLog("ERROR: matrix certificate rejected: \(String(describing: _data))")
@@ -162,6 +159,30 @@ final class ServerChatController {
 		}
 	}
 
+	/// tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
+	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
+		room.leave { response in
+			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			completion(response.error)
+		}
+	}
+
+	/// tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
+	private func forget(rooms: [MXRoom], completion: @escaping () -> Void) {
+		var leftoverRooms = rooms // inefficient as hell: always creates a whole copy of the array
+		guard let room = leftoverRooms.popLast() else {
+			completion()
+			return
+		}
+		room.leave { response in
+			if let error = response.error {
+				NSLog("ERROR: Failed leaving room: \(error.localizedDescription)")
+			}
+			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			self.forget(rooms: leftoverRooms, completion: completion)
+		}
+	}
+
 	func deleteAccount(completion: @escaping (Error?) -> Void) {
 		let password: String
 		do {
@@ -170,19 +191,21 @@ final class ServerChatController {
 			completion(error)
 			return
 		}
-		session.deactivateAccount(withAuthParameters: ["type" : kMXLoginFlowTypePassword, "user" : ServerChatController.userId, "password" : password], eraseAccount: true) { response in
-			guard response.isSuccess else { completion(response.error); return }
+		forget(rooms: session.rooms) {
+			self.session.deactivateAccount(withAuthParameters: ["type" : kMXLoginFlowTypePassword, "user" : ServerChatController.userId, "password" : password], eraseAccount: true) { response in
+				guard response.isSuccess else { completion(response.error); return }
 
-			do {
-				try ServerChatController.removePasswordFromKeychain()
-			} catch let error {
-				NSLog("ERROR: \(error.localizedDescription)")
-			}
-			// it seems we need to log out after we deleted the account
-			self.logout { _error in
-				_error.map { NSLog("ERROR: Logout after account deletion failed: \($0.localizedDescription)") }
-				// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
-				completion(nil)
+				do {
+					try ServerChatController.removePasswordFromKeychain()
+				} catch let error {
+					NSLog("ERROR: \(error.localizedDescription)")
+				}
+				// it seems we need to log out after we deleted the account
+				self.logout { _error in
+					_error.map { NSLog("ERROR: Logout after account deletion failed: \($0.localizedDescription)") }
+					// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
+					completion(nil)
+				}
 			}
 		}
 	}
@@ -227,7 +250,7 @@ final class ServerChatController {
 	// MARK: Instance Properties and Methods
 
 	private let session: MXSession
-	private var roomsForPeerIDs = [PeerID : MXRoom]()
+	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
 
 	func logout(completion: @escaping (Error?) -> Void) {
 		DispatchQueue.main.async {
@@ -265,17 +288,21 @@ final class ServerChatController {
 	private var notificationObservers: [Any] = []
 
 	private init(credentials: MXCredentials) {
-		MXSDKOptions.sharedInstance().enableCryptoWhenStartingMXSession = false
+		let options = MXSDKOptions.sharedInstance()
+		options.enableCryptoWhenStartingMXSession = true
+		options.disableIdenticonUseForUserAvatar = true
+		options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
 		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
 		session = MXSession(matrixRestClient: restClient)!
 		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { [weak self] peerID, _ in
 			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
-			room.leave { leaveRoomResponse in
-				NSLog("DEBUG: Left room: \(leaveRoomResponse).")
+			strongSelf.forget(room: room) { _error in
+				NSLog("DEBUG: Left room: \(String(describing: _error)).")
 			}
 		})
-		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomSummaryDidChange, object: nil, queue: nil) { [weak self] notification in
-			// THIS IS MORE THAN STUPID: we would just need to get notified after the initial sync?! or when the room is added?! But NO!
+		// mxRoomSummaryDidChange fires very often, but at some point the room contains a directUserId
+		// mxRoomInitialSync does not fire that often and contains the directUserId only for the receiver. But that is okay, since the initiator of the room knows it anyway
+		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomInitialSync, object: nil, queue: nil) { [weak self] notification in
 			guard let strongSelf = self else { return }
 			for room in strongSelf.session.rooms {
 				guard let userId = room.directUserId else {
@@ -297,53 +324,56 @@ final class ServerChatController {
 
 	// MARK: Server Messages
 
-	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
+	private func reallyCreateRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
 		let peerUserId = serverChatUserId(for: peerID)
 		let roomParameters = MXRoomCreationParameters(forDirectRoomWithUser: peerUserId)
 		roomParameters.visibility = kMXRoomDirectoryVisibilityPrivate
-		if let room = session.directJoinedRoom(withUserId: peerUserId) {
-			completion(.success(room))
-		} else {
-			// FUCK THIS SHIT: session.matrixRestClient.profile(forUser: peerUserId) crashes on my iPad with iOS 9.2
-			if #available(iOS 10, *) {
-				session.matrixRestClient.profile(forUser: peerUserId) { response in
-					guard response.isSuccess else {
-						DispatchQueue.main.async {
-							let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
-							let peerName = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == peerID })?.nickname ?? peerID.uuidString
-							let description = String(format: format, peerName)
-							completion(.failure(createApplicationError(localizedDescription: description)))
-						}
-						return
-					}
-
-					self.session.createRoom(parameters: roomParameters) { response in
-						guard let roomResponse = response.value else {
-							completion(.failure(response.error!))
-							return
-						}
-						guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
-							completion(.failure(unexpectedNilError()))
-							return
-						}
-						self.addRoomAndListenToEvents(room, for: peerID)
-						completion(.success(room))
-					}
-				}
-			} else {
-				self.session.createRoom(parameters: roomParameters) { response in
-					guard let roomResponse = response.value else {
-						completion(.failure(response.error!))
-						return
-					}
-					guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
-						completion(.failure(unexpectedNilError()))
-						return
-					}
-					self.addRoomAndListenToEvents(room, for: peerID) // we probably do this twice -> we cannot delete this here, since we need it to send the message to the room
-					completion(.success(room))
-				}
+		self.session.canEnableE2EByDefaultInNewRoom(withUsers: [peerUserId]) { canEnableE2E in
+			guard canEnableE2E else {
+				completion(.failure(createApplicationError(localizedDescription: NSLocalizedString("End-to-end encryption is not available for this peer.", comment: "Low-level server chat error"))))
+				return
 			}
+			roomParameters.initialStateEvents = [MXRoomCreationParameters.initialStateEventForEncryption(withAlgorithm: kMXCryptoMegolmAlgorithm)]
+			self.session.createRoom(parameters: roomParameters) { response in
+				guard let roomResponse = response.value else {
+					completion(.failure(response.error!))
+					return
+				}
+				guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
+					completion(.failure(unexpectedNilError()))
+					return
+				}
+				self.addRoomAndListenToEvents(room, for: peerID)
+				completion(.success(room))
+			}
+		} failure: { _error in
+			completion(.failure(_error ?? unexpectedNilError()))
+		}
+	}
+
+	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
+		let peerUserId = serverChatUserId(for: peerID)
+		if let room = roomsForPeerIDs[peerID] ?? session.directJoinedRoom(withUserId: peerUserId) {
+			completion(.success(room))
+			return
+		}
+
+		// FUCK THIS SHIT: session.matrixRestClient.profile(forUser: peerUserId) crashes on my iPad with iOS 9.2
+		if #available(iOS 10, *) {
+			session.matrixRestClient.profile(forUser: peerUserId) { response in
+				guard response.isSuccess else {
+					DispatchQueue.main.async {
+						let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
+						let peerName = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == peerID })?.nickname ?? peerID.uuidString
+						let description = String(format: format, peerName)
+						completion(.failure(createApplicationError(localizedDescription: description)))
+					}
+					return
+				}
+				self.reallyCreateRoom(with: peerID, completion: completion)
+			}
+		} else {
+			reallyCreateRoom(with: peerID, completion: completion)
 		}
 	}
 
@@ -351,8 +381,8 @@ final class ServerChatController {
 		if let oldRoom = roomsForPeerIDs[peerID] {
 			NSLog("WARN: Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
 			guard oldRoom.roomId != room.roomId else { return }
-			oldRoom.leave { leaveRoomResponse in
-				NSLog("DEBUG: Left old room: \(leaveRoomResponse).")
+			self.forget(room: room) { _error in
+				NSLog("DEBUG: Left old room: \(String(describing: _error)).")
 			}
 		}
 		roomsForPeerIDs[peerID] = room
@@ -366,14 +396,12 @@ final class ServerChatController {
 			_ = timeline.listenToEvents([.roomEncrypted, .roomEncryption, .roomMessage]) { event, direction, state in
 				switch event.eventType {
 				case .roomEncrypted:
-					// @TODO handle encryption
 					break
 				case .roomEncryption:
-					// @TODO handle encryption
 					break
 				case .roomMessage:
-					guard event.content["format"] as? String != kMXRoomMessageFormatHTML else {
-						NSLog("ERROR: Body is HTML, ignoring.")
+					guard event.content["format"] == nil else {
+						NSLog("ERROR: Body is formatted \(String(describing: event.content["format"])), ignoring.")
 						return
 					}
 					let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
@@ -410,13 +438,14 @@ final class ServerChatController {
 	}
 
 	private func start(completion: @escaping (Error?) -> Void) {
-		//let store = MXNoStore()
 		let store = MXMemoryStore()
 		session.setStore(store) { setStoreResponse in
 			guard setStoreResponse.isSuccess else {
 				completion(setStoreResponse.error ?? unexpectedNilError())
 				return
 			}
+			// as we do everything in the background and the deviceId's are re-generated every time, verifying each device does not give enough benefit here
+			self.session.crypto.warnOnUnknowDevices = false
 			// TODO: sync only back to last went offline
 			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
 			self.session.start(withSyncFilter: filter) { response in
@@ -436,7 +465,7 @@ final class ServerChatController {
 					self.addRoomAndListenToEvents(room, for: peerID)
 				}
 
-				self.session.listenToEvents { event, direction, customObject in
+				_ = self.session.listenToEvents { event, direction, customObject in
 					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
 				}
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
@@ -446,26 +475,19 @@ final class ServerChatController {
 							NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
 							return
 						}
+						guard let userId = event.stateKey else {
+							// we are only interested in joins from other people
+							NSLog("ERROR: No stateKey present in membership event.")
+							return
+						}
 						switch memberContent.membership {
 						case kMXMembershipStringJoin:
-							guard let userId = event.stateKey, userId != ServerChatController.userId else {
-								// we are only interested in joins from other people
-								NSLog("WARN: Received our join event.")
-								return
-							}
-							guard let room = self.session.room(withRoomId: event.roomId) else {
-								NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
-								return
-							}
-							guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-								NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
-								return
-							}
-							self.addRoomAndListenToEvents(room, for: peerID)
+							// we handle joins through the mxRoomInitialSync notification
+							break
 						case kMXMembershipStringInvite:
-							guard event.stateKey == ServerChatController.userId else {
+							guard userId == ServerChatController.userId else {
 								// we are only interested in invites for us
-								NSLog("WARN: Received invite event from sender other than us.")
+								NSLog("INFO: Received invite event from sender other than us.")
 								return
 							}
 							self.session.joinRoom(event.roomId) { joinResponse in
@@ -473,23 +495,32 @@ final class ServerChatController {
 									NSLog("ERROR: Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
 									return
 								}
-								guard let room = self.session.room(withRoomId: event.roomId) else {
-									NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
-									return
-								}
-								guard let userId = room.directUserId else {
-									NSLog("ERROR: No direct userId in room \(room.roomId ?? "<nil>").")
-									return
-								}
-								guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-									NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
-									return
-								}
-								self.addRoomAndListenToEvents(room, for: peerID)
+								// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
 							}
 						case kMXMembershipStringLeave:
-							// ignored
-							break
+							guard userId != ServerChatController.userId else {
+								// we are only interested in leaves from other people
+								NSLog("DEBUG: Received our leave event.")
+								return
+							}
+							guard let room = self.session.room(withRoomId: event.roomId) else {
+								NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
+								return
+							}
+							// I hope this suspends the event stream as well…
+							self.forget(room: room) { _error in
+								NSLog("DEBUG: Left empty room: \(String(describing: _error)).")
+							}
+							guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+								NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
+								return
+							}
+							_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
+							guard let peerInfo = PinMatchesController.shared.peerInfo(for: peerID) else {
+								NSLog("WARN: No peer info for peer ID available from pin matches controller.")
+								return
+							}
+							AccountController.shared.updatePinStatus(of: peerInfo)
 						default:
 							NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
 						}
@@ -505,6 +536,7 @@ final class ServerChatController {
 }
 
 extension MXResponse {
+	/// Result removes the dependency to MatrixSDK, resulting in only this file (ServerChatController.swift) depending on it
 	func toResult() -> Result<T, Error> {
 		switch self {
 		case .failure(let error):
