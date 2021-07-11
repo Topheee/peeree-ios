@@ -28,7 +28,6 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 			postAsNotification(object: nil, userInfo: [NotificationInfoKey.peerID.rawValue : peerID])
 		}
 	}
-	
 
 	private var pictureResourceURL: URL {
 		// Create a file path to our documents directory

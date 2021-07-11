@@ -12,6 +12,16 @@ import UIKit
 
 // MARK: - Extensions
 
+extension UIDevice {
+	var iPadOrMac: Bool {
+		if #available(iOS 14.0, *) {
+			return UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac
+		} else {
+			return UIDevice.current.userInterfaceIdiom == .pad
+		}
+	}
+}
+
 extension UIView {
 	var marginFrame: CGRect {
 		let margins = self.layoutMargins
@@ -26,7 +36,10 @@ extension UIView {
 
 extension UIImage {
 	func cropped(to cropRect: CGRect) -> UIImage? {
-		let scaledCropRect = CGRect(x: cropRect.origin.x * scale, y: cropRect.origin.y * scale, width: cropRect.size.width * scale, height: cropRect.size.height * scale)
+		let scaledCropRect = CGRect(x: cropRect.origin.x * scale,
+									y: cropRect.origin.y * scale,
+									width: cropRect.size.width * scale,
+									height: cropRect.size.height * scale)
 		
 		guard let imageRef = self.cgImage?.cropping(to: scaledCropRect) else { return nil }
 		return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)

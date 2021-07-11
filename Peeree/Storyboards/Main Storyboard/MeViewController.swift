@@ -48,60 +48,59 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			}
 		}
 	}
-	
+
+	private func initiateDeleteAccount() {
+		let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
+		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
+			self.deleteServerChatAccount()
+			AccountController.shared.deleteAccount { (_ _error: Error?) in
+				self.accountActionCompletionHandler(_error) {
+					self.loadUserPeerInfo()
+				}
+			}
+			self.adjustAccountView()
+		}))
+		let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+		alertController.addAction(cancelAction)
+		alertController.preferredAction = cancelAction
+		present(alertController, animated: true, completion: nil)
+	}
+
+	private func initiateCreateAccount() {
+		let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
+		let alertController: UIAlertController
+		if UIDevice.current.iPadOrMac {
+			// actionSheet doesn't work here
+			alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
+		} else {
+			alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
+		}
+		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
+			AccountController.shared.createAccount { (_ _error: Error?) in
+				self.accountActionCompletionHandler(_error) {
+					// we cannot go online immediately by now, as Me view would need to reload and probably for other reasons, too
+					//					PeeringController.shared.peering = true
+				}
+			}
+			DispatchQueue.main.async {
+				self.adjustAccountView()
+			}
+		}
+		alertController.addAction(createAction)
+		let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
+			AppDelegate.viewTerms(in: self)
+		}
+		alertController.addAction(viewTermsAction)
+		alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+		alertController.preferredAction = createAction
+		alertController.present()
+	}
+
 	@IBAction func createDeleteAccount(_ sender: Any) {
 		if AccountController.shared.accountExists {
-			let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
-			alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
-				self.deleteServerChatAccount()
-				AccountController.shared.deleteAccount { (_ _error: Error?) in
-					self.restCompletion(_error) {
-						self.loadUserPeerInfo()
-					}
-				}
-				self.adjustAccountView()
-			}))
-			let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
-			alertController.addAction(cancelAction)
-			alertController.preferredAction = cancelAction
-			present(alertController, animated: true, completion: nil)
+			initiateDeleteAccount()
 		} else {
-			let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
-			let alertController: UIAlertController
-			if #available(iOS 14.0, *) {
-				if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
-					// actionSheet doesn't work here
-					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
-				} else {
-					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
-				}
-			} else {
-				if UIDevice.current.userInterfaceIdiom == .pad {
-					// actionSheet doesn't work here
-					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
-				} else {
-					alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
-				}
-			}
-			let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
-				AccountController.shared.createAccount { (_ _error: Error?) in
-					self.restCompletion(_error) {
-						// we cannot go online immediately by now, as Me view would need to reload and probably for other reasons, too
-						//					PeeringController.shared.peering = true
-					}
-				}
-				DispatchQueue.main.async {
-					self.adjustAccountView()
-				}
-			}
-			alertController.addAction(createAction)
-			let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
-				AppDelegate.viewTerms(in: self)
-			}
-			alertController.addAction(viewTermsAction)
-			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
-			alertController.preferredAction = createAction
-			alertController.present()
+			initiateCreateAccount()
 		}
 	}
 	
@@ -242,14 +241,14 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
 			guard let newValue = textField.text, newValue != "" else {
 				AccountController.shared.deleteEmail { _error in
-					self.restCompletion(_error) {}
+					self.accountActionCompletionHandler(_error) {}
 				}
 				return
 			}
 			
 			let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
 			AccountController.shared.update(email: String(newValue[..<endIndex])) { _error in
-				self.restCompletion(_error) {}
+				self.accountActionCompletionHandler(_error) {}
 			}
 		default:
 			break
@@ -359,8 +358,9 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		scrollView.contentInset = contentInsets
 		scrollView.scrollIndicatorInsets = contentInsets
 	}
-	
-	private func restCompletion(_ _error: Error?, noErrorAction: @escaping () -> Void) {
+
+	/// Default handler for AccountController REST calls. Handles errors (if any) or calls <code>noErrorAction</code> on the main thread if no error occurred.
+	private func accountActionCompletionHandler(_ _error: Error?, noErrorAction: @escaping () -> Void) {
 		DispatchQueue.main.async {
 			self.adjustAccountView()
 			

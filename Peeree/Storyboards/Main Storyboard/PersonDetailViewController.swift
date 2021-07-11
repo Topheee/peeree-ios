@@ -185,7 +185,18 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			reportButton.title = NSLocalizedString("Report", comment: "Report Bar Button Title")
 		}
 	}
-	
+
+	func positionTags() {
+		// 0.707106781186548 = sin(45°)
+		let fac: CGFloat = 1 - 0.707106781186548
+		let portraitRadius = portraitImageView.bounds.width // hypotenuse
+		let cathetus = portraitRadius * fac // length of both legs / catheti of the triangle (since the portrait is a square)
+		genderLabelTop.constant = cathetus - genderTagView.bounds.height / 2.0
+		genderLabelLeading.constant = cathetus - genderTagView.bounds.width / 2.0
+		ageLabelBottom?.constant = cathetus - (ageTagView?.bounds.height ?? 0.0) / 2.0
+		ageLabelTrailing?.constant = cathetus - (ageTagView?.bounds.width ?? 0.0) / 2.0
+	}
+
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
@@ -221,14 +232,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))
-		
-		// 0.707106781186548 = sin(45°)
-		let r = (self.portraitImageView.bounds.width + 16.0) / 2.0
-		let edgeDistance = r - 0.707106781186548 * r
-		self.genderLabelTop.constant = edgeDistance
-		self.genderLabelLeading.constant = edgeDistance - self.genderLabel.bounds.width / 2.0
-		self.ageLabelBottom?.constant = edgeDistance
-		self.ageLabelTrailing?.constant = edgeDistance - self.ageLabel.bounds.width / 2.0
+
+		positionTags()
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {

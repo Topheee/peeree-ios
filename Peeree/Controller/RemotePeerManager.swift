@@ -398,23 +398,6 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		let charUUIDs = characteristics.map { $0.uuid.uuidString.left(8) }
 		NSLog("INFO: Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
 		for characteristic in characteristics {
-/*
-			if let descriptors = characteristic.descriptors {
-				for descriptor in descriptors {
-					if let data = descriptor.value as? Data {
-						if let s = String(data: data, encoding: String.Encoding.utf8) {
-							NSLog("\t\(s)")
-						} else if let s = String(data: data, encoding: String.Encoding.ascii) {
-							NSLog("\t\(s)")
-						} else {
-							NSLog("\tunknown descriptor")
-						}
-					} else if let data = descriptor.value as? String {
-						NSLog("\t\(data)")
-					}
-				}
-			}
-*/
 			switch characteristic.uuid {
 			case CBUUID.LocalPeerIDCharacteristicID:
 				peripheral.readValue(for: characteristic)
