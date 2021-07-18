@@ -316,3 +316,7 @@ final class GradientView: UIView {
 		gradient?.frame = bounds
 	}
 }
+
+class ResizingTextView: UITextView {
+	override var intrinsicContentSize: CGSize { return contentSize }
+}

@@ -34,6 +34,15 @@ extension UIView {
 	}
 }
 
+extension CALayer {
+	func removeAllAnimationsInSublayers() {
+		removeAllAnimations()
+		for sublayer in sublayers ?? [] {
+			sublayer.removeAllAnimationsInSublayers()
+		}
+	}
+}
+
 extension UIImage {
 	func cropped(to cropRect: CGRect) -> UIImage? {
 		let scaledCropRect = CGRect(x: cropRect.origin.x * scale,

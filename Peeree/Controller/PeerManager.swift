@@ -207,6 +207,14 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 		}
 	}
 
+	/// Mass-append messages. Only fires Notifications.unreadMessageCountChanged. Does not produce notifications.
+	func catchUp(messages: [Transcript]) {
+		DispatchQueue.main.async {
+			self.transcripts.append(contentsOf: messages)
+			Notifications.unreadMessageCountChanged.post(self.peerID)
+		}
+	}
+
 	// MARK: RemotePeerDelegate
 	
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {

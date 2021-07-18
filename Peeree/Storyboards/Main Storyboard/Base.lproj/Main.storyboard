@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HIO-b7-1gr">
-    <device id="retina3_5" orientation="portrait" appearance="dark"/>
+    <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
@@ -315,17 +315,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="247" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="747" axis="vertical" alignment="center" spacing="12" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="12" y="52" width="296" height="311"/>
+                            <stackView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="240" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="740" axis="vertical" alignment="center" spacing="12" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
+                                <rect key="frame" x="12" y="52" width="296" height="306"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rHp-W3-COa">
-                                        <rect key="frame" x="39.5" y="0.0" width="217" height="217"/>
+                                    <view contentMode="scaleToFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" translatesAutoresizingMaskIntoConstraints="NO" id="rHp-W3-COa">
+                                        <rect key="frame" x="82" y="0.0" width="132" height="132"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="217" height="217"/>
+                                            <view contentMode="scaleToFill" horizontalHuggingPriority="241" verticalHuggingPriority="241" horizontalCompressionResistancePriority="741" verticalCompressionResistancePriority="741" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="132" height="132"/>
                                                 <subviews>
                                                     <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="185" height="185"/>
+                                                        <rect key="frame" x="16" y="16" width="100" height="100"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person" label="Portrait">
                                                             <bool key="isElement" value="YES"/>
                                                         </accessibility>
@@ -335,9 +335,9 @@
                                                         </constraints>
                                                     </imageView>
                                                     <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC" customClass="RoundedVisualEffectView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="185" height="185"/>
+                                                        <rect key="frame" x="16" y="16" width="100" height="100"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
-                                                            <rect key="frame" x="0.0" y="0.0" width="185" height="185"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         </view>
                                                         <blurEffect style="regular"/>
@@ -363,192 +363,184 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
-                                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yo1-ut-E67" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="20" y="20" width="88.5" height="28"/>
-                                                <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="4fU-qX-EWh">
-                                                        <rect key="frame" x="8" y="0.0" width="78.5" height="28"/>
-                                                        <subviews>
-                                                            <label userInteractionEnabled="NO" contentMode="left" text="gender" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nS3-bX-bM2">
-                                                                <rect key="frame" x="0.0" y="4" width="54.5" height="20.5"/>
-                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                <color key="tintColor" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                <accessibility key="accessibilityConfiguration" label="Person Details"/>
-                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
-                                                                <nil key="textColor"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
-                                                            <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" translatesAutoresizingMaskIntoConstraints="NO" id="D5a-Uy-cid" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
-                                                                <rect key="frame" x="54.5" y="2" width="24" height="24"/>
-                                                                <accessibility key="accessibilityConfiguration">
-                                                                    <accessibilityTraits key="traits" notEnabled="YES"/>
-                                                                </accessibility>
-                                                                <userDefinedRuntimeAttributes>
-                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                                        <color key="value" systemColor="systemBackgroundColor"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                </userDefinedRuntimeAttributes>
-                                                            </view>
-                                                        </subviews>
-                                                    </stackView>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstAttribute="bottom" secondItem="4fU-qX-EWh" secondAttribute="bottom" id="1G3-c7-gH4"/>
-                                                    <constraint firstItem="4fU-qX-EWh" firstAttribute="leading" secondItem="yo1-ut-E67" secondAttribute="leading" constant="8" id="FW3-tg-aDK"/>
-                                                    <constraint firstAttribute="trailing" secondItem="4fU-qX-EWh" secondAttribute="trailing" constant="2" id="JvI-8f-FtT"/>
-                                                    <constraint firstItem="4fU-qX-EWh" firstAttribute="top" secondItem="yo1-ut-E67" secondAttribute="top" id="nm5-sc-gTw"/>
-                                                </constraints>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                        <real key="value" value="-1"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                </userDefinedRuntimeAttributes>
-                                            </view>
-                                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aUs-rV-7r7" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="134.5" y="169" width="62.5" height="28"/>
-                                                <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="qJ6-fC-OOJ">
-                                                        <rect key="frame" x="2" y="0.0" width="52.5" height="28"/>
-                                                        <subviews>
-                                                            <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" translatesAutoresizingMaskIntoConstraints="NO" id="dd4-5b-Dwi" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="2" width="24" height="24"/>
-                                                                <accessibility key="accessibilityConfiguration">
-                                                                    <accessibilityTraits key="traits" notEnabled="YES"/>
-                                                                </accessibility>
-                                                                <userDefinedRuntimeAttributes>
-                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                                        <color key="value" systemColor="systemBackgroundColor"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
-                                                                        <real key="value" value="4"/>
-                                                                    </userDefinedRuntimeAttribute>
-                                                                </userDefinedRuntimeAttributes>
-                                                            </view>
-                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jRR-HL-OFn">
-                                                                <rect key="frame" x="24" y="4" width="28.5" height="20.5"/>
-                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                <accessibility key="accessibilityConfiguration" label="Age"/>
-                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
-                                                                <nil key="textColor"/>
-                                                                <nil key="highlightedColor"/>
-                                                            </label>
-                                                        </subviews>
-                                                        <userDefinedRuntimeAttributes>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                                <integer key="value" value="16"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                        </userDefinedRuntimeAttributes>
-                                                    </stackView>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="qJ6-fC-OOJ" firstAttribute="top" secondItem="aUs-rV-7r7" secondAttribute="top" id="8sJ-ON-OaT"/>
-                                                    <constraint firstAttribute="trailing" secondItem="qJ6-fC-OOJ" secondAttribute="trailing" constant="8" id="KSv-Ql-6pQ"/>
-                                                    <constraint firstItem="qJ6-fC-OOJ" firstAttribute="leading" secondItem="aUs-rV-7r7" secondAttribute="leading" constant="2" id="ZIN-1v-WBM"/>
-                                                    <constraint firstAttribute="bottom" secondItem="qJ6-fC-OOJ" secondAttribute="bottom" id="pyA-AD-YN8"/>
-                                                </constraints>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                        <real key="value" value="-1"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                </userDefinedRuntimeAttributes>
-                                            </view>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="oOD-vv-AaG" firstAttribute="leading" secondItem="rHp-W3-COa" secondAttribute="leading" id="0Xn-FH-WiP"/>
                                             <constraint firstAttribute="bottom" secondItem="oOD-vv-AaG" secondAttribute="bottom" id="2mN-pb-Fst"/>
-                                            <constraint firstItem="yo1-ut-E67" firstAttribute="leading" secondItem="rHp-W3-COa" secondAttribute="leading" constant="20" symbolic="YES" id="7o1-mQ-xON"/>
-                                            <constraint firstItem="yo1-ut-E67" firstAttribute="top" secondItem="rHp-W3-COa" secondAttribute="top" constant="20" symbolic="YES" id="KGB-aA-JX1"/>
                                             <constraint firstAttribute="trailing" secondItem="oOD-vv-AaG" secondAttribute="trailing" id="bdj-so-fSZ"/>
-                                            <constraint firstAttribute="trailing" secondItem="aUs-rV-7r7" secondAttribute="trailing" constant="20" symbolic="YES" id="pxW-Bz-y3z"/>
-                                            <constraint firstAttribute="bottom" secondItem="aUs-rV-7r7" secondAttribute="bottom" constant="20" symbolic="YES" id="qFI-7h-h5H"/>
                                             <constraint firstItem="oOD-vv-AaG" firstAttribute="top" secondItem="rHp-W3-COa" secondAttribute="top" id="qSd-3R-LE5"/>
                                         </constraints>
                                     </view>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
-                                        <rect key="frame" x="107" y="229" width="82" height="82"/>
+                                    <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="HnQ-9F-bJd">
+                                        <rect key="frame" x="7" y="144" width="282.5" height="162"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="SM8-m1-KQC" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="82" height="82"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
+                                                <rect key="frame" x="8" y="0.0" width="266.5" height="162"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
-                                                        <rect key="frame" x="16" y="16" width="50" height="50"/>
-                                                        <accessibility key="accessibilityConfiguration" hint="Pin this person and mark him or her as interesting" label="Pin"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="256" verticalHuggingPriority="256" horizontalCompressionResistancePriority="756" verticalCompressionResistancePriority="756" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="29q-7d-1Xd">
+                                                        <rect key="frame" x="0.0" y="49" width="88.5" height="64"/>
+                                                        <subviews>
+                                                            <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="257" verticalHuggingPriority="257" horizontalCompressionResistancePriority="757" verticalCompressionResistancePriority="757" translatesAutoresizingMaskIntoConstraints="NO" id="yo1-ut-E67" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="88.5" height="28"/>
+                                                                <subviews>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="758" verticalCompressionResistancePriority="758" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="4fU-qX-EWh">
+                                                                        <rect key="frame" x="2" y="0.0" width="78.5" height="28"/>
+                                                                        <subviews>
+                                                                            <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="770" verticalHuggingPriority="265" horizontalCompressionResistancePriority="765" verticalCompressionResistancePriority="765" translatesAutoresizingMaskIntoConstraints="NO" id="D5a-Uy-cid" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="2" width="24" height="24"/>
+                                                                                <accessibility key="accessibilityConfiguration">
+                                                                                    <accessibilityTraits key="traits" notEnabled="YES"/>
+                                                                                </accessibility>
+                                                                                <userDefinedRuntimeAttributes>
+                                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                                        <color key="value" systemColor="systemBackgroundColor"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                </userDefinedRuntimeAttributes>
+                                                                            </view>
+                                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="259" verticalHuggingPriority="259" horizontalCompressionResistancePriority="759" verticalCompressionResistancePriority="759" text="gender" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nS3-bX-bM2">
+                                                                                <rect key="frame" x="24" y="4" width="54.5" height="20.5"/>
+                                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <color key="tintColor" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <accessibility key="accessibilityConfiguration" label="Person Details"/>
+                                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                                <nil key="textColor"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                    </stackView>
+                                                                </subviews>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="bottom" secondItem="4fU-qX-EWh" secondAttribute="bottom" id="1G3-c7-gH4"/>
+                                                                    <constraint firstItem="4fU-qX-EWh" firstAttribute="leading" secondItem="yo1-ut-E67" secondAttribute="leading" constant="2" id="FW3-tg-aDK"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="4fU-qX-EWh" secondAttribute="trailing" constant="8" id="JvI-8f-FtT"/>
+                                                                    <constraint firstItem="4fU-qX-EWh" firstAttribute="top" secondItem="yo1-ut-E67" secondAttribute="top" id="nm5-sc-gTw"/>
+                                                                </constraints>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                                                        <real key="value" value="-1"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                            </view>
+                                                            <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="257" verticalHuggingPriority="257" horizontalCompressionResistancePriority="757" verticalCompressionResistancePriority="757" translatesAutoresizingMaskIntoConstraints="NO" id="aUs-rV-7r7" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="36" width="62.5" height="28"/>
+                                                                <subviews>
+                                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="758" verticalCompressionResistancePriority="758" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="qJ6-fC-OOJ">
+                                                                        <rect key="frame" x="2" y="0.0" width="52.5" height="28"/>
+                                                                        <subviews>
+                                                                            <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="265" verticalHuggingPriority="265" horizontalCompressionResistancePriority="765" verticalCompressionResistancePriority="765" translatesAutoresizingMaskIntoConstraints="NO" id="dd4-5b-Dwi" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="2" width="24" height="24"/>
+                                                                                <accessibility key="accessibilityConfiguration">
+                                                                                    <accessibilityTraits key="traits" notEnabled="YES"/>
+                                                                                </accessibility>
+                                                                                <userDefinedRuntimeAttributes>
+                                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                                        <color key="value" systemColor="systemBackgroundColor"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
+                                                                                        <real key="value" value="4"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                </userDefinedRuntimeAttributes>
+                                                                            </view>
+                                                                            <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="259" verticalHuggingPriority="259" horizontalCompressionResistancePriority="759" verticalCompressionResistancePriority="759" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jRR-HL-OFn">
+                                                                                <rect key="frame" x="24" y="4" width="28.5" height="20.5"/>
+                                                                                <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                <accessibility key="accessibilityConfiguration" label="Age"/>
+                                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                                <nil key="textColor"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                        <userDefinedRuntimeAttributes>
+                                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                                <integer key="value" value="16"/>
+                                                                            </userDefinedRuntimeAttribute>
+                                                                        </userDefinedRuntimeAttributes>
+                                                                    </stackView>
+                                                                </subviews>
+                                                                <constraints>
+                                                                    <constraint firstItem="qJ6-fC-OOJ" firstAttribute="top" secondItem="aUs-rV-7r7" secondAttribute="top" id="8sJ-ON-OaT"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="qJ6-fC-OOJ" secondAttribute="trailing" constant="8" id="KSv-Ql-6pQ"/>
+                                                                    <constraint firstItem="qJ6-fC-OOJ" firstAttribute="leading" secondItem="aUs-rV-7r7" secondAttribute="leading" constant="2" id="ZIN-1v-WBM"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="qJ6-fC-OOJ" secondAttribute="bottom" id="pyA-AD-YN8"/>
+                                                                </constraints>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                                                        <real key="value" value="-1"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                        <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                            </view>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="SM8-m1-KQC">
+                                                        <rect key="frame" x="104.5" y="0.0" width="162" height="162"/>
+                                                        <subviews>
+                                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
+                                                                <rect key="frame" x="16" y="16" width="130" height="130"/>
+                                                                <accessibility key="accessibilityConfiguration" hint="Pin this person and mark him or her as interesting" label="Pin"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="width" secondItem="59x-ms-KVN" secondAttribute="height" multiplier="1:1" id="VW1-3f-p53"/>
+                                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="nhQ-EY-bws"/>
+                                                                </constraints>
+                                                                <state key="normal" image="PinTemplate"/>
+                                                                <state key="selected" image="PinTemplatePressed"/>
+                                                                <connections>
+                                                                    <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="0qx-Lg-ytW"/>
+                                                                </connections>
+                                                            </button>
+                                                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="749" verticalHuggingPriority="749" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
+                                                                <rect key="frame" x="71" y="71" width="20" height="20"/>
+                                                            </activityIndicatorView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" secondItem="59x-ms-KVN" secondAttribute="height" multiplier="1:1" id="VW1-3f-p53"/>
-                                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="nhQ-EY-bws"/>
+                                                            <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="SM8-m1-KQC" secondAttribute="topMargin" constant="8" id="1mA-Kl-4vr"/>
+                                                            <constraint firstAttribute="bottomMargin" secondItem="59x-ms-KVN" secondAttribute="bottom" constant="8" id="Jp8-1P-njL"/>
+                                                            <constraint firstItem="59x-ms-KVN" firstAttribute="leading" secondItem="SM8-m1-KQC" secondAttribute="leadingMargin" constant="8" id="Rs6-zn-8ji"/>
+                                                            <constraint firstItem="sY1-cI-JZt" firstAttribute="centerY" secondItem="SM8-m1-KQC" secondAttribute="centerY" id="gHR-oD-Erw"/>
+                                                            <constraint firstItem="sY1-cI-JZt" firstAttribute="centerX" secondItem="SM8-m1-KQC" secondAttribute="centerX" id="lj2-JB-QYZ"/>
+                                                            <constraint firstAttribute="trailingMargin" secondItem="59x-ms-KVN" secondAttribute="trailing" constant="8" id="qvf-Xv-aYU"/>
                                                         </constraints>
-                                                        <state key="normal" image="PinTemplate"/>
-                                                        <state key="selected" image="PinTemplate"/>
-                                                        <connections>
-                                                            <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="0qx-Lg-ytW"/>
-                                                        </connections>
-                                                    </button>
-                                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="749" verticalHuggingPriority="749" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
-                                                        <rect key="frame" x="31" y="31" width="20" height="20"/>
-                                                    </activityIndicatorView>
+                                                    </view>
                                                 </subviews>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                <constraints>
-                                                    <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="SM8-m1-KQC" secondAttribute="topMargin" constant="8" id="1mA-Kl-4vr"/>
-                                                    <constraint firstAttribute="bottomMargin" secondItem="59x-ms-KVN" secondAttribute="bottom" constant="8" id="Jp8-1P-njL"/>
-                                                    <constraint firstItem="59x-ms-KVN" firstAttribute="leading" secondItem="SM8-m1-KQC" secondAttribute="leadingMargin" constant="8" id="Rs6-zn-8ji"/>
-                                                    <constraint firstItem="sY1-cI-JZt" firstAttribute="centerY" secondItem="SM8-m1-KQC" secondAttribute="centerY" id="gHR-oD-Erw"/>
-                                                    <constraint firstItem="sY1-cI-JZt" firstAttribute="centerX" secondItem="SM8-m1-KQC" secondAttribute="centerX" id="lj2-JB-QYZ"/>
-                                                    <constraint firstAttribute="trailingMargin" secondItem="59x-ms-KVN" secondAttribute="trailing" constant="8" id="qvf-Xv-aYU"/>
-                                                </constraints>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="color" keyPath="strokeColor">
-                                                        <color key="value" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
-                                                        <real key="value" value="5"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
-                                                        <real key="value" value="5"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
-                                                        <real key="value" value="5"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
-                                                        <real key="value" value="5"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                    <userDefinedRuntimeAttribute type="number" keyPath="strokeWidth">
-                                                        <real key="value" value="4"/>
-                                                    </userDefinedRuntimeAttribute>
-                                                </userDefinedRuntimeAttributes>
-                                            </view>
+                                            </stackView>
                                         </subviews>
-                                    </stackView>
+                                        <constraints>
+                                            <constraint firstItem="ega-fn-5Me" firstAttribute="top" secondItem="HnQ-9F-bJd" secondAttribute="top" id="ULp-Oo-9AF"/>
+                                            <constraint firstAttribute="trailing" secondItem="ega-fn-5Me" secondAttribute="trailing" constant="8" id="dQf-bw-Eup"/>
+                                            <constraint firstItem="ega-fn-5Me" firstAttribute="leading" secondItem="HnQ-9F-bJd" secondAttribute="leading" constant="8" id="nYG-h1-hp0"/>
+                                            <constraint firstAttribute="bottom" secondItem="ega-fn-5Me" secondAttribute="bottom" id="rGb-TZ-vyo"/>
+                                        </constraints>
+                                    </view>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
-                                        <rect key="frame" x="93" y="311" width="110" height="0.0"/>
+                                        <rect key="frame" x="93" y="306" width="110" height="0.0"/>
                                         <accessibility key="accessibilityConfiguration">
                                             <bool key="isElement" value="NO"/>
                                         </accessibility>
@@ -557,7 +549,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="247" verticalHuggingPriority="247" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="cqN-Sb-ZzT" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="379" width="320" height="101"/>
+                                <rect key="frame" x="0.0" y="374" width="320" height="106"/>
                                 <subviews>
                                     <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fMG-w9-XfX" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="128" y="6" width="64" height="6"/>
@@ -571,19 +563,22 @@
                                                 <real key="value" value="6"/>
                                             </userDefinedRuntimeAttribute>
                                             <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
-                                                <color key="value" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="value" systemColor="tertiaryLabelColor"/>
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                     </view>
-                                    <stackView contentMode="scaleToFill" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="DUz-ZH-MqE">
-                                        <rect key="frame" x="8" y="12" width="304" height="28"/>
+                                    <stackView contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="DUz-ZH-MqE">
+                                        <rect key="frame" x="8" y="12" width="304" height="33"/>
                                         <subviews>
                                             <view userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="262" verticalHuggingPriority="262" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="752" translatesAutoresizingMaskIntoConstraints="NO" id="H4d-cm-ufn" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="1" width="26" height="26"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="33" height="33"/>
                                                 <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <accessibilityTraits key="traits" notEnabled="YES"/>
                                                 </accessibility>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="H4d-cm-ufn" secondAttribute="height" multiplier="1:1" id="qlG-zd-UHq"/>
+                                                </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
                                                         <color key="value" systemColor="systemBackgroundColor"/>
@@ -606,14 +601,14 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="249" text="Bio" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u8x-xh-rZR">
-                                                <rect key="frame" x="34" y="0.0" width="202" height="28"/>
+                                                <rect key="frame" x="41" y="0.0" width="195" height="33"/>
                                                 <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="28"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <view userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="sXB-IL-Hgb" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="244" y="0.0" width="60" height="28"/>
+                                                <rect key="frame" x="244" y="0.0" width="60" height="33"/>
                                                 <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <accessibilityTraits key="traits" notEnabled="YES"/>
@@ -645,8 +640,8 @@
                                         </subviews>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                     </stackView>
-                                    <textView hidden="YES" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="755" editable="NO" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UYZ-np-Imj">
-                                        <rect key="frame" x="20" y="48" width="280" height="0.0"/>
+                                    <textView hidden="YES" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="755" editable="NO" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UYZ-np-Imj" customClass="ResizingTextView" customModule="Peeree" customModuleProvider="target">
+                                        <rect key="frame" x="20" y="53" width="280" height="0.0"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
                                         <color key="textColor" systemColor="labelColor"/>
@@ -655,14 +650,14 @@
                                         <dataDetectorType key="dataDetectorTypes" phoneNumber="YES"/>
                                     </textView>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="SIgnature" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eGm-zA-15S">
-                                        <rect key="frame" x="20" y="-2" width="280" height="31.5"/>
+                                        <rect key="frame" x="20" y="3" width="280" height="31.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="BradleyHandITCTT-Bold" family="Bradley Hand" pointSize="25"/>
                                         <color key="textColor" red="0.08235294118" green="0.086274509799999996" blue="0.58829430820179629" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
-                                        <rect key="frame" x="20" y="37.5" width="280" height="14.5"/>
+                                        <rect key="frame" x="20" y="42.5" width="280" height="14.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="thin" pointSize="12"/>
                                         <nil key="textColor"/>
@@ -700,6 +695,7 @@
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="Idr-G2-uva" appends="YES" id="hlQ-8t-IJx"/>
+                                    <outletCollection property="gestureRecognizers" destination="Pfo-z8-aoQ" appends="YES" id="EVR-wH-bDd"/>
                                 </connections>
                             </view>
                         </subviews>
@@ -733,32 +729,21 @@
                     </navigationItem>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
-                        <outlet property="ageLabelBottom" destination="qFI-7h-h5H" id="lCx-Mk-IFN"/>
-                        <outlet property="ageLabelTrailing" destination="pxW-Bz-y3z" id="qdQ-gB-cVY"/>
-                        <outlet property="ageStackLeading" destination="ZIN-1v-WBM" id="D6b-uR-QFV"/>
-                        <outlet property="ageStackTrailing" destination="KSv-Ql-6pQ" id="xIg-GY-BkX"/>
                         <outlet property="ageTagView" destination="aUs-rV-7r7" id="Vym-0f-JyY"/>
                         <outlet property="bioHeadingLabel" destination="u8x-xh-rZR" id="aaT-lX-bbY"/>
                         <outlet property="bioTextView" destination="UYZ-np-Imj" id="hDk-ss-sEw"/>
                         <outlet property="findButtonItem" destination="S8S-DB-afu" id="jIe-rb-qH5"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
-                        <outlet property="genderLabelLeading" destination="7o1-mQ-xON" id="Bq4-Rx-lAb"/>
-                        <outlet property="genderLabelTop" destination="KGB-aA-JX1" id="lsS-5S-JBQ"/>
-                        <outlet property="genderStackLeading" destination="FW3-tg-aDK" id="f1q-jj-tZz"/>
-                        <outlet property="genderStackTrailing" destination="JvI-8f-FtT" id="so2-dY-bdN"/>
                         <outlet property="genderTagView" destination="yo1-ut-E67" id="9GB-yI-7JI"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
                         <outlet property="messageBar" destination="Lkr-13-Jfz" id="EqV-w5-kyP"/>
                         <outlet property="peerIDLabel" destination="i9C-MG-2LW" id="bDX-sF-YUh"/>
                         <outlet property="picturePinStackView" destination="DbU-Tc-UDS" id="yKz-Dn-tHv"/>
+                        <outlet property="pinAndTagsStackView" destination="ega-fn-5Me" id="4Rz-UR-oNd"/>
                         <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
                         <outlet property="pinCircleView" destination="SM8-m1-KQC" id="dlu-s4-hGI"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
-                        <outlet property="pinStackView" destination="ega-fn-5Me" id="hq6-d5-dNq"/>
-                        <outlet property="pinToCircleBottom" destination="Jp8-1P-njL" id="PP1-1X-del"/>
-                        <outlet property="pinToCircleLeading" destination="Rs6-zn-8ji" id="Nfm-yg-FLa"/>
-                        <outlet property="pinToCircleTop" destination="1mA-Kl-4vr" id="Nl5-Ul-OLi"/>
-                        <outlet property="pinToCircleTrailing" destination="qvf-Xv-aYU" id="bx7-zw-u4D"/>
+                        <outlet property="pinWidthConstraint" destination="nhQ-EY-bws" id="StT-kz-aUz"/>
                         <outlet property="portraitContainer" destination="rHp-W3-COa" id="cSl-JY-i65"/>
                         <outlet property="portraitEffectView" destination="pRr-uE-8dC" id="Cum-CT-DKu"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
@@ -776,6 +761,11 @@
                         <action selector="tapBiography:" destination="bgg-zV-1WC" id="Ubu-1y-YeA"/>
                     </connections>
                 </tapGestureRecognizer>
+                <panGestureRecognizer minimumNumberOfTouches="1" id="Pfo-z8-aoQ">
+                    <connections>
+                        <action selector="panBiography:" destination="bgg-zV-1WC" id="cz3-Bo-fpS"/>
+                    </connections>
+                </panGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="3210" y="703.75"/>
         </scene>
@@ -1801,9 +1791,6 @@
         <designable name="Pe0-RF-n2r">
             <size key="intrinsicContentSize" width="28" height="28"/>
         </designable>
-        <designable name="SM8-m1-KQC">
-            <size key="intrinsicContentSize" width="24" height="24"/>
-        </designable>
         <designable name="aUs-rV-7r7">
             <size key="intrinsicContentSize" width="28" height="28"/>
         </designable>
@@ -1833,16 +1820,17 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="xMu-Pu-iqx"/>
+        <segue reference="Qvq-U3-y04"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34.5"/>
-        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
+        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinTemplate" width="1024" height="1024"/>
+        <image name="PinTemplatePressed" width="1024" height="1024"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>
         <image name="PortraitUnavailable" width="512" height="512"/>
         <image name="ReadIconSocial" width="30" height="30"/>
@@ -1862,6 +1850,9 @@
         </systemColor>
         <systemColor name="systemGroupedBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tertiaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

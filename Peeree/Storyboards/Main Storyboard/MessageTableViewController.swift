@@ -67,7 +67,10 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		appendTranscript()
 	}
 
-	func messageReceived() { appendTranscript() }
+	func messageReceived() {
+		peerManager.unreadMessages = 0
+		appendTranscript()
+	}
 	func messageSent() { appendTranscript() }
 	func unreadMessageCountChanged() { /* ignored */ }
 

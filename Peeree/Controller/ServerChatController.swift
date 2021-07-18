@@ -98,19 +98,18 @@ final class ServerChatController {
 	private static func createAccount(completion: @escaping (Result<MXCredentials, Error>) -> Void) {
 		let peerID = UserPeerManager.instance.peerID
 		let username = serverChatUserName(for: peerID)
-		let passwordRawData: Data
+		var passwordRawData: Data
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
 		} catch let error {
 			completion(.failure(error))
 			return
 		}
-		let passwordData = passwordRawData.base64EncodedData()
-		if String(data: passwordData, encoding: .utf8) != passwordRawData.base64EncodedString() {
-			NSLog("UH-OH")
-		}
+		var passwordData = passwordRawData.base64EncodedData()
+		assert(String(data: passwordData, encoding: .utf8) == passwordRawData.base64EncodedString())
 		do {
 			try persistPasswordInKeychain(passwordData)
+			passwordData.resetBytes(in: 0..<passwordData.count)
 		} catch let error {
 			completion(.failure(error))
 			return
@@ -132,6 +131,7 @@ final class ServerChatController {
 				completion(.failure(unexpectedEnumValueError()))
 			}
 		}
+		passwordRawData.resetBytes(in: 0..<passwordRawData.count)
 	}
 
 	private static func login(completion: @escaping (Result<MXCredentials, Error>) -> Void) {
@@ -143,16 +143,14 @@ final class ServerChatController {
 			return
 		}
 		globalRestClient.login(type: .password, username: userId, password: password) { response in
-			if let error = response.error as NSError? {
-				if let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
-					if mxErrCode == "M_INVALID_USERNAME" {
-						NSLog("ERROR: Our account seems to be deleted. Removing local password for re-registering.")
-						do {
-							try ServerChatController.removePasswordFromKeychain()
-						} catch let pwError {
-							NSLog("WARN: Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
-						}
-					}
+			if let error = response.error as NSError?,
+			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
+			   mxErrCode == "M_INVALID_USERNAME" {
+				NSLog("ERROR: Our account seems to be deleted. Removing local password to be able to re-register.")
+				do {
+					try ServerChatController.removePasswordFromKeychain()
+				} catch let pwError {
+					NSLog("WARN: Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
 				}
 			}
 			completion(response.toResult())
@@ -252,14 +250,24 @@ final class ServerChatController {
 	private let session: MXSession
 	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
 
+	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
 	func logout(completion: @escaping (Error?) -> Void) {
 		DispatchQueue.main.async {
+			let session = self.session
 			// we need to drop the instance s.t. no two logout requests are made on the same instance
 			ServerChatController._instance = nil
-			self.session.logout { response in
+			session.logout { response in
 				if response.isFailure {
 					NSLog("ERROR: Failed to log out successfully - still dropped ServerChatController.")
 				}
+				// *** roughly based on MXKAccount.closeSession(true) ***
+				// Force a reload of device keys at the next session start.
+				// This will fix potential UISIs other peoples receive for our messages.
+				session.crypto?.resetDeviceKeys()
+				session.scanManager?.deleteAllAntivirusScans()
+				session.aggregations?.resetData()
+				session.close()
+				session.store?.deleteAllData()
 				completion(response.error)
 			}
 		}
@@ -377,6 +385,23 @@ final class ServerChatController {
 		}
 	}
 
+	private func process(messageEvent event: MXEvent) -> String? {
+		guard event.content["format"] == nil else {
+			NSLog("ERROR: Body is formatted \(String(describing: event.content["format"])), ignoring.")
+			return nil
+		}
+		let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
+		guard messageType == .text || messageType == .notice else {
+			NSLog("ERROR: Unsupported message type: \(messageType).")
+			return nil
+		}
+		guard let message = event.content["body"] as? String else {
+			NSLog("ERROR: Message body not a string: \(event.content["body"] ?? "<nil>").")
+			return nil
+		}
+		return message
+	}
+
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
 		if let oldRoom = roomsForPeerIDs[peerID] {
 			NSLog("WARN: Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
@@ -386,66 +411,56 @@ final class ServerChatController {
 			}
 		}
 		roomsForPeerIDs[peerID] = room
+		let peerManager = PeeringController.shared.manager(for: peerID)
+
+		// replay missed messages
+		let enumerator = room.enumeratorForStoredMessages
+		let ourUserId = ServerChatController.userId
+		var catchUpMessages = [Transcript]()
+		// we cannot reserve capacity in catchUpMessages here, since enumerator.remaining may be infinite
+		while let event = enumerator?.nextEvent {
+			switch event.eventType {
+			case .roomMessage:
+				guard let message = process(messageEvent: event) else { continue }
+				catchUpMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+			default:
+				break
+			}
+		}
+		catchUpMessages.reverse()
+		if catchUpMessages.count > 0 { peerManager.catchUp(messages: catchUpMessages) }
+
 		room.liveTimeline { _timeline in
 			guard let timeline = _timeline else {
 				NSLog("ERROR: No timeline retrieved.")
 				return
 			}
 
-			let peerManager = PeeringController.shared.manager(for: peerID)
-			_ = timeline.listenToEvents([.roomEncrypted, .roomEncryption, .roomMessage]) { event, direction, state in
+			_ = timeline.listenToEvents([.roomMessage]) { event, direction, state in
 				switch event.eventType {
-				case .roomEncrypted:
-					break
-				case .roomEncryption:
-					break
 				case .roomMessage:
-					guard event.content["format"] == nil else {
-						NSLog("ERROR: Body is formatted \(String(describing: event.content["format"])), ignoring.")
-						return
-					}
-					let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
-					guard messageType == .text || messageType == .notice else {
-						NSLog("ERROR: Unsupported message type: \(messageType).")
-						return
-					}
-					guard let message = event.content["body"] as? String else {
-						NSLog("ERROR: Message body not a string: \(event.content["body"] ?? "<nil>").")
-						return
-					}
+					guard let message = self.process(messageEvent: event) else { return }
 					if event.sender == ServerChatController.userId {
 						peerManager.didSend(message: message)
 					} else {
 						peerManager.received(message: message)
 					}
-					break
 				default:
 					NSLog("WARN: Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
-				}
-				switch direction {
-				case .forwards:
-					// Live/New events come here
-					break
-				case .backwards:
-					// Events that occurred in the past will come here when requesting pagination.
-					// roomState contains the state of the room just before this event occurred.
-					break
-				@unknown default:
-					NSLog("ERROR: Event with unknown direction \(direction).")
 				}
 			}
 		}
 	}
 
 	private func start(completion: @escaping (Error?) -> Void) {
-		let store = MXMemoryStore()
+		let store = MXFileStore(credentials: session.credentials) // MXMemoryStore()
 		session.setStore(store) { setStoreResponse in
 			guard setStoreResponse.isSuccess else {
 				completion(setStoreResponse.error ?? unexpectedNilError())
 				return
 			}
 			// as we do everything in the background and the deviceId's are re-generated every time, verifying each device does not give enough benefit here
-			self.session.crypto.warnOnUnknowDevices = false
+			self.session.crypto?.warnOnUnknowDevices = false
 			// TODO: sync only back to last went offline
 			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
 			self.session.start(withSyncFilter: filter) { response in
