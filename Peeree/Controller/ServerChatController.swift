@@ -48,6 +48,16 @@ final class ServerChatController {
 
 	/// access only from main thread!
 	private static var _instance: ServerChatController? = nil
+	private static var creatingInstanceCallbacks = [(Result<ServerChatController, Error>) -> Void]()
+	private static var creatingInstanceOnlyLoginRequests = [Bool]()
+
+	static private func reportCreatingInstance(result: Result<ServerChatController, Error>) {
+		DispatchQueue.main.async {
+			creatingInstanceCallbacks.forEach { $0(result) }
+			creatingInstanceOnlyLoginRequests.removeAll()
+			creatingInstanceCallbacks.removeAll()
+		}
+	}
 
 	static func withInstance(getter: @escaping (ServerChatController?) -> Void) {
 		DispatchQueue.main.async { getter(_instance) }
@@ -60,22 +70,30 @@ final class ServerChatController {
 				return
 			}
 
+			creatingInstanceCallbacks.append(completion)
+			creatingInstanceOnlyLoginRequests.append(onlyLogin)
+			guard creatingInstanceCallbacks.count == 1 else { return }
+
 			login { loginResult in
-				switch loginResult {
-				case .success(let credentials):
-					setupInstance(with: credentials, completion: completion)
-				case .failure(let error):
-					guard !onlyLogin else {
-						completion(.failure(error))
-						return
-					}
-					NSLog("WARN: server chat login failed: \(error.localizedDescription)")
-					createAccount { createAccountResult in
-						switch createAccountResult {
-						case .success(let credentials):
-							setupInstance(with: credentials, completion: completion)
-						case .failure(let error):
-							completion(.failure(error))
+				DispatchQueue.main.async {
+					switch loginResult {
+					case .success(let credentials):
+						setupInstance(with: credentials)
+					case .failure(let error):
+						var reallyOnlyLogin = true
+						creatingInstanceOnlyLoginRequests.forEach { reallyOnlyLogin = reallyOnlyLogin && $0 }
+						guard !reallyOnlyLogin else {
+							reportCreatingInstance(result: .failure(error))
+							return
+						}
+						NSLog("WARN: server chat login failed: \(error.localizedDescription)")
+						createAccount { createAccountResult in
+							switch createAccountResult {
+							case .success(let credentials):
+								setupInstance(with: credentials)
+							case .failure(let error):
+								reportCreatingInstance(result: .failure(error))
+							}
 						}
 					}
 				}
@@ -83,14 +101,16 @@ final class ServerChatController {
 		}
 	}
 
-	private static func setupInstance(with credentials: MXCredentials, completion: @escaping (Result<ServerChatController, Error>) -> Void) {
+	private static func setupInstance(with credentials: MXCredentials) {
 		let c = ServerChatController(credentials: credentials)
-		_instance = c
 		c.start { _error in
 			if let error = _error {
-				completion(.failure(error))
+				reportCreatingInstance(result: .failure(error))
 			} else {
-				completion(.success(c))
+				DispatchQueue.main.async {
+					_instance = c
+					reportCreatingInstance(result: .success(c))
+				}
 			}
 		}
 	}
@@ -142,7 +162,15 @@ final class ServerChatController {
 			completion(.failure(error))
 			return
 		}
-		globalRestClient.login(type: .password, username: userId, password: password) { response in
+		globalRestClient.login(parameters: ["type" : kMXLoginFlowTypePassword,
+											"identifier" : ["type" : kMXLoginIdentifierTypeUser, "user" : userId],
+											"password" : password,
+											// Patch: add the old login api parameters to make dummy login still working
+											"user" : userId,
+											// probably a bad idea for the far future to use the userId as the device_id here, but hell yeah
+											"device_id" : userId]) { response in
+//		this crappy shit doesn't (re-)store a persistent device_id:
+//		globalRestClient.login(type: .password, username: userId, password: password) { response in
 			if let error = response.error as NSError?,
 			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
 			   mxErrCode == "M_INVALID_USERNAME" {
@@ -153,7 +181,19 @@ final class ServerChatController {
 					NSLog("WARN: Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
 				}
 			}
-			completion(response.toResult())
+			// could be that easy:
+//			completion(response.toResult())
+			guard let json = response.value else {
+				NSLog("ERROR: Login response is nil.")
+				completion(.failure(unexpectedNilError()))
+				return
+			}
+			guard let loginResponse = MXLoginResponse(fromJSON: json) else {
+				completion(.failure(createApplicationError(localizedDescription: "ERROR: Cannot create login response from JSON \(json).")))
+				return
+			}
+			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: globalRestClient.credentials)
+			completion(.success(credentials))
 		}
 	}
 
@@ -250,8 +290,9 @@ final class ServerChatController {
 	private let session: MXSession
 	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
 
+	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
-	func logout(completion: @escaping (Error?) -> Void) {
+	private func logout(completion: @escaping (Error?) -> Void) {
 		DispatchQueue.main.async {
 			let session = self.session
 			// we need to drop the instance s.t. no two logout requests are made on the same instance
@@ -270,6 +311,24 @@ final class ServerChatController {
 				session.store?.deleteAllData()
 				completion(response.error)
 			}
+		}
+	}
+
+	/// this will close the underlying session and invalidate the global ServerChatController instance.
+	static func close() {
+		DispatchQueue.main.async {
+			guard let instance = _instance else { return }
+			// we need to drop the instance s.t. no two logout requests are made on the same instance
+			_instance = nil
+
+			let session = instance.session
+			// *** roughly based on MXKAccount.closeSession(true) ***
+			// Force a reload of device keys at the next session start.
+			// This will fix potential UISIs other peoples receive for our messages.
+			session.crypto?.resetDeviceKeys()
+			session.scanManager?.deleteAllAntivirusScans()
+			session.aggregations?.resetData()
+			session.close()
 		}
 	}
 
@@ -385,7 +444,7 @@ final class ServerChatController {
 		}
 	}
 
-	private func process(messageEvent event: MXEvent) -> String? {
+	private static func process(messageEvent event: MXEvent) -> String? {
 		guard event.content["format"] == nil else {
 			NSLog("ERROR: Body is formatted \(String(describing: event.content["format"])), ignoring.")
 			return nil
@@ -416,19 +475,22 @@ final class ServerChatController {
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = ServerChatController.userId
-		var catchUpMessages = [Transcript]()
+		// these are all messages that have been sent while we where offline
+		var catchUpMissedMessages = [Transcript]()
+		var encryptedEvents = [MXEvent]()
 		// we cannot reserve capacity in catchUpMessages here, since enumerator.remaining may be infinite
 		while let event = enumerator?.nextEvent {
 			switch event.eventType {
 			case .roomMessage:
-				guard let message = process(messageEvent: event) else { continue }
-				catchUpMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+				guard let message = ServerChatController.process(messageEvent: event) else { continue }
+				catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+			case .roomEncrypted:
+				encryptedEvents.append(event)
 			default:
 				break
 			}
 		}
-		catchUpMessages.reverse()
-		if catchUpMessages.count > 0 { peerManager.catchUp(messages: catchUpMessages) }
+		catchUpMissedMessages.reverse()
 
 		room.liveTimeline { _timeline in
 			guard let timeline = _timeline else {
@@ -436,10 +498,36 @@ final class ServerChatController {
 				return
 			}
 
+			// we need to reset the replay attack check, as we kept getting errors like:
+			// [MXOlmDevice] decryptGroupMessage: Warning: Possible replay attack
+			self.session.resetReplayAttackCheck(inTimeline: timeline.timelineId)
+			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { _failedEvents in
+				if let failedEvents = _failedEvents, failedEvents.count > 0 {
+					for failedEvent in failedEvents {
+						NSLog("WARN: Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
+					}
+				}
+
+				// these are all messages that we have seen earlier already, but we need to decryt them again apparently
+				var catchUpDecryptedMessages = [Transcript]()
+				for event in encryptedEvents {
+					switch event.eventType {
+					case .roomMessage:
+						guard let message = ServerChatController.process(messageEvent: event) else { continue }
+						catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+					default:
+						break
+					}
+				}
+				catchUpDecryptedMessages.reverse()
+				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
+				if catchUpDecryptedMessages.count > 0 { peerManager.catchUp(messages: catchUpDecryptedMessages) }
+			}
+
 			_ = timeline.listenToEvents([.roomMessage]) { event, direction, state in
 				switch event.eventType {
 				case .roomMessage:
-					guard let message = self.process(messageEvent: event) else { return }
+					guard let message = ServerChatController.process(messageEvent: event) else { return }
 					if event.sender == ServerChatController.userId {
 						peerManager.didSend(message: message)
 					} else {

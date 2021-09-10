@@ -15,7 +15,6 @@ public protocol RemotePeering {
 
 public protocol PeeringControllerDelegate {
 	func serverChatLoginFailed(with error: Error)
-	func serverChatLogoutFailed(with error: Error)
 	func peeringControllerIsReadyToGoOnline()
 }
 
@@ -108,8 +107,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	
 	func advertisingStopped() {
 		_remote.stopScan() // stop scanning when we where de-authorized
-		connectionChangedState()
 		peerManagers.removeAll()
+		connectionChangedState()
 	}
 	
 	func localPeerDelegate(for peerID: PeerID) -> LocalPeerDelegate {
@@ -156,13 +155,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				}
 			}
 		} else {
-			ServerChatController.withInstance { _instance in
-				_instance?.logout(completion: { _error in
-					if let error = _error {
-						self.delegate?.serverChatLogoutFailed(with: error)
-					}
-				})
-			}
+			ServerChatController.close()
 		}
 	}
 }

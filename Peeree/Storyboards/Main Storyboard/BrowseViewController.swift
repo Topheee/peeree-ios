@@ -34,7 +34,7 @@ final class BrowseViewController: UITableViewController {
 		for peerArray in peerCache {
 			peerAvailable = peerAvailable || peerArray.count > 0
 		}
-		return !PeeringController.shared.peering || !peerAvailable
+		return !peerAvailable || !PeeringController.shared.peering
 	}
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }

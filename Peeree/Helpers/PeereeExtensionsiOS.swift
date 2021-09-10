@@ -18,7 +18,7 @@ extension PeerManager {
 		}
 	}
 
-	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor?) -> UIImage? {
+	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
 		let image = pictureClassification == .none ? picture ?? (peerInfo?.hasPicture ?? false ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
 		return image.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}
@@ -135,7 +135,7 @@ extension AppDelegate {
 	static func requestPin(of peer: PeerInfo) {
 		let manager = PeeringController.shared.manager(for: peer.peerID)
 		if !manager.verified {
-			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: .actionSheet)
+			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 			let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
 				manager.verify()
 			}

@@ -182,12 +182,14 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	public func send(message: String, completion: @escaping (Error?) -> Void) {
 		ServerChatController.withInstance { _serverChatController in
 			// we are now on the main queue
+/*
 			if self.isAvailable || _serverChatController == nil {
 				// always prefer sending via Bluetooth
 				self.pendingMessages.append((message, completion))
 				Notifications.messageQueued.post(self.peerID)
 				self.dequeueMessage()
-			} else if let serverChatController = _serverChatController {
+			} else */
+			if let serverChatController = _serverChatController {
 				serverChatController.send(message: message, to: self.peerID) { result in
 					switch result {
 					case .success(_):

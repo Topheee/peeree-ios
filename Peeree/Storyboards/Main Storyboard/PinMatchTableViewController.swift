@@ -20,7 +20,7 @@ class PinMatchTableViewController: UITableViewController {
 	private var managerCache: [PeerManager] = []
 
 	private var placeholderCellActive: Bool {
-		return peerCache.count == 0
+		return peerCache.count == 0 || !PeeringController.shared.peering
 	}
 
 	private var notificationObservers: [NSObjectProtocol] = []
@@ -62,6 +62,15 @@ class PinMatchTableViewController: UITableViewController {
 		})
 		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver { [weak self] _ in
 			self?.tableView.reloadData()
+		})
+		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber,
+				  let strongSelf = self else { return }
+			if state.boolValue {
+				strongSelf.updateCache()
+			} else {
+				strongSelf.tableView.reloadData()
+			}
 		})
 		notificationObservers.append(PinMatchesController.Notifications.pinMatchedPeersUpdated.addObserver { [weak self] _ in
 			self?.updateCache()
@@ -106,9 +115,14 @@ class PinMatchTableViewController: UITableViewController {
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		if placeholderCellActive {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.PlaceholderPeerCellID) as! PlaceHolderTableViewCell
-			let accountExists = AccountController.shared.accountExists
-			cell.heading = accountExists ? NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.") : NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
-			cell.subhead = accountExists ? NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.") : NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
+			if PeeringController.shared.peering {
+				let accountExists = AccountController.shared.accountExists
+				cell.heading = accountExists ? NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.") : NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
+				cell.subhead = accountExists ? NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.") : NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
+			} else {
+				cell.heading = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
+				cell.subhead = NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.")
+			}
 			return cell
 		} else {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!

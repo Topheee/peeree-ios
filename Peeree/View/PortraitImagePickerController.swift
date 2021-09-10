@@ -34,7 +34,7 @@ open class PortraitImagePickerController: UIViewController, UIImagePickerControl
 			presentPicker()
 		}
 		
-		let alertController = UIAlertController()
+		let alertController = UIAlertController(title: nil, message: nil, preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 		let cameraAction = UIAlertAction(title: NSLocalizedString("Camera", comment: "Camera of the device."), style: .`default`, handler: cameraHandler)
 		cameraAction.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
 		alertController.addAction(cameraAction)

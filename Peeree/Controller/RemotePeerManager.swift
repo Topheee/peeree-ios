@@ -93,7 +93,7 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		case lostConnection, unknownPeripheralOrCharacteristic, valueTooLong, reliableWriteAlreadyInProgress, bleError(Error)
 	}
 
-	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", attributes: [])
+	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", qos: .default, attributes: [])
 	
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
 	private var cachedPeers = SynchronizedDictionary<PeerID, PeerInfo>(queueLabel: "\(BundleID).cachedPeers")
@@ -766,9 +766,10 @@ final class RemotePeerManager: NSObject, RemotePeering, CBCentralManagerDelegate
 		let writeType = CBCharacteristicWriteType.withResponse
 		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), UserPeerManager.instance.keyPair.blockSize)
 		do {
-			let nonce = try generateRandomData(length: randomByteCount)
+			var nonce = try generateRandomData(length: randomByteCount)
 			nonces[peripheral] = nonce
 			peripheral.writeValue(nonce, for: characteristic, type: writeType)
+			nonce.resetBytes(in: 0..<nonce.count)
 		} catch let error {
 			remotePeerDelegates[peerID]?.failedVerification(of: peerID, error: error)
 		}

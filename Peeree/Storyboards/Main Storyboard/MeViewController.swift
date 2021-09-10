@@ -33,18 +33,14 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
 
 	private func deleteServerChatAccount() {
-		ServerChatController.getOrSetupInstance(onlyLogin: true) { result in
-			switch result {
-			case .success(let serverChatController):
-				serverChatController.deleteAccount { _error in
-					if let error = _error {
-						AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
-						try? ServerChatController.removePasswordFromKeychain()
-					}
+		ServerChatController.withInstance { _serverChatController in
+			guard let serverChatController = _serverChatController else { return }
+
+			serverChatController.deleteAccount { _error in
+				if let error = _error {
+					AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
+					try? ServerChatController.removePasswordFromKeychain()
 				}
-			case .failure(let error):
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
-				NSLog("ERROR: Couldn't delete server chat account, this will probably lead to a zombie account on the server! Reason: \(error.localizedDescription)")
 			}
 		}
 	}
@@ -68,13 +64,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 
 	private func initiateCreateAccount() {
 		let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
-		let alertController: UIAlertController
-		if UIDevice.current.iPadOrMac {
-			// actionSheet doesn't work here
-			alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .alert)
-		} else {
-			alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: .actionSheet)
-		}
+		let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
 			AccountController.shared.createAccount { (_ _error: Error?) in
 				self.accountActionCompletionHandler(_error) {
@@ -318,6 +308,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		if bio != "" {
 			bioTextView.text = bio
 		} else if let font = bioTextView.font {
+			bioTextView.text = nil
 			let descriptor = font.fontDescriptor
 			if let newDescriptor = descriptor.withSymbolicTraits(descriptor.symbolicTraits.union(UIFontDescriptor.SymbolicTraits.traitItalic)) {
 				bioTextView.font = UIFont(descriptor: newDescriptor, size: 0.0)

@@ -1194,7 +1194,7 @@
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.19.3;
+				minimumVersion = 0.19.8;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

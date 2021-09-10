@@ -27,7 +27,7 @@ protocol LocalPeerDelegate {
 /// The LocalPeerManager singleton serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
 /// All the CBPeripheralManagerDelegate methods work on a separate queue so you must not call them yourself.
 final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
-	let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", attributes: [])
+	let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", qos: .utility, attributes: [])
 	
 	private var peripheralManager: CBPeripheralManager! = nil
 	
@@ -244,9 +244,10 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			}
 			let randomByteCount = min(request.central.maximumUpdateValueLength, UserPeerManager.instance.keyPair.blockSize)
 			do {
-				let nonce = try generateRandomData(length: randomByteCount)
+				var nonce = try generateRandomData(length: randomByteCount)
 				remoteNonces[peerID] = nonce
 				request.value = nonce
+				nonce.resetBytes(in: 0..<nonce.count)
 				peripheral.respond(to: request, withResult: .success)
 			} catch let error {
 				NSLog("ERROR: Generating random Bluetooth nonce failed: \(error.localizedDescription).")

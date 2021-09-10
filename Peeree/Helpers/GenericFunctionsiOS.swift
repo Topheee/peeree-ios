@@ -54,19 +54,17 @@ extension UIImage {
 		return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
 	}
 
-	func roundedCropped(cropRect: CGRect, backgroundColor: UIColor?) -> UIImage? {
+	func roundedCropped(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
 		let minImageEdgeLength = min(size.height, size.width)
 		guard let croppedImage = cropped(to: CGRect(x: (size.width - minImageEdgeLength) / 2, y: (size.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { return nil }
-		UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cropRect.height), backgroundColor != nil, UIScreen.main.scale)
+		UIGraphicsBeginImageContextWithOptions(CGSize(squareEdgeLength: cropRect.height), true, UIScreen.main.scale)
 		croppedImage.draw(in: cropRect)
 		let path = UIBezierPath(rect: cropRect)
 		// we need to inset the cropRect by 1 such that we avoid an ugly border
 		path.append(UIBezierPath(ovalIn: cropRect.inset(by: UIEdgeInsets(top: 1.0, left: 1.0, bottom: 1.0, right: 1.0))))
 		path.usesEvenOddFillRule = true
-		if let fillColor = backgroundColor {
-			fillColor.setFill()
-			path.fill()
-		}
+		backgroundColor.setFill()
+		path.fill()
 		let image = UIGraphicsGetImageFromCurrentImageContext()
 		UIGraphicsEndImageContext()
 		return image

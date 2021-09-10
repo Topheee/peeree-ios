@@ -37,8 +37,17 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	}
 	
 	private func setPortraitButtonImage() {
+		portraitImageButton.setImage(peerManager.createRoundedPicture(cropRect: portraitImageButton.bounds, backgroundColor: navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor), for: .normal)
 		// background color of navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor does not work (at least) on iPhone SE 2 (it has a different color than the bar)
-		portraitImageButton.setImage(peerManager.createRoundedPicture(cropRect: portraitImageButton.bounds, backgroundColor: nil), for: .normal)
+		// so we need to use cornerRadius
+		portraitImageButton.layer.cornerRadius = portraitImageButton.bounds.height / 2.0
+		portraitImageButton.layer.masksToBounds = true
+	}
+
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		portraitImageButton.layer.cornerRadius = portraitImageButton.bounds.height / 2.0
+		portraitImageButton.layer.masksToBounds = true
 	}
 
 	override func viewDidLoad() {
