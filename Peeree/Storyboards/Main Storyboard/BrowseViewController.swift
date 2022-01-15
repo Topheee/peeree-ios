@@ -81,7 +81,7 @@ final class BrowseViewController: UITableViewController {
 		})
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.connectionChangedState(PeeringController.shared.peering)
+			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeeringController.shared.peering)
 		})
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
@@ -185,8 +185,9 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		guard !placeholderCellActive, peerCache[section].count > 0 else { return nil }
-		guard let peerSection = PeersSection(rawValue: section) else { return super.tableView(tableView, titleForHeaderInSection: section) }
+		guard !placeholderCellActive, peerCache[section].count > 0, let peerSection = PeersSection(rawValue: section) else {
+			return super.tableView(tableView, titleForHeaderInSection: section)
+		}
 		
 		switch peerSection {
 		case .inFilter:
@@ -322,7 +323,12 @@ final class BrowseViewController: UITableViewController {
 				tableView.reloadData()
 			} else {
 				tableView.moveRow(at: peerPath, to: IndexPath(row: 0, section: PeersSection.recentlySeen.rawValue))
-				if peerCache[peerPath.section].count == 0 { tableView.reloadSections(IndexSet(integer: peerPath.section), with: .automatic) }
+				var reloadSections = IndexSet()
+				if peerCache[peerPath.section].count == 0 { reloadSections.insert(peerPath.section) }
+				if peerCache[PeersSection.recentlySeen.rawValue].count == 1 { reloadSections.insert(PeersSection.recentlySeen.rawValue) }
+				if !reloadSections.isEmpty {
+					tableView.reloadSections(reloadSections, with: .automatic)
+				}
 			}
 		} else {
 			remove(row: peerPath.row, section: peerPath.section)

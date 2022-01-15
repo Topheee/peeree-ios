@@ -35,9 +35,15 @@ func arrayFromBundle(name: String) -> [String]? {
 	return NSArray(contentsOf: url) as? [String]
 }
 
-/// this does nothing else than throwing an exception
 func createApplicationError(localizedDescription: String, code: Int = -1) -> Error {
-	return NSError(domain: "Peeree", code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
+	return NSError(domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath, code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
+}
+
+func createSystemError() -> Error? {
+	let code = errno
+	guard let errorCString = strerror(code), let errorString = String(utf8String: errorCString) else { return nil }
+
+	return createApplicationError(localizedDescription: errorString, code: Int(code))
 }
 
 func errorMessage(for status: OSStatus) -> String {

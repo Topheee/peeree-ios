@@ -72,13 +72,19 @@ extension UIImage {
 }
 
 extension UIViewController {
-	func presentInFrontMostViewController(_ animated: Bool, completion: (() -> Void)?) {
-		guard let rootVC = UIApplication.shared.windows.first?.rootViewController else { return }
+	static func frontMostViewController() -> UIViewController? {
+		guard let rootVC = UIApplication.shared.windows.first?.rootViewController else { return nil }
 
 		var vc = rootVC
 		while let presentedVC = vc.presentedViewController {
 			vc = presentedVC
 		}
+		return vc
+	}
+
+	func presentInFrontMostViewController(_ animated: Bool, completion: (() -> Void)?) {
+		guard let vc = UIViewController.frontMostViewController() else { return }
+
 		DispatchQueue.main.async {
 			vc.present(self, animated: animated, completion: completion)
 		}
@@ -86,10 +92,31 @@ extension UIViewController {
 }
 
 extension UIAlertController {
-	/// This is the preferred method to display an UIAlertController since it sets the tint color of the global theme.
-	func present(_ completion: (() -> Void)? = nil) {
+	/// This is the preferred method to display an UIAlertController since it does not crash on iPad.
+	func present(around barButtonItem: UIBarButtonItem? = nil, _ completion: (() -> Void)? = nil) {
+		guard self.preferredStyle == .actionSheet && UIDevice.current.iPadOrMac
+				&& self.popoverPresentationController?.barButtonItem == nil
+				&& self.popoverPresentationController?.sourceView == nil else {
+			// we can simply present this alert controller
+			presentInFrontMostViewController(true, completion: completion)
+			return
+		}
+
+		// we set default values for the mandatory properties of the UIPopoverPresentationController
+		guard let vc = UIViewController.frontMostViewController(), let v = vc.view,
+				let ppc = self.popoverPresentationController else {
+			NSLog("ERROR: No view (controller), or popover controller to present in.")
+			return
+		}
+		if let bbi = barButtonItem {
+			ppc.barButtonItem = bbi
+		} else {
+			ppc.sourceView = v
+			ppc.sourceRect = v.bounds.insetBy(dx: v.bounds.width * 0.5, dy: v.bounds.height * 0.5)
+		}
 		presentInFrontMostViewController(true, completion: completion)
-		self.view.tintColor = AppTheme.tintColor
+
+//		self.view.tintColor = AppTheme.tintColor
 	}
 }
 

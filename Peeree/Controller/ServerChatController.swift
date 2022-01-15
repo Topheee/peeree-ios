@@ -145,7 +145,6 @@ final class ServerChatController {
 				}
 				completion(.failure(error))
 			case .success(let credentials):
-				// TODO save device_id and re-use it for subsequent logins in order to support E2E encryption
 				completion(.success(credentials))
 			@unknown default:
 				completion(.failure(unexpectedEnumValueError()))
@@ -197,7 +196,7 @@ final class ServerChatController {
 		}
 	}
 
-	/// tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
+	/// tries to leave (and forget [once supported]) <code>room</code>, ignoring any errors
 	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
 		room.leave { response in
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
@@ -549,7 +548,6 @@ final class ServerChatController {
 			}
 			// as we do everything in the background and the deviceId's are re-generated every time, verifying each device does not give enough benefit here
 			self.session.crypto?.warnOnUnknowDevices = false
-			// TODO: sync only back to last went offline
 			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
 			self.session.start(withSyncFilter: filter) { response in
 				guard response.isSuccess else {
