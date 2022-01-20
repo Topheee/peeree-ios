@@ -23,6 +23,7 @@
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
 		9D6AFE59264C23E90065262D /* ServerChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6AFE58264C23E90065262D /* ServerChatController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
+		9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
@@ -143,6 +144,7 @@
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ServerChatController.swift; path = Controller/ServerChatController.swift; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
+		9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersistedPeersController.swift; path = Controller/PersistedPeersController.swift; sourceTree = "<group>"; };
 		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
 		9D8A592F1B92EC4500164C9F /* MeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MeViewController.swift; path = "Storyboards/Main Storyboard/MeViewController.swift"; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
 				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
 				9D4C824F265B1BA1006F472B /* PinMatchesController.swift */,
+				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -723,6 +726,7 @@
 				9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */,
 				9D9D5A5824045F690063532F /* ContentfilterAPI.swift in Sources */,
 				9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */,
+				9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */,
 				9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9DD61F621EAE33B6004EB56A /* APIs.swift in Sources */,
@@ -954,6 +958,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_OPTIMIZE_OBJECT_LIFETIME = YES;
 			};
 			name = Debug;
 		};
@@ -1002,6 +1007,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZE_OBJECT_LIFETIME = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

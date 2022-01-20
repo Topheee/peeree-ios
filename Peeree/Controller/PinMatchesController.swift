@@ -8,74 +8,48 @@
 
 import Foundation
 
-final class PinMatchesController {
-	private static var resourceURL: URL {
-		// Create a file path to our documents directory
-		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
-		return URL(fileURLWithPath: paths[0]).appendingPathComponent("pin-matched-peers.json", isDirectory: false)
-	}
-
+final class PinMatchesController: PersistedPeersControllerDelegate {
 	public enum Notifications: String {
 		case pinMatchedPeersUpdated
 	}
 
 	static let shared = PinMatchesController()
 
-	/// thread-safety: only access from main queue!
-	private(set) var pinMatchedPeers = Set<PeerInfo>()
+	let persistence = PersistedPeersController(filename: "pin-matched-peers.json")
 
 	private var notificationObservers: [NSObjectProtocol] = []
 
 	private init() {
-		DispatchQueue.global(qos: .background).async {
-			guard let data = FileManager.default.contents(atPath: PinMatchesController.resourceURL.path) else { return }
-
-			let decoder = JSONDecoder()
-			do {
-				let decodedPeers = try decoder.decode(Set<PeerInfo>.self, from: data)
-				DispatchQueue.main.async {
-					self.pinMatchedPeers = decodedPeers
-					Notifications.pinMatchedPeersUpdated.postAsNotification(object: self)
-				}
-			} catch let error {
-				NSLog("ERROR: Couldn't decode pinMatchedPeers: \(error.localizedDescription)")
-			}
-		}
-
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addPeerObserver { (peerID, notification) in
 			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
-			if !again { self.reload(peerID: peerID) }
+			if !again { self.refresh(peerID: peerID) }
 		})
 		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { peerID, _ in
 			guard let peer = PeeringController.shared.manager(for: peerID).peerInfo else { return }
-			DispatchQueue.main.async {
-				self.pinMatchedPeers.insert(peer)
-				self.savePinMatchedPeers()
+			self.persistence.write { peers in
+				peers.insert(peer)
 			}
 		})
 		notificationObservers.append(AccountController.Notifications.accountDeleted.addObserver { _ in
-			DispatchQueue.main.async {
-				PeeringController.shared.managers(for: self.pinMatchedPeers.map { $0.peerID }) { peerManagers in
+			// delete all cached pictures and finally the persisted PeerInfo records themselves
+			self.persistence.write { peers in
+				PeeringController.shared.managers(for: peers.map { $0.peerID }) { peerManagers in
 					peerManagers.forEach { $0.deletePicture() }
 				}
-				self.pinMatchedPeers = []
-				self.savePinMatchedPeers()
+				peers = []
 			}
 		})
 		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { peerID, _ in
 			if let peer = PeeringController.shared.manager(for: peerID).peerInfo {
-				DispatchQueue.main.async {
-					if self.pinMatchedPeers.remove(peer) != nil {
-						self.savePinMatchedPeers()
-					}
+				self.persistence.write { peers in
+					peers.remove(peer)
 				}
 			} else {
-				DispatchQueue.main.async {
-					guard let index = (self.pinMatchedPeers.firstIndex { peer in
+				self.persistence.write { peers in
+					guard let index = (peers.firstIndex { peer in
 						return peer.peerID == peerID
 					}) else { return }
-					self.pinMatchedPeers.remove(at: index)
-					self.savePinMatchedPeers()
+					peers.remove(at: index)
 				}
 			}
 
@@ -88,40 +62,37 @@ final class PinMatchesController {
 		}
 	}
 
-	/// thread-safety: call only from main thread!
-	func peerInfo(for peerID: PeerID) -> PeerInfo? {
-		return pinMatchedPeers.first { $0.peerID == peerID }
+	// MARK: - PersistedPeersControllerDelegate
+
+	func persistedPeersUpdated() {
+		persistence.read { peers in
+			// load PeerInfos into PeerManagers
+			PeeringController.shared.managers(for: peers.map { $0.peerID }) { managers in
+				for manager in managers {
+					// this will trigger the load
+					_ = manager.peerInfo
+				}
+			}
+			Notifications.pinMatchedPeersUpdated.postAsNotification(object: self, userInfo: nil)
+		}
+	}
+
+	func encodingFailed(with error: Error) {
+		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Encoding Pin Match Peers Failed", comment: "Low-level error"), furtherDescription: nil)
+	}
+
+	func decodingFailed(with error: Error) {
+		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Decoding Pin Match Peers Failed", comment: "Low-level error"), furtherDescription: nil)
 	}
 
 	// MARK: Private Methods
 
-	/// thread-safety: call from main thread only!
-	private func savePinMatchedPeers() {
-		// create a copy of the value we want to save, still faster than the encoding
-		let save = pinMatchedPeers
-		DispatchQueue.global(qos: .background).async {
-			do {
-				let jsonData = try JSONEncoder().encode(save)
-				try? FileManager.default.removeItem(at: PinMatchesController.resourceURL)
-				if !FileManager.default.createFile(atPath: PinMatchesController.resourceURL.path, contents: jsonData, attributes: nil) {
-					NSLog("ERROR: Couldn't persist pin matched peers file.")
-				}
-			} catch let error {
-				NSLog("ERROR: Couldn't encode JSON: \(error.localizedDescription)")
-			}
-		}
-		// TODO PERFORMANCE: only inform about the changed peer(s)
-		Notifications.pinMatchedPeersUpdated.postAsNotification(object: self)
-	}
-
-	private func reload(peerID: PeerID) {
+	private func refresh(peerID: PeerID) {
 		guard let peer = PeeringController.shared.manager(for: peerID).peerInfo else { return }
 
-		DispatchQueue.main.async {
-			// TODO PERFORMANCE: only replace and save if really something changed
-			self.pinMatchedPeers.remove(peer)
-			if peer.pinMatched { self.pinMatchedPeers.insert(peer) }
-			self.savePinMatchedPeers()
+		self.persistence.write { peers in
+			peers.remove(peer)
+			if peer.pinMatched { peers.insert(peer) }
 		}
 	}
 }

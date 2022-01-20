@@ -26,15 +26,16 @@ class PinMatchTableViewController: UITableViewController {
 	private var notificationObservers: [NSObjectProtocol] = []
 
 	private func updateCache(isInitial: Bool = false) {
-		let newPeerCache = Array(PinMatchesController.shared.pinMatchedPeers)
-		guard !(isInitial && newPeerCache.count == 0) else { return }
+		PinMatchesController.shared.persistence.read { newPeerCache in
+			guard !(isInitial && newPeerCache.count == 0) else { return }
 
-		PeeringController.shared.managers(for: newPeerCache.map { $0.peerID }) { peerManagers in
-			peerManagers.forEach { $0.loadLocalPicture {_ in } }
-			DispatchQueue.main.async {
-				self.peerCache = newPeerCache
-				self.managerCache = peerManagers
-				self.tableView?.reloadData()
+			PeeringController.shared.managers(for: newPeerCache.map { $0.peerID }) { peerManagers in
+				peerManagers.forEach { $0.loadLocalPicture {_ in } }
+				DispatchQueue.main.async {
+					self.peerCache = Array(newPeerCache)
+					self.managerCache = peerManagers
+					self.tableView?.reloadData()
+				}
 			}
 		}
 	}

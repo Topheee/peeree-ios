@@ -143,10 +143,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 				window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
 			}
 		} else {
-			for peerID in PeeringController.shared.remote.availablePeers {
-				let manager = PeeringController.shared.manager(for: peerID)
-				guard let peer = manager.peerInfo, BrowseFilterSettings.shared.check(peer: peer) else { continue }
-				_ = manager.loadResources()
+			DispatchQueue.global(qos: .background).async {
+				for peerID in PeeringController.shared.remote.availablePeers {
+					let manager = PeeringController.shared.manager(for: peerID)
+					guard let peer = manager.peerInfo, BrowseFilterSettings.shared.check(peer: peer) else { continue }
+					_ = manager.loadResources()
+				}
 			}
 		}
 		

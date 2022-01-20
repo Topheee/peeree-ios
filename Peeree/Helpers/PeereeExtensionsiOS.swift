@@ -56,7 +56,7 @@ extension UserPeerManager {
 
 extension AppDelegate {
 	func showOrMessage(peerID: PeerID) {
-		if PeeringController.shared.manager(for: peerID).peerInfo?.pinMatched ?? false {
+		if AccountController.shared.hasPinMatch(peerID) {
 			displayMessageViewController(for: peerID)
 		} else {
 			show(peerID: peerID)
@@ -116,7 +116,7 @@ extension AppDelegate {
 					_personVC = somePersonVC
 				}
 			} else if let someBeaconVC = vc as? BeaconViewController {
-				guard someBeaconVC.peerManager.peerInfo?.peerID != peerID else { return }
+				guard someBeaconVC.peerID != peerID else { return }
 			}
 		}
 

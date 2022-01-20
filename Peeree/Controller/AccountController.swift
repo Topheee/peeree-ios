@@ -448,7 +448,6 @@ public class AccountController: SecurityDataSource {
 	
 	private init() {
 		// TODO PERFORMANCE (startup time): read from UserDefs and decode on background queue
-		// TODO move big objects out of UserDefaults into file system (see PinMatchesController)
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
 		pinnedByPeers = SynchronizedSet(queueLabel: "\(BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
 		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
@@ -501,6 +500,7 @@ public class AccountController: SecurityDataSource {
 }
 
 extension PeerInfo {
+	/// hint: if you are using this on an optional PeerInfo (e.g. obtained from a PeerManager), it is probably better to use AccountController.hasPinMatch() directly, since it works with just the peerID
 	public var pinMatched: Bool { AccountController.shared.hasPinMatch(peerID) }
 	public var pinned: Bool { AccountController.shared.isPinned(self) }
 }

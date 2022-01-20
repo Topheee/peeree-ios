@@ -55,11 +55,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	private var pictureProgressManager: ProgressManager?
 	private var bioProgressManager: ProgressManager?
 
-	/// caches
-	private var displayedPeerInfo: PeerInfo?
-	
 	@IBAction func reportPeer(_ sender: Any) {
-		guard let peer = displayedPeerInfo else { return }
+		guard let peer = peerManager.peerInfo else { return }
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
@@ -79,7 +76,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	@IBAction func pinPeer(_ sender: UIButton) {
-		guard let peer = displayedPeerInfo else { return }
+		guard let peer = peerManager.peerInfo else { return }
 		guard !peer.pinned else {
 			AccountController.shared.updatePinStatus(of: peer)
 			return
@@ -236,9 +233,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		// make sure that we always have the latest PeerInfo here, because, e.g. when coming back from Find View the portrait may have been loaded meanwhile and as we have value semantics this change is not populated to our displayedPeerInfo variable
-		displayedPeerInfo = peerManager.peerInfo ?? PinMatchesController.shared.peerInfo(for: peerID) ?? displayedPeerInfo
-
 		updateState()
 		
 		let simpleStateUpdate = { [weak self] (notification: Notification) in
@@ -246,8 +240,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 				  let strongSelf = self else { return }
 			let manager = strongSelf.peerManager
 			guard manager.peerID == peerID else { return }
-			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
-			strongSelf.displayedPeerInfo = manager.peerInfo ?? PinMatchesController.shared.peerInfo(for: manager.peerID) ?? strongSelf.displayedPeerInfo
 			strongSelf.updateState()
 			strongSelf.animatePinButton()
 		}
@@ -273,13 +265,12 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		guard let peer = displayedPeerInfo else { return }
-		
+
 		let (pictureProgress, bioProgress) = peerManager.loadResources()
 		portraitImageView.loadProgress = pictureProgress
 		pictureProgress.map { pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
 		bioProgress.map { bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
-		gradientView.animateGradient = peer.pinMatched
+		gradientView.animateGradient = AccountController.shared.hasPinMatch(peerID)
 
 		animatePinButton()
 	}
@@ -331,8 +322,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			} else if progress === bioProgressManager?.progress {
 				bioProgressManager = nil
 			}
-			// as we have value semantics, our cached peer info does not change, so we have to get the updated one
-			displayedPeerInfo = peerManager.peerInfo
 			updateState()
 		}
 	}
@@ -351,7 +340,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	private func updateState() {
-		guard let peer = displayedPeerInfo else { return }
+		guard let peer = peerManager.peerInfo else { return }
 		let state = peerManager
 
 		updatePinCircleWidth()

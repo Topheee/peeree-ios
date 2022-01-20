@@ -430,7 +430,7 @@ final class ServerChatController {
 				guard response.isSuccess else {
 					DispatchQueue.main.async {
 						let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
-						let peerName = (PinMatchesController.shared.pinMatchedPeers.first { $0.peerID == peerID })?.nickname ?? peerID.uuidString
+						let peerName = PeeringController.shared.manager(for: peerID).peerInfo?.nickname ?? peerID.uuidString
 						let description = String(format: format, peerName)
 						completion(.failure(createApplicationError(localizedDescription: description)))
 					}
@@ -617,7 +617,7 @@ final class ServerChatController {
 								return
 							}
 							_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
-							guard let peerInfo = PinMatchesController.shared.peerInfo(for: peerID) else {
+							guard let peerInfo = PeeringController.shared.manager(for: peerID).peerInfo else {
 								NSLog("WARN: No peer info for peer ID available from pin matches controller.")
 								return
 							}

@@ -62,9 +62,23 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	}
 	/// access from main thread *only*!
 	public var pendingMessages = [(message: String, completion: (Error?) -> Void)]()
-	
+
+	private var _peerInfo: PeerInfo? = nil
 	public var peerInfo: PeerInfo? {
-		return remotePeerManager.getPeerInfo(of: peerID) ?? PinMatchesController.shared.peerInfo(for: peerID)
+		// use cached value if available, then PeerInfo of Bluetooth, finally persisted PeerInfo of PinMatches
+		if _peerInfo == nil {
+			let p = remotePeerManager.getPeerInfo(of: peerID)
+			_peerInfo = p
+			if p == nil {
+				PinMatchesController.shared.persistence.read { peers in
+					guard let pp = (peers.first { $0.peerID == self.peerID }) else { return }
+					DispatchQueue.main.async { self._peerInfo = pp }
+				}
+			}
+			return p
+		} else {
+			return _peerInfo
+		}
 	}
 	
 	public var pictureLoadProgress: Progress? {
@@ -130,7 +144,7 @@ public class PeerManager: RemotePeerDelegate, LocalPeerDelegate {
 	}
 
 	public func indicatePinMatch() {
-		guard peerInfo?.pinMatched ?? false else { return }
+		guard AccountController.shared.hasPinMatch(peerID) else { return }
 		savePicture()
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
 			// TODO handle failure

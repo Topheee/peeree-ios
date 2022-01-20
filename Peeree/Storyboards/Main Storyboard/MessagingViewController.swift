@@ -63,9 +63,8 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		guard let peerInfo = PinMatchesController.shared.peerInfo(for: peerID) else { return }
 		setPortraitButtonImage()
-		navigationItem.prompt = peerInfo.nickname
+		navigationItem.prompt = peerManager.peerInfo?.nickname ?? peerID.uuidString
 		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.setPortraitButtonImage()
 		})
