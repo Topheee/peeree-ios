@@ -8,7 +8,9 @@
 
 import UIKit
 
-final class MeViewController: PortraitImagePickerController, UITextFieldDelegate, UITextViewDelegate {
+/// Displays and edits the users peer info data, as well as their Peeree identity.
+final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate, PortraitImagePickerControllerDelegate {
+	@IBOutlet private weak var previewButton: UIBarButtonItem!
 	@IBOutlet private weak var connectionNoteLabel: UILabel!
 	@IBOutlet private weak var accountButton: UIButton!
 	@IBOutlet private weak var accountIDLabel: UILabel!
@@ -23,13 +25,18 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 
 	private var activeField: (view: UIView, inputView: UIView?)? = nil
 	private var connectionStateObserver: NSObjectProtocol? = nil
+	private let portraitImagePicker = PortraitImagePickerController()
 	
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
-		UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
+		let gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
+		modifyUserInfo { info in
+			info.gender = gender
+		}
 	}
 	
 	@IBAction func changePicture(_ sender: AnyObject) {
-		showPicturePicker(true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Button caption for removing the users portrait image"))
+		portraitImagePicker.delegate = self
+		portraitImagePicker.showPicturePicker(allowCancel: true, destructiveActionName: NSLocalizedString("Delete Portrait", comment: "Button caption for removing the users portrait image"))
 	}
 
 	private func deleteServerChatAccount() {
@@ -38,7 +45,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 
 			serverChatController.deleteAccount { _error in
 				if let error = _error {
-					AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
+					InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
 					try? ServerChatController.removePasswordFromKeychain()
 				}
 			}
@@ -48,11 +55,10 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	private func initiateDeleteAccount() {
 		let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
 		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
+			PeeringController.shared.peering = false
 			self.deleteServerChatAccount()
 			AccountController.shared.deleteAccount { (_ _error: Error?) in
-				self.accountActionCompletionHandler(_error) {
-					self.loadUserPeerInfo()
-				}
+				self.accountActionCompletionHandler(_error) {}
 			}
 			self.adjustAccountView()
 		}))
@@ -129,7 +135,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
 		if let personDetailVC = segue.destination as? PersonDetailViewController {
-			personDetailVC.peerID = UserPeerManager.instance.peerID
+			personDetailVC.peerID = AccountController.shared.peerID
 		}
 	}
 	
@@ -137,15 +143,15 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		super.viewDidLoad()
 		registerForKeyboardNotifications()
 		connectionStateObserver = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.lockView()
+			self?.lockAndLoadView()
 		}
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
-		loadUserPeerInfo()
+
 		adjustAccountView()
-		lockView()
+		lockAndLoadView()
 		navigationController?.isToolbarHidden = true
 	}
 
@@ -183,9 +189,11 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		
 		datePicker.minimumDate = Calendar.current.date(from: minComponents)
 		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
-		
-		datePicker.date = UserPeerManager.instance.dateOfBirth ?? datePicker.maximumDate ?? today
-		datePicker.addTarget(self, action: #selector(agePickerChanged), for: .valueChanged)
+
+		UserPeer.instance.read { _, birthday, _, _ in
+			datePicker.date = birthday ?? datePicker.maximumDate ?? today
+			datePicker.addTarget(self, action: #selector(self.agePickerChanged), for: .valueChanged)
+		}
 		
 		let saveToolBar = UIToolbar()
 		let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .plain, target: self, action: #selector(ageOmitted))
@@ -215,18 +223,22 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 		switch textField {
 		case nameTextField:
 			guard let newValue = textField.text, newValue != "" else {
-				textField.text = UserPeerManager.instance.peer.nickname
+				UserPeer.instance.read { info, _, _, _ in
+					textField.text = info?.nickname
+				}
 				return
 			}
 			let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxNicknameSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-			UserPeerManager.instance.peer.nickname = String(newValue[..<endIndex])
+			modifyUserInfo { info in
+				info.nickname = String(newValue[..<endIndex])
+			}
 		case birthdayInput:
 			guard textField.text != nil && textField.text != "" else {
-				UserPeerManager.instance.dateOfBirth = nil
+				UserPeer.instance.modify(birthday: nil)
 				return
 			}
 			guard let datePicker = textField.inputView as? UIDatePicker else { return }
-			UserPeerManager.instance.dateOfBirth = datePicker.date
+			UserPeer.instance.modify(birthday: datePicker.date)
 		case mailTextField:
 			guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
 			guard let newValue = textField.text, newValue != "" else {
@@ -259,7 +271,6 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	// MARK: UITextViewDelegate
 
 	func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-		textView.text = UserPeerManager.instance.peer.biography
 		if let font = textView.font {
 			let descriptor = font.fontDescriptor
 			if let newDescriptor = descriptor.withSymbolicTraits(descriptor.symbolicTraits.subtracting(UIFontDescriptor.SymbolicTraits.traitItalic)) {
@@ -282,29 +293,34 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
 
 	func textViewDidEndEditing(_ textView: UITextView) {
-		UserPeerManager.instance.peer.biography = textView.text
+		UserPeer.instance.modify(biography: textView.text)
 		activeField = nil
 	}
 
-	// MARK: Private Methods
-	
-	override func picked(image: UIImage?) {
+	func viewControllerToPresentImagePicker() -> UIViewController {
+		return self
+	}
+
+	func picked(image: UIImage?) {
 		portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
 		if #available(iOS 11.0, *) {
 			portraitImageButton.accessibilityIgnoresInvertColors = image != nil
 		}
 	}
-	
-	private func loadUserPeerInfo() {
-		nameTextField.text = UserPeerManager.instance.peer.nickname
-		genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: UserPeerManager.instance.peer.gender) ?? 0
-		if let date = UserPeerManager.instance.dateOfBirth {
+
+	// MARK: - Private
+
+	// MARK: Methods
+
+	private func loadUserPeerInfo(peerInfo: PeerInfo?, birthday: Date?, portrait: CGImage?, bio: String) {
+		nameTextField.text = peerInfo?.nickname
+		genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: peerInfo?.gender ?? .queer) ?? 0
+		if let date = birthday {
 			fillBirthdayInput(with: date)
 		} else {
 			birthdayInput.text = nil
 		}
-		picked(image: UserPeerManager.instance.picture)
-		let bio = UserPeerManager.instance.peer.biography
+		picked(image: portrait.map { UIImage(cgImage: $0) })
 		if bio != "" {
 			bioTextView.text = bio
 		} else if let font = bioTextView.font {
@@ -315,7 +331,18 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			}
 		}
 	}
-	
+
+	private func modifyUserInfo(query: @escaping (inout PeerInfo) -> ()) {
+		UserPeer.instance.modifyInfo { info in
+			if var peerInfo = info {
+				query(&peerInfo)
+				info = peerInfo
+			} else {
+				AppDelegate.presentOnboarding()
+			}
+		}
+	}
+
 	private func registerForKeyboardNotifications() {
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: UIResponder.keyboardDidShowNotification, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -356,7 +383,7 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			self.adjustAccountView()
 			
 			if let error = _error {
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
+				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
 			} else {
 				noErrorAction()
 			}
@@ -364,7 +391,8 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 	}
 	
 	private func adjustAccountView() {
-		if AccountController.shared.accountExists {
+		let accountExists = AccountController.shared.accountExists
+		if accountExists {
 			accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
 			accountButton.tintColor = .red
 			mailTextField.text = AccountController.shared.accountEmail
@@ -373,19 +401,36 @@ final class MeViewController: PortraitImagePickerController, UITextFieldDelegate
 			accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
 			accountButton.tintColor = AppTheme.tintColor
 		}
-		mailTextField.isHidden = !AccountController.shared.accountExists
-		mailNoteLabel.isHidden = !AccountController.shared.accountExists
-		accountIDLabel.isHidden = !AccountController.shared.accountExists
+		mailTextField.isHidden = !accountExists
+		mailNoteLabel.isHidden = !accountExists
+		accountIDLabel.isHidden = !accountExists
 		accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
-	}
-	
-	/// do not allow changes to UserPeerManager while peering
-	private func lockView() {
-		let locked = !PeeringController.shared.peering
-		for control: UIControl in [nameTextField, portraitImageButton, genderControl, birthdayInput] {
-			control.isEnabled = locked
+		UserPeer.instance.read { peerInfo, _, _, _ in
+			self.previewButton.isEnabled = accountExists && peerInfo != nil
 		}
-		bioTextView.isEditable = locked
-		connectionNoteLabel.isHidden = locked
+	}
+
+	/// Do not allow changes to the user's peer while peering; show onboarding if peer does not exist.
+	private func lockAndLoadView() {
+		UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
+			let userPeerDefined = peerInfo != nil
+			let peering = PeeringController.shared.peering
+			let accountExists = AccountController.shared.accountExists
+			let locked = !userPeerDefined || peering
+
+			for control: UIControl in [self.nameTextField, self.portraitImageButton, self.genderControl, self.birthdayInput] {
+				control.isEnabled = !locked
+			}
+			self.bioTextView.isEditable = !locked
+			self.connectionNoteLabel.isHidden = !locked
+			self.previewButton.isEnabled = userPeerDefined && accountExists
+
+			self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
+
+			if !userPeerDefined {
+				AppDelegate.presentOnboarding()
+			}
+		}
+
 	}
 }

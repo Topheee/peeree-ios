@@ -18,8 +18,11 @@
 		9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
 		9D404617244370990068D22F /* GrowingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D404616244370990068D22F /* GrowingTextView.swift */; };
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
-		9D4C8250265B1BA1006F472B /* PinMatchesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824F265B1BA1006F472B /* PinMatchesController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
+		9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */; };
+		9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 9D51ED7C27A68B3E00BF6C0A /* Toast */; };
+		9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */; };
+		9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D56535E279A1014003F31A2 /* UserPeer.swift */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
 		9D6AFE59264C23E90065262D /* ServerChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6AFE58264C23E90065262D /* ServerChatController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
@@ -33,11 +36,9 @@
 		9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */; };
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
 		9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */; };
+		9D90435527A06D0600C29BFA /* PeerViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D90435427A06D0600C29BFA /* PeerViewControllers.swift */; };
 		9D91E0462405B131002BD814 /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D91E0452405B131002BD814 /* JSONValue.swift */; };
 		9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94021026188BBD00F78027 /* MessagingViewController.swift */; };
-		9D9458A21F2A1B8800EBCB31 /* CommonCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; platformFilter = ios; settings = {ATTRIBUTES = (Weak, ); }; };
-		9D9458A61F2A1B8800EBCB31 /* CommonCrypto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9D9BC64D1E1C604B00D031C5 /* LocalPeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */; };
 		9D9BC6501E1C633600D031C5 /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
 		9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */; };
@@ -48,6 +49,9 @@
 		9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9D5A6F24046CCF0063532F /* Configuration.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
+		9DA36A7E279C44A200BF7875 /* PeerInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */; };
+		9DA36A82279CA02100BF7875 /* PeerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A81279CA02100BF7875 /* PeerViewModel.swift */; };
+		9DA36A84279D5CA400BF7875 /* PeerViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAD8F951ECF512F00363016 /* PinPoints.swift */; };
 		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
@@ -77,6 +81,7 @@
 		9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD7B83725E2D6E0005682CF /* HapticController.swift */; };
 		9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */; };
+		9DDC382227A6C70C00FCA1CB /* SetupIdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDC382127A6C70C00FCA1CB /* SetupIdentityViewController.swift */; };
 		9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */; };
 		9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */; };
 		9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */; };
@@ -89,13 +94,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9D9458A31F2A1B8800EBCB31 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9D94589D1F2A1B8700EBCB31;
-			remoteInfo = CommonCrypto;
-		};
 		9DC00AAB2662ED2300C1DA3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
@@ -112,7 +110,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9D9458A61F2A1B8800EBCB31 /* CommonCrypto.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -139,8 +136,10 @@
 		9D400E611EBA2B9C0006480A /* AccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountController.swift; path = Controller/AccountController.swift; sourceTree = "<group>"; };
 		9D404616244370990068D22F /* GrowingTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GrowingTextView.swift; path = View/GrowingTextView.swift; sourceTree = "<group>"; };
 		9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PinMatchTableViewController.swift; path = "Storyboards/Main Storyboard/PinMatchTableViewController.swift"; sourceTree = "<group>"; };
-		9D4C824F265B1BA1006F472B /* PinMatchesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PinMatchesController.swift; path = Controller/PinMatchesController.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Peeree/Storyboards/Launch/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceControllerTests.swift; sourceTree = "<group>"; };
+		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InAppNotificationController.swift; path = Controller/InAppNotificationController.swift; sourceTree = "<group>"; };
+		9D56535E279A1014003F31A2 /* UserPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UserPeer.swift; path = Model/UserPeer.swift; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ServerChatController.swift; path = Controller/ServerChatController.swift; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
@@ -154,14 +153,9 @@
 		9D8A59461B92FED800164C9F /* PersonDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PersonDetailViewController.swift; path = "Storyboards/Main Storyboard/PersonDetailViewController.swift"; sourceTree = "<group>"; };
 		9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BasicInfoViewContoller.swift; path = "Storyboards/Onboarding Sequence/BasicInfoViewContoller.swift"; sourceTree = "<group>"; };
 		9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Controller/NotificationManager.swift; sourceTree = "<group>"; };
+		9D90435427A06D0600C29BFA /* PeerViewControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerViewControllers.swift; path = Controller/PeerViewControllers.swift; sourceTree = "<group>"; };
 		9D91E0452405B131002BD814 /* JSONValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONValue.swift; path = Swagger/JSONValue.swift; sourceTree = "<group>"; };
 		9D94021026188BBD00F78027 /* MessagingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessagingViewController.swift; path = "Storyboards/Main Storyboard/MessagingViewController.swift"; sourceTree = "<group>"; };
-		9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonCrypto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonCrypto.h; sourceTree = "<group>"; };
-		9D9458A11F2A1B8800EBCB31 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9D9458B01F2A1C5100EBCB31 /* iphoneos.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphoneos.modulemap; sourceTree = "<group>"; };
-		9D9458B11F2A1C5100EBCB31 /* iphonesimulator.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphonesimulator.modulemap; sourceTree = "<group>"; };
-		9D9458B21F2A1C5100EBCB31 /* macosx.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = macosx.modulemap; sourceTree = "<group>"; };
 		9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalPeerManager.swift; path = Controller/LocalPeerManager.swift; sourceTree = "<group>"; };
 		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeerManager.swift; path = Controller/PeerManager.swift; sourceTree = "<group>"; };
 		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeeringController.swift; path = Controller/PeeringController.swift; sourceTree = "<group>"; };
@@ -175,6 +169,9 @@
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerInteraction.swift; path = Model/PeerInteraction.swift; sourceTree = "<group>"; };
+		9DA36A81279CA02100BF7875 /* PeerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerViewModel.swift; path = Model/PeerViewModel.swift; sourceTree = "<group>"; };
+		9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerViewModelController.swift; path = Controller/PeerViewModelController.swift; sourceTree = "<group>"; };
 		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RemotePeerManager.swift; path = Controller/RemotePeerManager.swift; sourceTree = "<group>"; };
 		9DAD8F951ECF512F00363016 /* PinPoints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinPoints.swift; sourceTree = "<group>"; };
 		9DB3499D25F3D2CF00FF2D56 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
@@ -207,9 +204,9 @@
 		9DD61F5D1EAE33B6004EB56A /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		9DD61F5E1EAE33B6004EB56A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Models.swift; path = Swagger/Models.swift; sourceTree = "<group>"; };
 		9DD7B83725E2D6E0005682CF /* HapticController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HapticController.swift; path = Controller/HapticController.swift; sourceTree = "<group>"; };
-		9DD7B83A25E2E9F5005682CF /* CommonCrypto.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = CommonCrypto.xcconfig; sourceTree = "<group>"; };
 		9DDA3A501D77B6EA00C2ADC8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9DDBD4C71D7BC681008B0CFC /* BeaconViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BeaconViewController.swift; path = "Storyboards/Main Storyboard/BeaconViewController.swift"; sourceTree = "<group>"; };
+		9DDC382127A6C70C00FCA1CB /* SetupIdentityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SetupIdentityViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/SetupIdentityViewController.swift"; sourceTree = "<group>"; };
 		9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeViewController.swift; path = "Peeree/Storyboards/Onboarding Sequence/WelcomeViewController.swift"; sourceTree = "<group>"; };
 		9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BrowseFilterSettings.swift; path = Model/BrowseFilterSettings.swift; sourceTree = "<group>"; };
 		9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MessageTableViewController.swift; path = "Storyboards/Main Storyboard/MessageTableViewController.swift"; sourceTree = "<group>"; };
@@ -221,19 +218,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		9D94589A1F2A1B8700EBCB31 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9DA0F7B21B5C3AB800F3BA87 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */,
 				9DFF60EF2691BA1600FEA957 /* MatrixSDK in Frameworks */,
-				9D9458A51F2A1B8800EBCB31 /* CommonCrypto.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,8 +250,10 @@
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
 				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
-				9D4C824F265B1BA1006F472B /* PinMatchesController.swift */,
 				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
+				9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */,
+				9D90435427A06D0600C29BFA /* PeerViewControllers.swift */,
+				9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -301,6 +293,7 @@
 				9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */,
 				9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */,
 				9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */,
+				9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */,
 			);
 			path = PeereeTests;
 			sourceTree = "<group>";
@@ -363,21 +356,9 @@
 				9D2923261B91E50B00B5B622 /* SetupViewController.swift */,
 				9DDDE1DE1BCC122E006E6DEA /* WelcomeViewController.swift */,
 				9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */,
+				9DDC382127A6C70C00FCA1CB /* SetupIdentityViewController.swift */,
 			);
 			name = "Onboarding Sequence";
-			sourceTree = "<group>";
-		};
-		9D94589F1F2A1B8700EBCB31 /* CommonCrypto */ = {
-			isa = PBXGroup;
-			children = (
-				9DD7B83A25E2E9F5005682CF /* CommonCrypto.xcconfig */,
-				9D9458B01F2A1C5100EBCB31 /* iphoneos.modulemap */,
-				9D9458B11F2A1C5100EBCB31 /* iphonesimulator.modulemap */,
-				9D9458B21F2A1C5100EBCB31 /* macosx.modulemap */,
-				9D9458A01F2A1B8800EBCB31 /* CommonCrypto.h */,
-				9D9458A11F2A1B8800EBCB31 /* Info.plist */,
-			);
-			path = CommonCrypto;
 			sourceTree = "<group>";
 		};
 		9DA0F7AC1B5C3AB800F3BA87 = {
@@ -387,7 +368,6 @@
 				9DCE94631F30EDBA00F31330 /* README.md */,
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
 				9D2A76B81DC63E9D004E6386 /* PeereeUITests */,
-				9D94589F1F2A1B8700EBCB31 /* CommonCrypto */,
 				9D38FB702631F38C0066ABAD /* PeereeTests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
 			);
@@ -397,7 +377,6 @@
 			isa = PBXGroup;
 			children = (
 				9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */,
-				9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */,
 				9DC00AA62662ED2200C1DA3C /* PeereeTests.xctest */,
 			);
 			name = Products;
@@ -505,42 +484,16 @@
 			children = (
 				9D8A593A1B92F2B600164C9F /* PeerDescription.swift */,
 				9DDE47C61BA59C5D00DB6EEE /* BrowseFilterSettings.swift */,
+				9D56535E279A1014003F31A2 /* UserPeer.swift */,
+				9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */,
+				9DA36A81279CA02100BF7875 /* PeerViewModel.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
-/* Begin PBXHeadersBuildPhase section */
-		9D94589B1F2A1B8700EBCB31 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9D9458A21F2A1B8800EBCB31 /* CommonCrypto.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
-
 /* Begin PBXNativeTarget section */
-		9D94589D1F2A1B8700EBCB31 /* CommonCrypto */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9D9458A91F2A1B8800EBCB31 /* Build configuration list for PBXNativeTarget "CommonCrypto" */;
-			buildPhases = (
-				9D9458991F2A1B8700EBCB31 /* Sources */,
-				9D94589A1F2A1B8700EBCB31 /* Frameworks */,
-				9D94589B1F2A1B8700EBCB31 /* Headers */,
-				9D94589C1F2A1B8700EBCB31 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = CommonCrypto;
-			productName = CommonCrypto;
-			productReference = 9D94589E1F2A1B8700EBCB31 /* CommonCrypto.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		9DA0F7B41B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9DA0F7D61B5C3AB900F3BA87 /* Build configuration list for PBXNativeTarget "Peeree" */;
@@ -553,11 +506,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				9D9458A41F2A1B8800EBCB31 /* PBXTargetDependency */,
 			);
 			name = Peeree;
 			packageProductDependencies = (
 				9DFF60EE2691BA1600FEA957 /* MatrixSDK */,
+				9D51ED7C27A68B3E00BF6C0A /* Toast */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -592,11 +545,6 @@
 				LastUpgradeCheck = 1320;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
-					9D94589D1F2A1B8700EBCB31 = {
-						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = 86J6LQ96WM;
-						ProvisioningStyle = Automatic;
-					};
 					9DA0F7B41B5C3AB800F3BA87 = {
 						CreatedOnToolsVersion = 6.3.2;
 						DevelopmentTeam = 86J6LQ96WM;
@@ -628,26 +576,19 @@
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			packageReferences = (
 				9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */,
+				9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				9DA0F7B41B5C3AB800F3BA87 /* Peeree */,
-				9D94589D1F2A1B8700EBCB31 /* CommonCrypto */,
 				9DC00AA52662ED2200C1DA3C /* PeereeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		9D94589C1F2A1B8700EBCB31 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9DA0F7B31B5C3AB800F3BA87 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -674,24 +615,18 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		9D9458991F2A1B8700EBCB31 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9DA0F7B11B5C3AB800F3BA87 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */,
 				9D9BC6531E1C6A3D00D031C5 /* PeeringController.swift in Sources */,
-				9D4C8250265B1BA1006F472B /* PinMatchesController.swift in Sources */,
+				9DDC382227A6C70C00FCA1CB /* SetupIdentityViewController.swift in Sources */,
 				9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */,
 				9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */,
 				9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */,
 				9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */,
+				9DA36A82279CA02100BF7875 /* PeerViewModel.swift in Sources */,
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
 				9DD61F5F1EAE33B6004EB56A /* SwaggerImplementations.swift in Sources */,
@@ -708,6 +643,7 @@
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */,
 				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
+				9DA36A84279D5CA400BF7875 /* PeerViewModelController.swift in Sources */,
 				9D91E0462405B131002BD814 /* JSONValue.swift in Sources */,
 				9DB677FE24030480005EECB3 /* AuthenticationAPI.swift in Sources */,
 				9D2ECEF92618CD5800E8EB40 /* PeerTableViewCell.swift in Sources */,
@@ -722,6 +658,7 @@
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
 				9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
+				9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */,
 				9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */,
 				9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */,
 				9D9D5A5824045F690063532F /* ContentfilterAPI.swift in Sources */,
@@ -741,9 +678,12 @@
 				9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */,
 				9D404617244370990068D22F /* GrowingTextView.swift in Sources */,
 				9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */,
+				9D90435527A06D0600C29BFA /* PeerViewControllers.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
 				9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */,
+				9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
+				9DA36A7E279C44A200BF7875 /* PeerInteraction.swift in Sources */,
 				9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
 				9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 				9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */,
@@ -756,6 +696,7 @@
 			files = (
 				9DC00AB52662F27500C1DA3C /* PeerInfoTests.swift in Sources */,
 				9DC00AB32662EED900C1DA3C /* AsymmetricCryptoTests.swift in Sources */,
+				9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */,
 				9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */,
 				9DC00AB02662ED6A00C1DA3C /* BrowseFilterSettingsTests.swift in Sources */,
 			);
@@ -764,12 +705,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9D9458A41F2A1B8800EBCB31 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			platformFilter = ios;
-			target = 9D94589D1F2A1B8700EBCB31 /* CommonCrypto */;
-			targetProxy = 9D9458A31F2A1B8800EBCB31 /* PBXContainerItemProxy */;
-		};
 		9DC00AAC2662ED2300C1DA3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
@@ -830,85 +765,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		9D9458A71F2A1B8800EBCB31 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 86J6LQ96WM;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				INFOPLIST_FILE = CommonCrypto/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.CommonCrypto;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		9D9458A81F2A1B8800EBCB31 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 86J6LQ96WM;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				INFOPLIST_FILE = CommonCrypto/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.CommonCrypto;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = 1;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		9DA0F7D41B5C3AB900F3BA87 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -953,7 +809,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1002,7 +858,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1025,17 +881,17 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.4.0;
+				CURRENT_PROJECT_VERSION = 1.5.0;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1060,19 +916,19 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.4.0;
+				CURRENT_PROJECT_VERSION = 1.5.0;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_UNROLL_LOOPS = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.4.0;
+				MARKETING_VERSION = 1.5.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1103,7 +959,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1115,7 +970,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};
 			name = Debug;
@@ -1136,7 +990,6 @@
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = PeereeTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1146,7 +999,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.kobusch.christopher.PeereeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,6";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/Peeree";
 			};
 			name = Release;
@@ -1154,15 +1006,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9D9458A91F2A1B8800EBCB31 /* Build configuration list for PBXNativeTarget "CommonCrypto" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9D9458A71F2A1B8800EBCB31 /* Debug */,
-				9D9458A81F2A1B8800EBCB31 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		9DA0F7B01B5C3AB800F3BA87 /* Build configuration list for PBXProject "Peeree" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1193,6 +1036,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scalessec/Toast-Swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
@@ -1204,6 +1055,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9D51ED7C27A68B3E00BF6C0A /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */;
+			productName = Toast;
+		};
 		9DFF60EE2691BA1600FEA957 /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9DFF60ED2691BA1600FEA957 /* XCRemoteSwiftPackageReference "MatrixSDK" */;

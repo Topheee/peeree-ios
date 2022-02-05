@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreServices
 
 class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private enum NotificationCategory: String {
@@ -15,7 +16,10 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private enum NotificationActions: String {
 		case peerAppearedPin, pinMatchMessage, messageReply
 	}
+
 	private static let PeerIDKey = "PeerIDKey"
+
+	private static let PortraitAttachmentIdentifier = "PortraitAttachmentIdentifier"
 
 	func initialize() {
 		_ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
@@ -56,16 +60,16 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 //			UIApplication.shared.presentLocalNotificationNow(note)
 		}
 
-		_ = PeeringController.Notifications.peerAppeared.addPeerObserver { peerID, notification  in
+		_ = PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
 			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
 			self.peerAppeared(peerID, again: again ?? false)
 		}
 
-		_ = AccountController.Notifications.pinMatch.addPeerObserver { peerID, _  in
+		_ = AccountController.Notifications.pinMatch.addAnyPeerObserver { peerID, _  in
 			self.pinMatchOccured(peerID)
 		}
 
-		_ = PeerManager.Notifications.messageReceived.addPeerObserver { peerID, _  in
+		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, _  in
 			self.messageReceived(from: peerID)
 		}
 
@@ -128,16 +132,17 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			return
 		}
 
-		let peerManager = PeeringController.shared.manager(for: peerID)
 		switch action {
 		case .pinMatchMessage, .messageReply:
 			guard let textResponse = response as? UNTextInputNotificationResponse,
 				  textResponse.userText != "" else { return }
-			peerManager.send(message: textResponse.userText) { _error in
-				if let error = _error { NSLog("ERROR: failed to send message from notification: \(error.localizedDescription)") }
+			PeeringController.shared.interact(with: peerID) { interaction in
+				interaction.send(message: textResponse.userText) { _error in
+					if let error = _error { NSLog("ERR: failed to send message from notification: \(error.localizedDescription)") }
+				}
 			}
 		case .peerAppearedPin:
-			peerManager.peerInfo.map { AccountController.shared.pin($0) }
+			PeerViewModelController.viewModels[peerID].map { AccountController.shared.pin($0.peer.id) }
 		}
 
 		// unschedule all notifications of this category
@@ -167,6 +172,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory, displayInApp: Bool) {
 		if #available(iOS 10, *) {
 			guard !AppDelegate.shared.isActive || displayInApp else { return }
+
 			let center = UNUserNotificationCenter.current()
 			let content = UNMutableNotificationContent()
 			content.title = title
@@ -175,6 +181,31 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			content.userInfo = [NotificationManager.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
 			content.categoryIdentifier = category.rawValue
 			content.threadIdentifier = peerID.uuidString
+
+			if #available(iOS 15, *) {
+				switch category {
+				case .peerAppeared:
+					content.relevanceScore = 1.0
+					content.interruptionLevel = .timeSensitive
+				case .pinMatch:
+					content.relevanceScore = 0.9
+					content.interruptionLevel = .timeSensitive
+				case .message:
+					content.relevanceScore = 0.8
+					content.interruptionLevel = .timeSensitive
+				case .none:
+					content.relevanceScore = 0.0
+					content.interruptionLevel = .passive
+				}
+			}
+
+			// TODO: copy the user's portrait to a temporary location to be able to attach it
+//			if let attachment = try? UNNotificationAttachment(identifier: NotificationManager.PortraitAttachmentIdentifier,
+//													  url: PeeringController.shared.pictureURL(of: peerID),
+//															  options: [UNNotificationAttachmentOptionsTypeHintKey : kUTTypeJPEG]) {
+//				content.attachments = [attachment]
+//			}
+
 			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (_error) in
 				if let error = _error {
 					NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
@@ -182,7 +213,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			}
 		} else {
 			if AppDelegate.shared.isActive && displayInApp {
-				InAppNotificationViewController.presentGlobally(title: title, message: body, isNegative: false) { AppDelegate.shared.showOrMessage(peerID: peerID) }
+				InAppNotificationController.display(title: title, message: body, isNegative: false) //{ AppDelegate.shared.showOrMessage(peerID: peerID) }
 			} else {
 				let note = UILocalNotification()
 				note.alertTitle = title
@@ -195,15 +226,16 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	private func messageReceived(from peerID: PeerID) {
-		let manager = PeeringController.shared.manager(for: peerID)
-		guard let peer = manager.peerInfo, let message = manager.transcripts.last?.message else { return }
+		guard let model = PeerViewModelController.viewModels[peerID],
+			  let message = model.transcripts.last?.message else { return }
+
 		let title: String
 		if #available(iOS 10.0, *) {
 			// The localizedUserNotificationString(forKey:arguments:) method delays the loading of the localized string until the notification is delivered. Thus, if the user changes language settings before a notification is delivered, the alert text is updated to the user’s current language instead of the language that was set when the notification was scheduled.
-			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [peer.nickname])
+			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [model.peer.info.nickname])
 		} else {
 			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
-			title = String(format: titleFormat, peer.nickname)
+			title = String(format: titleFormat, model.peer.info.nickname)
 		}
 		var messagesNotVisible = true
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
@@ -215,11 +247,14 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let peer = PeeringController.shared.manager(for: peerID).peerInfo,
-			BrowseFilterSettings.shared.check(peer: peer) else { return }
-		if AppDelegate.shared.isActive {
-			_ = PeeringController.shared.manager(for: peerID).loadResources()
+		guard !again, let model = PeerViewModelController.viewModels[peerID],
+			  BrowseFilterSettings.shared.check(peer: model.peer) else { return }
+
+		PeeringController.shared.interact(with: peerID) { interaction in
+			interaction.loadPicture { _ in }
+			interaction.loadBio { _ in }
 		}
+
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 		var notBrowsing = true
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
@@ -227,19 +262,18 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				notBrowsing = (tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController)?.visibleViewController as? BrowseViewController == nil
 			}
 		}
-		displayPeerRelatedNotification(title: String(format: alertBodyFormat, peer.nickname), body: "", peerID: peerID, category: peer.pinMatched ? .none : .peerAppeared, displayInApp: notBrowsing)
+		displayPeerRelatedNotification(title: String(format: alertBodyFormat, model.peer.info.nickname), body: "", peerID: peerID, category: model.peer.id.pinMatched ? .none : .peerAppeared, displayInApp: notBrowsing)
 	}
 
 	private func pinMatchOccured(_ peerID: PeerID) {
 		if AppDelegate.shared.isActive {
-			let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as! PinMatchViewController
+			guard let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as? PinMatchViewController else { return }
 			pinMatchVC.peerID = peerID
 			pinMatchVC.presentInFrontMostViewController(true, completion: nil)
 		} else {
-			let manager = PeeringController.shared.manager(for: peerID)
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, manager.peerInfo?.nickname ?? "😇")
+			let alertBody = String(format: alertBodyFormat, PeerViewModelController.viewModels[peerID]?.peer.info.nickname ?? peerID.uuidString)
 			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch, displayInApp: true)
 		}
 	}

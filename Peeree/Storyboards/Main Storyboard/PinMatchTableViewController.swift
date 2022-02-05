@@ -8,7 +8,8 @@
 
 import UIKit
 
-class PinMatchTableViewController: UITableViewController {
+/// Displays list of pin matched peers and the last messages in their conversations.
+final class PinMatchTableViewController: UITableViewController {
 	private static let MatchedPeerCellID = "matchedPeerCell"
 	private static let PlaceholderPeerCellID = "placeholderCell"
 	private static let AddAnimation = UITableView.RowAnimation.automatic
@@ -16,50 +17,25 @@ class PinMatchTableViewController: UITableViewController {
 
 	static let MessagePeerSegueID = "MessagePeerSegue"
 
-	private var peerCache: [PeerInfo] = []
-	private var managerCache: [PeerManager] = []
-
-	private var placeholderCellActive: Bool {
-		return peerCache.count == 0 || !PeeringController.shared.peering
-	}
-
-	private var notificationObservers: [NSObjectProtocol] = []
-
-	private func updateCache(isInitial: Bool = false) {
-		PinMatchesController.shared.persistence.read { newPeerCache in
-			guard !(isInitial && newPeerCache.count == 0) else { return }
-
-			PeeringController.shared.managers(for: newPeerCache.map { $0.peerID }) { peerManagers in
-				peerManagers.forEach { $0.loadLocalPicture {_ in } }
-				DispatchQueue.main.async {
-					self.peerCache = Array(newPeerCache)
-					self.managerCache = peerManagers
-					self.tableView?.reloadData()
-				}
-			}
-		}
-	}
-
 	private func listenForNotifications() {
-		for notificationType: PeerManager.Notifications in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
-			notificationObservers.append(notificationType.addPeerObserver { [weak self] peerID, _  in
+		for notificationType: PeerViewModel.NotificationName in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
+			notificationObservers.append(notificationType.addAnyPeerObserver { [weak self] peerID, _  in
 				self?.messageReceivedSentOrRead(from: peerID)
 			})
 		}
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.pinMatch.addPeerObserver { [weak self] peerID, _ in
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
 			self?.addToView(peerID: peerID, updateTable: true)
 		})
-		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { [weak self] peerID, _ in
+		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
 			guard let strongSelf = self,
 				  let peerPath = strongSelf.indexPath(of: peerID) else {
 				return
 			}
 
-			strongSelf.peerCache.remove(at: peerPath.row)
-			strongSelf.managerCache.remove(at: peerPath.row)
+			strongSelf.viewCache.remove(at: peerPath.row)
 		})
 		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver { [weak self] _ in
 			self?.tableView.reloadData()
@@ -73,7 +49,7 @@ class PinMatchTableViewController: UITableViewController {
 				strongSelf.tableView.reloadData()
 			}
 		})
-		notificationObservers.append(PinMatchesController.Notifications.pinMatchedPeersUpdated.addObserver { [weak self] _ in
+		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
 			self?.updateCache()
 		})
 	}
@@ -81,9 +57,15 @@ class PinMatchTableViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		updateCache(isInitial: true)
+		updateCache()
 		listenForNotifications()
 		tableView.scrollsToTop = true
+	}
+
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+
+		tableView.reloadData()
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -96,7 +78,7 @@ class PinMatchTableViewController: UITableViewController {
 			return
 		}
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-		peerVC.peerID = managerCache[cellPath.row].peerID
+		peerVC.peerID = viewCache[cellPath.row].peerID
 	}
 
 	deinit {
@@ -110,7 +92,7 @@ class PinMatchTableViewController: UITableViewController {
 	override func numberOfSections(in tableView: UITableView) -> Int { return 1 }
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		tableView.isScrollEnabled = !placeholderCellActive
-		return placeholderCellActive ? 1 : peerCache.count
+		return placeholderCellActive ? 1 : viewCache.count
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -127,7 +109,7 @@ class PinMatchTableViewController: UITableViewController {
 			return cell
 		} else {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!
-			fill(cell: cell, peer: peerCache[indexPath.row], manager: managerCache[indexPath.row])
+			fill(cell: cell, model: viewCache[indexPath.row])
 			return cell
 		}
 	}
@@ -153,21 +135,60 @@ class PinMatchTableViewController: UITableViewController {
 		}
 	}
 
-	// MARK: Private Methods
+	// MARK: - Private
 
-	private func fill(cell: UITableViewCell, peer: PeerInfo, manager: PeerManager) {
+	// MARK: Variables
+
+	/// Data source for `tableView`.
+	private var viewCache: [PeerViewModel] = []
+
+	/// Whether `tableView` should display only one cell containing a status info.
+	private var placeholderCellActive: Bool {
+		return viewCache.count == 0 || !PeeringController.shared.peering
+	}
+
+	/// Reference holder to `NotificationCenter` observers.
+	private var notificationObservers: [NSObjectProtocol] = []
+
+	// MARK: Methods
+
+	private func updateCache() {
+		viewCache = PeerViewModelController.viewModels.values.filter { model in
+			return model.peer.id.pinMatched
+		}
+
+		viewCache.sort { a, b in
+			guard let aTimestamp = a.transcripts.last?.timestamp else {
+				if b.transcripts.isEmpty {
+					return a.lastSeen < b.lastSeen
+				} else {
+					return false
+				}
+			}
+
+			guard let bTimestamp = b.transcripts.last?.timestamp else {
+				return true
+			}
+
+			return aTimestamp < bTimestamp
+		}
+
+		self.tableView?.reloadData()
+	}
+
+	private func fill(cell: UITableViewCell, model: PeerViewModel) {
 		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
-		cell.textLabel?.text = peer.nickname
-		let unreadMessages = manager.unreadMessages
+		cell.textLabel?.text = model.peer.info.nickname
+		let unreadMessages = model.unreadMessages
 		let format = NSLocalizedString("%u messages.", comment: "")
 		let unreadMessageCountText = String(format: format, unreadMessages)
 		if unreadMessages > 0 {
-			cell.detailTextLabel?.text = "\(manager.unreadMessages) 📫\t\(manager.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "\(model.unreadMessages) 📫\t\(model.transcripts.last?.message ?? unreadMessageCountText)"
 		} else {
-			cell.detailTextLabel?.text = "📭\t\(manager.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📭\t\(model.transcripts.last?.message ?? unreadMessageCountText)"
 		}
 		guard let imageView = cell.imageView else { assertionFailure(); return }
-		imageView.image = manager.pictureClassification == .none ? manager.picture ?? (peer.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
+		imageView.image = model.portraitOrPlaceholder
 		guard let originalImageSize = imageView.image?.size else { assertionFailure(); return }
 
 		let minImageEdgeLength = min(originalImageSize.height, originalImageSize.width)
@@ -185,7 +206,14 @@ class PinMatchTableViewController: UITableViewController {
 		let maskView = CircleMaskView(maskedView: imageView)
 		maskView.frame = imageRect // Fix: imageView's size was (1, 1) when returning from person view
 		if #available(iOS 11.0, *) {
-			imageView.accessibilityIgnoresInvertColors = manager.picture != nil
+			imageView.accessibilityIgnoresInvertColors = model.picture != nil
+		}
+
+		// load the picture of the peer from disk once it is displayed
+		if model.picture == nil && model.peer.info.hasPicture {
+			PeeringController.shared.interact(with: model.peerID) { interaction in
+				interaction.loadLocalPicture()
+			}
 		}
 	}
 
@@ -196,8 +224,7 @@ class PinMatchTableViewController: UITableViewController {
 		}
 		let topIndexPath = IndexPath(row: 0, section: 0)
 		if peerPath.row != 0 {
-			peerCache.swapAt(0, peerPath.row)
-			managerCache.swapAt(0, peerPath.row)
+			viewCache.swapAt(0, peerPath.row)
 			tableView.moveRow(at: peerPath, to: topIndexPath)
 		}
 		tableView.reloadRows(at: [topIndexPath], with: .automatic)
@@ -206,6 +233,8 @@ class PinMatchTableViewController: UITableViewController {
 	private func reload(peerID: PeerID) {
 		guard let indexPath = indexPath(of: peerID) else { return }
 
+		// we have to refresh our cache if a peer changes - PeerInfos are structs!
+		viewCache[indexPath.row] = PeerViewModelController.viewModel(of: peerID)
 		tableView.reloadRows(at: [indexPath], with: .automatic)
 	}
 
@@ -214,26 +243,19 @@ class PinMatchTableViewController: UITableViewController {
 	}
 
 	private func indexPath(of peerID: PeerID) -> IndexPath? {
-		if let row = peerCache.firstIndex(where: { $0.peerID == peerID }) {
+		if let row = viewCache.firstIndex(where: { $0.peerID == peerID }) {
 			return IndexPath(row: row, section: 0)
 		}
 		return nil
 	}
 
-	private func addToCache(peer: PeerInfo, manager: PeerManager) {
-		peerCache.insert(peer, at: 0)
-		managerCache.insert(manager, at: 0)
+	private func addToCache(model: PeerViewModel) {
+		viewCache.insert(model, at: 0)
 	}
 
 	private func addToView(peerID: PeerID, updateTable: Bool) {
-		let manager = PeeringController.shared.manager(for: peerID)
-		guard let peer = manager.peerInfo else {
-			assertionFailure()
-			return
-		}
-
 		let placeHolderWasActive = placeholderCellActive
-		addToCache(peer: peer, manager: manager)
+		addToCache(model: PeerViewModelController.viewModel(of: peerID))
 
 		if updateTable {
 			if placeHolderWasActive {

@@ -22,8 +22,8 @@ final class WelcomeViewController: UIViewController {
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		guard let vc = segue.destination as? OnboardingDescriptionViewController else { return }
-		
-		vc.infoType = (sender as? UIButton == infoButton) ? .general : .data
+
+		vc.infoType = .general
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -31,7 +31,7 @@ final class WelcomeViewController: UIViewController {
 		
 		if #available(iOS 11, *) {
 			// reset it's frame on iOS 11 as the view is not layed out there every time it gets active again
-			pinButton.superview!.setNeedsLayout()
+			pinButton.superview?.setNeedsLayout()
 		}
 	}
 	

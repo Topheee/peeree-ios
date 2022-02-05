@@ -8,102 +8,95 @@
 
 import UIKit
 
-final class SetupViewController: PortraitImagePickerController, UITextFieldDelegate {
+final class SetupViewController: UIViewController, UITextFieldDelegate, PortraitImagePickerControllerDelegate {
 	@IBOutlet private weak var picButton: UIButton!
-	@IBOutlet private weak var launchAppButton: UIButton!
 	@IBOutlet private weak var nameTextField: UITextField!
 	@IBOutlet private weak var genderPicker: UISegmentedControl!
-	@IBOutlet private weak var termsSwitch: UISwitch!
-	@IBOutlet private weak var termsLinkButton: UIButton!
-	
-	@IBAction func finishIntroduction(_ sender: AnyObject) {
-		guard let chosenName = nameTextField.text, chosenName != "", termsSwitch.isOn else { return }
+	@IBOutlet private weak var birthdayInput: UITextField!
 
-		AccountController.shared.createAccount { (_error) in
-			if let error = _error {
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
-			}
-		}
-		
-		UserPeerManager.instance.peer.nickname = chosenName
-		UserPeerManager.instance.peer.gender = PeerInfo.Gender.allCases[genderPicker.selectedSegmentIndex]
-		
-		dismiss(animated: true, completion: nil)
-	}
-	
+	private let portraitImagePicker = PortraitImagePickerController()
+
 	@IBAction func takePic(_ sender: UIButton) {
 		nameTextField.resignFirstResponder()
-		showPicturePicker(destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
-	}
-	
-	@IBAction func viewTerms(_ sender: UIButton) {
-		AppDelegate.viewTerms(in: self)
-	}
-	
-	@IBAction func updateLaunchButton(_ sender: Any) {
-		launchAppButton.layer.removeAllAnimations()
-		launchAppButton.transform = CGAffineTransform.identity
-		if termsSwitch.isOn && nameTextField.text != nil && nameTextField.text != "" {
-			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.allowUserInteraction], animations: { () -> Void in
-				self.launchAppButton.alpha = 1.0
-			}, completion: { finished in
-				guard !UIAccessibility.isReduceMotionEnabled else { return }
-				UIView.animate(withDuration: 0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: { () -> Void in
-					self.launchAppButton.transform = self.launchAppButton.transform.scaledBy(x: 0.97, y: 0.97)
-				}, completion: nil)
-			})
-		} else {
-			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
-				self.launchAppButton.alpha = 0.0
-			}, completion: nil)
-		}
-		
-	}
-	
-	override func viewDidLoad() {
-		super.viewDidLoad()
-		launchAppButton.alpha = 0.0
-		let termsAgreement = NSLocalizedString("I agree to the ", comment: "Link button text in onboarding")
-		let terms = NSLocalizedString("Terms of Use", comment: "Colored link name in button text in onboarding")
-		
-		let linkText: NSMutableAttributedString
-		if #available(iOS 13, *) {
-			linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.label])
-		} else {
-			linkText = NSMutableAttributedString(string: termsAgreement, attributes: [NSAttributedString.Key.foregroundColor : UIColor.darkText])
-		}
-		linkText.append(NSAttributedString(string: terms, attributes: [NSAttributedString.Key.foregroundColor : AppTheme.tintColor]))
-		
-		termsLinkButton.setAttributedTitle(linkText, for: .normal)
+		portraitImagePicker.delegate = self
+		portraitImagePicker.showPicturePicker(allowCancel: false, destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
 	}
 	
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
-		if picButton.mask == nil {
-			_ = CircleMaskView(maskedView: picButton.imageView!)
+		if picButton.mask == nil, let imageView = picButton.imageView {
+			_ = CircleMaskView(maskedView: imageView)
 		}
 	}
-	
-	override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
-		if identifier == "finishOnboardingSegue" {
-			return nameTextField.text != nil && nameTextField.text != ""
+
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+
+		guard let chosenName = nameTextField.text, chosenName != "" else { return }
+
+		let gender = PeerInfo.Gender.allCases[self.genderPicker.selectedSegmentIndex]
+		UserPeer.instance.modifyInfo { info in
+			info = PeerInfo(nickname: chosenName, gender: gender, age: nil, hasPicture: false)
 		}
-		return super.shouldPerformSegue(withIdentifier: identifier, sender: sender)
 	}
 	
 	override var prefersStatusBarHidden : Bool {
 		return true
 	}
-	
-	override func picked(image: UIImage?) {
+
+	// MARK: PortraitImagePickerControllerDelegate
+
+	func picked(image: UIImage?) {
 		picButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
 		if #available(iOS 11.0, *) {
 			picButton.accessibilityIgnoresInvertColors = image != nil
 		}
 	}
+
+	func viewControllerToPresentImagePicker() -> UIViewController {
+		return self
+	}
 	
 	// MARK: UITextFieldDelegate
-	
+
+	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+		guard textField == birthdayInput else { return true }
+
+		let today = Date()
+		let datePicker = UIDatePicker()
+		datePicker.datePickerMode = .date
+		if #available(iOS 13.4, *) {
+			datePicker.preferredDatePickerStyle = .wheels
+		}
+		var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		minComponents.year = minComponents.year! - PeerInfo.MaxAge
+		var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		maxComponents.year = maxComponents.year! - PeerInfo.MinAge
+
+		datePicker.minimumDate = Calendar.current.date(from: minComponents)
+		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
+
+		datePicker.date = datePicker.maximumDate ?? today
+		datePicker.addTarget(self, action: #selector(self.agePickerChanged), for: .valueChanged)
+
+		let saveToolBar = UIToolbar()
+		let omitButton = UIBarButtonItem(title: NSLocalizedString("Omit", comment: ""), style: .plain, target: self, action: #selector(ageOmitted))
+		let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		let doneButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: ""), style: .done, target: self, action: #selector(ageConfirmed))
+
+		spaceButton.title = birthdayInput.placeholder
+		omitButton.tintColor = UIColor.red
+		saveToolBar.isTranslucent = true
+		saveToolBar.sizeToFit()
+		saveToolBar.setItems([omitButton,spaceButton,doneButton], animated: false)
+		saveToolBar.isUserInteractionEnabled = true
+
+		birthdayInput.inputView = datePicker
+		birthdayInput.inputAccessoryView = saveToolBar
+
+		return true
+	}
+
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
 		return true
@@ -111,5 +104,27 @@ final class SetupViewController: PortraitImagePickerController, UITextFieldDeleg
 	
 	func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
 		return textField.allowChangeCharacters(in: range, replacementString: string, maxUtf8Length: PeerInfo.MaxNicknameSize)
+	}
+
+	@objc private func agePickerChanged(_ sender: UIDatePicker) {
+		UserPeer.instance.modify(birthday: sender.date)
+		fillBirthdayInput(with: sender.date)
+	}
+
+	@objc private func ageConfirmed(_ sender: UIBarButtonItem) {
+		birthdayInput.resignFirstResponder()
+	}
+
+	@objc private func ageOmitted(_ sender: UIBarButtonItem) {
+		UserPeer.instance.modify(birthday: nil)
+		birthdayInput.text = nil
+		birthdayInput.resignFirstResponder()
+	}
+
+	private func fillBirthdayInput(with date: Date) {
+		let dateFormatter = DateFormatter()
+		dateFormatter.timeStyle = .none
+		dateFormatter.dateStyle = .long
+		birthdayInput.text = dateFormatter.string(from: date)
 	}
 }

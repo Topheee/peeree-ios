@@ -15,8 +15,8 @@
         <scene sceneID="W2a-ue-BbY">
             <objects>
                 <tableViewController title="Radar" id="44q-aX-Sii" userLabel="Browse" customClass="BrowseViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="64" sectionHeaderHeight="28" sectionFooterHeight="28" id="ym8-vj-FZW">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="430"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="64" sectionHeaderHeight="28" sectionFooterHeight="28" id="ym8-vj-FZW">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="436"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor"/>
@@ -120,15 +120,15 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <stackView opaque="NO" contentMode="scaleToFill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="wcS-7J-gZ1">
-                                                            <rect key="frame" x="0.0" y="28.5" width="117" height="19.5"/>
+                                                            <rect key="frame" x="0.0" y="28.5" width="210.5" height="19.5"/>
                                                             <subviews>
-                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pe0-RF-n2r" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="43.5" height="19.5"/>
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DYl-dn-PHP" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="45.5" height="19.5"/>
                                                                     <subviews>
-                                                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="RKG-5q-axn">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="43.5" height="19.5"/>
+                                                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="8c8-TF-Cz3">
+                                                                            <rect key="frame" x="0.0" y="0.0" width="45.5" height="19.5"/>
                                                                             <subviews>
-                                                                                <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="uYo-F6-fho" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
+                                                                                <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="axs-fo-8FQ" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
                                                                                     <rect key="frame" x="2" y="3" width="14" height="14"/>
                                                                                     <accessibility key="accessibilityConfiguration">
                                                                                         <accessibilityTraits key="traits" notEnabled="YES"/>
@@ -154,8 +154,8 @@
                                                                                         </userDefinedRuntimeAttribute>
                                                                                     </userDefinedRuntimeAttributes>
                                                                                 </view>
-                                                                                <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Ta-SF-xsS">
-                                                                                    <rect key="frame" x="16" y="3" width="19.5" height="13.5"/>
+                                                                                <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="now" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IbQ-rS-HPJ">
+                                                                                    <rect key="frame" x="16" y="3" width="21.5" height="13.5"/>
                                                                                     <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                                     <accessibility key="accessibilityConfiguration" label="Person Details"/>
                                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
@@ -173,10 +173,10 @@
                                                                     </subviews>
                                                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                                     <constraints>
-                                                                        <constraint firstItem="RKG-5q-axn" firstAttribute="leading" secondItem="Pe0-RF-n2r" secondAttribute="leading" id="8hF-jU-zTB"/>
-                                                                        <constraint firstItem="RKG-5q-axn" firstAttribute="top" secondItem="Pe0-RF-n2r" secondAttribute="top" id="L0i-hb-alU"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="RKG-5q-axn" secondAttribute="bottom" id="XbW-Id-T0D"/>
-                                                                        <constraint firstAttribute="trailing" secondItem="RKG-5q-axn" secondAttribute="trailing" id="fFC-PW-yw4"/>
+                                                                        <constraint firstItem="8c8-TF-Cz3" firstAttribute="leading" secondItem="DYl-dn-PHP" secondAttribute="leading" id="A39-Ii-nfE"/>
+                                                                        <constraint firstItem="8c8-TF-Cz3" firstAttribute="top" secondItem="DYl-dn-PHP" secondAttribute="top" id="IkS-0K-SpY"/>
+                                                                        <constraint firstAttribute="trailing" secondItem="8c8-TF-Cz3" secondAttribute="trailing" id="qNH-Ch-Xpr"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="8c8-TF-Cz3" secondAttribute="bottom" id="yyR-hJ-aXz"/>
                                                                     </constraints>
                                                                     <userDefinedRuntimeAttributes>
                                                                         <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
@@ -188,7 +188,7 @@
                                                                     </userDefinedRuntimeAttributes>
                                                                 </view>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nmr-vN-O84" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                                    <rect key="frame" x="55.5" y="0.0" width="61.5" height="19.5"/>
+                                                                    <rect key="frame" x="57.5" y="0.0" width="61.5" height="19.5"/>
                                                                     <subviews>
                                                                         <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="GkI-Ci-JL0">
                                                                             <rect key="frame" x="0.0" y="0.0" width="61.5" height="19.5"/>
@@ -252,6 +252,77 @@
                                                                         </userDefinedRuntimeAttribute>
                                                                     </userDefinedRuntimeAttributes>
                                                                 </view>
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pe0-RF-n2r" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
+                                                                    <rect key="frame" x="131" y="0.0" width="43.5" height="19.5"/>
+                                                                    <subviews>
+                                                                        <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="RKG-5q-axn">
+                                                                            <rect key="frame" x="0.0" y="0.0" width="43.5" height="19.5"/>
+                                                                            <subviews>
+                                                                                <view opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="260" verticalHuggingPriority="260" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="uYo-F6-fho" customClass="CircleView" customModule="Peeree" customModuleProvider="target">
+                                                                                    <rect key="frame" x="2" y="3" width="14" height="14"/>
+                                                                                    <accessibility key="accessibilityConfiguration">
+                                                                                        <accessibilityTraits key="traits" notEnabled="YES"/>
+                                                                                    </accessibility>
+                                                                                    <userDefinedRuntimeAttributes>
+                                                                                        <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                                            <color key="value" systemColor="systemBackgroundColor"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                        <userDefinedRuntimeAttribute type="number" keyPath="topEdgeInset">
+                                                                                            <real key="value" value="2"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                        <userDefinedRuntimeAttribute type="number" keyPath="leftEdgeInset">
+                                                                                            <real key="value" value="2"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                        <userDefinedRuntimeAttribute type="number" keyPath="bottomEdgeInset">
+                                                                                            <real key="value" value="2"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                        <userDefinedRuntimeAttribute type="number" keyPath="rightEdgeInset">
+                                                                                            <real key="value" value="2"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                        <userDefinedRuntimeAttribute type="number" keyPath="circleRadius">
+                                                                                            <real key="value" value="14"/>
+                                                                                        </userDefinedRuntimeAttribute>
+                                                                                    </userDefinedRuntimeAttributes>
+                                                                                </view>
+                                                                                <label userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="age" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Ta-SF-xsS">
+                                                                                    <rect key="frame" x="16" y="3" width="19.5" height="13.5"/>
+                                                                                    <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                                    <accessibility key="accessibilityConfiguration" label="Person Details"/>
+                                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                                                    <nil key="textColor"/>
+                                                                                    <nil key="highlightedColor"/>
+                                                                                </label>
+                                                                            </subviews>
+                                                                            <edgeInsets key="layoutMargins" top="0.0" left="2" bottom="0.0" right="8"/>
+                                                                            <userDefinedRuntimeAttributes>
+                                                                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                                    <integer key="value" value="16"/>
+                                                                                </userDefinedRuntimeAttribute>
+                                                                            </userDefinedRuntimeAttributes>
+                                                                        </stackView>
+                                                                    </subviews>
+                                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                                    <constraints>
+                                                                        <constraint firstItem="RKG-5q-axn" firstAttribute="leading" secondItem="Pe0-RF-n2r" secondAttribute="leading" id="8hF-jU-zTB"/>
+                                                                        <constraint firstItem="RKG-5q-axn" firstAttribute="top" secondItem="Pe0-RF-n2r" secondAttribute="top" id="L0i-hb-alU"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="RKG-5q-axn" secondAttribute="bottom" id="XbW-Id-T0D"/>
+                                                                        <constraint firstAttribute="trailing" secondItem="RKG-5q-axn" secondAttribute="trailing" id="fFC-PW-yw4"/>
+                                                                    </constraints>
+                                                                    <userDefinedRuntimeAttributes>
+                                                                        <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                                                            <real key="value" value="-1"/>
+                                                                        </userDefinedRuntimeAttribute>
+                                                                        <userDefinedRuntimeAttribute type="color" keyPath="fillColor">
+                                                                            <color key="value" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                        </userDefinedRuntimeAttribute>
+                                                                    </userDefinedRuntimeAttributes>
+                                                                </view>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="PinButtonTemplatePressed" translatesAutoresizingMaskIntoConstraints="NO" id="e2d-Wp-JZK">
+                                                                    <rect key="frame" x="186.5" y="0.0" width="24" height="19.5"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="width" constant="24" id="X2T-cT-s2Q"/>
+                                                                    </constraints>
+                                                                </imageView>
                                                             </subviews>
                                                         </stackView>
                                                     </subviews>
@@ -270,8 +341,9 @@
                                     <outlet property="ageLabel" destination="7Ta-SF-xsS" id="bQK-fx-5Tm"/>
                                     <outlet property="ageTagView" destination="Pe0-RF-n2r" id="te4-oD-fva"/>
                                     <outlet property="genderLabel" destination="5Um-0U-pgr" id="d5k-1o-qXb"/>
-                                    <outlet property="genderTagView" destination="nmr-vN-O84" id="5Mh-PN-ZQ6"/>
+                                    <outlet property="lastSeenLabel" destination="IbQ-rS-HPJ" id="ppV-Qj-gDw"/>
                                     <outlet property="nameLabel" destination="K43-43-CyP" id="nCl-ZI-hw7"/>
+                                    <outlet property="pinImageView" destination="e2d-Wp-JZK" id="EY9-4R-eqg"/>
                                     <outlet property="portraitImageView" destination="lbr-gK-QTt" id="Kh3-vs-OFr"/>
                                     <segue destination="bgg-zV-1WC" kind="show" identifier="ViewPeerSegue" id="Qvq-U3-y04"/>
                                 </connections>
@@ -284,7 +356,7 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="Search" largeTitleDisplayMode="always" id="sgW-Kv-UY4">
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="9" width="100" height="32"/>
+                            <rect key="frame" x="110" y="6" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -714,25 +786,17 @@
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="New Peer" largeTitleDisplayMode="never" id="OwH-Gc-YBz">
-                        <rightBarButtonItems>
-                            <barButtonItem title="Find" id="S8S-DB-afu">
-                                <connections>
-                                    <segue destination="PIG-Ng-mYB" kind="show" identifier="beaconSegue" id="lOo-De-0Sv"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="flag.fill" id="UHa-Bh-87N">
-                                <connections>
-                                    <action selector="reportPeer:" destination="bgg-zV-1WC" id="aec-Lb-oC9"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" image="flag.fill" id="UHa-Bh-87N">
+                            <connections>
+                                <action selector="reportPeer:" destination="bgg-zV-1WC" id="aec-Lb-oC9"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
                         <outlet property="ageTagView" destination="aUs-rV-7r7" id="Vym-0f-JyY"/>
                         <outlet property="bioHeadingLabel" destination="u8x-xh-rZR" id="aaT-lX-bbY"/>
                         <outlet property="bioTextView" destination="UYZ-np-Imj" id="hDk-ss-sEw"/>
-                        <outlet property="findButtonItem" destination="S8S-DB-afu" id="jIe-rb-qH5"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="genderTagView" destination="yo1-ut-E67" id="9GB-yI-7JI"/>
                         <outlet property="gradientView" destination="oOD-vv-AaG" id="5wh-h0-uCE"/>
@@ -1195,6 +1259,7 @@
                         <outlet property="mailTextField" destination="gYx-2Y-uq3" id="24O-tx-SBk"/>
                         <outlet property="nameTextField" destination="sNx-nf-ozM" id="afM-HY-upg"/>
                         <outlet property="portraitImageButton" destination="b8E-hE-Mnd" id="EZH-tv-FWY"/>
+                        <outlet property="previewButton" destination="OHO-ma-96H" id="M0R-L4-g6F"/>
                         <outlet property="scrollView" destination="hwZ-ru-5l0" id="oTR-rC-GC9"/>
                     </connections>
                 </viewController>
@@ -1438,35 +1503,44 @@
             <objects>
                 <viewController storyboardIdentifier="BeaconViewController" definesPresentationContext="YES" id="PIG-Ng-mYB" customClass="BeaconViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="zUf-Bc-QiJ" customClass="RootView" customModule="Peeree" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="436"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleAspectFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RNY-qo-bXL" customClass="RoundedImageView" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="96" y="132" width="128" height="128"/>
+                                <rect key="frame" x="96" y="225" width="128" height="128"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="RNY-qo-bXL" secondAttribute="height" multiplier="1:1" identifier="remotePortraitAspect" id="UPM-j6-ENO"/>
                                 </constraints>
                             </imageView>
                             <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="eae-2q-6wg" customClass="RoundedImageView" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="96" y="283" width="128" height="128"/>
+                                <rect key="frame" x="96" y="376" width="128" height="128"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="height" multiplier="1:1" id="3M1-UD-qtB"/>
                                 </constraints>
                             </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FDb-f6-YH1">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="r3q-Zm-aLy"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstAttribute="bottom" secondItem="FDb-f6-YH1" secondAttribute="bottom" id="1C5-zs-CSF"/>
                             <constraint firstItem="eae-2q-6wg" firstAttribute="top" secondItem="RNY-qo-bXL" secondAttribute="bottom" constant="23" identifier="portraitDistance" id="2zp-Ct-nOr"/>
                             <constraint firstItem="r3q-Zm-aLy" firstAttribute="bottom" secondItem="eae-2q-6wg" secondAttribute="bottom" constant="-24" identifier="userPortraitBottom" id="GeR-iK-Gky"/>
                             <constraint firstItem="eae-2q-6wg" firstAttribute="width" secondItem="zUf-Bc-QiJ" secondAttribute="width" multiplier="2/5" identifier="userPortraitWidth" id="XPo-fL-FVc"/>
+                            <constraint firstAttribute="trailing" secondItem="FDb-f6-YH1" secondAttribute="trailing" id="cAo-FT-8qx"/>
                             <constraint firstItem="RNY-qo-bXL" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" identifier="remotePortraitCenter" id="eda-wd-B8w"/>
+                            <constraint firstItem="FDb-f6-YH1" firstAttribute="leading" secondItem="zUf-Bc-QiJ" secondAttribute="leading" id="ejq-BV-eaX"/>
                             <constraint firstItem="eae-2q-6wg" firstAttribute="centerX" secondItem="zUf-Bc-QiJ" secondAttribute="centerX" identifier="userPortraitCenter" id="g6b-i3-Gf5"/>
+                            <constraint firstItem="FDb-f6-YH1" firstAttribute="top" secondItem="zUf-Bc-QiJ" secondAttribute="top" id="pnO-O5-BtN"/>
                             <constraint firstItem="RNY-qo-bXL" firstAttribute="width" secondItem="eae-2q-6wg" secondAttribute="width" identifier="remoteAndUserPortrait" id="t4q-nP-hNC"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Radar" largeTitleDisplayMode="never" id="khg-QX-S1a"/>
                     <connections>
+                        <outlet property="beaconView" destination="FDb-f6-YH1" id="we9-iY-1Jt"/>
                         <outlet property="portraitDistanceConstraint" destination="2zp-Ct-nOr" id="TKH-Rv-vX6"/>
                         <outlet property="remotePortrait" destination="RNY-qo-bXL" id="CKG-gO-b5p"/>
                         <outlet property="userPortrait" destination="eae-2q-6wg" id="nv1-NB-yae"/>
@@ -1474,7 +1548,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DGi-g3-N1c" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3960" y="704"/>
+            <point key="canvasLocation" x="3960" y="703.75"/>
         </scene>
         <!--Browse Nav-->
         <scene sceneID="jkv-Li-YUv">
@@ -1483,7 +1557,7 @@
                     <tabBarItem key="tabBarItem" title="Radar" image="LeftRightRadarGlyph" id="5mI-Pb-pBa"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" translucent="NO" id="5ib-mG-1sv">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.086274509799999996" green="0.56862745100000001" blue="0.39607843139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1513,7 +1587,7 @@
                     <tabBarItem key="tabBarItem" title="Profile" image="PersonIconFilled" id="wTd-Hw-q7x"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" largeTitles="YES" id="0JW-Wc-ihy">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="102"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1756,7 +1830,7 @@
                     <tabBarItem key="tabBarItem" title="Pin Matches" image="ReadIconSocial" id="Fme-w5-T3k"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="1KY-ZA-6Nm">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1785,6 +1859,9 @@
         <designable name="D5a-Uy-cid">
             <size key="intrinsicContentSize" width="24" height="24"/>
         </designable>
+        <designable name="DYl-dn-PHP">
+            <size key="intrinsicContentSize" width="28" height="28"/>
+        </designable>
         <designable name="H4d-cm-ufn">
             <size key="intrinsicContentSize" width="26" height="26"/>
         </designable>
@@ -1793,6 +1870,9 @@
         </designable>
         <designable name="aUs-rV-7r7">
             <size key="intrinsicContentSize" width="28" height="28"/>
+        </designable>
+        <designable name="axs-fo-8FQ">
+            <size key="intrinsicContentSize" width="14" height="14"/>
         </designable>
         <designable name="cqN-Sb-ZzT">
             <size key="intrinsicContentSize" width="28" height="28"/>
@@ -1820,15 +1900,16 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="xMu-Pu-iqx"/>
+        <segue reference="Qvq-U3-y04"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34.5"/>
-        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
+        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
+        <image name="PinButtonTemplatePressed" width="1024" height="1024"/>
         <image name="PinTemplate" width="1024" height="1024"/>
         <image name="PinTemplatePressed" width="1024" height="1024"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>

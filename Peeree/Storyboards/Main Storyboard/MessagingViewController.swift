@@ -29,15 +29,15 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		self.messageTextView.text = ""
 
 		self.sendMessageButton.isEnabled = false
-		peerManager.send(message: message) { error in
-			if let error = error {
-				AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog"))
+		PeeringController.shared.interact(with: peerID) { interaction in
+			interaction.send(message: message) { error in
+				error.map { InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog")) }
 			}
 		}
 	}
 	
 	private func setPortraitButtonImage() {
-		portraitImageButton.setImage(peerManager.createRoundedPicture(cropRect: portraitImageButton.bounds, backgroundColor: navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor), for: .normal)
+		portraitImageButton.setImage(model.createRoundedPicture(cropRect: portraitImageButton.bounds, backgroundColor: navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor), for: .normal)
 		// background color of navigationController?.navigationBar.barTintColor ?? AppTheme.tintColor does not work (at least) on iPhone SE 2 (it has a different color than the bar)
 		// so we need to use cornerRadius
 		portraitImageButton.layer.cornerRadius = portraitImageButton.bounds.height / 2.0
@@ -64,8 +64,8 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		super.viewWillAppear(animated)
 		
 		setPortraitButtonImage()
-		navigationItem.prompt = peerManager.peerInfo?.nickname ?? peerID.uuidString
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
+		navigationItem.prompt = model.peer.info.nickname
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.setPortraitButtonImage()
 		})
 	}

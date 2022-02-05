@@ -67,15 +67,14 @@ class PinMatchViewController: PeerViewController {
 	}
 	
 	private func displayPeer() {
-		guard let peer = peerManager.peerInfo else { return }
-		peerNameLabel?.text = peer.nickname
-		
+		peerNameLabel?.text = model.peer.info.nickname
+
 		guard portraitView != nil else { return }
-		portraitView.image = peerManager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+		portraitView.image = model.portraitOrPlaceholder
 		portraitView.layoutIfNeeded()
 		_ = CircleMaskView(maskedView: portraitView)
 		if #available(iOS 11.0, *) {
-			portraitView.accessibilityIgnoresInvertColors = peerManager.picture != nil
+			portraitView.accessibilityIgnoresInvertColors = model.picture != nil
 		}
 	}
 }

@@ -303,6 +303,9 @@ public class AsymmetricPublicKey: AsymmetricKey {
 }
 
 public class AsymmetricPrivateKey: AsymmetricKey {
+
+	public var blockSize: Int { return SecKeyGetBlockSize(key) }
+
 	private override init(key: SecKey, type: CFString, keyClass: CFString, size: Int) {
 		// we need to override (all) the superclasses designated initializers to inherit its convenience initializers (and thus the Codable initializer we want)
 		super.init(key: key, type: type, keyClass: kSecAttrKeyClassPrivate, size: size)
@@ -401,8 +404,8 @@ public struct KeyPair {
 	let privateTag: Data, publicTag: Data
 	let label: String
 	
-	public var blockSize: Int { return SecKeyGetBlockSize(privateKey.key) }
-	
+	public var blockSize: Int { return privateKey.blockSize }
+
 	public init(label: String, privateTag: Data, publicTag: Data, type: CFString, size: Int, persistent: Bool, useEnclave: Bool = false) throws {
 		self.privateTag = privateTag
 		self.publicTag = publicTag

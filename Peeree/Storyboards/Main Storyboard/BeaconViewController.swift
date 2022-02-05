@@ -15,6 +15,7 @@ final class BeaconViewController: PeerViewController {
 	static private let valleyColor = AppTheme.backgroundColor.cgColor
 	static let storyboardID = "BeaconViewController"
 
+	@IBOutlet private weak var beaconView: UIView!
 	@IBOutlet private weak var remotePortrait: UIImageView!
 	@IBOutlet private weak var portraitDistanceConstraint: NSLayoutConstraint!
 	@IBOutlet private weak var userPortrait: UIImageView!
@@ -35,20 +36,22 @@ final class BeaconViewController: PeerViewController {
 		
 		gradient.colors = [BeaconViewController.waveColor, BeaconViewController.valleyColor, BeaconViewController.waveColor]
 		gradient.locations = [NSNumber(floatLiteral: 0.0), NSNumber(floatLiteral: 0.5), NSNumber(floatLiteral: 1.0)]
-		
-		view.layer.insertSublayer(gradient, at: 0)
+
+		beaconView.layer.insertSublayer(gradient, at: 0)
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
-		userPortrait.image = UserPeerManager.instance.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
-		remotePortrait.image = peerManager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+		UserPeer.instance.read { _, _, picture, _ in
+			self.userPortrait.image = picture.map { UIImage(cgImage: $0) } ?? #imageLiteral(resourceName: "PortraitUnavailable")
+		}
+		remotePortrait.image = model.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
 		if #available(iOS 11.0, *) {
 			userPortrait.accessibilityIgnoresInvertColors = userPortrait.image != nil
 			remotePortrait.accessibilityIgnoresInvertColors = remotePortrait.image != nil
 		}
 		updateDistance(.unknown, animated: false)
-		if PeeringController.shared.remote.availablePeers.contains(peerID) {
+		if model.isAvailable {
 			showPeerAvailable()
 		} else {
 			showPeerUnavailable()
@@ -60,8 +63,8 @@ final class BeaconViewController: PeerViewController {
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.showPeerUnavailable()
 		})
-		notificationObservers.append(PeerManager.Notifications.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
-			self?.remotePortrait.image = self?.peerManager.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.remotePortrait.image = self?.model.picture ?? #imageLiteral(resourceName: "PortraitUnavailable")
 		})
 
 		if !UIAccessibility.isReduceMotionEnabled {
@@ -80,6 +83,8 @@ final class BeaconViewController: PeerViewController {
 			gradient.add(locationAnimation, forKey: "locations")
 			gradient.add(colorsAnimation, forKey: "colors")
 		}
+
+		tabBarController?.tabBar.isTranslucent = false
 	}
 	
 	override func viewWillDisappear(_ animated: Bool) {
@@ -88,6 +93,8 @@ final class BeaconViewController: PeerViewController {
 		for observer in notificationObservers {
 			NotificationCenter.default.removeObserver(observer)
 		}
+
+		tabBarController?.tabBar.isTranslucent = true
 	}
 	
 	// MARK: Private Methods
@@ -129,14 +136,18 @@ final class BeaconViewController: PeerViewController {
 	}
 	
 	private func startBeacon() {
-		peerManager.range { [weak self] (_, distance) in
-			DispatchQueue.main.async {
-				self?.updateDistance(distance, animated: true)
+		interactWithPeer { interaction in
+			interaction.range { [weak self] (_, distance) in
+				DispatchQueue.main.async {
+					self?.updateDistance(distance, animated: true)
+				}
 			}
 		}
 	}
 	
 	private func stopBeacon() {
-		peerManager.stopRanging()
+		interactWithPeer { interaction in
+			interaction.stopRanging()
+		}
 	}
 }

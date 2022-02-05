@@ -13,25 +13,18 @@ protocol PeerObserverContainer: AnyObject {
 	/// make sure to set this before you access <code>peerObserver</code> or <code>peerManager</code>
 	var peerID: PeerID { get set }
 	var peerObserver: PeerObserver { get }
-	var peerManager: PeerManager { get }
 }
 
-/// Adapter for <code>PeerObserverContainer</code>.
-class PeerViewController: UIViewController, PeerObserverContainer {
-	lazy var peerID: PeerID = PeerID() {
-		didSet { peerObserver = PeerObserver(peerID: peerID) }
-	}
-	private (set) lazy var peerObserver = PeerObserver(peerID: peerID)
-	var peerManager: PeerManager { return peerObserver.peerManager }
-}
+extension PeerObserverContainer {
+	var model: PeerViewModel { return PeerViewModelController.viewModel(of: peerID) }
 
-/// Adapter for <code>PeerObserverContainer</code>.
-class PeerTableViewController: UITableViewController, PeerObserverContainer {
-	lazy var peerID: PeerID = PeerID() {
-		didSet { peerObserver = PeerObserver(peerID: peerID) }
+	func interactWithPeer(completion: @escaping (PeerInteraction) -> ()) {
+		PeeringController.shared.interact(with: peerID, completion: completion)
 	}
-	private (set) lazy var peerObserver = PeerObserver(peerID: peerID)
-	var peerManager: PeerManager { return peerObserver.peerManager }
+
+	func modifyModel(_ modifier: (inout PeerViewModel) -> ()) {
+		PeerViewModelController.modify(peerID: peerID, modifier: modifier)
+	}
 }
 
 /// Observer for messaging-related notifications of <code>PeerManager.Notifications</code>.
@@ -56,23 +49,22 @@ public class PeerObserver {
 	private var messagingNotificationObservers: [NSObjectProtocol] = []
 
 	public let peerID: PeerID
-	public lazy var peerManager: PeerManager = PeeringController.shared.manager(for: peerID)
 
 	public weak var connectionStateObserver: ConnectionStateObserver?
 	public weak var messagingObserver: PeerMessagingObserver? {
 		didSet {
 			guard (oldValue == nil && messagingObserver != nil) || (oldValue != nil && messagingObserver == nil) else { return }
 			if oldValue == nil {
-				messagingNotificationObservers.append(PeerManager.Notifications.messageQueued.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageQueued.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageQueued()
 				})
-				messagingNotificationObservers.append(PeerManager.Notifications.messageReceived.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageReceived.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageReceived()
 				})
-				messagingNotificationObservers.append(PeerManager.Notifications.messageSent.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageSent.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageSent()
 				})
-				messagingNotificationObservers.append(PeerManager.Notifications.unreadMessageCountChanged.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(PeerViewModel.NotificationName.unreadMessageCountChanged.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.unreadMessageCountChanged()
 				})
 			} else if messagingObserver == nil {
@@ -86,12 +78,8 @@ public class PeerObserver {
 
 		// when we go offline, all PeerManagers are purged
 		connectionObserver = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber, let strongSelf = self else { return }
-			if state.boolValue {
-				// when we go back online, we need to update our PeerManager reference
-				strongSelf.peerManager = PeeringController.shared.manager(for: peerID)
-			}
-			strongSelf.connectionStateObserver?.connectionChangedState(state.boolValue)
+			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber else { return }
+			self?.connectionStateObserver?.connectionChangedState(state.boolValue)
 		}
 	}
 

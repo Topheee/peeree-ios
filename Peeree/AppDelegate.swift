@@ -38,36 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
 	private let notificationManager = NotificationManager()
-
-	static func display(networkError: Error, localizedTitle: String, furtherDescription: String? = nil) {
-		var notificationAction: (() -> Void)? = nil
-		var errorMessage: String
-		if let errorResponse = networkError as? ErrorResponse {
-			let httpErrorMessage = NSLocalizedString("HTTP error %d.", comment: "Error message for HTTP status codes")
-			switch errorResponse {
-			case .parseError(_):
-				errorMessage = NSLocalizedString("Malformed server response.", comment: "Message of network error")
-			case .httpError(let code, _):
-				errorMessage = String(format: httpErrorMessage, code)
-				if code == 403 {
-					errorMessage = errorMessage + NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
-				}
-			case .sessionTaskError(let code, _, let theError):
-				errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
-			case .offline:
-				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
-				notificationAction = { UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!) }
-			}
-		} else {
-			errorMessage = networkError.localizedDescription
-		}
-		
-		if furtherDescription != nil {
-			errorMessage += "\n\(furtherDescription!)"
-		}
-		
-		InAppNotificationViewController.presentGlobally(title: localizedTitle, message: errorMessage, isNegative: true, tapAction: notificationAction)
-	}
 	
 	static func viewTerms(in viewController: UIViewController) {
 		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
@@ -80,12 +50,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 		viewController.present(safariController, animated: true, completion: nil)
 	}
+
+	/// Display the onboarding view controller on top of all other content.
+	static func presentOnboarding() {
+		let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
+
+		storyboard.instantiateInitialViewController()?.presentInFrontMostViewController(true, completion: nil)
+	}
 	
 	/// This is somehow set by the environment...
 	var window: UIWindow?
 	
 	var isActive: Bool = false
-	private var onboardingPresented: Bool = false
 
 	/**
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
@@ -112,7 +88,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 
 		PeeringController.shared.delegate = self
-		_ = PinMatchesController.shared
 		return true
 	}
 
@@ -133,25 +108,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	func applicationDidBecomeActive(_ application: UIApplication) {
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 		isActive = true
-		
-		if UserDefaults.standard.object(forKey: UserPeerManager.PrefKey) == nil {
-			if !onboardingPresented {
-				onboardingPresented = true
-				// this is the first launch of the app, so we show the first launch UI
-				let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
-				
-				window?.rootViewController?.present(storyboard.instantiateInitialViewController()!, animated: false, completion: nil)
-			}
-		} else {
-			DispatchQueue.global(qos: .background).async {
-				for peerID in PeeringController.shared.remote.availablePeers {
-					let manager = PeeringController.shared.manager(for: peerID)
-					guard let peer = manager.peerInfo, BrowseFilterSettings.shared.check(peer: peer) else { continue }
-					_ = manager.loadResources()
-				}
-			}
-		}
-		
+
 		UIApplication.shared.cancelAllLocalNotifications()
 	}
 
@@ -174,17 +131,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
 	// MARK: AccountControllerDelegate
 	func pin(of peerID: PeerID, failedWith error: Error) {
-		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Pin Failed", comment: "Title of in-app error notification"))
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Pin Failed", comment: "Title of in-app error notification"))
 	}
 	
 	func publicKeyMismatch(of peerID: PeerID) {
-		let peerDescription = PeeringController.shared.manager(for: peerID).peerInfo?.nickname ?? peerID.uuidString
-		let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), peerDescription)
-		InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"), message: message)
+		DispatchQueue.main.async {
+			let name = PeerViewModelController.viewModel(of: peerID).peer.info.nickname
+			let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), name)
+			let error = createApplicationError(localizedDescription: message)
+			InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"))
+		}
 	}
 	
 	func sequenceNumberResetFailed(error: ErrorResponse) {
-		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
+		InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
 	}
 
 	// MARK: PeeringControllerDelegate
@@ -193,8 +153,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		PeeringController.shared.peering = true
 	}
 
+	func encodingPeersFailed(with error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Encoding Recent Peers Failed", comment: "Low-level error"))
+	}
+
+	func decodingPeersFailed(with error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Decoding Recent Peers Failed", comment: "Low-level error"))
+	}
+
 	func serverChatLoginFailed(with error: Error) {
-		AppDelegate.display(networkError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
 	}
 	
 	// MARK: Private Methods

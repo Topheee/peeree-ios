@@ -10,9 +10,17 @@ import UIKit
 import MobileCoreServices
 import Photos
 
-/// Base class for view controllers providing the ability to change the user's portrait image.
-open class PortraitImagePickerController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-	func showPicturePicker(_ allowCancel: Bool = false, destructiveActionName: String) {
+protocol PortraitImagePickerControllerDelegate: AnyObject {
+	func viewControllerToPresentImagePicker() -> UIViewController
+	func picked(image: UIImage?)
+}
+
+/// Provides the ability to change the user's portrait image.
+final class PortraitImagePickerController: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+	weak var delegate: PortraitImagePickerControllerDelegate?
+
+	/// Displays the system's UI for capturing an image with the camera.
+	func showPicturePicker(allowCancel: Bool, destructiveActionName: String) {
 		let imagePicker = UIImagePickerController()
 		imagePicker.delegate = self
 		imagePicker.allowsEditing = true
@@ -20,7 +28,7 @@ open class PortraitImagePickerController: UIViewController, UIImagePickerControl
 		
 		let presentPicker = {
 			DispatchQueue.main.async {
-				self.present(imagePicker, animated: true, completion: nil)
+				self.delegate?.viewControllerToPresentImagePicker().present(imagePicker, animated: true, completion: nil)
 				imagePicker.view.tintColor = AppTheme.tintColor
 			}
 		}
@@ -56,9 +64,11 @@ open class PortraitImagePickerController: UIViewController, UIImagePickerControl
 	}
 	
 	public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-		// picker.parentViewController is nil, but I don't know why
-		//		picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-		self.dismiss(animated: true, completion: nil)
+		if let vc = picker.presentingViewController {
+			vc.dismiss(animated: true, completion: nil)
+		} else {
+			self.delegate?.viewControllerToPresentImagePicker().dismiss(animated: true, completion: nil)
+		}
 	}
 	
 	public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -82,22 +92,15 @@ open class PortraitImagePickerController: UIViewController, UIImagePickerControl
 			save(image: imageToSave)
 		}
 		
-		// picker.parentViewController is nil, but I don't know why
-		//		picker.parentViewController?.dismissViewControllerAnimated(true, completion: nil)
-		self.dismiss(animated: true, completion: nil)
-	}
-	
-	private func save(image: UIImage?) {
-		UserPeerManager.instance.set(picture: image) { [weak self] (_error) in
-			if let error = _error {
-				InAppNotificationViewController.presentGlobally(title: NSLocalizedString("Saving Image Failed", comment: "Title of alert"), message: error.localizedDescription)
-			} else {
-				DispatchQueue.main.async { self?.picked(image: image) }
-			}
+		if let vc = picker.presentingViewController {
+			vc.dismiss(animated: true, completion: nil)
+		} else {
+			self.delegate?.viewControllerToPresentImagePicker().dismiss(animated: true, completion: nil)
 		}
 	}
 	
-	open func picked(image: UIImage?) {
-		NSLog("WARN: picked(image:) should be overridden (or not called with super).")
+	private func save(image: UIImage?) {
+		UserPeer.instance.modify(portrait: image?.cgImage)
+		delegate?.picked(image: image)
 	}
 }

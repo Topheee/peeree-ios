@@ -38,6 +38,7 @@ extension CBService {
 }
 
 extension RawRepresentable where Self.RawValue == String {
+	/// Posts a new notification to the `default` `NotificationCenter` and uses the `rawValue` of this enumeration case as the notification name.
 	func postAsNotification(object: Any?, userInfo: [AnyHashable : Any]? = nil) {
 		// I thought that this would be actually done asynchronously, but turns out that it is posted synchronously on the main queue (the operation queue of the default notification center), so we have to make it asynchronously ourselves and rely on the re-entrance capability of the main queue….
 		// The drawback is, that some use cases require strict execution of the notified code, as for instance insertions into UITableViews (because with async, there might come in another task in parallel which changes the number of rows, and then insertRows() fails
@@ -45,14 +46,17 @@ extension RawRepresentable where Self.RawValue == String {
 			NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: object, userInfo: userInfo)
 		}
 	}
-	
-	public func addPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
+
+	/// Observes notifications with a `name` equal to the `rawValue` of this notification and extracts the `PeerID` from any notification before calling `block`.
+	public func addAnyPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
 			if let peerID = notification.userInfo?[peerIDKey] as? PeerID {
 				block(peerID, notification)
 			}
 		}
 	}
+
+	/// Observes notifications with a `name` equal to the `rawValue` of this notification and the value of the entry with key `peerIDKey` equal to `observedPeerID`.
 	public func addPeerObserver(for observedPeerID: PeerID, peerIDKey: String = "peerID", usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
 			if let peerID = notification.userInfo?[peerIDKey] as? PeerID, observedPeerID == peerID {

@@ -29,6 +29,26 @@ func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
 	return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
 }
 
+/// Encode `object` and put the resulting encoded `Data` value into `UserDefaults`.
+func archiveInUserDefs<T: Encodable>(_ object: T, forKey: String) throws {
+	#if TESTING
+	PeereeTests.UserDefaultsMock.standard.set(PropertyListEncoder().encode(object), forKey: forKey)
+	#else
+	UserDefaults.standard.set(try PropertyListEncoder().encode(object), forKey: forKey)
+	#endif
+}
+
+/// Read `Data` from `UserDefaults`, decode it and return it.
+func unarchiveFromUserDefs<T: Decodable>(_ type: T.Type, _ forKey: String) throws -> T? {
+	#if TESTING
+	guard let data = UserDefaultsMock.standard.object(forKey: forKey) as? Data else { return nil }
+	#else
+	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+	#endif
+
+	return try PropertyListDecoder().decode(type, from: data)
+}
+
 /// create a plist and add it to copied resources. In the file, make the root entry to an array and add string values to it
 func arrayFromBundle(name: String) -> [String]? {
 	guard let url = Bundle.main.url(forResource: name, withExtension:"plist") else { return nil }

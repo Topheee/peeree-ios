@@ -81,20 +81,22 @@ public final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
 		Notifications.filterChanged.post()
 	}
-	
-	func check(peer: PeerInfo) -> Bool {
+
+	func check(peer: Peer) -> Bool {
 		// always keep matched peers in filter
-		if peer.pinMatched { return true }
-		
-		let matchingGender = gender == .unspecified || (gender == .female && peer.gender == .female) || (gender == .male && peer.gender == .male) || (gender == .queer && peer.gender == .queer)
+		guard !peer.id.pinMatched else { return true }
+
+		let info = peer.info
+
+		let matchingGender = gender == .unspecified || (gender == .female && info.gender == .female) || (gender == .male && info.gender == .male) || (gender == .queer && info.gender == .queer)
 		var matchingAge: Bool
-		if let peerAge = peer.age {
+		if let peerAge = info.age {
 			matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))
 		} else {
 			matchingAge = true
 		}
-		let hasRequiredProperties = (!onlyWithPicture || peer.hasPicture) && (!onlyWithAge || peer.age != nil)
-		
+		let hasRequiredProperties = (!onlyWithPicture || info.hasPicture) && (!onlyWithAge || info.age != nil)
+
 		return matchingAge && matchingGender && hasRequiredProperties
 	}
 }

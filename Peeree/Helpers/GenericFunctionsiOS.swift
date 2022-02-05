@@ -72,11 +72,22 @@ extension UIImage {
 }
 
 extension UIViewController {
-	static func frontMostViewController() -> UIViewController? {
-		guard let rootVC = UIApplication.shared.windows.first?.rootViewController else { return nil }
+	func nextViewController() -> UIViewController? {
+		if let pvc = presentedViewController {
+			return pvc
+		} else if let tabBarVC = self as? UITabBarController {
+			return tabBarVC.selectedViewController
+		} else if let navVC = self as? UINavigationController {
+			return navVC.visibleViewController
+		}
 
-		var vc = rootVC
-		while let presentedVC = vc.presentedViewController {
+		return nil
+	}
+
+	static func frontMostViewController() -> UIViewController? {
+		guard var vc = UIApplication.shared.windows.first?.rootViewController else { return nil }
+
+		while let presentedVC = vc.nextViewController() {
 			vc = presentedVC
 		}
 		return vc

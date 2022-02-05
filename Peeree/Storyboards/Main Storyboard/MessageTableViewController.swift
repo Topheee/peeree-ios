@@ -16,13 +16,14 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		super.viewWillAppear(animated)
 
 		peerObserver.messagingObserver = self
+		tableView.keyboardDismissMode = .interactive
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
 		tableView.reloadData()
-		peerManager.unreadMessages = 0
+		modifyModel { model in model.unreadMessages = 0 }
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -38,7 +39,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		lastCount = peerManager.transcripts.count + peerManager.pendingMessages.count
+		lastCount = model.transcripts.count
 		return lastCount
 	}
 
@@ -48,27 +49,19 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 			return UITableViewCell()
 		}
 
-		// Get the transcript for this row
-		let overflow = indexPath.row - peerManager.transcripts.count
-		let transcript: Transcript
-		if overflow < 0 {
-			transcript = peerManager.transcripts[indexPath.row]
-		} else {
-			transcript = Transcript(direction: .send, message: peerManager.pendingMessages[overflow].message)
-		}
-		cell.set(transcript: transcript, pending: overflow >= 0)
+		cell.set(transcript: model.transcripts[indexPath.row])
 		return cell
 	}
 
 	// MARK: - PeerMessagingObserver
 
 	func messageQueued() {
-		peerManager.unreadMessages = 0
+		modifyModel { model in model.unreadMessages = 0 }
 		appendTranscript()
 	}
 
 	func messageReceived() {
-		peerManager.unreadMessages = 0
+		modifyModel { model in model.unreadMessages = 0 }
 		appendTranscript()
 	}
 	func messageSent() { appendTranscript() }

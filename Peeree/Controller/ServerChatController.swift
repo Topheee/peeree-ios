@@ -35,9 +35,13 @@ func unexpectedEnumValueError() -> Error {
 	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
 }
 
+enum ServerChatError: Error {
+	case generic(String)
+}
+
 final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
-	static var userId: String { return serverChatUserId(for: UserPeerManager.instance.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
+	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
 	// we need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
 	static let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
 		NSLog("ERROR: matrix certificate rejected: \(String(describing: _data))")
@@ -116,7 +120,7 @@ final class ServerChatController {
 	}
 
 	private static func createAccount(completion: @escaping (Result<MXCredentials, Error>) -> Void) {
-		let peerID = UserPeerManager.instance.peerID
+		let peerID = AccountController.shared.peerID
 		let username = serverChatUserName(for: peerID)
 		var passwordRawData: Data
 		do {
@@ -360,7 +364,7 @@ final class ServerChatController {
 		options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
 		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
 		session = MXSession(matrixRestClient: restClient)!
-		notificationObservers.append(AccountController.Notifications.unpinned.addPeerObserver { [weak self] peerID, _ in
+		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
 			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
 			strongSelf.forget(room: room) { _error in
 				NSLog("DEBUG: Left room: \(String(describing: _error)).")
@@ -387,8 +391,6 @@ final class ServerChatController {
 	deinit {
 		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
 	}
-
-	// MARK: Server Messages
 
 	private func reallyCreateRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
 		let peerUserId = serverChatUserId(for: peerID)
@@ -418,6 +420,7 @@ final class ServerChatController {
 	}
 
 	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
+		NSLog("DBG: Asked to create room for \(peerID.uuidString).")
 		let peerUserId = serverChatUserId(for: peerID)
 		if let room = roomsForPeerIDs[peerID] ?? session.directJoinedRoom(withUserId: peerUserId) {
 			completion(.success(room))
@@ -428,12 +431,9 @@ final class ServerChatController {
 		if #available(iOS 10, *) {
 			session.matrixRestClient.profile(forUser: peerUserId) { response in
 				guard response.isSuccess else {
-					DispatchQueue.main.async {
-						let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
-						let peerName = PeeringController.shared.manager(for: peerID).peerInfo?.nickname ?? peerID.uuidString
-						let description = String(format: format, peerName)
-						completion(.failure(createApplicationError(localizedDescription: description)))
-					}
+					let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
+					let description = String(format: format, peerID.uuidString)
+					completion(.failure(createApplicationError(localizedDescription: description)))
 					return
 				}
 				self.reallyCreateRoom(with: peerID, completion: completion)
@@ -443,21 +443,21 @@ final class ServerChatController {
 		}
 	}
 
-	private static func process(messageEvent event: MXEvent) -> String? {
+	/// Extracts the message and timestamp from `event`.
+	private static func process(messageEvent event: MXEvent) throws -> (Date, String) {
 		guard event.content["format"] == nil else {
-			NSLog("ERROR: Body is formatted \(String(describing: event.content["format"])), ignoring.")
-			return nil
+			throw ServerChatError.generic("Body is formatted \(String(describing: event.content["format"])), ignoring.")
 		}
 		let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
 		guard messageType == .text || messageType == .notice else {
-			NSLog("ERROR: Unsupported message type: \(messageType).")
-			return nil
+			throw ServerChatError.generic("Unsupported message type: \(messageType).")
 		}
 		guard let message = event.content["body"] as? String else {
-			NSLog("ERROR: Message body not a string: \(event.content["body"] ?? "<nil>").")
-			return nil
+			throw ServerChatError.generic("Message body not a string: \(event.content["body"] ?? "<nil>").")
 		}
-		return message
+
+		let ts = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
+		return (ts, message)
 	}
 
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
@@ -469,7 +469,6 @@ final class ServerChatController {
 			}
 		}
 		roomsForPeerIDs[peerID] = room
-		let peerManager = PeeringController.shared.manager(for: peerID)
 
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
@@ -481,8 +480,12 @@ final class ServerChatController {
 		while let event = enumerator?.nextEvent {
 			switch event.eventType {
 			case .roomMessage:
-				guard let message = ServerChatController.process(messageEvent: event) else { continue }
-				catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+				do {
+					let (ts, message) = try ServerChatController.process(messageEvent: event)
+					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message, timestamp: ts))
+				} catch let error {
+					NSLog("ERR: \(error)")
+				}
 			case .roomEncrypted:
 				encryptedEvents.append(event)
 			default:
@@ -500,6 +503,9 @@ final class ServerChatController {
 			// we need to reset the replay attack check, as we kept getting errors like:
 			// [MXOlmDevice] decryptGroupMessage: Warning: Possible replay attack
 			self.session.resetReplayAttackCheck(inTimeline: timeline.timelineId)
+
+#if os(iOS)
+			// decryptEvents() is somehow not available on macOS
 			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { _failedEvents in
 				if let failedEvents = _failedEvents, failedEvents.count > 0 {
 					for failedEvent in failedEvents {
@@ -512,25 +518,41 @@ final class ServerChatController {
 				for event in encryptedEvents {
 					switch event.eventType {
 					case .roomMessage:
-						guard let message = ServerChatController.process(messageEvent: event) else { continue }
-						catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message))
+						do {
+							let (ts, message) = try ServerChatController.process(messageEvent: event)
+							catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message, timestamp: ts))
+						} catch let error {
+							NSLog("ERR: \(error)")
+						}
 					default:
 						break
 					}
 				}
 				catchUpDecryptedMessages.reverse()
 				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
-				if catchUpDecryptedMessages.count > 0 { peerManager.catchUp(messages: catchUpDecryptedMessages) }
+				if catchUpDecryptedMessages.count > 0 {
+					PeeringController.shared.serverChatInteraction(with: peerID) { manager in
+						manager.catchUp(messages: catchUpDecryptedMessages)
+					}
+				}
 			}
+#endif
 
 			_ = timeline.listenToEvents([.roomMessage]) { event, direction, state in
 				switch event.eventType {
 				case .roomMessage:
-					guard let message = ServerChatController.process(messageEvent: event) else { return }
-					if event.sender == ServerChatController.userId {
-						peerManager.didSend(message: message)
-					} else {
-						peerManager.received(message: message)
+					do {
+						let (ts, message) = try ServerChatController.process(messageEvent: event)
+
+						PeeringController.shared.serverChatInteraction(with: peerID) { manager in
+							if event.sender == ServerChatController.userId {
+								manager.didSend(message: message, at: ts)
+							} else {
+								manager.received(message: message, at: ts)
+							}
+						}
+					} catch let error {
+						NSLog("ERR: \(error)")
 					}
 				default:
 					NSLog("WARN: Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
@@ -617,11 +639,13 @@ final class ServerChatController {
 								return
 							}
 							_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
-							guard let peerInfo = PeeringController.shared.manager(for: peerID).peerInfo else {
-								NSLog("WARN: No peer info for peer ID available from pin matches controller.")
-								return
+							DispatchQueue.main.async {
+								guard let id = PeerViewModelController.viewModels[peerID]?.peer.id else {
+									NSLog("WARN: No Peeree Identity available for \(peerID) available.")
+									return
+								}
+								AccountController.shared.updatePinStatus(of: id)
 							}
-							AccountController.shared.updatePinStatus(of: peerInfo)
 						default:
 							NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
 						}

@@ -8,49 +8,19 @@
 
 import UIKit
 
-extension PeerManager {
+extension PeerViewModel {
 	var picture: UIImage? {
 		get {
 			return cgPicture.map { UIImage(cgImage: $0) }
 		}
-		set {
-			cgPicture = newValue?.cgImage
-		}
 	}
 
 	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
-		let image = pictureClassification == .none ? picture ?? (peerInfo?.hasPicture ?? false ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
-		return image.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
+		return portraitOrPlaceholder.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}
-}
 
-extension UserPeerManager {
-	/// Not thread-safe! You need to ensure it doesn't get called simultaneously
-	func set(picture: UIImage?, completion: @escaping (NSError?) -> Void) {
-		// Don't block the UI when writing the image to documents
-		// this is not 100% safe, as two concurrent calls to this method can dispatch to different queues (global() doesn't always return the same queue)
-		DispatchQueue.global(qos: .background).async {
-			let oldValue = self.picture
-			guard picture != oldValue else { return }
-			
-			do {
-				if picture != nil {
-					// Save the new image to the documents directory
-					try picture!.jpegData(compressionQuality: 0.0)?.write(to: UserPeerManager.pictureResourceURL, options: .atomic)
-				} else {
-					let fileManager = FileManager.default
-					if fileManager.fileExists(atPath: UserPeerManager.pictureResourceURL.path) {
-						try fileManager.removeItem(at: UserPeerManager.pictureResourceURL)
-					}
-				}
-			} catch let error as NSError {
-				completion(error)
-			}
-			
-			self.picture = picture
-			if !(oldValue == nil && picture == nil || oldValue != nil && picture != nil) { self.dirtied() }
-			completion(nil)
-		}
+	public var portraitOrPlaceholder: UIImage {
+		return pictureClassification == .none ? picture ?? (peer.info.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
 	}
 }
 
@@ -132,23 +102,30 @@ extension AppDelegate {
 		}
 	}
 
-	static func requestPin(of peer: PeerInfo) {
-		let manager = PeeringController.shared.manager(for: peer.peerID)
-		if !manager.verified {
+	/// Must be called on the main thread!
+	static func requestPin(of peerID: PeerID) {
+		let model = PeerViewModelController.viewModel(of: peerID)
+		if !model.verified {
 			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 			let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
-				manager.verify()
+				PeeringController.shared.interact(with: peerID) { interaction in
+					interaction.verify()
+				}
 			}
 			alertController.addAction(retryVerifyAction)
-			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), peer.nickname)
+			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.peer.info.nickname)
 			alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
-				AccountController.shared.pin(peer)
+				AccountController.shared.pin(model.peer.id)
 			})
 			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
 			alertController.preferredAction = retryVerifyAction
 			alertController.present()
+		} else if !AccountController.shared.accountExists {
+			InAppNotificationController.display(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap to create your Peeree identity.", comment: "The user lacks a Peeree account")) /*{
+				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
+			}*/
 		} else {
-			AccountController.shared.pin(peer)
+			AccountController.shared.pin(model.peer.id)
 		}
 	}
 }

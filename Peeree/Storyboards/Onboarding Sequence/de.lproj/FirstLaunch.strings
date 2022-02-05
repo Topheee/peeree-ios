@@ -8,6 +8,9 @@
 /* Class = "UIButton"; accessibilityLabel = "Pin"; ObjectID = "53c-Ja-yW0"; */
 "53c-Ja-yW0.accessibilityLabel" = "Pin";
 
+/* Class = "UILabel"; text = "Or just say Hi in real life!"; ObjectID = "6O4-eB-Qi0"; */
+"6O4-eB-Qi0.text" = "Oder sagt euch direkt Hallo!";
+
 /* Class = "UIViewController"; title = "Welcome Page"; ObjectID = "9TP-2c-bIB"; */
 "9TP-2c-bIB.title" = "First";
 
@@ -19,6 +22,12 @@
 
 /* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "CIc-zF-Z6d"; */
 "CIc-zF-Z6d.accessibilityLabel" = "Zeige Nutzungsbedingungen";
+
+/* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "Edb-N4-ctC"; */
+"Edb-N4-ctC.text" = "So schützen wir deine Privatsphäre:";
+
+/* Class = "UILabel"; text = "Create Your Identity"; ObjectID = "Gjn-yR-TEz"; */
+"Gjn-yR-TEz.text" = "Erstelle deine Identität";
 
 /* Class = "UILabel"; text = "Create Your Profile"; ObjectID = "JLo-5M-7YM"; */
 "JLo-5M-7YM.text" = "Erstelle dein Profil";
@@ -38,14 +47,17 @@
 /* Class = "UILabel"; text = "Peeree"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.text" = "Peeree";
 
-/* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "WkH-8i-IuH"; */
-"WkH-8i-IuH.accessibilityHint" = "Beendet Einführung";
+/* Class = "UILabel"; text = "This information is stored on device and is not sent to Peeree servers."; ObjectID = "UHy-zX-ffX"; */
+"UHy-zX-ffX.text" = "Diese Informationen werden nicht auf Peeree-Servern gespeichert.";
 
-/* Class = "UIButton"; accessibilityLabel = "Launch app"; ObjectID = "WkH-8i-IuH"; */
-"WkH-8i-IuH.accessibilityLabel" = "Starte App";
+/* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "mz2-gM-3h9"; */
+"mz2-gM-3h9.accessibilityHint" = "Beendet Einführung";
 
-/* Class = "UIButton"; normalTitle = "Get Started"; ObjectID = "WkH-8i-IuH"; */
-"WkH-8i-IuH.normalTitle" = "Los Geht's";
+/* Class = "UIButton"; accessibilityLabel = "Launch app"; ObjectID = "mz2-gM-3h9"; */
+"mz2-gM-3h9.accessibilityLabel" = "Starte App";
+
+/* Class = "UIButton"; normalTitle = "Create Identity"; ObjectID = "mz2-gM-3h9"; */
+"mz2-gM-3h9.normalTitle" = "Identität Erstellen";
 
 /* Class = "UIButton"; accessibilityHint = "Read details about P2P"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.accessibilityHint" = "Lies details über P2P";
@@ -55,6 +67,9 @@
 
 /* Class = "UIButton"; normalTitle = "Learn more about how Peeree works"; ObjectID = "XwS-Db-Ixl"; */
 "XwS-Db-Ixl.normalTitle" = "Erfahre, wie Peeree funktioniert";
+
+/* Class = "UILabel"; text = "If the pin is mutual, you can start chatting."; ObjectID = "aeX-FF-zDc"; */
+"aeX-FF-zDc.text" = "Bei einem gegenseitigen Pin könnt ihr miteinander chatten.";
 
 /* Class = "UIButton"; normalTitle = "Sounds great!"; ObjectID = "b8Y-IF-X4f"; */
 "b8Y-IF-X4f.normalTitle" = "Klingt gut!";
@@ -89,20 +104,23 @@
 /* Class = "UITextField"; placeholder = "Name"; ObjectID = "maF-ir-g9C"; */
 "maF-ir-g9C.placeholder" = "Wähle einen Namen!";
 
-/* Class = "UIButton"; accessibilityHint = "Display information about personal data usage"; ObjectID = "qr9-Ho-2bg"; */
-"qr9-Ho-2bg.accessibilityHint" = "Zeige Informationen über die Benutzung persönlicher Daten";
+/* Class = "UIButton"; accessibilityHint = "Display information about personal data usage"; ObjectID = "IWc-Ha-AMP"; */
+"IWc-Ha-AMP.accessibilityHint" = "Zeige Informationen über die Benutzung persönlicher Daten";
 
-/* Class = "UIButton"; accessibilityLabel = "Privacy Info"; ObjectID = "qr9-Ho-2bg"; */
-"qr9-Ho-2bg.accessibilityLabel" = "Infos zum Datenschutz";
+/* Class = "UIButton"; accessibilityLabel = "Privacy Info"; ObjectID = "IWc-Ha-AMP"; */
+"IWc-Ha-AMP.accessibilityLabel" = "Infos zum Datenschutz";
 
-/* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "qr9-Ho-2bg"; */
-"qr9-Ho-2bg.normalTitle" = "Peeree und deine Daten";
+/* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "IWc-Ha-AMP"; */
+"IWc-Ha-AMP.normalTitle" = "Peeree und deine Daten";
 
-/* Class = "UILabel"; text = "Connecting People"; ObjectID = "rNF-0l-DWJ"; */
-"rNF-0l-DWJ.text" = "Connecting People";
+/* Class = "UILabel"; text = "Introduction"; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "Einführung";
 
 /* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
 "skT-uK-VEP.text" = "So wird deine Privatsphäre geschützt:";
 
 /* Class = "UIViewController"; title = "Details"; ObjectID = "u4v-7y-Tsp"; */
 "u4v-7y-Tsp.title" = "Details";
+
+/* Class = "UILabel"; text = "Peeree is an all-new approach to social networking."; ObjectID = "ay85-Vg-tuB"; */
+"y85-Vg-tuB.text" = "Peeree ist ein ganz neuer Ansatz zu sozialen Netzwerken.";
