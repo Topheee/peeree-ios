@@ -10,8 +10,6 @@
 import UIKit
 
 class MessageTableViewController: PeerTableViewController, PeerMessagingObserver {
-	private var lastCount = 0
-	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
@@ -23,7 +21,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		super.viewDidAppear(animated)
 
 		tableView.reloadData()
-		modifyModel { model in model.unreadMessages = 0 }
+		markRead()
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -39,8 +37,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		lastCount = model.transcripts.count
-		return lastCount
+		return model.transcripts.count
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -56,12 +53,12 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	// MARK: - PeerMessagingObserver
 
 	func messageQueued() {
-		modifyModel { model in model.unreadMessages = 0 }
+		markRead()
 		appendTranscript()
 	}
 
 	func messageReceived() {
-		modifyModel { model in model.unreadMessages = 0 }
+		markRead()
 		appendTranscript()
 	}
 	func messageSent() { appendTranscript() }
@@ -78,4 +75,9 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		self.tableView.scrollToBottom(animated: true)
 	}
 
+	/// Declare all messages in this thread as being read.
+	private func markRead() {
+		modifyModel { model in model.unreadMessages = 0 }
+		PeeringController.shared.set(lastRead: Date(), of: peerID)
+	}
 }

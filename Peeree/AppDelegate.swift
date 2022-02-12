@@ -162,7 +162,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func serverChatLoginFailed(with error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
+		InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
 	}
 	
 	// MARK: Private Methods

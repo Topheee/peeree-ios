@@ -17,7 +17,7 @@ public struct PeerViewModel {
 
 	/// Keys in the `userInfo` dict of a notification.
 	public enum NotificationInfoKey: String {
-		case peerID
+		case peerID, message
 	}
 
 	/// Names of notifications sent by `PeerViewModel`.
@@ -26,8 +26,14 @@ public struct PeerViewModel {
 		case pictureLoaded, biographyLoaded
 		case messageQueued, messageSent, messageReceived, unreadMessageCountChanged
 
-		func post(_ peerID: PeerID) {
-			postAsNotification(object: nil, userInfo: [NotificationInfoKey.peerID.rawValue : peerID])
+		func post(_ peerID: PeerID, message: String = "") {
+			let userInfo: [AnyHashable : Any]
+			if message != "" {
+				userInfo = [NotificationInfoKey.peerID.rawValue : peerID, NotificationInfoKey.message.rawValue : message]
+			} else {
+				userInfo = [NotificationInfoKey.peerID.rawValue : peerID]
+			}
+			postAsNotification(object: nil, userInfo: userInfo)
 		}
 	}
 
@@ -122,12 +128,10 @@ public struct PeerViewModel {
 
 	/// A message was received from this peer.
 	public mutating func received(message: String, at date: Date) {
-		guard pinState == .pinned else { return }
-
 		transcripts.append(Transcript(direction: .receive, message: message, timestamp: date))
 		unreadMessages += 1
 
-		post(.messageReceived)
+		post(.messageReceived, message: message)
 	}
 
 	/// A message was successfully sent to this peer.
@@ -137,8 +141,9 @@ public struct PeerViewModel {
 	}
 
 	/// Mass-append messages. Only fires Notifications.unreadMessageCountChanged. Does not produce notifications.
-	public mutating func catchUp(messages: [Transcript]) {
+	public mutating func catchUp(messages: [Transcript], unreadCount: Int) {
 		transcripts.append(contentsOf: messages)
+		unreadMessages = unreadCount
 		post(.unreadMessageCountChanged)
 	}
 
@@ -173,8 +178,8 @@ public struct PeerViewModel {
 	// MARK: Methods
 
 	/// Shortcut.
-	private func post(_ notification: NotificationName) {
-		notification.post(peerID)
+	private func post(_ notification: NotificationName, message: String = "") {
+		notification.post(peerID, message: message)
 	}
 }
 

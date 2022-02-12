@@ -121,7 +121,7 @@ extension AppDelegate {
 			alertController.preferredAction = retryVerifyAction
 			alertController.present()
 		} else if !AccountController.shared.accountExists {
-			InAppNotificationController.display(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap to create your Peeree identity.", comment: "The user lacks a Peeree account")) /*{
+			InAppNotificationController.display(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")) /*{
 				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
 			}*/
 		} else {

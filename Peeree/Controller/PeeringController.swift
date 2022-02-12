@@ -128,6 +128,16 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		persistence.loadPortrait(of: peerID)
 	}
 
+	/// Retrieves the last read dates per `PeerID`.
+	public func getLastReads(completion: @escaping ([PeerID : Date]) -> ()) {
+		persistence.readLastReads(completion: completion)
+	}
+
+	/// Persists optional peer data.
+	public func set(lastRead date: Date, of peerID: PeerID) {
+		persistence.set(lastRead: date, of: peerID)
+	}
+
 	// MARK: LocalPeerManagerDelegate
 
 	func advertisingStarted() {}
@@ -264,8 +274,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				self.persistence.loadPortrait(of: entry.key)
 			}
 		}
-
 	}
+
+	public func persistedLastReadsLoadedFromDisk(_ eventIDs: [PeerID : Date]) {}
 
 	public func portraitLoadedFromDisk(_ portrait: CGImage, of peerID: PeerID, hash: Data) {
 		obtained(portrait, hash: hash, of: peerID)
@@ -295,6 +306,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 		persistence.loadPeers()
 		persistence.loadBios()
+		persistence.loadLastReads()
 	}
 
 	deinit {

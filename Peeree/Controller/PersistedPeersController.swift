@@ -12,6 +12,7 @@ import CoreGraphics
 public protocol PersistedPeersControllerDelegate {
 	func persistedPeersLoadedFromDisk(_ peers: Set<Peer>)
 	func persistedBiosLoadedFromDisk(_ bios: [PeerID : String])
+	func persistedLastReadsLoadedFromDisk(_ eventIDs: [PeerID : Date])
 	func portraitLoadedFromDisk(_ portrait: CGImage, of peerID: PeerID, hash: Data)
 	func encodingFailed(with error: Error)
 	func decodingFailed(with error: Error)
@@ -44,6 +45,7 @@ public final class PersistedPeersController {
 			let blobs = self.persistedBlobs
 			PersistedPeersController.persistenceQueue.async {
 				try? self.deleteFile(at: self.biosURL)
+				try? self.deleteFile(at: self.lastReadsURL)
 				try? self.deleteFile(at: self.peersURL)
 				for peer in peers {
 					try? self.deleteFile(at: self.pictureURL(of: peer.id.peerID))
@@ -54,6 +56,7 @@ public final class PersistedPeersController {
 			}
 			self.persistedPeers = Set<Peer>()
 			self.persistedBlobs = [:]
+			self.persistedLastReads = [:]
 		}
 	}
 
@@ -94,6 +97,7 @@ public final class PersistedPeersController {
 			self.persistedPeers.subtract(removedPeers)
 			for peer in removedPeers {
 				self.persistedBlobs.removeValue(forKey: peer.id.peerID)
+				self.persistedLastReads.removeValue(forKey: peer.id.peerID)
 			}
 			PersistedPeersController.persistenceQueue.async {
 				for peer in removedPeers {
@@ -102,6 +106,7 @@ public final class PersistedPeersController {
 			}
 			self.savePeers()
 			self.saveBios()
+			self.saveLastReads()
 		}
 	}
 
@@ -123,6 +128,19 @@ public final class PersistedPeersController {
 			if modifiedBlob.portrait != oldBlob.portrait {
 				self.save(portrait: modifiedBlob.portrait, of: peerID)
 			}
+		}
+	}
+
+	/// Read-only access to persisted last read dates.
+	public func readLastReads(completion: @escaping ([PeerID : Date]) -> ()) {
+		targetQueue.async { completion(self.persistedLastReads) }
+	}
+
+	/// Persists persisted last read date of `peerID`.
+	public func set(lastRead date: Date, of peerID: PeerID) {
+		targetQueue.async {
+			self.persistedLastReads[peerID] = date
+			self.saveLastReads()
 		}
 	}
 
@@ -160,6 +178,24 @@ public final class PersistedPeersController {
 						PeerBlobData(biography: bio, portrait: nil)
 					}
 					self.delegate?.persistedBiosLoadedFromDisk(decodedBios)
+				}
+			} catch let error {
+				self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
+			}
+		}
+	}
+
+	/// Retrieves all persisted last read dates from disk. You should call this method as soon as possible after creating the `PersistedPeersController`.
+	func loadLastReads() {
+		PersistedPeersController.persistenceQueue.async {
+			guard let data = FileManager.default.contents(atPath: self.lastReadsURL.path) else { return }
+
+			let decoder = JSONDecoder()
+			do {
+				let decodedLastReads = try decoder.decode([PeerID : Date].self, from: data)
+				self.targetQueue.async {
+					self.persistedLastReads = decodedLastReads
+					self.delegate?.persistedLastReadsLoadedFromDisk(decodedLastReads)
 				}
 			} catch let error {
 				self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
@@ -222,6 +258,13 @@ public final class PersistedPeersController {
 		return URL(fileURLWithPath: paths[0]).appendingPathComponent("\(filename).bios.txt", isDirectory: false)
 	}
 
+	/// Locator of file containing all last read dates; thread-safe.
+	private var lastReadsURL: URL {
+		// Create a file path to our documents directory
+		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+		return URL(fileURLWithPath: paths[0]).appendingPathComponent("\(filename).lastReadEventIDs.json", isDirectory: false)
+	}
+
 	/// Locator of file containing the portrait of `peerID` (if available); thread-safe.
 	private func pictureURL(of peerID: PeerID) -> URL {
 		// Create a file path to our documents directory
@@ -231,17 +274,18 @@ public final class PersistedPeersController {
 
 	/// All saved peer data; must be accessed on targetQueue.
 	private var persistedPeers = Set<Peer>()
+
 	/// All peristed optional peer data; must be accessed on targetQueue.
 	private var persistedBlobs = [PeerID : PeerBlobData]()
 
+	/// All persisted last read dates; must be accessed on targetQueue.
+	private var persistedLastReads = [PeerID : Date]()
+
 	// MARK: Methods
 
-	/// Persists all peer data; must be accessed on targetQueue.
-	private func savePeers() {
-		// create a copy of the value we want to save, still faster than the encoding
-		let save = self.persistedPeers
+	/// Persists an `Encodable` `Collection` at `url`.
+	private func save<EncodableCollection: Encodable>(_ save: EncodableCollection, at url: URL) where EncodableCollection: Collection {
 		PersistedPeersController.persistenceQueue.async {
-			let url = self.peersURL
 			do {
 				if save.isEmpty {
 					try self.deleteFile(at: url)
@@ -257,26 +301,22 @@ public final class PersistedPeersController {
 		}
 	}
 
+	/// Persists all peer data; must be accessed on targetQueue.
+	private func savePeers() {
+		// create a copy of the value we want to save, still faster than the encoding
+		save(persistedPeers, at: peersURL)
+	}
+
 	/// Perists all bios on disk; must be accessed on targetQueue.
 	private func saveBios() {
 		// create a copy of the value we want to save, still faster than the encoding
 		// note: this won't remove the entries for deleted peers, since the empty string is still persisted
-		let save = self.persistedBlobs.mapValues { value in value.biography }
-		PersistedPeersController.persistenceQueue.async {
-			let url = self.biosURL
-			do {
-				if save.isEmpty {
-					try self.deleteFile(at: url)
-				} else {
-					let jsonData = try JSONEncoder().encode(save)
-					if !FileManager.default.createFile(atPath: url.path, contents: jsonData, attributes: nil) {
-						self.targetQueue.async { self.delegate?.encodingFailed(with: createApplicationError(localizedDescription: "could not create file \(url.path)")) }
-					}
-				}
-			} catch let error {
-				self.targetQueue.async { self.delegate?.encodingFailed(with: error) }
-			}
-		}
+		save(persistedBlobs.mapValues { value in value.biography }, at: biosURL)
+	}
+
+	/// Perists all last read dates on disk; must be accessed on targetQueue.
+	private func saveLastReads() {
+		save(persistedLastReads, at: lastReadsURL)
 	}
 
 	/// Persists `portrait` on disk; call only from targetQueue.

@@ -95,8 +95,6 @@ final class BrowseViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		tableView.reloadData()
-		
 		tabBarController?.tabBar.items?[0].badgeValue = nil
 		UIApplication.shared.applicationIconBadgeNumber = 0
 		
@@ -108,6 +106,8 @@ final class BrowseViewController: UITableViewController {
 		} else {
 			networkButton.backgroundColor = UIColor.white
 		}
+
+		updateCache()
 	}
 	
 	override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -325,7 +325,15 @@ final class BrowseViewController: UITableViewController {
 				}
 				viewCache[indexPath.section].remove(at: indexPath.row)
 				viewCache[indexPath.section].insert(newModel, at: newIndexPath.row)
-				tableView.moveRow(at: indexPath, to: newIndexPath)
+				if #available(iOS 11.0, *) {
+					tableView.performBatchUpdates {
+						tableView.moveRow(at: indexPath, to: newIndexPath)
+						tableView.reloadRows(at: [newIndexPath], with: .automatic)
+					}
+				} else {
+					tableView.moveRow(at: indexPath, to: newIndexPath)
+					tableView.reloadRows(at: [newIndexPath], with: .automatic)
+				}
 			}
 		}
 	}
@@ -335,7 +343,7 @@ final class BrowseViewController: UITableViewController {
 		// we assume viewCache is sorted by lastSeen already
 		var row = 0
 		for model in viewCache[section.rawValue] {
-			if lastSeen < model.lastSeen {
+			if lastSeen > model.lastSeen {
 				return IndexPath(row: row, section: section.rawValue)
 			}
 			row += 1
@@ -356,7 +364,8 @@ final class BrowseViewController: UITableViewController {
 		displayedModels.sort { a, b in a.lastSeen > b.lastSeen }
 		clearViewCache()
 		for displayedModel in displayedModels {
-			_ = addToCache(model: displayedModel)
+			let section: TableSection = BrowseFilterSettings.shared.check(peer: displayedModel.peer) ? .inFilter : .outFilter
+			viewCache[section.rawValue].append(displayedModel)
 		}
 		self.tableView?.reloadData()
 	}

@@ -59,7 +59,12 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 
 	public func send(message: String, completion: @escaping (Error?) -> Void) {
 		ServerChatController.withInstance { serverChatController in
-			serverChatController?.send(message: message, to: self.peerID) { result in
+			guard let serverChat = serverChatController else {
+				completion(createApplicationError(localizedDescription: NSLocalizedString("server_chat_controller_nil", comment: "The user is not logged in to server chat")))
+				return
+			}
+
+			serverChat.send(message: message, to: self.peerID) { result in
 				switch result {
 				case .success(_):
 					completion(nil)
@@ -161,9 +166,9 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		}
 	}
 
-	func catchUp(messages: [Transcript]) {
+	func catchUp(messages: [Transcript], unreadCount: Int) {
 		publish { model in
-			model.catchUp(messages: messages)
+			model.catchUp(messages: messages, unreadCount: unreadCount)
 		}
 	}
 

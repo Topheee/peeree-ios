@@ -288,10 +288,43 @@ final class ServerChatController {
 		try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting key from keychain failed.", comment: "Attempt to delete a keychain item failed."))
 	}
 
-	// MARK: Instance Properties and Methods
+	// MARK: - Private
+
+	// MARK: Types
+
+	private struct MessageEventData {
+		let eventID: String
+		let timestamp: Date
+		let message: String
+
+		/// Extracts the ID, message and timestamp from `event`.
+		init(messageEvent event: MXEvent) throws {
+			guard event.content["format"] == nil else {
+				throw ServerChatError.generic("Body is formatted \(String(describing: event.content["format"])), ignoring.")
+			}
+			let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
+			guard messageType == .text || messageType == .notice else {
+				throw ServerChatError.generic("Unsupported message type: \(messageType).")
+			}
+			guard let message = event.content["body"] as? String else {
+				throw ServerChatError.generic("Message body not a string: \(event.content["body"] ?? "<nil>").")
+			}
+
+			self.eventID = event.eventId
+			self.timestamp = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
+			self.message = message
+		}
+	}
+
+	// MARK: Constants
 
 	private let session: MXSession
+
+	// MARK: Variables
+
 	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
+
+	// MARK: Methods
 
 	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
@@ -443,46 +476,39 @@ final class ServerChatController {
 		}
 	}
 
-	/// Extracts the message and timestamp from `event`.
-	private static func process(messageEvent event: MXEvent) throws -> (Date, String) {
-		guard event.content["format"] == nil else {
-			throw ServerChatError.generic("Body is formatted \(String(describing: event.content["format"])), ignoring.")
-		}
-		let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
-		guard messageType == .text || messageType == .notice else {
-			throw ServerChatError.generic("Unsupported message type: \(messageType).")
-		}
-		guard let message = event.content["body"] as? String else {
-			throw ServerChatError.generic("Message body not a string: \(event.content["body"] ?? "<nil>").")
-		}
-
-		let ts = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
-		return (ts, message)
-	}
-
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
 		if let oldRoom = roomsForPeerIDs[peerID] {
 			NSLog("WARN: Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
-			guard oldRoom.roomId != room.roomId else { return }
-			self.forget(room: room) { _error in
+			guard oldRoom.roomId != room.roomId else {
+				NSLog("WRN: Tried to add already known room \(room.roomId ?? "<unknown room id>").")
+				return
+			}
+			self.forget(room: oldRoom) { _error in
 				NSLog("DEBUG: Left old room: \(String(describing: _error)).")
 			}
 		}
 		roomsForPeerIDs[peerID] = room
 
+		PeeringController.shared.getLastReads { lastReads in
+
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = ServerChatController.userId
+		let lastReadDate = lastReads[peerID] ?? Date.distantPast
+
 		// these are all messages that have been sent while we where offline
 		var catchUpMissedMessages = [Transcript]()
 		var encryptedEvents = [MXEvent]()
+		var unreadMessages = 0
+
 		// we cannot reserve capacity in catchUpMessages here, since enumerator.remaining may be infinite
 		while let event = enumerator?.nextEvent {
 			switch event.eventType {
 			case .roomMessage:
 				do {
-					let (ts, message) = try ServerChatController.process(messageEvent: event)
-					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message, timestamp: ts))
+					let messageEvent = try MessageEventData(messageEvent: event)
+					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
+					if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 				} catch let error {
 					NSLog("ERR: \(error)")
 				}
@@ -519,8 +545,9 @@ final class ServerChatController {
 					switch event.eventType {
 					case .roomMessage:
 						do {
-							let (ts, message) = try ServerChatController.process(messageEvent: event)
-							catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: message, timestamp: ts))
+							let messageEvent = try MessageEventData(messageEvent: event)
+							catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
+							if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 						} catch let error {
 							NSLog("ERR: \(error)")
 						}
@@ -532,7 +559,7 @@ final class ServerChatController {
 				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
 				if catchUpDecryptedMessages.count > 0 {
 					PeeringController.shared.serverChatInteraction(with: peerID) { manager in
-						manager.catchUp(messages: catchUpDecryptedMessages)
+						manager.catchUp(messages: catchUpDecryptedMessages, unreadCount: unreadMessages)
 					}
 				}
 			}
@@ -542,13 +569,13 @@ final class ServerChatController {
 				switch event.eventType {
 				case .roomMessage:
 					do {
-						let (ts, message) = try ServerChatController.process(messageEvent: event)
+						let messageEvent = try MessageEventData(messageEvent: event)
 
 						PeeringController.shared.serverChatInteraction(with: peerID) { manager in
 							if event.sender == ServerChatController.userId {
-								manager.didSend(message: message, at: ts)
+								manager.didSend(message: messageEvent.message, at: messageEvent.timestamp)
 							} else {
-								manager.received(message: message, at: ts)
+								manager.received(message: messageEvent.message, at: messageEvent.timestamp)
 							}
 						}
 					} catch let error {
@@ -558,6 +585,7 @@ final class ServerChatController {
 					NSLog("WARN: Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
 				}
 			}
+		}
 		}
 	}
 
@@ -588,9 +616,9 @@ final class ServerChatController {
 					self.addRoomAndListenToEvents(room, for: peerID)
 				}
 
-				_ = self.session.listenToEvents { event, direction, customObject in
-					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
-				}
+//				_ = self.session.listenToEvents { event, direction, customObject in
+//					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
+//				}
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
 					switch event.eventType {
 					case .roomMember:

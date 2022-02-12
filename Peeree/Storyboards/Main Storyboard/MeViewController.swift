@@ -26,6 +26,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	private var activeField: (view: UIView, inputView: UIView?)? = nil
 	private var connectionStateObserver: NSObjectProtocol? = nil
 	private let portraitImagePicker = PortraitImagePickerController()
+	private var hasBio = false
 	
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
 		let gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
@@ -289,6 +290,11 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 		textView.inputAccessoryView = saveToolBar
 		activeField = (textView, textView.inputView)
+
+		UserPeer.instance.read { _, _, _, bio in
+			textView.text = bio
+		}
+
 		return true
 	}
 
@@ -324,7 +330,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		if bio != "" {
 			bioTextView.text = bio
 		} else if let font = bioTextView.font {
-			bioTextView.text = nil
+			bioTextView.text = NSLocalizedString("bio_placeholder", comment: "Placeholder for biography text input")
 			let descriptor = font.fontDescriptor
 			if let newDescriptor = descriptor.withSymbolicTraits(descriptor.symbolicTraits.union(UIFontDescriptor.SymbolicTraits.traitItalic)) {
 				bioTextView.font = UIFont(descriptor: newDescriptor, size: 0.0)

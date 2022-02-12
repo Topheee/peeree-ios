@@ -27,7 +27,7 @@ public protocol PeerInteraction {
 protocol ServerChatManager {
 	func received(message: String, at: Date)
 	func didSend(message: String, at: Date)
-	func catchUp(messages: [Transcript])
+	func catchUp(messages: [Transcript], unreadCount: Int)
 }
 
 /// Representation of a chat message.

@@ -69,8 +69,10 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			self.pinMatchOccured(peerID)
 		}
 
-		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, _  in
-			self.messageReceived(from: peerID)
+		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
+			guard let message = notification.userInfo?[PeerViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
+
+			self.received(message: message, from: peerID)
 		}
 
 		if #available(iOS 10.0, *) {
@@ -225,9 +227,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 	}
 
-	private func messageReceived(from peerID: PeerID) {
-		guard let model = PeerViewModelController.viewModels[peerID],
-			  let message = model.transcripts.last?.message else { return }
+	private func received(message: String, from peerID: PeerID) {
+		guard let model = PeerViewModelController.viewModels[peerID] else { return }
 
 		let title: String
 		if #available(iOS 10.0, *) {

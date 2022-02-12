@@ -978,12 +978,6 @@
                                                         <action selector="showProfile:" destination="m9M-nD-Ibs" id="GBM-qL-49F"/>
                                                     </connections>
                                                 </barButtonItem>
-                                                <barButtonItem systemItem="flexibleSpace" id="BP5-r4-b8w"/>
-                                                <barButtonItem image="LeftRightRadarGlyph" id="9YV-Ru-0A8">
-                                                    <connections>
-                                                        <action selector="findPeer:" destination="m9M-nD-Ibs" id="on2-Y5-hes"/>
-                                                    </connections>
-                                                </barButtonItem>
                                                 <barButtonItem systemItem="flexibleSpace" id="PHH-x1-BKb"/>
                                                 <barButtonItem title="Dismiss" id="TrO-49-JEM">
                                                     <connections>

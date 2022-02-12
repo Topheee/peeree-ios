@@ -65,7 +65,7 @@ final class PinMatchTableViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		tableView.reloadData()
+		updateCache()
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -183,9 +183,9 @@ final class PinMatchTableViewController: UITableViewController {
 		let format = NSLocalizedString("%u messages.", comment: "")
 		let unreadMessageCountText = String(format: format, unreadMessages)
 		if unreadMessages > 0 {
-			cell.detailTextLabel?.text = "\(model.unreadMessages) 📫\t\(model.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📫 (\(model.unreadMessages)) \(model.transcripts.last?.message ?? unreadMessageCountText)"
 		} else {
-			cell.detailTextLabel?.text = "📭\t\(model.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📭 \(model.transcripts.last?.message ?? unreadMessageCountText)"
 		}
 		guard let imageView = cell.imageView else { assertionFailure(); return }
 		imageView.image = model.portraitOrPlaceholder
@@ -222,12 +222,25 @@ final class PinMatchTableViewController: UITableViewController {
 			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
 			return
 		}
+
+		// we have to refresh our cache if a peer changes - PeerInfos are structs!
+		viewCache[peerPath.row] = PeerViewModelController.viewModel(of: peerID)
+
 		let topIndexPath = IndexPath(row: 0, section: 0)
 		if peerPath.row != 0 {
 			viewCache.swapAt(0, peerPath.row)
-			tableView.moveRow(at: peerPath, to: topIndexPath)
+			if #available(iOS 11.0, *) {
+				tableView.performBatchUpdates {
+					tableView.moveRow(at: peerPath, to: topIndexPath)
+					tableView.reloadRows(at: [topIndexPath], with: .automatic)
+				}
+			} else {
+				tableView.moveRow(at: peerPath, to: topIndexPath)
+				tableView.reloadRows(at: [topIndexPath], with: .automatic)
+			}
+		} else {
+			tableView.reloadRows(at: [topIndexPath], with: .automatic)
 		}
-		tableView.reloadRows(at: [topIndexPath], with: .automatic)
 	}
 
 	private func reload(peerID: PeerID) {

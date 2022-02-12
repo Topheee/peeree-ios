@@ -39,7 +39,11 @@ final class InAppNotificationController {
 					errorMessage = errorMessage + NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
 				}
 			case .sessionTaskError(let code, _, let theError):
-				errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
+				if (theError as NSError).code == NSURLErrorCannotConnectToHost {
+					errorMessage = serverDownMessage
+				} else {
+					errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
+				}
 			case .offline:
 				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
 				notificationAction = { UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!) }
@@ -55,9 +59,19 @@ final class InAppNotificationController {
 		display(title: localizedTitle, message: errorMessage)
 	}
 
+	static func display(serverChatError error: Error, localizedTitle: String) {
+		if (error as NSError).code == NSURLErrorCannotConnectToHost && (error as NSError).domain == NSURLErrorDomain {
+			display(title: localizedTitle, message: serverDownMessage)
+		} else {
+			display(title: localizedTitle, message: error.localizedDescription)
+		}
+	}
+
 	static func display(error: Error, localizedTitle: String) {
 		display(title: localizedTitle, message: error.localizedDescription)
 	}
 
 	private static let NotificationDuration = 5.76
+
+	private static var serverDownMessage: String { return NSLocalizedString("Sorry, we are currently busy trying to plug in the WiFi cable. Please try again in a couple of minutes.", comment: "Error message when a connection cannot be made.") }
 }
