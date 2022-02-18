@@ -413,18 +413,21 @@
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         </view>
                                                         <blurEffect style="regular"/>
+                                                        <connections>
+                                                            <outletCollection property="gestureRecognizers" destination="max-d2-BiI" appends="YES" id="Tcy-Mb-bu7"/>
+                                                        </connections>
                                                     </visualEffectView>
                                                 </subviews>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="bottom" secondItem="pRr-uE-8dC" secondAttribute="bottom" constant="16" identifier="portraitToSuperviewBottom" id="1EP-07-K56"/>
                                                     <constraint firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" constant="16" identifier="portraitToSuperviewTrailing" id="Avq-G7-1G6"/>
+                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="S6f-fD-kvO" secondAttribute="top" id="HUR-ML-2Op"/>
+                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="trailing" secondItem="S6f-fD-kvO" secondAttribute="trailing" id="NY0-eg-HBN"/>
                                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" identifier="portraitToSuperviewLeading" id="P8q-ve-RuT"/>
-                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="leading" secondItem="oOD-vv-AaG" secondAttribute="leading" constant="16" identifier="portraitToSuperviewLeading" id="cPt-AY-8RY"/>
-                                                    <constraint firstAttribute="trailing" secondItem="pRr-uE-8dC" secondAttribute="trailing" constant="16" identifier="portraitToEffectTrailing" id="dpC-E6-DKt"/>
+                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="leading" secondItem="S6f-fD-kvO" secondAttribute="leading" id="Q0I-xZ-dwT"/>
+                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" id="TxJ-fg-drP"/>
                                                     <constraint firstItem="S6f-fD-kvO" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" identifier="portraitTopToSuperviewTop" id="oCn-tu-VM5"/>
                                                     <constraint firstAttribute="bottom" secondItem="S6f-fD-kvO" secondAttribute="bottom" constant="16" identifier="superviewToPortraitBottom" id="pZU-oO-ghk"/>
-                                                    <constraint firstItem="pRr-uE-8dC" firstAttribute="top" secondItem="oOD-vv-AaG" secondAttribute="top" constant="16" identifier="portraitToTop" id="vMB-h8-hUl"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="color" keyPath="startColor">
@@ -715,6 +718,9 @@
                                     <textView hidden="YES" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="755" editable="NO" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UYZ-np-Imj" customClass="ResizingTextView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="20" y="53" width="280" height="0.0"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" id="hn2-bH-G90"/>
+                                        </constraints>
                                         <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
                                         <color key="textColor" systemColor="labelColor"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
@@ -725,7 +731,7 @@
                                         <rect key="frame" x="20" y="3" width="280" height="31.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="BradleyHandITCTT-Bold" family="Bradley Hand" pointSize="25"/>
-                                        <color key="textColor" red="0.08235294118" green="0.086274509799999996" blue="0.58829430820179629" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="textColor" systemColor="systemIndigoColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
@@ -743,7 +749,7 @@
                                     <constraint firstItem="DUz-ZH-MqE" firstAttribute="top" secondItem="fMG-w9-XfX" secondAttribute="bottom" id="APe-Yu-fjn"/>
                                     <constraint firstAttribute="trailing" secondItem="UYZ-np-Imj" secondAttribute="trailing" constant="20" symbolic="YES" id="Abu-NM-VAr"/>
                                     <constraint firstItem="UYZ-np-Imj" firstAttribute="leading" secondItem="cqN-Sb-ZzT" secondAttribute="leading" constant="20" symbolic="YES" id="FcK-x2-Ouk"/>
-                                    <constraint firstItem="eGm-zA-15S" firstAttribute="top" secondItem="UYZ-np-Imj" secondAttribute="bottom" constant="-50" id="NHL-Rh-auq"/>
+                                    <constraint firstItem="eGm-zA-15S" firstAttribute="top" secondItem="UYZ-np-Imj" secondAttribute="bottom" constant="-70" id="NHL-Rh-auq"/>
                                     <constraint firstItem="fMG-w9-XfX" firstAttribute="top" secondItem="cqN-Sb-ZzT" secondAttribute="top" constant="6" id="NfF-Fo-7V2"/>
                                     <constraint firstItem="i9C-MG-2LW" firstAttribute="leading" secondItem="cqN-Sb-ZzT" secondAttribute="leading" constant="20" symbolic="YES" id="RM3-uk-CDh"/>
                                     <constraint firstItem="eGm-zA-15S" firstAttribute="leading" secondItem="UYZ-np-Imj" secondAttribute="leading" id="Vcg-4E-4eP"/>
@@ -796,6 +802,7 @@
                         <outlet property="ageLabel" destination="jRR-HL-OFn" id="BDe-ie-0ro"/>
                         <outlet property="ageTagView" destination="aUs-rV-7r7" id="Vym-0f-JyY"/>
                         <outlet property="bioHeadingLabel" destination="u8x-xh-rZR" id="aaT-lX-bbY"/>
+                        <outlet property="bioHeightZeroConstraint" destination="hn2-bH-G90" id="gW9-HK-nP4"/>
                         <outlet property="bioTextView" destination="UYZ-np-Imj" id="hDk-ss-sEw"/>
                         <outlet property="genderLabel" destination="nS3-bX-bM2" id="Sz6-7d-xCR"/>
                         <outlet property="genderTagView" destination="yo1-ut-E67" id="9GB-yI-7JI"/>
@@ -808,9 +815,12 @@
                         <outlet property="pinCircleView" destination="SM8-m1-KQC" id="dlu-s4-hGI"/>
                         <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
                         <outlet property="pinWidthConstraint" destination="nhQ-EY-bws" id="StT-kz-aUz"/>
-                        <outlet property="portraitContainer" destination="rHp-W3-COa" id="cSl-JY-i65"/>
+                        <outlet property="portraitBottomConstraint" destination="pZU-oO-ghk" id="yve-UP-j4W"/>
                         <outlet property="portraitEffectView" destination="pRr-uE-8dC" id="Cum-CT-DKu"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
+                        <outlet property="portraitLeadingConstraint" destination="P8q-ve-RuT" id="A3n-6Z-vI9"/>
+                        <outlet property="portraitTopConstraint" destination="oCn-tu-VM5" id="4zS-ck-xwX"/>
+                        <outlet property="portraitTrailingConstraint" destination="Avq-G7-1G6" id="wCe-yP-skx"/>
                         <outlet property="reportButton" destination="UHa-Bh-87N" id="ESP-06-EpT"/>
                         <outlet property="signatureLabel" destination="eGm-zA-15S" id="0rL-6o-hoz"/>
                         <outlet property="signatureToBioConstraint" destination="NHL-Rh-auq" id="e7w-Lj-Ujp"/>
@@ -830,6 +840,11 @@
                         <action selector="panBiography:" destination="bgg-zV-1WC" id="cz3-Bo-fpS"/>
                     </connections>
                 </panGestureRecognizer>
+                <tapGestureRecognizer id="max-d2-BiI">
+                    <connections>
+                        <action selector="tapPicture:" destination="bgg-zV-1WC" id="31a-M9-l81"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="3210" y="703.75"/>
         </scene>
@@ -864,14 +879,20 @@
                                         <constraint firstItem="TSY-tA-LTd" firstAttribute="leading" secondItem="LWs-dB-GsB" secondAttribute="leading" constant="8" id="BeG-yk-pHL"/>
                                         <constraint firstItem="TSY-tA-LTd" firstAttribute="top" secondItem="LWs-dB-GsB" secondAttribute="top" id="CwW-9H-B2A"/>
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="top" secondItem="eUA-n6-Ifh" secondAttribute="top" constant="3" id="J9l-Pg-Agf"/>
-                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="8" id="N7E-VO-wud"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="32" id="N7E-VO-wud"/>
                                         <constraint firstAttribute="bottom" secondItem="LWs-dB-GsB" secondAttribute="bottom" id="UUY-ah-gjw"/>
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="trailing" secondItem="TSY-tA-LTd" secondAttribute="trailing" constant="24" id="cHm-sz-gMK"/>
                                         <constraint firstItem="TSY-tA-LTd" firstAttribute="bottom" secondItem="LWs-dB-GsB" secondAttribute="bottom" id="eGd-YX-c0c"/>
                                         <constraint firstAttribute="trailing" secondItem="LWs-dB-GsB" secondAttribute="trailing" constant="8" id="nR6-qn-jPa"/>
-                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="vqD-qB-iPn"/>
+                                        <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="32" id="vqD-qB-iPn"/>
                                         <constraint firstItem="LWs-dB-GsB" firstAttribute="leading" secondItem="eUA-n6-Ifh" secondAttribute="leading" constant="16" id="zJh-NN-ZUA"/>
                                     </constraints>
+                                    <variation key="default">
+                                        <mask key="constraints">
+                                            <exclude reference="N7E-VO-wud"/>
+                                            <exclude reference="vqD-qB-iPn"/>
+                                        </mask>
+                                    </variation>
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <connections>
@@ -1037,16 +1058,10 @@
                                 <rect key="frame" x="0.0" y="96" width="320" height="335"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="9fe-8y-HDn">
-                                        <rect key="frame" x="16" y="8" width="288" height="185.5"/>
+                                        <rect key="frame" x="16" y="8" width="288" height="160"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Go offline to change settings." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rAH-3G-jWK">
-                                                <rect key="frame" x="66.5" y="0.0" width="155.5" height="13.5"/>
-                                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                <nil key="textColor"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name" textAlignment="natural" minimumFontSize="17" clearButtonMode="always" translatesAutoresizingMaskIntoConstraints="NO" id="sNx-nf-ozM">
-                                                <rect key="frame" x="134" y="25.5" width="20" height="34"/>
+                                                <rect key="frame" x="134" y="0.0" width="20" height="34"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Your publicly visible name" label="Name"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" spellCheckingType="no" returnKeyType="done" enablesReturnKeyAutomatically="YES" textContentType="nickname"/>
@@ -1055,7 +1070,7 @@
                                                 </connections>
                                             </textField>
                                             <button opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="200" verticalHuggingPriority="200" horizontalCompressionResistancePriority="700" verticalCompressionResistancePriority="700" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b8E-hE-Mnd">
-                                                <rect key="frame" x="131.5" y="71.5" width="25" height="25"/>
+                                                <rect key="frame" x="131.5" y="46" width="25" height="25"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Selects your portrait picture" label="Choose portrait">
                                                     <accessibilityTraits key="traits" button="YES" image="YES"/>
                                                 </accessibility>
@@ -1077,7 +1092,7 @@
                                                 </connections>
                                             </button>
                                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7DY-yh-Oap">
-                                                <rect key="frame" x="89" y="102.5" width="110" height="0.0"/>
+                                                <rect key="frame" x="89" y="77" width="110" height="0.0"/>
                                                 <accessibility key="accessibilityConfiguration">
                                                     <bool key="isElement" value="NO"/>
                                                 </accessibility>
@@ -1086,7 +1101,7 @@
                                                 </state>
                                             </button>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Birthday" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="KtY-qD-KuZ">
-                                                <rect key="frame" x="98.5" y="108.5" width="91.5" height="34"/>
+                                                <rect key="frame" x="98.5" y="83" width="91.5" height="34"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Safes your birthday" label="Set birthday"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numbersAndPunctuation" returnKeyType="done"/>
@@ -1095,7 +1110,7 @@
                                                 </connections>
                                             </textField>
                                             <segmentedControl opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jMl-1T-kkd">
-                                                <rect key="frame" x="48.5" y="154.5" width="191" height="32"/>
+                                                <rect key="frame" x="48.5" y="129" width="191" height="32"/>
                                                 <segments>
                                                     <segment title="Male"/>
                                                     <segment title="Female"/>
@@ -1106,7 +1121,7 @@
                                                 </connections>
                                             </segmentedControl>
                                             <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="3ye-zn-ii5">
-                                                <rect key="frame" x="-25.5" y="185.5" width="339" height="7"/>
+                                                <rect key="frame" x="-25.5" y="160" width="339" height="7"/>
                                                 <subviews>
                                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Mail" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="gYx-2Y-uq3">
                                                         <rect key="frame" x="140" y="0.0" width="59.5" height="0.0"/>
@@ -1136,7 +1151,7 @@
                                         </constraints>
                                     </stackView>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" text="Your Biography." adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="X6k-gy-LjE">
-                                        <rect key="frame" x="16" y="201.5" width="288" height="128"/>
+                                        <rect key="frame" x="16" y="176" width="288" height="128"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="128" id="CPs-K4-rNx"/>
@@ -1154,7 +1169,7 @@
                                         </connections>
                                     </textView>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" alignment="center" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="8ll-GM-LxS">
-                                        <rect key="frame" x="8" y="337.5" width="304" height="78.5"/>
+                                        <rect key="frame" x="8" y="312" width="304" height="78.5"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="0TR-XP-6xO">
                                                 <rect key="frame" x="101.5" y="0.0" width="101" height="44.5"/>
@@ -1247,7 +1262,6 @@
                         <outlet property="accountIDLabel" destination="7cg-KF-1BD" id="bIe-nH-i0B"/>
                         <outlet property="bioTextView" destination="X6k-gy-LjE" id="aly-k6-P1c"/>
                         <outlet property="birthdayInput" destination="KtY-qD-KuZ" id="vzw-Cv-2vK"/>
-                        <outlet property="connectionNoteLabel" destination="rAH-3G-jWK" id="TVk-9q-jfR"/>
                         <outlet property="genderControl" destination="jMl-1T-kkd" id="nra-1i-nrz"/>
                         <outlet property="mailNoteLabel" destination="yg9-L6-t2V" id="H7X-oc-ZN8"/>
                         <outlet property="mailTextField" destination="gYx-2Y-uq3" id="24O-tx-SBk"/>
@@ -1894,7 +1908,7 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="Qvq-U3-y04"/>
+        <segue reference="xMu-Pu-iqx"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
@@ -1925,6 +1939,9 @@
         </systemColor>
         <systemColor name="systemGroupedBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemIndigoColor">
+            <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="tertiaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>

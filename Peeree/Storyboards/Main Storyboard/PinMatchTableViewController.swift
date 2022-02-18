@@ -105,6 +105,8 @@ final class PinMatchTableViewController: UITableViewController {
 			} else {
 				cell.heading = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
 				cell.subhead = NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.")
+				let gestureRecognizer = UITapGestureRecognizer(target: AppDelegate.shared, action: #selector(AppDelegate.toggleNetwork(_:)))
+				cell.addGestureRecognizer(gestureRecognizer)
 			}
 			return cell
 		} else {
@@ -160,7 +162,7 @@ final class PinMatchTableViewController: UITableViewController {
 		viewCache.sort { a, b in
 			guard let aTimestamp = a.transcripts.last?.timestamp else {
 				if b.transcripts.isEmpty {
-					return a.lastSeen < b.lastSeen
+					return a.lastSeen > b.lastSeen
 				} else {
 					return false
 				}
@@ -170,7 +172,7 @@ final class PinMatchTableViewController: UITableViewController {
 				return true
 			}
 
-			return aTimestamp < bTimestamp
+			return aTimestamp > bTimestamp
 		}
 
 		self.tableView?.reloadData()
@@ -229,15 +231,8 @@ final class PinMatchTableViewController: UITableViewController {
 		let topIndexPath = IndexPath(row: 0, section: 0)
 		if peerPath.row != 0 {
 			viewCache.swapAt(0, peerPath.row)
-			if #available(iOS 11.0, *) {
-				tableView.performBatchUpdates {
-					tableView.moveRow(at: peerPath, to: topIndexPath)
-					tableView.reloadRows(at: [topIndexPath], with: .automatic)
-				}
-			} else {
-				tableView.moveRow(at: peerPath, to: topIndexPath)
-				tableView.reloadRows(at: [topIndexPath], with: .automatic)
-			}
+			tableView.moveRow(at: peerPath, to: topIndexPath)
+			tableView.reloadRows(at: [topIndexPath], with: .automatic)
 		} else {
 			tableView.reloadRows(at: [topIndexPath], with: .automatic)
 		}
@@ -267,9 +262,11 @@ final class PinMatchTableViewController: UITableViewController {
 	}
 
 	private func addToView(peerID: PeerID, updateTable: Bool) {
-		let placeHolderWasActive = placeholderCellActive
+		//let placeHolderWasActive = placeholderCellActive
 		addToCache(model: PeerViewModelController.viewModel(of: peerID))
 
+		if updateTable { tableView.reloadData() }
+		/* this would be the performant variant, however I saw crashes with it (the number of rows after insert …), probably due to placeholderCellActive changing in between, because PeeringController.shared.peering is a data race
 		if updateTable {
 			if placeHolderWasActive {
 				tableView.reloadData()
@@ -277,6 +274,7 @@ final class PinMatchTableViewController: UITableViewController {
 				add(row: 0)
 			}
 		}
+		 */
 	}
 }
 

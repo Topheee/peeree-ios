@@ -12,7 +12,7 @@ import CoreGraphics
 public protocol PersistedPeersControllerDelegate {
 	func persistedPeersLoadedFromDisk(_ peers: Set<Peer>)
 	func persistedBiosLoadedFromDisk(_ bios: [PeerID : String])
-	func persistedLastReadsLoadedFromDisk(_ eventIDs: [PeerID : Date])
+	func persistedLastReadsLoadedFromDisk(_ lastReads: [PeerID : Date])
 	func portraitLoadedFromDisk(_ portrait: CGImage, of peerID: PeerID, hash: Data)
 	func encodingFailed(with error: Error)
 	func decodingFailed(with error: Error)
@@ -144,63 +144,15 @@ public final class PersistedPeersController {
 		}
 	}
 
-	/// Retrieves all saved peers from disk. You should call this method as soon as possible after creating the `PersistedPeersController`.
-	func loadPeers() {
-		PersistedPeersController.persistenceQueue.async {
-			guard let data = FileManager.default.contents(atPath: self.peersURL.path) else { return }
-
-			let decoder = JSONDecoder()
-			do {
-				let decodedPeers = try decoder.decode(Set<Peer>.self, from: data)
-				self.targetQueue.async {
-					self.persistedPeers = decodedPeers
-					self.delegate?.persistedPeersLoadedFromDisk(decodedPeers)
-				}
-			} catch let error {
-				self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
-			}
-		}
-	}
-
-	/**
-	 Retrieves all saved biographies from disk.
-	 - Warning: This will overwrite possibly loaded portraits! You should always call it as soon as possible after creating the `PersistedPeersController`.
-	 */
-	func loadBios() {
-		PersistedPeersController.persistenceQueue.async {
-			guard let data = FileManager.default.contents(atPath: self.biosURL.path) else { return }
-
-			let decoder = JSONDecoder()
-			do {
-				let decodedBios = try decoder.decode([PeerID : String].self, from: data)
-				self.targetQueue.async {
-					self.persistedBlobs = decodedBios.mapValues { bio in
-						PeerBlobData(biography: bio, portrait: nil)
-					}
-					self.delegate?.persistedBiosLoadedFromDisk(decodedBios)
-				}
-			} catch let error {
-				self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
-			}
-		}
-	}
-
-	/// Retrieves all persisted last read dates from disk. You should call this method as soon as possible after creating the `PersistedPeersController`.
-	func loadLastReads() {
-		PersistedPeersController.persistenceQueue.async {
-			guard let data = FileManager.default.contents(atPath: self.lastReadsURL.path) else { return }
-
-			let decoder = JSONDecoder()
-			do {
-				let decodedLastReads = try decoder.decode([PeerID : Date].self, from: data)
-				self.targetQueue.async {
-					self.persistedLastReads = decodedLastReads
-					self.delegate?.persistedLastReadsLoadedFromDisk(decodedLastReads)
-				}
-			} catch let error {
-				self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
-			}
-		}
+	/// Retrieves all necessary data from disk. You should call this method as soon as possible after creating the `PersistedPeersController`.
+	public func loadInitialData() {
+		// we need to guarantee that all data is read before it is accessed afterwards,
+		// because our targetQueue > persistenceQueue model assumes that the data is succefully read
+		targetQueue.async { PersistedPeersController.persistenceQueue.sync {
+			self.loadLastReads()
+			self.loadPeers()
+			self.loadBios()
+		} }
 	}
 
 	/// Load portrait of `peerID` from disk and informs delegate afterwards.
@@ -282,6 +234,59 @@ public final class PersistedPeersController {
 	private var persistedLastReads = [PeerID : Date]()
 
 	// MARK: Methods
+
+	/// Retrieves all saved peers from disk; call from `persistenceQueue` only.
+	private func loadPeers() {
+		guard let data = FileManager.default.contents(atPath: self.peersURL.path) else { return }
+
+		let decoder = JSONDecoder()
+		do {
+			let decodedPeers = try decoder.decode(Set<Peer>.self, from: data)
+			self.targetQueue.async {
+				self.persistedPeers = decodedPeers
+				self.delegate?.persistedPeersLoadedFromDisk(decodedPeers)
+			}
+		} catch let error {
+			self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
+		}
+	}
+
+	/**
+	 Retrieves all saved biographies from disk; call from `persistenceQueue` only.
+	 - Warning: This will overwrite possibly loaded portraits! You should always call it as soon as possible after creating the `PersistedPeersController`.
+	 */
+	private func loadBios() {
+		guard let data = FileManager.default.contents(atPath: self.biosURL.path) else { return }
+
+		let decoder = JSONDecoder()
+		do {
+			let decodedBios = try decoder.decode([PeerID : String].self, from: data)
+			self.targetQueue.async {
+				self.persistedBlobs = decodedBios.mapValues { bio in
+					PeerBlobData(biography: bio, portrait: nil)
+				}
+				self.delegate?.persistedBiosLoadedFromDisk(decodedBios)
+			}
+		} catch let error {
+			self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
+		}
+	}
+
+	/// Retrieves all persisted last read dates from disk; call from `persistenceQueue` only.
+	private func loadLastReads() {
+		guard let data = FileManager.default.contents(atPath: self.lastReadsURL.path) else { return }
+
+		let decoder = JSONDecoder()
+		do {
+			let decodedLastReads = try decoder.decode([PeerID : Date].self, from: data)
+			self.targetQueue.async {
+				self.persistedLastReads = decodedLastReads
+				self.delegate?.persistedLastReadsLoadedFromDisk(decodedLastReads)
+			}
+		} catch let error {
+			self.targetQueue.async { self.delegate?.decodingFailed(with: error) }
+		}
+	}
 
 	/// Persists an `Encodable` `Collection` at `url`.
 	private func save<EncodableCollection: Encodable>(_ save: EncodableCollection, at url: URL) where EncodableCollection: Collection {

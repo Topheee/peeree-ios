@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SafariServices
 
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
@@ -38,30 +37,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
 	private let notificationManager = NotificationManager()
-	
-	static func viewTerms(in viewController: UIViewController) {
-		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
-		let safariController = SFSafariViewController(url: termsURL)
-		if #available(iOS 10.0, *) {
-			safariController.preferredControlTintColor = AppTheme.tintColor
-		}
-		if #available(iOS 11.0, *) {
-			safariController.dismissButtonStyle = .done
-		}
-		viewController.present(safariController, animated: true, completion: nil)
-	}
 
-	/// Display the onboarding view controller on top of all other content.
-	static func presentOnboarding() {
-		let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
-
-		storyboard.instantiateInitialViewController()?.presentInFrontMostViewController(true, completion: nil)
-	}
-	
 	/// This is somehow set by the environment...
 	var window: UIWindow?
 	
 	var isActive: Bool = false
+
+	// MARK: UIApplicationDelegate
 
 	/**
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
@@ -109,7 +91,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		// Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 		isActive = true
 
-		UIApplication.shared.cancelAllLocalNotifications()
+		if #available(iOS 10.0, *) {
+			let notificationCenter = UNUserNotificationCenter.current()
+			notificationCenter.removeAllPendingNotificationRequests()
+			notificationCenter.removeAllDeliveredNotifications()
+		} else {
+			UIApplication.shared.cancelAllLocalNotifications()
+		}
 	}
 
 	/**

@@ -62,21 +62,24 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
 		guard textField == birthdayInput else { return true }
 
+		let calendar = Calendar.current
 		let today = Date()
 		let datePicker = UIDatePicker()
 		datePicker.datePickerMode = .date
 		if #available(iOS 13.4, *) {
 			datePicker.preferredDatePickerStyle = .wheels
 		}
-		var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		var minComponents = calendar.dateComponents([.day, .month, .year], from: today)
 		minComponents.year = minComponents.year! - PeerInfo.MaxAge
-		var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		var maxComponents = calendar.dateComponents([.day, .month, .year], from: today)
 		maxComponents.year = maxComponents.year! - PeerInfo.MinAge
 
-		datePicker.minimumDate = Calendar.current.date(from: minComponents)
-		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
+		datePicker.minimumDate = calendar.date(from: minComponents)
+		datePicker.maximumDate = calendar.date(from: maxComponents)
 
-		datePicker.date = datePicker.maximumDate ?? today
+		// if we choose to set datePicker.maximumDate or datePicker.minimumDate as the currently selected date for the picker, users need to change the wheel of the year first
+		maxComponents.year = maxComponents.year! - 7
+		datePicker.date = calendar.date(from: maxComponents) ?? datePicker.maximumDate ?? datePicker.minimumDate ?? today
 		datePicker.addTarget(self, action: #selector(self.agePickerChanged), for: .valueChanged)
 
 		let saveToolBar = UIToolbar()

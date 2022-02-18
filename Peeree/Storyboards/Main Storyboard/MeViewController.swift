@@ -11,7 +11,6 @@ import UIKit
 /// Displays and edits the users peer info data, as well as their Peeree identity.
 final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate, PortraitImagePickerControllerDelegate {
 	@IBOutlet private weak var previewButton: UIBarButtonItem!
-	@IBOutlet private weak var connectionNoteLabel: UILabel!
 	@IBOutlet private weak var accountButton: UIButton!
 	@IBOutlet private weak var accountIDLabel: UILabel!
 	@IBOutlet private weak var mailTextField: UITextField!
@@ -176,23 +175,26 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
 		guard textField == birthdayInput else { return true }
-		
+
+		let calendar = Calendar.current
 		let today = Date()
 		let datePicker = UIDatePicker()
 		datePicker.datePickerMode = .date
 		if #available(iOS 13.4, *) {
 			datePicker.preferredDatePickerStyle = .wheels
 		}
-		var minComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		var minComponents = calendar.dateComponents([.day, .month, .year], from: today)
 		minComponents.year = minComponents.year! - PeerInfo.MaxAge
-		var maxComponents = Calendar.current.dateComponents([.day, .month, .year], from: today)
+		var maxComponents = calendar.dateComponents([.day, .month, .year], from: today)
 		maxComponents.year = maxComponents.year! - PeerInfo.MinAge
 		
-		datePicker.minimumDate = Calendar.current.date(from: minComponents)
-		datePicker.maximumDate = Calendar.current.date(from: maxComponents)
+		datePicker.minimumDate = calendar.date(from: minComponents)
+		datePicker.maximumDate = calendar.date(from: maxComponents)
 
 		UserPeer.instance.read { _, birthday, _, _ in
-			datePicker.date = birthday ?? datePicker.maximumDate ?? today
+			// if we choose to set datePicker.maximumDate or datePicker.minimumDate as the currently selected date for the picker, users need to change the wheel of the year first
+			maxComponents.year = maxComponents.year! - 7
+			datePicker.date = birthday ?? calendar.date(from: maxComponents) ?? datePicker.maximumDate ?? datePicker.minimumDate ?? today
 			datePicker.addTarget(self, action: #selector(self.agePickerChanged), for: .valueChanged)
 		}
 		
@@ -420,15 +422,8 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	private func lockAndLoadView() {
 		UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
 			let userPeerDefined = peerInfo != nil
-			let peering = PeeringController.shared.peering
 			let accountExists = AccountController.shared.accountExists
-			let locked = !userPeerDefined || peering
 
-			for control: UIControl in [self.nameTextField, self.portraitImageButton, self.genderControl, self.birthdayInput] {
-				control.isEnabled = !locked
-			}
-			self.bioTextView.isEditable = !locked
-			self.connectionNoteLabel.isHidden = !locked
 			self.previewButton.isEnabled = userPeerDefined && accountExists
 
 			self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)

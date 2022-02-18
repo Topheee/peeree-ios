@@ -90,15 +90,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 			if newValue {
 				remotePeerManager.scan()
-				UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
-					guard self.localPeerManager == nil,
-						  let info = peerInfo, AccountController.shared.accountExists,
-						  let keyPair = AccountController.shared.keyPair else { return }
-					let l = LocalPeerManager(peer: Peer(id: PeereeIdentity(peerID: AccountController.shared.peerID, publicKey: keyPair.publicKey), info: info), biography: biography, keyPair: keyPair, pictureResourceURL: UserPeer.pictureResourceURL)
-					self.localPeerManager = l
-					l.delegate = self
-					l.startAdvertising()
-				}
+				startAdvertising(restartOnly: false)
 			} else {
 				UserPeer.instance.read(on: nil) { _, _, _, _ in
 					self.localPeerManager?.stopAdvertising()
@@ -109,6 +101,11 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 			connectionChangedState()
 		}
+	}
+
+	/// Restart advertising if it is currently on, e.g. when the user peer data changed.
+	func restartAdvertising() {
+		startAdvertising(restartOnly: true)
 	}
 
 	// MARK: Methods
@@ -276,7 +273,26 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
-	public func persistedLastReadsLoadedFromDisk(_ eventIDs: [PeerID : Date]) {}
+	public func persistedLastReadsLoadedFromDisk(_ lastReads: [PeerID : Date]) {
+		// fix unread message count if last reads where read after server chat went online
+		// PERFORMANCE: poor
+		DispatchQueue.main.async {
+			for (peerID, model) in PeerViewModelController.viewModels {
+				guard let lastReadDate = lastReads[peerID] else { continue }
+
+				var unreadCount = 0
+				for transcript in model.transcripts {
+					if transcript.timestamp > lastReadDate { unreadCount += 1 }
+				}
+
+				guard unreadCount != model.unreadMessages else { continue }
+
+				PeerViewModelController.modify(peerID: peerID) { modifyModel in
+					modifyModel.unreadMessages = unreadCount
+				}
+			}
+		}
+	}
 
 	public func portraitLoadedFromDisk(_ portrait: CGImage, of peerID: PeerID, hash: Data) {
 		obtained(portrait, hash: hash, of: peerID)
@@ -304,9 +320,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 		observeNotifications()
 
-		persistence.loadPeers()
-		persistence.loadBios()
-		persistence.loadLastReads()
+		persistence.loadInitialData()
 	}
 
 	deinit {
@@ -345,6 +359,22 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private var notificationObservers: [NSObjectProtocol] = []
 
 	// MARK: Methods
+
+	private func startAdvertising(restartOnly: Bool) {
+		UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
+			guard (!restartOnly || self.localPeerManager != nil),
+				  let info = peerInfo, AccountController.shared.accountExists,
+				  let keyPair = AccountController.shared.keyPair else { return }
+
+			self.localPeerManager?.stopAdvertising()
+
+			let l = LocalPeerManager(peer: Peer(id: PeereeIdentity(peerID: AccountController.shared.peerID, publicKey: keyPair.publicKey), info: info),
+									 biography: biography, keyPair: keyPair, pictureResourceURL: UserPeer.pictureResourceURL)
+			self.localPeerManager = l
+			l.delegate = self
+			l.startAdvertising()
+		}
+	}
 
 	private func manage(_ peerID: PeerID, completion: @escaping (PeeringDelegate) -> ()) {
 		withManager(of: peerID, completion: completion)

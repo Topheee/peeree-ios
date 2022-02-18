@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SafariServices
 
 extension PeerViewModel {
 	var picture: UIImage? {
@@ -20,7 +21,7 @@ extension PeerViewModel {
 	}
 
 	public var portraitOrPlaceholder: UIImage {
-		return pictureClassification == .none ? picture ?? (peer.info.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable")) : #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder")
+		return pictureClassification == .objectionable ? #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder") : picture ?? (peer.info.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
 	}
 }
 
@@ -126,6 +127,37 @@ extension AppDelegate {
 			}*/
 		} else {
 			AccountController.shared.pin(model.peer.id)
+		}
+	}
+
+	static func viewTerms(in viewController: UIViewController) {
+		guard let termsURL = URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) else { return }
+		let safariController = SFSafariViewController(url: termsURL)
+		if #available(iOS 10.0, *) {
+			safariController.preferredControlTintColor = AppTheme.tintColor
+		}
+		if #available(iOS 11.0, *) {
+			safariController.dismissButtonStyle = .done
+		}
+		viewController.present(safariController, animated: true, completion: nil)
+	}
+
+	/// Display the onboarding view controller on top of all other content.
+	static func presentOnboarding() {
+		let storyboard = UIStoryboard(name:"FirstLaunch", bundle: nil)
+
+		storyboard.instantiateInitialViewController()?.presentInFrontMostViewController(true, completion: nil)
+	}
+
+	@objc func toggleNetwork(_ sender: AnyObject) {
+		if PeeringController.shared.isBluetoothOn {
+			PeeringController.shared.peering = !PeeringController.shared.peering
+			AccountController.shared.refreshBlockedContent { error in
+				InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
+			}
+			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
+		} else {
+			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
 		}
 	}
 }

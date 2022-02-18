@@ -90,7 +90,7 @@ public final class UserPeer {
 			if let birth = birthday {
 				UserDefaults.standard.set(birth.timeIntervalSince1970, forKey: UserPeer.DateOfBirthKey)
 			} else {
-				UserDefaults.standard.set(nil, forKey: UserPeer.DateOfBirthKey)
+				UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
 			}
 			if self.syncAge() { self.savePeerInfo() }
 		}
@@ -163,9 +163,9 @@ public final class UserPeer {
 
 	/// Wipes all persisted data.
 	private func clear() {
-		UserDefaults.standard.set(nil, forKey: UserPeer.PrefKey)
-		UserDefaults.standard.set(nil, forKey: UserPeer.DateOfBirthKey)
-		UserDefaults.standard.set(nil, forKey: UserPeer.BiographyKey)
+		UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)
+		UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
+		UserDefaults.standard.removeObject(forKey: UserPeer.BiographyKey)
 		do {
 			try deletePicture()
 		} catch let error {
@@ -202,7 +202,7 @@ public final class UserPeer {
 	/// Persists `peerInfo`; call only from `queue`.
 	private func savePeerInfo() {
 		guard let info = self.peerInfo else {
-			UserDefaults.standard.set(nil, forKey: UserPeer.PrefKey)
+			UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)
 			return
 		}
 		do {
@@ -240,6 +240,7 @@ public final class UserPeer {
 		queue.async {
 			query()
 			self.syncToViewModel()
+			PeeringController.shared.restartAdvertising()
 		}
 	}
 

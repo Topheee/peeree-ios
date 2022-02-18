@@ -29,13 +29,19 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	@IBOutlet private weak var reportButton: UIBarButtonItem!
 	@IBOutlet private weak var signatureLabel: UILabel!
 	
-	@IBOutlet private weak var portraitContainer: UIView!
 	@IBOutlet private weak var ageTagView: RoundedRectView!
 	@IBOutlet private weak var genderTagView: RoundedRectView!
 	@IBOutlet private weak var pinAndTagsStackView: UIStackView!
 
+	@IBOutlet private var bioHeightZeroConstraint: NSLayoutConstraint!
 	@IBOutlet private weak var signatureToBioConstraint: NSLayoutConstraint!
 	@IBOutlet private weak var pinWidthConstraint: NSLayoutConstraint!
+
+	@IBOutlet weak var portraitTrailingConstraint: NSLayoutConstraint!
+	@IBOutlet weak var portraitLeadingConstraint: NSLayoutConstraint!
+	@IBOutlet weak var portraitTopConstraint: NSLayoutConstraint!
+	@IBOutlet weak var portraitBottomConstraint: NSLayoutConstraint!
+
 
 	// properties for the biography animation
 	private var bioAnimationTranslationY: CGFloat = 0.0
@@ -72,6 +78,10 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		alertController.addAction(reportAction)
 		
 		alertController.present()
+	}
+
+	@IBAction func tapPicture(_ sender: Any) {
+		portraitEffectView.effect = nil
 	}
 
 	@IBAction func pinPeer(_ sender: UIButton) {
@@ -128,7 +138,13 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		picturePinStackView.alignment = wasCompact ? .center : .fill
 		pinAndTagsStackView.spacing = wasCompact ? 16.0 : 8.0
 
-		signatureToBioConstraint.constant = wasCompact ? -80.0 : 8.0
+		portraitTrailingConstraint.constant = wasCompact ? 16.0 : 6.0
+		portraitLeadingConstraint.constant = wasCompact ? 16.0 : 6.0
+		portraitTopConstraint.constant = wasCompact ? 16.0 : 6.0
+		portraitBottomConstraint.constant = wasCompact ? 16.0 : 6.0
+
+		bioHeightZeroConstraint.isActive = wasCompact
+		signatureToBioConstraint.constant = wasCompact ? -72.0 : 8.0
 
 		view.setNeedsLayout()
 	}
@@ -385,7 +401,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			case .none, .objectionable:
 				portraitEffectView.effect = nil
 			case .pending:
-				portraitEffectView.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
+				portraitEffectView.effect = UIBlurEffect(style: UIBlurEffect.Style.light)
 		}
 		if #available(iOS 11.0, *) {
 			portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil

@@ -494,7 +494,7 @@ final class ServerChatController {
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = ServerChatController.userId
-		let lastReadDate = lastReads[peerID] ?? Date.distantPast
+		let lastReadDate = lastReads[peerID] ?? Date()
 
 		// these are all messages that have been sent while we where offline
 		var catchUpMissedMessages = [Transcript]()

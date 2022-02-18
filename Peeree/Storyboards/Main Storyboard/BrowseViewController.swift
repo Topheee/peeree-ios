@@ -37,17 +37,9 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
-	
+
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
-		if PeeringController.shared.isBluetoothOn {
-			PeeringController.shared.peering = !PeeringController.shared.peering
-			AccountController.shared.refreshBlockedContent { error in
-				InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
-			}
-			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
-		} else {
-			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
-		}
+		AppDelegate.shared.toggleNetwork(sender)
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -143,7 +135,7 @@ final class BrowseViewController: UITableViewController {
 				assertionFailure("well that didn't work out so well")
 				return UITableViewCell()
 			}
-			let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleNetwork(_:)))
+			let gestureRecognizer = UITapGestureRecognizer(target: AppDelegate.shared, action: #selector(AppDelegate.toggleNetwork(_:)))
 			cell.addGestureRecognizer(gestureRecognizer)
 			
 			if #available(iOS 11.0, *) {
@@ -325,15 +317,8 @@ final class BrowseViewController: UITableViewController {
 				}
 				viewCache[indexPath.section].remove(at: indexPath.row)
 				viewCache[indexPath.section].insert(newModel, at: newIndexPath.row)
-				if #available(iOS 11.0, *) {
-					tableView.performBatchUpdates {
-						tableView.moveRow(at: indexPath, to: newIndexPath)
-						tableView.reloadRows(at: [newIndexPath], with: .automatic)
-					}
-				} else {
-					tableView.moveRow(at: indexPath, to: newIndexPath)
-					tableView.reloadRows(at: [newIndexPath], with: .automatic)
-				}
+				tableView.moveRow(at: indexPath, to: newIndexPath)
+				tableView.reloadRows(at: [newIndexPath], with: .automatic)
 			}
 		}
 	}

@@ -317,9 +317,6 @@
 /* Class = "UILabel"; text = "Christopher \"Topher\" Kobusch"; ObjectID = "oo4-4n-i4a"; */
 "oo4-4n-i4a.text" = "Christopher \"Topher\" Kobusch";
 
-/* Class = "UILabel"; text = "Go offline to change settings."; ObjectID = "rAH-3G-jWK"; */
-"rAH-3G-jWK.text" = "Gehe offline, um Einstellungen zu ändern.";
-
 /* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "S8S-DB-afu"; */
 "S8S-DB-afu.title" = "Finden";
 

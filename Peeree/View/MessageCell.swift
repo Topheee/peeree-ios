@@ -31,10 +31,10 @@ class MessageCell: UITableViewCell {
 		ballonTrailingEqual.isActive = sent
 		ballonLeadingGreaterOrEqual.isActive = sent
 		ballonTrailingGreaterOrEqual.isActive = !sent
-		messageLeading.constant = sent ? 8.0 : 20.0
-		messageTrailing.constant = sent ? 20.0 : 8.0
-		messageLabel.setNeedsLayout()
-		balloonView.isHighlighted = !sent
+		messageLeading?.constant = sent ? 8.0 : 20.0
+		messageTrailing?.constant = sent ? 20.0 : 8.0
+		messageLabel?.setNeedsLayout()
+		balloonView?.isHighlighted = !sent
 		if #available(iOS 13.0, *) {
 			messageLabel.textColor = sent ? UIColor.white : UIColor.label
 		} else {
