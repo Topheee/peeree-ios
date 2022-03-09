@@ -228,9 +228,9 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 		super.layoutSubviews()
 		resizeCircleLayer()
 	}
-		
-	// MARK: ProgressDelegate
-	
+
+	// MARK: ProgressManagerDelegate
+
 	func progressDidPause(_ progress: Progress) { /* ignored */ }
 	func progressDidResume(_ progress: Progress) { /* ignored */ }
 	

@@ -200,8 +200,8 @@
 /* Class = "UITableViewSection"; headerTitle = "Gender"; ObjectID = "eYi-0r-Sc8"; */
 "eYi-0r-Sc8.headerTitle" = "Gender";
 
-/* Class = "UITabBarItem"; title = "Pin Matches"; ObjectID = "Fme-w5-T3k"; */
-"Fme-w5-T3k.title" = "Pin Matches";
+/* Class = "UITabBarItem"; title = "Chat"; ObjectID = "Fme-w5-T3k"; */
+"Fme-w5-T3k.title" = "Chat";
 
 /* Class = "UITextField"; placeholder = "Mail"; ObjectID = "gYx-2Y-uq3"; */
 "gYx-2Y-uq3.placeholder" = "Mail";

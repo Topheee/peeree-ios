@@ -333,7 +333,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	// MARK: Static Constants
 
-	private static let DateOfBirthKey = "dateOfBirth"
 	private static let LastSeenKey = "RecentPeersController.LastSeenKey"
 	private static let MaxRememberedHours = 48
 

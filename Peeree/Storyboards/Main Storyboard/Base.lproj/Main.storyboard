@@ -1831,11 +1831,11 @@
             </objects>
             <point key="canvasLocation" x="1530" y="704"/>
         </scene>
-        <!--Pin Matches-->
+        <!--Chat-->
         <scene sceneID="hox-mK-ofV">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="OC4-6b-VdK" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Pin Matches" image="ReadIconSocial" id="Fme-w5-T3k"/>
+                    <tabBarItem key="tabBarItem" title="Chat" image="ReadIconSocial" id="Fme-w5-T3k"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="1KY-ZA-6Nm">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
@@ -1908,7 +1908,7 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="xMu-Pu-iqx"/>
+        <segue reference="Qvq-U3-y04"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>

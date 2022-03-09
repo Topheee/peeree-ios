@@ -39,6 +39,7 @@ extension AppDelegate {
 			  let browseNavVC = tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController else { return }
 
 		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+		tabBarVC.selectedIndex = AppDelegate.BrowseTabBarIndex
 
 		var browseVC: BrowseViewController? = nil
 		for vc in browseNavVC.viewControllers {
@@ -56,6 +57,7 @@ extension AppDelegate {
 			  let pinMatchNavVC = tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController else { return }
 
 		pinMatchNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+		tabBarVC.selectedIndex = AppDelegate.PinMatchesTabBarIndex
 
 		var pinMatchVC: PinMatchTableViewController? = nil
 		for vc in pinMatchNavVC.viewControllers {
@@ -75,6 +77,7 @@ extension AppDelegate {
 			  let browseNavVC = tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController else { return }
 
 		browseNavVC.presentedViewController?.dismiss(animated: false, completion: nil)
+		tabBarVC.selectedIndex = AppDelegate.BrowseTabBarIndex
 
 		// find possibly existing VCs displaying regarded PeerID
 		var _browseVC: BrowseViewController? = nil

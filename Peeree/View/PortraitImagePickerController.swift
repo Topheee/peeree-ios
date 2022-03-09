@@ -100,7 +100,9 @@ final class PortraitImagePickerController: NSObject, UIImagePickerControllerDele
 	}
 	
 	private func save(image: UIImage?) {
-		UserPeer.instance.modify(portrait: image?.cgImage)
+		UserPeer.instance.modify(portrait: image?.cgImage) { error in
+			error.map { InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Saving Image Failed", comment: "Title of alert")) }
+		}
 		delegate?.picked(image: image)
 	}
 }

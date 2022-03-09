@@ -57,7 +57,6 @@ final class PinMatchTableViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		updateCache()
 		listenForNotifications()
 		tableView.scrollsToTop = true
 	}

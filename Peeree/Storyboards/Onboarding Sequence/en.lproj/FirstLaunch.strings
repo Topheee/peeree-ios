@@ -44,8 +44,8 @@
 /* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.accessibilityLabel" = "Greeting";
 
-/* Class = "UILabel"; text = "Peeree"; ObjectID = "TFv-dL-32n"; */
-"TFv-dL-32n.text" = "Peeree";
+/* Class = "UILabel"; text = "Introduction"; ObjectID = "TFv-dL-32n"; */
+"TFv-dL-32n.text" = "Einführung";
 
 /* Class = "UILabel"; text = "This information is stored on device and is not sent to Peeree servers."; ObjectID = "UHy-zX-ffX"; */
 "UHy-zX-ffX.text" = "This information is stored on device and is not sent to Peeree servers.";
@@ -113,8 +113,8 @@
 /* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "IWc-Ha-AMP"; */
 "IWc-Ha-AMP.normalTitle" = "Peeree and Your Data";
 
-/* Class = "UILabel"; text = "Introduction"; ObjectID = "rNF-0l-DWJ"; */
-"rNF-0l-DWJ.text" = "Introduction";
+/* Class = "UILabel"; text = "Swipe page to continue."; ObjectID = "rNF-0l-DWJ"; */
+"rNF-0l-DWJ.text" = "Swipe page to continue.";
 
 /* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "skT-uK-VEP"; */
 "skT-uK-VEP.text" = "This is how we protect your Privacy:";

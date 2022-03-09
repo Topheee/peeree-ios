@@ -194,10 +194,6 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			callback(self.loadingProgress(for: characteristicID, of: peripheral))
 		}
 	}
-	
-	func isPeerInfoLoading(of peerID: PeerID) -> Progress? {
-		return peerInfoTransmissions[peerID]?.progress
-	}
 
 	func isReliablyWriting(to characteristicID: CBUUID, of peerID: PeerID) -> Bool {
 		guard let peripheral = peripheralPeerIDs[peerID] else { return false }
@@ -486,7 +482,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				guard let image = CGImage(jpegDataProviderSource: CGDataProvider(data: data as CFData)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) else {
 					NSLog("Failed to create image with data \(data).")
 					progress.cancel()
-					break
+					return
 				}
 				delegate?.loaded(picture: image, of: peer, hash: data.sha256())
 			case CBUUID.BiographyCharacteristicID:
@@ -507,7 +503,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				guard let biography = String(dataPrefixedEncoding: data) else {
 					NSLog("ERROR: Failed to create biography with data \(data).")
 					progress.cancel()
-					break
+					return
 				}
 				delegate?.loaded(biography: biography, of: peer)
 			default:

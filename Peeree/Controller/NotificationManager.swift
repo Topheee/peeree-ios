@@ -228,15 +228,15 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	private func received(message: String, from peerID: PeerID) {
-		guard let model = PeerViewModelController.viewModels[peerID] else { return }
+		let name = PeerViewModelController.viewModels[peerID]?.peer.info.nickname ?? peerID.uuidString
 
 		let title: String
 		if #available(iOS 10.0, *) {
 			// The localizedUserNotificationString(forKey:arguments:) method delays the loading of the localized string until the notification is delivered. Thus, if the user changes language settings before a notification is delivered, the alert text is updated to the user’s current language instead of the language that was set when the notification was scheduled.
-			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [model.peer.info.nickname])
+			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [name])
 		} else {
 			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
-			title = String(format: titleFormat, model.peer.info.nickname)
+			title = String(format: titleFormat, name)
 		}
 		var messagesNotVisible = true
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {

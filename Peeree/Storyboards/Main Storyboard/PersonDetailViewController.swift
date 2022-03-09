@@ -144,7 +144,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		portraitBottomConstraint.constant = wasCompact ? 16.0 : 6.0
 
 		bioHeightZeroConstraint.isActive = wasCompact
-		signatureToBioConstraint.constant = wasCompact ? -72.0 : 8.0
+		signatureToBioConstraint.constant = wasCompact ? -64.0 : 8.0
 
 		view.setNeedsLayout()
 	}
@@ -288,18 +288,18 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let loadBio = model.biography == ""
 
 		interactWithPeer { interaction in
+			if loadBio {
+				interaction.loadBio { bioProgress in
+					DispatchQueue.main.async {
+						bioProgress.map { self.bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
+					}
+				}
+			}
 			if loadPicture {
 				interaction.loadPicture { pictureProgress in
 					DispatchQueue.main.async {
 						self.portraitImageView.loadProgress = pictureProgress
 						pictureProgress.map { self.pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
-					}
-				}
-			}
-			if loadBio {
-				interaction.loadBio { bioProgress in
-					DispatchQueue.main.async {
-						bioProgress.map { self.bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
 					}
 				}
 			}
@@ -332,8 +332,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		updatePinCircleWidth()
 	}
 
-	// MARK: ProgressDelegate
-	
+	// MARK: ProgressManagerDelegate
+
 	func progressDidPause(_ progress: Progress) {
 		// ignored
 	}

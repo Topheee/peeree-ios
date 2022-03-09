@@ -397,9 +397,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			
 			let sizeData = Data(bytesNoCopy: &size, count: MemoryLayout<CBCharacteristic.SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
 			guard peripheral.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
-				if isAdvertising {
-					interruptedTransfers.append((data, characteristic, central, true))
-				}
+				interruptedTransfers.append((data, characteristic, central, true))
 				return
 			}
 		}
@@ -422,9 +420,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			
 			// If it didn't work, drop out and wait for the callback
 			guard send else {
-				if isAdvertising {
-					interruptedTransfers.append((data.subdata(in: fromIndex..<data.endIndex), characteristic, central, false))
-				}
+				interruptedTransfers.append((data.subdata(in: fromIndex..<data.endIndex), characteristic, central, false))
 				return
 			}
 			

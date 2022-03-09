@@ -432,6 +432,5 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				AppDelegate.presentOnboarding()
 			}
 		}
-
 	}
 }

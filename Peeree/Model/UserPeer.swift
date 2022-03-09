@@ -64,10 +64,11 @@ public final class UserPeer {
 	}
 
 	/// Sets the user's portrait.
-	public func modify(portrait: CGImage?) {
+	public func modify(portrait: CGImage?, completion: @escaping (Error?) -> ()) {
 		modify {
 			guard portrait != self.cgPicture else { return }
 
+			var err: Error? = nil
 			do {
 				if let pic = portrait {
 					try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: PersistedPeersController.StandardPortraitCompressionQuality)
@@ -78,8 +79,9 @@ public final class UserPeer {
 				self.cgPicture = portrait
 				if self.syncHasPicture() { self.savePeerInfo() }
 			} catch let error as NSError {
-				NSLog("ERROR: could not persist or delete UserPeer portrait: \(error.localizedDescription)")
+				err = error
 			}
+			completion(err)
 		}
 	}
 
@@ -108,8 +110,6 @@ public final class UserPeer {
 
 	/// Reads all properties of the user from disk.
 	private init() {
-		let time: TimeInterval? = UserDefaults.standard.double(forKey: UserPeer.DateOfBirthKey)
-		time.map { self.dateOfBirth = Date(timeIntervalSince1970: $0) }
 		if UserDefaults.standard.object(forKey: UserPeer.DateOfBirthKey) != nil {
 			dateOfBirth = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: UserPeer.DateOfBirthKey))
 		}
@@ -214,7 +214,7 @@ public final class UserPeer {
 
 	/// Writes all properties to `PeerViewModelController`; call only from `queue`.
 	private func syncToViewModel() {
-		guard let info = self.peerInfo, let keyPair = AccountController.shared.keyPair else { return }
+		guard let info = self.peerInfo, AccountController.shared.accountExists, let keyPair = AccountController.shared.keyPair else { return }
 		let peerID = AccountController.shared.peerID
 		// we must access our properties on `queue`
 		let bio = self.biography
