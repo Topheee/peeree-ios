@@ -21,7 +21,11 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 		portraitImagePicker.delegate = self
 		portraitImagePicker.showPicturePicker(allowCancel: false, destructiveActionName: NSLocalizedString("Omit Portrait", comment: "Don't set a profile picture during onboarding."))
 	}
-	
+
+	@IBAction func changeGender(_ sender: UISegmentedControl) {
+		saveUserPeer()
+	}
+
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
 		if picButton.mask == nil, let imageView = picButton.imageView {
@@ -29,17 +33,6 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 		}
 	}
 
-	override func viewWillDisappear(_ animated: Bool) {
-		super.viewWillDisappear(animated)
-
-		guard let chosenName = nameTextField.text, chosenName != "" else { return }
-
-		let gender = PeerInfo.Gender.allCases[self.genderPicker.selectedSegmentIndex]
-		UserPeer.instance.modifyInfo { info in
-			info = PeerInfo(nickname: chosenName, gender: gender, age: nil, hasPicture: false)
-		}
-	}
-	
 	override var prefersStatusBarHidden : Bool {
 		return true
 	}
@@ -109,6 +102,16 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 		return textField.allowChangeCharacters(in: range, replacementString: string, maxUtf8Length: PeerInfo.MaxNicknameSize)
 	}
 
+	func textFieldDidEndEditing(_ textField: UITextField) {
+		guard textField == nameTextField else { return }
+
+		saveUserPeer()
+	}
+
+	// - MARK: Private
+
+	// MARK: Methods
+
 	@objc private func agePickerChanged(_ sender: UIDatePicker) {
 		UserPeer.instance.modify(birthday: sender.date)
 		fillBirthdayInput(with: sender.date)
@@ -129,5 +132,14 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 		dateFormatter.timeStyle = .none
 		dateFormatter.dateStyle = .long
 		birthdayInput.text = dateFormatter.string(from: date)
+	}
+
+	private func saveUserPeer() {
+		guard let chosenName = nameTextField.text, chosenName != "" else { return }
+
+		let gender = PeerInfo.Gender.allCases[self.genderPicker.selectedSegmentIndex]
+		UserPeer.instance.modifyInfo { info in
+			info = PeerInfo(nickname: chosenName, gender: gender, age: nil, hasPicture: false)
+		}
 	}
 }

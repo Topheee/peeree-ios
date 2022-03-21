@@ -10,28 +10,40 @@ import UIKit
 
 /// A class containing a <code>PeerObserver</code>.
 protocol PeerObserverContainer: AnyObject {
-	/// make sure to set this before you access <code>peerObserver</code> or <code>peerManager</code>
+	/// The `PeerID` this container shall observe; make sure to set this before you access `peerObserver`.
 	var peerID: PeerID { get set }
+	/// The observer doing the actual observation work.
 	var peerObserver: PeerObserver { get }
 }
 
+/// Shortcuts for functions accepting a `PeerID`.
 extension PeerObserverContainer {
+	/// Shortcut for `PeerViewModelController.viewModel(of: peerID)`.
 	var model: PeerViewModel { return PeerViewModelController.viewModel(of: peerID) }
 
+	/// Shortcut for `PeeringController.shared.interact(with: peerID, completion: completion)`.
 	func interactWithPeer(completion: @escaping (PeerInteraction) -> ()) {
 		PeeringController.shared.interact(with: peerID, completion: completion)
 	}
 
+	/// Shortcut for `PeerViewModelController.modify(peerID: peerID, modifier: modifier)`.
 	func modifyModel(_ modifier: (inout PeerViewModel) -> ()) {
 		PeerViewModelController.modify(peerID: peerID, modifier: modifier)
 	}
 }
 
-/// Observer for messaging-related notifications of <code>PeerManager.Notifications</code>.
+/// Observer for messaging-related notifications of `PeerViewModel.NotificationName`; the `UNNotication`s are unwrapped and the functions of this protocol are called accordingly.
 public protocol PeerMessagingObserver: AnyObject {
+	/// Called when `PeerViewModel.NotificationName.messageQueued` is posted for the `PeerID` of this `PeerObserver`.
 	func messageQueued()
+
+	/// Called when `PeerViewModel.NotificationName.messageReceived` is posted for the `PeerID` of this `PeerObserver`.
 	func messageReceived()
+
+	/// Called when `PeerViewModel.NotificationName.messageSent` is posted for the `PeerID` of this `PeerObserver`.
 	func messageSent()
+
+	/// Called when `PeerViewModel.NotificationName.unreadMessageCountChanged` is posted for the `PeerID` of this `PeerObserver`.
 	func unreadMessageCountChanged()
 }
 
@@ -48,6 +60,7 @@ public class PeerObserver {
 	private var connectionObserver: NSObjectProtocol?
 	private var messagingNotificationObservers: [NSObjectProtocol] = []
 
+	/// The peer this observer is observing.
 	public let peerID: PeerID
 
 	public weak var connectionStateObserver: ConnectionStateObserver?
@@ -88,6 +101,7 @@ public class PeerObserver {
 		clearMessagingObservers()
 	}
 
+	/// Removes all `messagingNotificationObservers` and removes them from the `NotificationCenter`.
 	private func clearMessagingObservers() {
 		for observer in messagingNotificationObservers { NotificationCenter.`default`.removeObserver(observer) }
 		messagingNotificationObservers.removeAll()

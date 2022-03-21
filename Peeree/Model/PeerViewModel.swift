@@ -61,6 +61,7 @@ public struct PeerViewModel {
 	/// Message thread with this peer.
 	public private (set) var transcripts: [Transcript]
 
+	/// Amount of messages received, which haven't been seen yet by the user.
 	public var unreadMessages: Int {
 		didSet {
 			guard oldValue != unreadMessages else { return }

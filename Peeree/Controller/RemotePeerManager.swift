@@ -589,6 +589,13 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			withUnsafeMutableBytes(of: &size) { pointer in
 				pointer.copyBytes(from: chunk.subdata(in: 0..<MemoryLayout<Int32>.size))
 			}
+
+			// make sure the picture / biography is not too big (13 MB)
+			guard size < 13678905 else {
+				NSLog("ERROR: \(transmission.characteristicID.uuidString.left(8)) is too big: \(size) bytes.")
+				return
+			}
+
 			if let (progress, _) = activeTransmissions[transmission] {
 				progress.totalUnitCount = Int64(size)
 			} else {
@@ -753,7 +760,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				return
 			}
 
-		disconnect(peripheral)
+		// turned off since we seem to do it too early, s. t. either bio or picture aren't loaded: disconnect(peripheral)
 	}
 
 	/// Close the connection to `peripheral`.

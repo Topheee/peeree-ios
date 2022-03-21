@@ -375,11 +375,12 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
+	/// Interact with the `PeeringDelegate` interface of a `PeerManager` on their queue.
 	private func manage(_ peerID: PeerID, completion: @escaping (PeeringDelegate) -> ()) {
 		withManager(of: peerID, completion: completion)
 	}
 
-	/// Do not use this method directly. Use either interact() or forward()
+	/// Do not use this method directly. Use either interact() or manage()
 	private func withManager(of peerID: PeerID, completion: @escaping (PeerManager) -> ()) {
 		peerManagers.accessAsync { managers in
 			if let manager = managers[peerID] {
@@ -392,6 +393,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
+	/// Performs additional logic when a picture was received, e.g. objectionable content checks.
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
 		AccountController.shared.containsObjectionableContent(imageHash: hash) { containsObjectionableContent in
 			self.manage(peerID) { manager in
@@ -400,21 +402,31 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
+	/// Remove peers from disk which haven't been seen for `MaxRememberedHours` and are not pin matched.
 	private func cleanupPersistedPeers() {
 		DispatchQueue.main.async {
 			let now = Date()
 			let never = Date.distantPast
 			let lastSeens = self.lastSeenDates
+
+			let userPeerID: PeerID?
+			if AccountController.shared.accountExists {
+				userPeerID = AccountController.shared.peerID
+			} else {
+				userPeerID = nil
+			}
+
 			self.persistence.filterPeers { peers in
 				let cal = Calendar.current as NSCalendar
-				var removePeers = Set<Peer>()
-				for peer in peers {
+				let removePeers = peers.filter { peer in
+					// never remove our own view model or the view model of pin matched peers
+					guard peer.id.peerID != userPeerID && !peer.id.pinMatched else { return false }
+
 					let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peer.id.peerID] ?? never, to: now, options: []).hour
 					let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
-					if lastSeenAgo > PeeringController.MaxRememberedHours && !peer.id.pinMatched {
-						removePeers.insert(peer)
-					}
+					return lastSeenAgo > PeeringController.MaxRememberedHours
 				}
+
 				self.peerManagers.accessAsync { mgrs in
 					for peer in removePeers {
 						mgrs.removeValue(forKey: peer.id.peerID)
@@ -425,6 +437,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
+	/// Observes relevant notifications in `NotificationCenter`.
 	private func observeNotifications() {
 		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver { peerID, _ in
 			self.manage(peerID) { manager in
@@ -446,9 +459,13 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		})
 	}
 
+	/// Posts `connectionChangedState` notification and starts/stops the server chat module.
 	private func connectionChangedState() {
 		let newState = peering
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
+
+		guard AccountController.shared.accountExists else { return }
+
 		if newState {
 			ServerChatController.getOrSetupInstance { result in
 				switch result {

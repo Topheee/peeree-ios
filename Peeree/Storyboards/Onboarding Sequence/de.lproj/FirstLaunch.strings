@@ -113,6 +113,9 @@
 /* Class = "UIButton"; normalTitle = "Peeree and Your Data"; ObjectID = "IWc-Ha-AMP"; */
 "IWc-Ha-AMP.normalTitle" = "Peeree und deine Daten";
 
+/* Class = "UILabel"; text = "Your Peeree Identity makes You unique in the Peeree world. No password required, still secure."; ObjectID = "U6-tZ-1E5"; */
+"5U6-tZ-1E5.text" = "Deine Peeree-Identität macht Dich einzigartig in der Peeree-Welt. Kein Passwort erforderlich, trotzdem sicher.";
+
 /* Class = "UILabel"; text = "Swipe page to continue."; ObjectID = "rNF-0l-DWJ"; */
 "rNF-0l-DWJ.text" = "Wische auf der Seite um fortzufahren.";
 

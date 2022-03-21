@@ -90,7 +90,7 @@ public final class PersistedPeersController {
 		}
 	}
 
-	/// Removes the returned `Peer` instances of `query` from the persisted peers set.
+	/// Removes the returned `Peer` instances of `query` from the persisted peers set and whipes them and all associated data from disk.
 	public func filterPeers(query: @escaping (Set<Peer>) -> (Set<Peer>)) {
 		targetQueue.async {
 			let removedPeers = query(self.persistedPeers)

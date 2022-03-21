@@ -57,7 +57,6 @@ final class PinMatchTableViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		listenForNotifications()
 		tableView.scrollsToTop = true
 	}
 
@@ -65,6 +64,15 @@ final class PinMatchTableViewController: UITableViewController {
 		super.viewDidAppear(animated)
 
 		updateCache()
+		listenForNotifications()
+	}
+
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+
+		for observer in notificationObservers {
+			NotificationCenter.default.removeObserver(observer)
+		}
 	}
 
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -78,12 +86,6 @@ final class PinMatchTableViewController: UITableViewController {
 		}
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
 		peerVC.peerID = viewCache[cellPath.row].peerID
-	}
-
-	deinit {
-		for observer in notificationObservers {
-			NotificationCenter.default.removeObserver(observer)
-		}
 	}
 
 	// MARK: UITableViewDataSource

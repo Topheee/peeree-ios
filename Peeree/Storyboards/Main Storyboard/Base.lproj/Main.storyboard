@@ -1009,11 +1009,13 @@
                                         </toolbar>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailingMargin" secondItem="EZQ-s8-xvp" secondAttribute="trailing" id="FY1-QP-PDZ"/>
+                                        <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="EZQ-s8-xvp" secondAttribute="trailing" id="FY1-QP-PDZ"/>
                                         <constraint firstItem="HjH-aV-huy" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="Ihs-fe-jzr"/>
-                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="Mgg-kI-xcq"/>
+                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EP0-kC-egm" secondAttribute="leadingMargin" id="Mgg-kI-xcq"/>
                                         <constraint firstItem="HjH-aV-huy" firstAttribute="top" secondItem="EP0-kC-egm" secondAttribute="topMargin" constant="16" id="NvF-jZ-zw9"/>
                                         <constraint firstItem="pje-ad-i9c" firstAttribute="leading" secondItem="EP0-kC-egm" secondAttribute="leading" id="OsU-WF-aYr"/>
+                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="centerX" secondItem="EP0-kC-egm" secondAttribute="centerX" id="uDm-ur-Eum"/>
+                                        <constraint firstItem="EZQ-s8-xvp" firstAttribute="top" relation="greaterThanOrEqual" secondItem="HjH-aV-huy" secondAttribute="bottom" constant="16" id="v3Y-wo-8T3"/>
                                         <constraint firstAttribute="trailing" secondItem="pje-ad-i9c" secondAttribute="trailing" id="wAG-5h-I65"/>
                                         <constraint firstItem="EZQ-s8-xvp" firstAttribute="centerY" secondItem="EP0-kC-egm" secondAttribute="centerY" constant="8" id="wDP-8Z-laG"/>
                                         <constraint firstAttribute="bottom" secondItem="pje-ad-i9c" secondAttribute="bottom" id="zDU-xd-K8i"/>
@@ -1908,7 +1910,7 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="Qvq-U3-y04"/>
+        <segue reference="xMu-Pu-iqx"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>

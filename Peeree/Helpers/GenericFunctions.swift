@@ -92,30 +92,6 @@ func generateRandomData(length: Int) throws -> Data {
 	}
 }
 
-//"Swift 2" - not working
-///// Objective-C __bridge cast
-//func bridge<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
-//	return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
-//	// return unsafeAddressOf(obj) // ***
-//}
-//
-///// Objective-C __bridge cast
-//func bridge<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
-//	return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeUnretainedValue()
-//	// return unsafeBitCast(ptr, T.self) // ***
-//}
-//
-///// Objective-C __bridge_retained equivalent. Casts the object pointer to a void pointer and retains the object.
-//func bridgeRetained<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
-//	return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
-//}
-//
-///// Objective-C __bridge_transfer equivalent. Converts the void pointer back to an object pointer and consumes the retain.
-//func bridgeTransfer<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
-//	return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeRetainedValue()
-//}
-
-//Swift 1.2
 /// Objective-C __bridge cast
 func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
 	return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
@@ -138,6 +114,17 @@ func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
 
 
 // MARK: - Extensions
+
+extension Result where Failure: Error {
+	var error: Failure? {
+		switch self {
+		case .failure(let error):
+			return error
+		case .success(_):
+			return nil
+		}
+	}
+}
 
 extension CGRect {
 	var center: CGPoint {

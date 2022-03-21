@@ -166,7 +166,10 @@ final class RoundedVisualEffectView: UIVisualEffectView {
 final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 	private var progressManager: ProgressManager? = nil
 	private var circleLayer: CAShapeLayer!
-	
+
+	/// Set to `true` to temporarly disable update the `strokeEnd` when the progress updates.
+	public var pauseUpdates = false
+
 	public var loadProgress: Progress? {
 		get {
 			progressManager?.progress
@@ -257,7 +260,7 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 			if progress.completedUnitCount == progress.totalUnitCount {
 				progressManager = nil
 				removePictureLoadLayer()
-			} else if let circle = circleLayer {
+			} else if let circle = circleLayer, !pauseUpdates {
 				circle.strokeEnd = CGFloat(progress.fractionCompleted)
 				if #available(iOS 13, *) {
 					circle.setNeedsDisplay()

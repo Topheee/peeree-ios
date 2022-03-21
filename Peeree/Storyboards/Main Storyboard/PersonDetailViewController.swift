@@ -86,7 +86,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 	@IBAction func pinPeer(_ sender: UIButton) {
 		guard !model.peer.id.pinned else {
-			AccountController.shared.updatePinStatus(of: model.peer.id)
+			AccountController.shared.updatePinStatus(of: model.peer.id, force: true)
 			return
 		}
 
@@ -115,6 +115,9 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let wasAnimatingGradient = gradientView.animateGradient
 		gradientView.animateGradient = false
 
+		// we have to pause the circle updates during the animation to prevent from ugly glitches
+		portraitImageView.pauseUpdates = true
+
 		view.layoutIfNeeded()
 		return BiographyViewState(wasCompact: wasCompact, hideBioContent: hideBioContent, wasAnimatingGradient: wasAnimatingGradient, oldBackgroundColor: oldBackgroundColor)
 	}
@@ -128,6 +131,10 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		// reset animation because frame size changed
 		animatePinButton()
 		gradientView.animateGradient = state.wasAnimatingGradient
+
+		// restart circle updates and update to the latest state
+		portraitImageView.pauseUpdates = false
+		pictureProgressManager.map { portraitImageView.progressDidUpdate($0.progress) }
 	}
 
 	/// set constraints to desired state. Call this in an animation block.

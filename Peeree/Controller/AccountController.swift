@@ -255,7 +255,9 @@ public class AccountController: SecurityDataSource {
 	}
 	
 	public func refreshBlockedContent(errorCallback: @escaping (Error) -> Void) {
+		guard accountExists else { return }
 		guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
+
 		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
 			if let error = _error {
 				self.preprocessAuthenticatedRequestError(error)
@@ -342,13 +344,14 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 
-	public func updatePinStatus(of id: PeereeIdentity) {
+	/// Retrieve the pin (matched) status from the server. If `force` is `false`, do not update if we believe we have a pin match.
+	public func updatePinStatus(of id: PeereeIdentity, force: Bool) {
 		guard accountExists else { return }
 		// attack scenario: Eve sends pin match indication to Alice, but Alice only asks server, if she pinned Eve in the first place => Eve can observe Alice's internet communication and can figure out, whether Alice pinned her, depending on whether Alice' asked the server after the indication.
 		// thus, we (Alice) have to at least once validate with the server, even if we know, that we did not pin Eve
 		// This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive a pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
-		// we can savely ignore this if we already know we have a pin match
-		guard !hasPinMatch(id.peerID) else { return }
+
+		guard force || !hasPinMatch(id.peerID) else { return }
 
 		let pinPublicKey = id.publicKeyData.base64EncodedData()
 
@@ -384,6 +387,7 @@ public class AccountController: SecurityDataSource {
 			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: AccountController.KeyType, size: AccountController.KeySize, persistent: true)
 		} catch let error {
 			completion(error)
+			return
 		}
 	
 		AccountAPI.putAccount(email: accountEmail) { (_account, _error) in
@@ -425,19 +429,7 @@ public class AccountController: SecurityDataSource {
 				}
 			}
 			if reportedError == nil {
-				self.accountEmail = nil
-				self._sequenceNumber = nil
-				self.clearPins()
-				do {
-					try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPublic, size: AccountController.KeySize)
-					try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPrivate, size: AccountController.KeySize)
-				} catch let error {
-					NSLog("ERROR: Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
-				}
-				DispatchQueue.main.async {
-					PeerViewModelController.remove(peerID: oldPeerID)
-					Notifications.accountDeleted.postAsNotification(object: self)
-				}
+				self.clearLocalData(oldPeerID: oldPeerID)
 			}
 			self.isDeletingAccount = false
 			completion(reportedError)
@@ -498,6 +490,15 @@ public class AccountController: SecurityDataSource {
 		// TODO move sequence number into keychain
 		_sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
 		SwaggerClientAPI.dataSource = self
+
+		if keyPair == nil && _sequenceNumber != nil {
+			NSLog("ERROR: Unrecoverable inconsistant state detected! keyPair is nil and _sequenceNumber is not nil. We need to delete our sequence number. This most likely means that our account was lost!")
+			clearLocalData(oldPeerID: peerID)
+		} else if keyPair != nil && _sequenceNumber == nil {
+			NSLog("WARN: Inconsistant state! keyPair is not nil and _sequenceNumber is nil.")
+			// this is probably a recoverable state, since we should be able to restore the sequence number silently with this call:
+			resetSequenceNumber()
+		}
 	}
 	
 	/// resets sequence number to state before request if the request did not reach the server
@@ -527,12 +528,28 @@ public class AccountController: SecurityDataSource {
 	}
 	
 	private func computeSignature() throws -> String {
-		guard _sequenceNumber != nil, let sequenceNumberData = String(_sequenceNumber!).data(using: .utf8), let keyPair = keyPair else {
+		guard let sequenceNumber = _sequenceNumber, let sequenceNumberData = String(sequenceNumber).data(using: .utf8), let keyPair = keyPair else {
 			throw NSError(domain: "Peeree", code: -2, userInfo: nil)
 		}
 		
-		_sequenceNumber = _sequenceNumber!.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
+		_sequenceNumber = sequenceNumber.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
 		return try keyPair.sign(message: sequenceNumberData).base64EncodedString()
+	}
+
+	private func clearLocalData(oldPeerID: PeerID) {
+		self.accountEmail = nil
+		self._sequenceNumber = nil
+		self.clearPins()
+		do {
+			try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPublic, size: AccountController.KeySize)
+			try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPrivate, size: AccountController.KeySize)
+		} catch let error {
+			NSLog("ERROR: Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
+		}
+		DispatchQueue.main.async {
+			PeerViewModelController.remove(peerID: oldPeerID)
+			Notifications.accountDeleted.postAsNotification(object: self)
+		}
 	}
 }
 

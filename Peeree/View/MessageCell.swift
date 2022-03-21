@@ -20,8 +20,8 @@ class MessageCell: UITableViewCell {
 	@IBOutlet private var ballonTrailingEqual: NSLayoutConstraint!
 	@IBOutlet private var ballonLeadingGreaterOrEqual: NSLayoutConstraint!
 	@IBOutlet private var ballonTrailingGreaterOrEqual: NSLayoutConstraint!
-	@IBOutlet private weak var messageLeading: NSLayoutConstraint!
-	@IBOutlet private weak var messageTrailing: NSLayoutConstraint!
+	@IBOutlet private var messageLeading: NSLayoutConstraint!
+	@IBOutlet private var messageTrailing: NSLayoutConstraint!
 	
 	/// Fills the cell with the contents of <code>transcript</code>.
 	func set(transcript: Transcript) {

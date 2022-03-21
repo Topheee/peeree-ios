@@ -57,33 +57,12 @@ final class BrowseViewController: UITableViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
-		connectionChangedState(PeeringController.shared.peering)
-		
-		notificationObservers.append(PeeringController.Notifications.peerAppeared.addAnyPeerObserver { [weak self] (peerID, notification) in
-			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
-			self?.peerAppeared(peerID, again: again ?? false)
-		})
-		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addAnyPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
-		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeeringController.shared.peering)
-		})
-		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
-			self?.updateCache()
-		})
-
-		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.pinned.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
-
-		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
-			self?.updateCache()
-		})
 
 		tableView.scrollsToTop = true
+
+		connectionChangedState(PeeringController.shared.peering)
 	}
-	
+
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
@@ -100,8 +79,17 @@ final class BrowseViewController: UITableViewController {
 		}
 
 		updateCache()
+		observeNotifications()
 	}
-	
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+
+		for observer in notificationObservers {
+			NotificationCenter.default.removeObserver(observer)
+		}
+	}
+
 	override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
 		super.traitCollectionDidChange(previousTraitCollection)
 		if #available(iOS 13, *) {
@@ -110,12 +98,6 @@ final class BrowseViewController: UITableViewController {
 		}
 	}
 
-	deinit {
-		for observer in notificationObservers {
-			NotificationCenter.default.removeObserver(observer)
-		}
-	}
-	
 	// MARK: UITableViewDataSource
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
@@ -358,6 +340,31 @@ final class BrowseViewController: UITableViewController {
 	/// Removes all entries from the subarrays of `viewCache`.
 	private func clearViewCache() {
 		for i in 0..<viewCache.count { viewCache[i].removeAll() }
+	}
+
+	private func observeNotifications() {
+		notificationObservers.append(PeeringController.Notifications.peerAppeared.addAnyPeerObserver { [weak self] (peerID, notification) in
+			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
+			self?.peerAppeared(peerID, again: again ?? false)
+		})
+		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addAnyPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
+		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeeringController.shared.peering)
+		})
+		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
+			self?.updateCache()
+		})
+
+		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
+		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.pinned.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.pinStateUpdated.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
+
+		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
+			self?.updateCache()
+		})
 	}
 }
 

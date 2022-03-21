@@ -252,8 +252,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			  BrowseFilterSettings.shared.check(peer: model.peer) else { return }
 
 		PeeringController.shared.interact(with: peerID) { interaction in
-			interaction.loadPicture { _ in }
 			interaction.loadBio { _ in }
+			interaction.loadPicture { _ in }
 		}
 
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")

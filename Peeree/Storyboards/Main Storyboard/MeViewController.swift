@@ -23,7 +23,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	@IBOutlet private weak var bioTextView: UITextView!
 
 	private var activeField: (view: UIView, inputView: UIView?)? = nil
-	private var connectionStateObserver: NSObjectProtocol? = nil
+	private var notificationObservers: [NSObjectProtocol] = []
 	private let portraitImagePicker = PortraitImagePickerController()
 	private var hasBio = false
 	
@@ -57,10 +57,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
 			PeeringController.shared.peering = false
 			self.deleteServerChatAccount()
-			AccountController.shared.deleteAccount { (_ _error: Error?) in
-				self.accountActionCompletionHandler(_error) {}
-			}
-			self.adjustAccountView()
+			AccountController.shared.deleteAccount(completion: self.accountActionCompletionHandler)
 		}))
 		let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
 		alertController.addAction(cancelAction)
@@ -72,15 +69,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
 		let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
-			AccountController.shared.createAccount { (_ _error: Error?) in
-				self.accountActionCompletionHandler(_error) {
-					// we cannot go online immediately by now, as Me view would need to reload and probably for other reasons, too
-					//					PeeringController.shared.peering = true
-				}
-			}
-			DispatchQueue.main.async {
-				self.adjustAccountView()
-			}
+			AccountController.shared.createAccount(completion: self.accountActionCompletionHandler)
 		}
 		alertController.addAction(createAction)
 		let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
@@ -138,26 +127,23 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 			personDetailVC.peerID = AccountController.shared.peerID
 		}
 	}
-	
-	override func viewDidLoad() {
-		super.viewDidLoad()
-		registerForKeyboardNotifications()
-		connectionStateObserver = PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.lockAndLoadView()
-		}
-	}
-	
+
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
-		adjustAccountView()
-		lockAndLoadView()
 		navigationController?.isToolbarHidden = true
+
+		lockAndLoadView()
+		observeNotifications()
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
 
+		NotificationCenter.default.removeObserver(self)
+		for observer in notificationObservers {
+			NotificationCenter.default.removeObserver(observer)
+		}
 		bioTextView.resignFirstResponder()
 	}
 	
@@ -165,12 +151,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		super.viewDidLayoutSubviews()
 		_ = CircleMaskView(maskedView: portraitImageButton.imageView!)
 	}
-	
-	deinit {
-		connectionStateObserver.map { NotificationCenter.default.removeObserver($0) }
-		NotificationCenter.default.removeObserver(self)
-	}
-	
+
 	// MARK: UITextFieldDelegate
 	
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
@@ -245,16 +226,12 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		case mailTextField:
 			guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
 			guard let newValue = textField.text, newValue != "" else {
-				AccountController.shared.deleteEmail { _error in
-					self.accountActionCompletionHandler(_error) {}
-				}
+				AccountController.shared.deleteEmail(completion: accountActionCompletionHandler)
 				return
 			}
 			
 			let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-			AccountController.shared.update(email: String(newValue[..<endIndex])) { _error in
-				self.accountActionCompletionHandler(_error) {}
-			}
+			AccountController.shared.update(email: String(newValue[..<endIndex]), completion: accountActionCompletionHandler)
 		default:
 			break
 		}
@@ -317,6 +294,15 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	}
 
 	// MARK: - Private
+
+	// MARK: Constants
+
+	/// Displays error if it is not `nil`.
+	private let accountActionCompletionHandler: (Error?) -> Void = { error in
+		error.map { error in
+			InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
+		}
+	}
 
 	// MARK: Methods
 
@@ -385,44 +371,26 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		scrollView.scrollIndicatorInsets = contentInsets
 	}
 
-	/// Default handler for AccountController REST calls. Handles errors (if any) or calls <code>noErrorAction</code> on the main thread if no error occurred.
-	private func accountActionCompletionHandler(_ _error: Error?, noErrorAction: @escaping () -> Void) {
-		DispatchQueue.main.async {
-			self.adjustAccountView()
-			
-			if let error = _error {
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors."))
-			} else {
-				noErrorAction()
-			}
-		}
-	}
-	
-	private func adjustAccountView() {
-		let accountExists = AccountController.shared.accountExists
-		if accountExists {
-			accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
-			accountButton.tintColor = .red
-			mailTextField.text = AccountController.shared.accountEmail
-			accountIDLabel.text = AccountController.shared.getPeerID()
-		} else {
-			accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
-			accountButton.tintColor = AppTheme.tintColor
-		}
-		mailTextField.isHidden = !accountExists
-		mailNoteLabel.isHidden = !accountExists
-		accountIDLabel.isHidden = !accountExists
-		accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
-		UserPeer.instance.read { peerInfo, _, _, _ in
-			self.previewButton.isEnabled = accountExists && peerInfo != nil
-		}
-	}
-
 	/// Do not allow changes to the user's peer while peering; show onboarding if peer does not exist.
 	private func lockAndLoadView() {
 		UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
 			let userPeerDefined = peerInfo != nil
 			let accountExists = AccountController.shared.accountExists
+
+			if accountExists {
+				self.accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
+				self.accountButton.tintColor = .red
+				self.mailTextField.text = AccountController.shared.accountEmail
+				self.accountIDLabel.text = AccountController.shared.getPeerID()
+			} else {
+				self.accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
+				self.accountButton.tintColor = AppTheme.tintColor
+			}
+
+			self.mailTextField.isHidden = !accountExists
+			self.mailNoteLabel.isHidden = !accountExists
+			self.accountIDLabel.isHidden = !accountExists
+			self.accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
 
 			self.previewButton.isEnabled = userPeerDefined && accountExists
 
@@ -432,5 +400,17 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				AppDelegate.presentOnboarding()
 			}
 		}
+	}
+
+	private func observeNotifications() {
+		registerForKeyboardNotifications()
+
+		let reloadBlock: (Notification) -> Void = { [weak self] _ in
+			self?.lockAndLoadView()
+		}
+
+		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.Notifications.accountDeleted.addObserver(usingBlock: reloadBlock))
 	}
 }
