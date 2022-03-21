@@ -149,7 +149,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Decoding Recent Peers Failed", comment: "Low-level error"))
 	}
 
-	func serverChatLoginFailed(with error: Error) {
+	func serverChatLoginFailed(with error: ServerChatError) {
 		InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
 	}
 	

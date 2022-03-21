@@ -26,9 +26,16 @@ protocol PeeringDelegate {
 
 /// Receiver of `PeeringController` events.
 public protocol PeeringControllerDelegate {
-	func serverChatLoginFailed(with error: Error)
+	/// An error during the server chat login or account creation failed.
+	func serverChatLoginFailed(with error: ServerChatError)
+
+	/// A serialization error occurred.
 	func encodingPeersFailed(with error: Error)
+
+	/// A serialization error occurred.
 	func decodingPeersFailed(with error: Error)
+
+	/// All data was loaded.
 	func peeringControllerIsReadyToGoOnline()
 }
 

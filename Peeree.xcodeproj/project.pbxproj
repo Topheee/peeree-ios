@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */; };
 		9D0EA9F31E44DB9000C71312 /* GenericFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0EA9F21E44DB9000C71312 /* GenericFunctions.swift */; };
+		9D0FA50B27E7B3FA00192DCF /* ServerChatError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */; };
 		9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D1AF3D1204AA2CF00B616AF /* Localizable.strings */; };
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
@@ -119,6 +120,7 @@
 /* Begin PBXFileReference section */
 		9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensions.swift; path = Peeree/Helpers/PeereeExtensions.swift; sourceTree = "<group>"; };
 		9D0EA9F21E44DB9000C71312 /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
+		9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ServerChatError.swift; path = Model/ServerChatError.swift; sourceTree = "<group>"; };
 		9D1AF3CE204A9AEA00B616AF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9D1AF3D0204AA2CF00B616AF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D1AF3D2204AA2E300B616AF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -487,6 +489,7 @@
 				9D56535E279A1014003F31A2 /* UserPeer.swift */,
 				9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */,
 				9DA36A81279CA02100BF7875 /* PeerViewModel.swift */,
+				9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -681,6 +684,7 @@
 				9D90435527A06D0600C29BFA /* PeerViewControllers.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
 				9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */,
+				9D0FA50B27E7B3FA00192DCF /* ServerChatError.swift in Sources */,
 				9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9DA36A7E279C44A200BF7875 /* PeerInteraction.swift in Sources */,

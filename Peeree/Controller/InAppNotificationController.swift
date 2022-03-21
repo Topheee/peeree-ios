@@ -59,11 +59,20 @@ final class InAppNotificationController {
 		display(title: localizedTitle, message: errorMessage)
 	}
 
-	static func display(serverChatError error: Error, localizedTitle: String) {
+	static func display(serverChatError error: ServerChatError, localizedTitle: String) {
 		if (error as NSError).code == NSURLErrorCannotConnectToHost && (error as NSError).domain == NSURLErrorDomain {
 			display(title: localizedTitle, message: serverDownMessage)
 		} else {
-			display(title: localizedTitle, message: error.localizedDescription)
+			switch error {
+			case .identityMissing:
+				display(title: localizedTitle, message: NSLocalizedString("Server Chat requires a Peeree Identity.", comment: "Error message."))
+			case .parsing(let parsingError):
+				display(title: localizedTitle, message: parsingError)
+			case .sdk(let error):
+				display(title: localizedTitle, message: error.localizedDescription)
+			case .fatal(let error):
+				display(title: localizedTitle, message: error.localizedDescription)
+			}
 		}
 	}
 

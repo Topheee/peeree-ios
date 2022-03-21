@@ -35,10 +35,6 @@ func unexpectedEnumValueError() -> Error {
 	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
 }
 
-enum ServerChatError: Error {
-	case generic(String)
-}
-
 final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
 	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
@@ -52,22 +48,21 @@ final class ServerChatController {
 
 	/// access only from main thread!
 	private static var _instance: ServerChatController? = nil
-	private static var creatingInstanceCallbacks = [(Result<ServerChatController, Error>) -> Void]()
+	private static var creatingInstanceCallbacks = [(Result<ServerChatController, ServerChatError>) -> Void]()
 	private static var creatingInstanceOnlyLoginRequests = [Bool]()
 
-	static private func reportCreatingInstance(result: Result<ServerChatController, Error>) {
-		DispatchQueue.main.async {
-			creatingInstanceCallbacks.forEach { $0(result) }
-			creatingInstanceOnlyLoginRequests.removeAll()
-			creatingInstanceCallbacks.removeAll()
-		}
+	/// Concludes registration process; must be called on the main thread!
+	static private func reportCreatingInstance(result: Result<ServerChatController, ServerChatError>) {
+		creatingInstanceCallbacks.forEach { $0(result) }
+		creatingInstanceCallbacks.removeAll()
 	}
 
 	static func withInstance(getter: @escaping (ServerChatController?) -> Void) {
 		DispatchQueue.main.async { getter(_instance) }
 	}
 
-	static func getOrSetupInstance(onlyLogin: Bool = false, completion: @escaping (Result<ServerChatController, Error>) -> Void) {
+	/// Retrieves already logged in instance, or creates a new one by logging in.
+	static func getOrSetupInstance(onlyLogin: Bool = false, completion: @escaping (Result<ServerChatController, ServerChatError>) -> Void) {
 		DispatchQueue.main.async {
 			if let instance = _instance {
 				completion(.success(instance))
@@ -87,7 +82,7 @@ final class ServerChatController {
 						var reallyOnlyLogin = true
 						creatingInstanceOnlyLoginRequests.forEach { reallyOnlyLogin = reallyOnlyLogin && $0 }
 						guard !reallyOnlyLogin else {
-							reportCreatingInstance(result: .failure(error))
+							reportCreatingInstance(result: .failure(.sdk(error)))
 							return
 						}
 						NSLog("WARN: server chat login failed: \(error.localizedDescription)")
@@ -105,28 +100,20 @@ final class ServerChatController {
 		}
 	}
 
-	private static func setupInstance(with credentials: MXCredentials) {
-		let c = ServerChatController(credentials: credentials)
-		c.start { _error in
-			if let error = _error {
-				reportCreatingInstance(result: .failure(error))
-			} else {
-				DispatchQueue.main.async {
-					_instance = c
-					reportCreatingInstance(result: .success(c))
-				}
-			}
+	/// Creates an account on the chat server.
+	static func createAccount(_ completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
+		guard AccountController.shared.accountExists else {
+			completion(.failure(.identityMissing))
+			return
 		}
-	}
 
-	private static func createAccount(completion: @escaping (Result<MXCredentials, Error>) -> Void) {
 		let peerID = AccountController.shared.peerID
 		let username = serverChatUserName(for: peerID)
 		var passwordRawData: Data
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
 		} catch let error {
-			completion(.failure(error))
+			completion(.failure(.sdk(error)))
 			return
 		}
 		var passwordData = passwordRawData.base64EncodedData()
@@ -135,7 +122,13 @@ final class ServerChatController {
 			try persistPasswordInKeychain(passwordData)
 			passwordData.resetBytes(in: 0..<passwordData.count)
 		} catch let error {
-			completion(.failure(error))
+			do {
+				try ServerChatController.removePasswordFromKeychain()
+			} catch let removeError {
+				NSLog("WARN: Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
+			}
+
+			completion(.failure(.sdk(error)))
 			return
 		}
 
@@ -147,22 +140,38 @@ final class ServerChatController {
 				} catch {
 					NSLog("ERROR: Could not remove password from keychain after failed registration: \(error.localizedDescription)")
 				}
-				completion(.failure(error))
+				completion(.failure(.sdk(error)))
+
 			case .success(let credentials):
-				completion(.success(credentials))
+				// TODO create account directly with correct device_id set, s.t. we do not need to log out and log back in here
+				// TEST whether this mxClient gets deleted once it runs out of scope…
+				let mxClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
+				mxClient.logout { logoutResponse in
+					NSLog("DBG: Pre-emptive logout response: \(logoutResponse)")
+					ServerChatController.login { result in
+						completion(result)
+					}
+				}
+
 			@unknown default:
-				completion(.failure(unexpectedEnumValueError()))
+				completion(.failure(.fatal(unexpectedEnumValueError())))
 			}
 		}
 		passwordRawData.resetBytes(in: 0..<passwordRawData.count)
 	}
 
-	private static func login(completion: @escaping (Result<MXCredentials, Error>) -> Void) {
+	/// Log into server chat account, previously created with `createAccount()`.
+	private static func login(completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
+		guard AccountController.shared.accountExists else {
+			completion(.failure(.identityMissing))
+			return
+		}
+
 		let password: String
 		do {
 			password = try passwordFromKeychain()
 		} catch let error {
-			completion(.failure(error))
+			completion(.failure(.fatal(error)))
 			return
 		}
 		globalRestClient.login(parameters: ["type" : kMXLoginFlowTypePassword,
@@ -188,15 +197,30 @@ final class ServerChatController {
 //			completion(response.toResult())
 			guard let json = response.value else {
 				NSLog("ERROR: Login response is nil.")
-				completion(.failure(unexpectedNilError()))
+				completion(.failure(.fatal(unexpectedNilError())))
 				return
 			}
 			guard let loginResponse = MXLoginResponse(fromJSON: json) else {
-				completion(.failure(createApplicationError(localizedDescription: "ERROR: Cannot create login response from JSON \(json).")))
+				completion(.failure(.parsing("ERROR: Cannot create login response from JSON \(json).")))
 				return
 			}
 			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: globalRestClient.credentials)
 			completion(.success(credentials))
+		}
+	}
+
+	/// Sets the `_instance` singleton and starts the server chat session.
+	private static func setupInstance(with credentials: MXCredentials) {
+		let c = ServerChatController(credentials: credentials)
+		c.start { _error in
+			DispatchQueue.main.async {
+				if let error = _error {
+					reportCreatingInstance(result: .failure(.sdk(error)))
+				} else {
+					_instance = c
+					reportCreatingInstance(result: .success(c))
+				}
+			}
 		}
 	}
 
@@ -300,14 +324,14 @@ final class ServerChatController {
 		/// Extracts the ID, message and timestamp from `event`.
 		init(messageEvent event: MXEvent) throws {
 			guard event.content["format"] == nil else {
-				throw ServerChatError.generic("Body is formatted \(String(describing: event.content["format"])), ignoring.")
+				throw ServerChatError.parsing("Body is formatted \(String(describing: event.content["format"])), ignoring.")
 			}
 			let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
 			guard messageType == .text || messageType == .notice else {
-				throw ServerChatError.generic("Unsupported message type: \(messageType).")
+				throw ServerChatError.parsing("Unsupported message type: \(messageType).")
 			}
 			guard let message = event.content["body"] as? String else {
-				throw ServerChatError.generic("Message body not a string: \(event.content["body"] ?? "<nil>").")
+				throw ServerChatError.parsing("Message body not a string: \(event.content["body"] ?? "<nil>").")
 			}
 
 			self.eventID = event.eventId
@@ -330,23 +354,10 @@ final class ServerChatController {
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
 	private func logout(completion: @escaping (Error?) -> Void) {
 		DispatchQueue.main.async {
-			let session = self.session
 			// we need to drop the instance s.t. no two logout requests are made on the same instance
 			ServerChatController._instance = nil
-			session.logout { response in
-				if response.isFailure {
-					NSLog("ERROR: Failed to log out successfully - still dropped ServerChatController.")
-				}
-				// *** roughly based on MXKAccount.closeSession(true) ***
-				// Force a reload of device keys at the next session start.
-				// This will fix potential UISIs other peoples receive for our messages.
-				session.crypto?.resetDeviceKeys()
-				session.scanManager?.deleteAllAntivirusScans()
-				session.aggregations?.resetData()
-				session.close()
-				session.store?.deleteAllData()
-				completion(response.error)
-			}
+			// if this fails we cannot do anything anyway
+			self.session.extensiveLogout(completion)
 		}
 	}
 
@@ -494,7 +505,7 @@ final class ServerChatController {
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = ServerChatController.userId
-		let lastReadDate = lastReads[peerID] ?? Date()
+		let lastReadDate = lastReads[peerID] ?? Date.distantFuture
 
 		// these are all messages that have been sent while we where offline
 		var catchUpMissedMessages = [Transcript]()
@@ -589,6 +600,86 @@ final class ServerChatController {
 		}
 	}
 
+	private func process(event: MXEvent) {
+		switch event.eventType {
+		case .roomMember:
+			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
+				NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
+				return
+			}
+			guard let userId = event.stateKey else {
+				// we are only interested in joins from other people
+				NSLog("ERROR: No stateKey present in membership event.")
+				return
+			}
+
+			switch memberContent.membership {
+			case kMXMembershipStringJoin:
+				// we handle joins through the mxRoomInitialSync notification
+				break
+
+			case kMXMembershipStringInvite:
+				guard userId == ServerChatController.userId else {
+					// we are only interested in invites for us
+					NSLog("INFO: Received invite event from sender other than us.")
+					return
+				}
+				self.session.joinRoom(event.roomId) { joinResponse in
+					guard joinResponse.isSuccess else {
+						NSLog("ERROR: Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
+						return
+					}
+					// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
+				}
+
+				DispatchQueue.main.async {
+					guard let peerID = peerIDFrom(serverChatUserId: event.sender),
+						  !AccountController.shared.hasPinMatch(peerID),
+						  let id = PeerViewModelController.viewModels[peerID]?.peer.id else {return
+					}
+					AccountController.shared.updatePinStatus(of: id, force: true)
+				}
+
+			case kMXMembershipStringLeave:
+				guard userId != ServerChatController.userId else {
+					// we are only interested in leaves from other people
+					NSLog("DEBUG: Received our leave event.")
+					return
+				}
+				guard let room = self.session.room(withRoomId: event.roomId) else {
+					NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
+					return
+				}
+
+				// I hope this suspends the event stream as well…
+				self.forget(room: room) { _error in
+					NSLog("DEBUG: Left empty room: \(String(describing: _error)).")
+				}
+
+				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+					NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
+					return
+				}
+
+				_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
+
+				DispatchQueue.main.async {
+					guard let id = PeerViewModelController.viewModels[peerID]?.peer.id else {
+						NSLog("WARN: No Peeree Identity available for \(peerID).")
+						return
+					}
+					AccountController.shared.updatePinStatus(of: id, force: true)
+				}
+
+			default:
+				NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
+			}
+		default:
+			NSLog("WARN: Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
+			break
+		}
+	}
+
 	private func start(completion: @escaping (Error?) -> Void) {
 		let store = MXFileStore(credentials: session.credentials) // MXMemoryStore()
 		session.setStore(store) { setStoreResponse in
@@ -620,67 +711,7 @@ final class ServerChatController {
 //					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
 //				}
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
-					switch event.eventType {
-					case .roomMember:
-						guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
-							NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
-							return
-						}
-						guard let userId = event.stateKey else {
-							// we are only interested in joins from other people
-							NSLog("ERROR: No stateKey present in membership event.")
-							return
-						}
-						switch memberContent.membership {
-						case kMXMembershipStringJoin:
-							// we handle joins through the mxRoomInitialSync notification
-							break
-						case kMXMembershipStringInvite:
-							guard userId == ServerChatController.userId else {
-								// we are only interested in invites for us
-								NSLog("INFO: Received invite event from sender other than us.")
-								return
-							}
-							self.session.joinRoom(event.roomId) { joinResponse in
-								guard joinResponse.isSuccess else {
-									NSLog("ERROR: Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
-									return
-								}
-								// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
-							}
-						case kMXMembershipStringLeave:
-							guard userId != ServerChatController.userId else {
-								// we are only interested in leaves from other people
-								NSLog("DEBUG: Received our leave event.")
-								return
-							}
-							guard let room = self.session.room(withRoomId: event.roomId) else {
-								NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
-								return
-							}
-							// I hope this suspends the event stream as well…
-							self.forget(room: room) { _error in
-								NSLog("DEBUG: Left empty room: \(String(describing: _error)).")
-							}
-							guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-								NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
-								return
-							}
-							_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
-							DispatchQueue.main.async {
-								guard let id = PeerViewModelController.viewModels[peerID]?.peer.id else {
-									NSLog("WARN: No Peeree Identity available for \(peerID) available.")
-									return
-								}
-								AccountController.shared.updatePinStatus(of: id)
-							}
-						default:
-							NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
-						}
-					default:
-						NSLog("WARN: Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
-						break
-					}
+					self.process(event: event)
 				}
 				completion(response.error)
 			}
@@ -698,6 +729,26 @@ extension MXResponse {
 			return .success(value)
 		@unknown default:
 			return .failure(unexpectedEnumValueError())
+		}
+	}
+}
+
+extension MXSession {
+	/// Logs outs the session as well as cleans up more local stuff.
+	func extensiveLogout(_ completion: @escaping (Error?) -> ()) {
+		logout { response in
+			if response.isFailure {
+				NSLog("ERROR: Failed to log out successfully - still cleaning up session data.")
+			}
+			// *** roughly based on MXKAccount.closeSession(true) ***
+			// Force a reload of device keys at the next session start.
+			// This will fix potential UISIs other peoples receive for our messages.
+			self.crypto?.resetDeviceKeys()
+			self.scanManager?.deleteAllAntivirusScans()
+			self.aggregations?.resetData()
+			self.close()
+			self.store?.deleteAllData()
+			completion(response.error)
 		}
 	}
 }
