@@ -132,8 +132,13 @@ final class ServerChatController {
 			return
 		}
 
-		globalRestClient.register(loginType: .dummy, username: username, password: passwordRawData.base64EncodedString()) { response in
-			switch response {
+		let registerParameters: [String: Any] = ["auth" : ["type" : kMXLoginFlowTypeDummy],
+												 "username" : username,
+												 "password" : passwordRawData.base64EncodedString(),
+												 "device_id" : userId]
+
+		globalRestClient.register(parameters: registerParameters) { registerResponse in
+			switch registerResponse.toResult() {
 			case .failure(let error):
 				do {
 					try ServerChatController.removePasswordFromKeychain()
@@ -142,21 +147,24 @@ final class ServerChatController {
 				}
 				completion(.failure(.sdk(error)))
 
-			case .success(let credentials):
-				// TODO create account directly with correct device_id set, s.t. we do not need to log out and log back in here
-				// TEST whether this mxClient gets deleted once it runs out of scope…
-				let mxClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
-				mxClient.logout { logoutResponse in
-					NSLog("DBG: Pre-emptive logout response: \(logoutResponse)")
-					ServerChatController.login { result in
-						completion(result)
-					}
+			case .success(let responseJSON):
+				guard let mxLoginResponse = MXLoginResponse(fromJSON: responseJSON) else {
+					completion(.failure(.parsing("register response was no JSON: \(responseJSON)")))
+					return
 				}
 
-			@unknown default:
-				completion(.failure(.fatal(unexpectedEnumValueError())))
+				let credentials = MXCredentials(loginResponse: mxLoginResponse, andDefaultCredentials: nil)
+
+				// Sanity check as done in MatrixSDK
+				guard credentials.userId != nil || credentials.accessToken != nil else {
+					completion(.failure(.fatal(unexpectedNilError())))
+					return
+				}
+
+				completion(.success(credentials))
 			}
 		}
+
 		passwordRawData.resetBytes(in: 0..<passwordRawData.count)
 	}
 

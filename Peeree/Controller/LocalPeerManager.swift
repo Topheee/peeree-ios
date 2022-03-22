@@ -232,11 +232,17 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			do {
 				let signature = try keyPair.sign(message: nonce)
 				
-				if (request.offset > signature.count) {
+				if (request.offset >= signature.count) {
 					peripheral.respond(to: request, withResult: .invalidOffset)
 				} else {
-					request.value = signature.subdata(in: request.offset ..< signature.count-request.offset)
-					peripheral.respond(to: request, withResult: .success)
+					let subSignature = signature.subdata(in: request.offset ..< signature.count-request.offset)
+					if subSignature.count < 1 {
+						NSLog("ERROR: requested signature range is empty. Offset: \(request.offset), signature size: \(signature.count)")
+						peripheral.respond(to: request, withResult: .invalidOffset)
+					} else {
+						request.value = subSignature
+						peripheral.respond(to: request, withResult: .success)
+					}
 				}
 			} catch {
 				NSLog("ERROR: Signing Bluetooth nonce failed: \(error)")
@@ -259,6 +265,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				peripheral.respond(to: request, withResult: .unlikelyError)
 			}
 		} else {
+			// TODO this branch is executed, when no portrait is configured (and PortraitSignatureCharacteristicID is nil)
 			NSLog("WARN: Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
 			peripheral.respond(to: request, withResult: .requestNotSupported)
 		}
