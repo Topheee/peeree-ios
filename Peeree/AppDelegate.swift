@@ -108,13 +108,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		PeeringController.shared.peering = false
 		UserDefaults.standard.synchronize()
 	}
+
+	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+		PeeringController.shared.peering = false
+	}
+
+	/// MARK: Notifications
 	
 	func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
 		notificationManager.application(application, didReceive: notification)
 	}
-	
-	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-		PeeringController.shared.peering = false
+
+	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+		NSLog("Remote notifications are unavailable: \(error.localizedDescription)")
+		InAppNotificationController.display(error: error, localizedTitle: "")
+	}
+
+	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+		ServerChatController.getOrSetupInstance(onlyLogin: true) { result in
+			switch result {
+			case .failure(let serverChatError):
+				InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "")
+			case .success(let serverChatController):
+				serverChatController.configurePusher(deviceToken: deviceToken)
+			}
+		}
+	}
+
+	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+		completionHandler(.newData)
 	}
 
 	// MARK: AccountControllerDelegate

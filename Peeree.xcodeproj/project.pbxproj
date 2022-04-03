@@ -28,6 +28,7 @@
 		9D6AFE59264C23E90065262D /* ServerChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6AFE58264C23E90065262D /* ServerChatController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */; };
+		9D815B5527FF76C400B169E5 /* ServerChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D79074D27F3A08B00920D38 /* ServerChatModel.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
@@ -120,7 +121,7 @@
 /* Begin PBXFileReference section */
 		9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensions.swift; path = Peeree/Helpers/PeereeExtensions.swift; sourceTree = "<group>"; };
 		9D0EA9F21E44DB9000C71312 /* GenericFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctions.swift; path = Peeree/Helpers/GenericFunctions.swift; sourceTree = "<group>"; };
-		9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ServerChatError.swift; path = Model/ServerChatError.swift; sourceTree = "<group>"; };
+		9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatError.swift; sourceTree = "<group>"; };
 		9D1AF3CE204A9AEA00B616AF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9D1AF3D0204AA2CF00B616AF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D1AF3D2204AA2E300B616AF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -143,8 +144,9 @@
 		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InAppNotificationController.swift; path = Controller/InAppNotificationController.swift; sourceTree = "<group>"; };
 		9D56535E279A1014003F31A2 /* UserPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UserPeer.swift; path = Model/UserPeer.swift; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PinMatchViewController.swift; path = "Storyboards/Main Storyboard/PinMatchViewController.swift"; sourceTree = "<group>"; };
-		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ServerChatController.swift; path = Controller/ServerChatController.swift; sourceTree = "<group>"; };
+		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = View/RootView.swift; sourceTree = "<group>"; };
+		9D79074D27F3A08B00920D38 /* ServerChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatModel.swift; sourceTree = "<group>"; };
 		9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersistedPeersController.swift; path = Controller/PersistedPeersController.swift; sourceTree = "<group>"; };
 		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
@@ -251,7 +253,6 @@
 				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
-				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
 				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
 				9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */,
 				9D90435427A06D0600C29BFA /* PeerViewControllers.swift */,
@@ -322,6 +323,32 @@
 			name = View;
 			sourceTree = "<group>";
 		};
+		9D79074A27F3A04100920D38 /* ServerChat */ = {
+			isa = PBXGroup;
+			children = (
+				9D79074C27F3A07600920D38 /* Model */,
+				9D79074B27F3A05600920D38 /* Controller */,
+			);
+			path = ServerChat;
+			sourceTree = "<group>";
+		};
+		9D79074B27F3A05600920D38 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		9D79074C27F3A07600920D38 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9D79074D27F3A08B00920D38 /* ServerChatModel.swift */,
+				9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		9D883A481C26B56400702F9A /* Utility */ = {
 			isa = PBXGroup;
 			children = (
@@ -387,6 +414,7 @@
 		9DA0F7B71B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXGroup;
 			children = (
+				9D79074A27F3A04100920D38 /* ServerChat */,
 				9DBC9F912676A4E900B68395 /* Peeree.entitlements */,
 				9DD61F3C1EAE3356004EB56A /* Swagger */,
 				9D883A481C26B56400702F9A /* Utility */,
@@ -489,7 +517,6 @@
 				9D56535E279A1014003F31A2 /* UserPeer.swift */,
 				9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */,
 				9DA36A81279CA02100BF7875 /* PeerViewModel.swift */,
-				9D0FA50A27E7B3FA00192DCF /* ServerChatError.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -544,8 +571,8 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftMigration = 0700;
-				LastSwiftUpdateCheck = 1250;
-				LastUpgradeCheck = 1320;
+				LastSwiftUpdateCheck = 1330;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9DA0F7B41B5C3AB800F3BA87 = {
@@ -664,6 +691,7 @@
 				9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */,
 				9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */,
 				9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */,
+				9D815B5527FF76C400B169E5 /* ServerChatModel.swift in Sources */,
 				9D9D5A5824045F690063532F /* ContentfilterAPI.swift in Sources */,
 				9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */,
 				9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */,
@@ -885,7 +913,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.1;
+				CURRENT_PROJECT_VERSION = 1.5.2;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -895,7 +923,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.1;
+				MARKETING_VERSION = 1.5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -920,7 +948,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.1;
+				CURRENT_PROJECT_VERSION = 1.5.2;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -932,7 +960,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.1;
+				MARKETING_VERSION = 1.5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

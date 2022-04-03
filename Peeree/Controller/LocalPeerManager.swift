@@ -357,7 +357,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 
 				// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
 				do {
-					let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: AccountController.KeyType, size: AccountController.KeySize)
+					let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
 					try publicKey.verify(message: nonce, signature: signature)
 					// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
 					if !AccountController.shared.hasPinMatch(peerID) {

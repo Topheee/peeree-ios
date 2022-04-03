@@ -44,10 +44,6 @@ public class AccountController: SecurityDataSource {
 	private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
 	/// Keychain property
 	private static let KeyLabel = "Peeree Identity"
-	/// Keychain property
-	public static let KeyType = kSecAttrKeyTypeEC
-	/// Keychain property
-	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
 
 	/// Key to our identity in UserDefaults
 	private static let PeerIDKey = "PeerIDKey"
@@ -381,10 +377,10 @@ public class AccountController: SecurityDataSource {
 		_sequenceNumber = nil // we are not responsible here to ensure that no account already exists and need to not send this sequence number as our public key
 		do {
 			// try to remove the old key, just to be sure
-			try? KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPublic, size: AccountController.KeySize)
-			try? KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPrivate, size: AccountController.KeySize)
+			try? KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
+			try? KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 
-			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: AccountController.KeyType, size: AccountController.KeySize, persistent: true)
+			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: true)
 		} catch let error {
 			completion(error)
 			return
@@ -475,7 +471,7 @@ public class AccountController: SecurityDataSource {
 	
 	private init() {
 		peerID = UserDefaults.standard.string(forKey: AccountController.PeerIDKey).map { UUID(uuidString: $0) ?? PeerID() } ?? PeerID()
-		self.keyPair = try? KeyPair(fromKeychainWith: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: AccountController.KeyType, size: AccountController.KeySize)
+		self.keyPair = try? KeyPair(fromKeychainWith: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
 		// TODO PERFORMANCE (startup time): read from UserDefs and decode on background queue
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
 		pinnedByPeers = SynchronizedSet(queueLabel: "\(BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
@@ -541,8 +537,8 @@ public class AccountController: SecurityDataSource {
 		self._sequenceNumber = nil
 		self.clearPins()
 		do {
-			try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPublic, size: AccountController.KeySize)
-			try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: AccountController.KeyType, keyClass: kSecAttrKeyClassPrivate, size: AccountController.KeySize)
+			try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
+			try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 		} catch let error {
 			NSLog("ERROR: Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}

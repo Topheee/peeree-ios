@@ -825,7 +825,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	private func writeNonce(to peripheral: CBPeripheral, with peerID: PeerID, characteristic: CBCharacteristic) {
 		let writeType = CBCharacteristicWriteType.withResponse
-		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), AccountController.shared.keyPair?.blockSize ?? AccountController.KeySize)
+		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), AccountController.shared.keyPair?.blockSize ?? PeereeIdentity.KeySize)
 		do {
 			var nonce = try generateRandomData(length: randomByteCount)
 			nonces[peripheral] = nonce

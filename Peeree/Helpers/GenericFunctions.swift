@@ -55,10 +55,22 @@ func arrayFromBundle(name: String) -> [String]? {
 	return NSArray(contentsOf: url) as? [String]
 }
 
+/// Creates an `NSError` with the main bundle's `bundleIdentifier` as `domain`.
 func createApplicationError(localizedDescription: String, code: Int = -1) -> Error {
 	return NSError(domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath, code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
 }
 
+/// Creates an unrecoverable error describing an unexpected nil value.
+func unexpectedNilError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)
+}
+
+/// Creates an unrecoverable error describing an unexpected enum value.
+func unexpectedEnumValueError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
+}
+
+/// Creates an `Error` based on the value of `errno`.
 func createSystemError() -> Error? {
 	let code = errno
 	guard let errorCString = strerror(code), let errorString = String(utf8String: errorCString) else { return nil }
@@ -80,6 +92,28 @@ func errorMessage(for status: OSStatus) -> String {
 		}
 	#endif
 	return msg
+}
+
+/// Debug-level logging of `message`.
+public func dlog(_ message: String) {
+#if DEBUG
+	NSLog("[DBG] \(message)")
+#endif
+}
+
+/// Info-level logging of `message`.
+public func ilog(_ message: String) {
+	NSLog("[INF] \(message)")
+}
+
+/// Warning-level logging of `message`.
+public func wlog(_ message: String) {
+	NSLog("[WRN] \(message)")
+}
+
+/// Error-level logging of `message`.
+public func elog(_ message: String) {
+	NSLog("[ERR] \(message)")
 }
 
 func generateRandomData(length: Int) throws -> Data {
@@ -295,6 +329,16 @@ extension CGColor {
 	}
 }
 
+extension SecKey {
+	static func check(status: OSStatus, localizedError: String) throws {
+		guard status != errSecSuccess else { return }
+
+		let msg = errorMessage(for: status)
+		NSLog("DEBUG: OSStatus \(status) check failed: \(msg)")
+		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
+	}
+}
+
 
 import ImageIO
 import CoreServices
@@ -309,7 +353,7 @@ extension CGImage {
 	func jpgData(compressionQuality: CGFloat) throws -> Data {
 		let jpgDataBuffer = NSMutableData()
 
-		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, kUTTypeJPEG, 1, nil) else {
+		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, "public.jpeg" as CFString /* kUTTypeJPEG */, 1, nil) else {
 			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data destination", code: -503)
 		}
 		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)
@@ -323,7 +367,7 @@ extension CGImage {
 	}
 
 	func save(to url: URL, compressionQuality: CGFloat) throws {
-		guard let dest = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeJPEG, 1, nil) else {
+		guard let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.jpeg" as CFString /* kUTTypeJPEG */, 1, nil) else {
 			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG URL destination", code: -503)
 		}
 		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)

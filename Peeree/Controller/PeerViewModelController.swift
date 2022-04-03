@@ -65,6 +65,6 @@ public class PeerViewModelController {
 
 	/// Generates a fake crypto key; probably crashes!
 	private static var bogusKey: AsymmetricPublicKey {
-		return try! KeyPair(label: "PeerViewModelController", privateTag: Data(repeating: 42, count: 2), publicTag: Data(repeating: 42, count: 3), type: AccountController.KeyType, size: AccountController.KeySize, persistent: false).publicKey
+		return try! KeyPair(label: "PeerViewModelController", privateTag: Data(repeating: 42, count: 2), publicTag: Data(repeating: 42, count: 3), type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: false).publicKey
 	}
 }

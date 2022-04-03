@@ -66,21 +66,6 @@ extension RawRepresentable where Self.RawValue == String {
 	}
 }
 
-extension PeerID {
-	private static let uuidEncoding = String.Encoding.ascii
-	init?(data: Data) {
-		guard let string = String(data: data, encoding: PeerID.uuidEncoding) else {
-			assertionFailure()
-			return nil
-		}
-		self.init(uuidString: string)
-	}
-	
-	func encode() -> Data {
-		return uuidString.data(using: PeerID.uuidEncoding)!
-	}
-}
-
 extension CBCharacteristic {
 	/// prefixed (first packet sent) to split characteristics, that is, characteristics transferred in multiple messages
 	typealias SplitCharacteristicSize = Int32

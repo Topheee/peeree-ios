@@ -9,32 +9,6 @@
 import Foundation
 import MatrixSDK
 
-let serverChatDomain = "chat.peeree.de"
-
-func serverChatUserId(for peerID: PeerID) -> String {
-	return "@\(serverChatUserName(for: peerID)):\(serverChatDomain)"
-}
-
-func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
-	guard userId.count > 0,
-		  let atIndex = userId.firstIndex(of: "@"),
-		  let colonIndex = userId.firstIndex(of: ":") else { return nil }
-
-	return PeerID(uuidString: String(userId[userId.index(after: atIndex)..<colonIndex]))
-}
-
-func serverChatUserName(for peerID: PeerID) -> String {
-	return peerID.uuidString.lowercased()
-}
-
-func unexpectedNilError() -> Error {
-	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)
-}
-
-func unexpectedEnumValueError() -> Error {
-	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
-}
-
 final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
 	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
@@ -189,8 +163,6 @@ final class ServerChatController {
 											"user" : userId,
 											// probably a bad idea for the far future to use the userId as the device_id here, but hell yeah
 											"device_id" : userId]) { response in
-//		this crappy shit doesn't (re-)store a persistent device_id:
-//		globalRestClient.login(type: .password, username: userId, password: password) { response in
 			if let error = response.error as NSError?,
 			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
 			   mxErrCode == "M_INVALID_USERNAME" {
@@ -201,8 +173,7 @@ final class ServerChatController {
 					NSLog("WARN: Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
 				}
 			}
-			// could be that easy:
-//			completion(response.toResult())
+
 			guard let json = response.value else {
 				NSLog("ERROR: Login response is nil.")
 				completion(.failure(.fatal(unexpectedNilError())))
@@ -285,6 +256,23 @@ final class ServerChatController {
 
 	// MARK: Keychain Access
 
+	/// Writes the access token into the keychain.
+	private static func persistAccessTokenInKeychain(_ token: String) throws {
+		guard let tokenData = token.data(using: .utf8) else { throw unexpectedNilError() }
+
+		// Delete old token first (if available).
+		var query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+									kSecAttrLabel as String: ServerChatAccessTokenKeychainKey]
+		SecItemDelete(query as CFDictionary)
+
+		query = [kSecClass as String: kSecClassGenericPassword,
+									  kSecAttrAccount as String: userId,
+									  kSecAttrLabel as String: ServerChatAccessTokenKeychainKey,
+									  kSecValueData as String: tokenData]
+		try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding Server Chat token to Keychain failed", comment: "SecItemAdd failed"))
+	}
+
+	/// Writes the `password` into the keychain as an internet password.
 	private static func persistPasswordInKeychain(_ password: Data) throws {
 		let homeServer = homeServerURL.absoluteString
 		let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
@@ -321,32 +309,6 @@ final class ServerChatController {
 	}
 
 	// MARK: - Private
-
-	// MARK: Types
-
-	private struct MessageEventData {
-		let eventID: String
-		let timestamp: Date
-		let message: String
-
-		/// Extracts the ID, message and timestamp from `event`.
-		init(messageEvent event: MXEvent) throws {
-			guard event.content["format"] == nil else {
-				throw ServerChatError.parsing("Body is formatted \(String(describing: event.content["format"])), ignoring.")
-			}
-			let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
-			guard messageType == .text || messageType == .notice else {
-				throw ServerChatError.parsing("Unsupported message type: \(messageType).")
-			}
-			guard let message = event.content["body"] as? String else {
-				throw ServerChatError.parsing("Message body not a string: \(event.content["body"] ?? "<nil>").")
-			}
-
-			self.eventID = event.eventId
-			self.timestamp = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
-			self.message = message
-		}
-	}
 
 	// MARK: Constants
 
@@ -406,6 +368,58 @@ final class ServerChatController {
 			}
 		}
 	}
+
+	func configurePusher(deviceToken: Data) {
+		guard let mx = session.matrixRestClient, AccountController.shared.accountExists else { return }
+
+		let b64Token = deviceToken.base64EncodedString()
+		let pushData: [String : Any] = [
+			"url": "http://pushgateway/_matrix/push/v1/notify",
+			"format": "event_id_only",
+			"default_payload": [
+				"aps": [
+//					"mutable-content": 1,
+					"alert": [
+						"loc-key": "MSG_FROM_USER",
+						"loc-args": []
+					]
+				]
+			]
+		]
+		let language = Locale.preferredLanguages.first ?? "en"
+
+#if DEBUG
+		let appID = "de.peeree.ios.dev"
+#else
+		let appID = "de.peeree.ios.prod"
+#endif
+
+		let displayName = "Peeree iOS"
+
+		var profileTag = UserDefaults.standard.string(forKey: Self.ProfileTagKey) ?? ""
+		if profileTag.count < 16 {
+			profileTag = Self.ProfileTagAllowedChars.shuffled().reduce("") { partialResult, c in
+				guard partialResult.count < 16 else { return partialResult }
+				return partialResult.appending("\(c)")
+			}
+			UserDefaults.standard.set(profileTag, forKey: Self.ProfileTagKey)
+		}
+
+		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: Self.userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
+			switch response.toResult() {
+			case .failure(let error):
+				NSLog("ERROR: setPusher() failed: \(error)")
+				InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
+			case .success():
+				NSLog("DBG: setPusher() was successful.")
+			}
+		}
+	}
+
+	// MARK: Private
+
+	private static let ProfileTagAllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	private static let ProfileTagKey = "ServerChatController.profileTag"
 
 	private var notificationObservers: [Any] = []
 

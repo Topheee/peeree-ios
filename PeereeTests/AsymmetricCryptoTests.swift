@@ -16,7 +16,7 @@ class AsymmetricCryptoTests: XCTestCase {
 			XCTAssert(false)
 			return
 		}
-		let keyPair = try KeyPair(label: "test", privateTag: privateTag, publicTag: publicTag, type: AccountController.KeyType, size: AccountController.KeySize, persistent: false)
+		let keyPair = try KeyPair(label: "test", privateTag: privateTag, publicTag: publicTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: false)
 		let encoder = JSONEncoder()
 		let data = try encoder.encode(keyPair.publicKey)
 		let decoder = JSONDecoder()

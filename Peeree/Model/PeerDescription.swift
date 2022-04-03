@@ -261,6 +261,11 @@ public struct PeerInfo: Codable {
 public struct PeereeIdentity: Codable {
 	// MARK: - Public and Internal
 
+	/// Keychain property
+	public static let KeyType = kSecAttrKeyTypeEC
+	/// Keychain property
+	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
+
 	/// Constructs a `PeereeIdentity` from its parts.
 	init(peerID: PeerID, publicKey: AsymmetricPublicKey) {
 		self.peerID = peerID
@@ -271,7 +276,7 @@ public struct PeereeIdentity: Codable {
 	init?(peerID: PeerID, publicKeyData: Data) {
 		self.peerID = peerID
 		do {
-			self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: AccountController.KeyType, size: AccountController.KeySize)
+			self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: Self.KeyType, size: Self.KeySize)
 		} catch {
 			NSLog("ERROR: creating public key from data: \(error)")
 			return nil

@@ -54,10 +54,6 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 				UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: [pinMatchCategory, messageCategory, peerAppearedCategory]))
 			}
-			// TODO remove. Only for debug purposes
-//			let note = UILocalNotification()
-//			note.alertTitle = "Peeree went \(PeeringController.shared.peering ? "online" : "offline"). \(notification.userInfo?["ReasonKey"] ?? "")"
-//			UIApplication.shared.presentLocalNotificationNow(note)
 		}
 
 		_ = PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
@@ -76,6 +72,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 
 		if #available(iOS 10.0, *) {
+			UIApplication.shared.registerForRemoteNotifications()
 			let notificationCenter = UNUserNotificationCenter.current()
 			notificationCenter.delegate = self
 			// for strings-gen

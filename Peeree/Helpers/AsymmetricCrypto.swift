@@ -388,16 +388,6 @@ public class AsymmetricPrivateKey: AsymmetricKey {
 	
 }
 
-extension SecKey {
-	static func check(status: OSStatus, localizedError: String) throws {
-		guard status != errSecSuccess else { return }
-
-		let msg = errorMessage(for: status)
-		NSLog("INFO: OSStatus \(status) check failed: \(msg)")
-		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
-	}
-}
-
 public struct KeyPair {
 	private let privateKey: AsymmetricPrivateKey
 	public let publicKey: AsymmetricPublicKey
