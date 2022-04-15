@@ -199,18 +199,18 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
-		interruptedTransfers = interruptedTransfers.filter { (_, _, interruptedCentral, _) -> Bool in // PERFORMANCE
-			return interruptedCentral.identifier != central.identifier
+		interruptedTransfers = interruptedTransfers.filter { (_, interruptedCharacteristic, interruptedCentral, _) -> Bool in // PERFORMANCE
+			return interruptedCentral.identifier != central.identifier ||
+					interruptedCharacteristic.uuid != characteristic.uuid
 		}
 	}
 	
 	func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
 		// Start sending again
-		let transfers = interruptedTransfers
-		interruptedTransfers.removeAll() // this keeps the elements in transfers
-		for (data, characteristic, central, sendSize) in transfers {
-			send(data: data, via: peripheral, of: characteristic, to: central, sendSize: sendSize)
-		}
+		guard interruptedTransfers.count > 0 else { return }
+		let (data, characteristic, central, sendSize) = interruptedTransfers.removeLast()
+//		NSLog("DEBUG: continue send \(characteristic.uuid.uuidString.left(8))")
+		send(data: data, via: peripheral, of: characteristic, to: central, sendSize: sendSize)
 	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
@@ -442,6 +442,9 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		if fromIndex == data.endIndex {
 			characteristic.value = nil
 		}
+
+		// continue to send other interrupted transfers
+		peripheralManagerIsReady(toUpdateSubscribers: peripheral)
 	}
 }
 

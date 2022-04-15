@@ -158,6 +158,12 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 	@available(iOS 10.0, *)
 	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+		guard !(notification.request.trigger is UNPushNotificationTrigger) else {
+			// do not display remote notifications at all while being in the foreground
+			completionHandler([])
+			return
+		}
+
 		if #available(iOS 14.0, *) {
 			completionHandler(UNNotificationPresentationOptions.banner)
 		} else {

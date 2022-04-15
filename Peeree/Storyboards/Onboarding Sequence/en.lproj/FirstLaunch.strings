@@ -45,7 +45,7 @@
 "TFv-dL-32n.accessibilityLabel" = "Greeting";
 
 /* Class = "UILabel"; text = "Introduction"; ObjectID = "TFv-dL-32n"; */
-"TFv-dL-32n.text" = "Einführung";
+"TFv-dL-32n.text" = "Introduction";
 
 /* Class = "UILabel"; text = "This information is stored on device and is not sent to Peeree servers."; ObjectID = "UHy-zX-ffX"; */
 "UHy-zX-ffX.text" = "This information is stored on device and is not sent to Peeree servers.";

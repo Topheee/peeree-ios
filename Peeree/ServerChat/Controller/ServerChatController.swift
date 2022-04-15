@@ -9,6 +9,10 @@
 import Foundation
 import MatrixSDK
 
+protocol ServerChatControllerDelegate: AnyObject {
+	func configurePusherFailed(_ error: Error)
+}
+
 final class ServerChatController {
 	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
 	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
@@ -17,6 +21,10 @@ final class ServerChatController {
 		NSLog("ERROR: matrix certificate rejected: \(String(describing: _data))")
 		return false
 	}
+
+	static var delegate: ServerChatControllerDelegate? = nil
+
+	static var remoteNotificationsDeviceToken: Data? = nil
 
 	// MARK: Singleton Lifecycle
 
@@ -56,7 +64,7 @@ final class ServerChatController {
 						var reallyOnlyLogin = true
 						creatingInstanceOnlyLoginRequests.forEach { reallyOnlyLogin = reallyOnlyLogin && $0 }
 						guard !reallyOnlyLogin else {
-							reportCreatingInstance(result: .failure(.sdk(error)))
+							reportCreatingInstance(result: .failure(error))
 							return
 						}
 						NSLog("WARN: server chat login failed: \(error.localizedDescription)")
@@ -75,7 +83,7 @@ final class ServerChatController {
 	}
 
 	/// Creates an account on the chat server.
-	static func createAccount(_ completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
+	private static func createAccount(_ completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
 		guard AccountController.shared.accountExists else {
 			completion(.failure(.identityMissing))
 			return
@@ -197,6 +205,10 @@ final class ServerChatController {
 					reportCreatingInstance(result: .failure(.sdk(error)))
 				} else {
 					_instance = c
+
+					// configure the pusher if server chat account didn't exist when AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken() is called
+					Self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
+
 					reportCreatingInstance(result: .success(c))
 				}
 			}
@@ -409,7 +421,7 @@ final class ServerChatController {
 			switch response.toResult() {
 			case .failure(let error):
 				NSLog("ERROR: setPusher() failed: \(error)")
-				InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
+				Self.delegate?.configurePusherFailed(error)
 			case .success():
 				NSLog("DBG: setPusher() was successful.")
 			}
@@ -424,10 +436,6 @@ final class ServerChatController {
 	private var notificationObservers: [Any] = []
 
 	private init(credentials: MXCredentials) {
-		let options = MXSDKOptions.sharedInstance()
-		options.enableCryptoWhenStartingMXSession = true
-		options.disableIdenticonUseForUserAvatar = true
-		options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
 		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
 		session = MXSession(matrixRestClient: restClient)!
 		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
@@ -436,6 +444,7 @@ final class ServerChatController {
 				NSLog("DEBUG: Left room: \(String(describing: _error)).")
 			}
 		})
+
 		// mxRoomSummaryDidChange fires very often, but at some point the room contains a directUserId
 		// mxRoomInitialSync does not fire that often and contains the directUserId only for the receiver. But that is okay, since the initiator of the room knows it anyway
 		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomInitialSync, object: nil, queue: nil) { [weak self] notification in
@@ -709,8 +718,9 @@ final class ServerChatController {
 				completion(setStoreResponse.error ?? unexpectedNilError())
 				return
 			}
-			// as we do everything in the background and the deviceId's are re-generated every time, verifying each device does not give enough benefit here
+			// as we do everything in the background, verifying each device does not give enough benefit here
 			self.session.crypto?.warnOnUnknowDevices = false
+
 			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
 			self.session.start(withSyncFilter: filter) { response in
 				guard response.isSuccess else {

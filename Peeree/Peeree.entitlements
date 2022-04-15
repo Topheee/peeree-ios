@@ -6,6 +6,10 @@
 	<string>development</string>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.86J6LQ96WM.de.peeree.messaging</string>
+	</array>
 	<key>com.apple.security.device.bluetooth</key>
 	<true/>
 	<key>com.apple.security.device.camera</key>

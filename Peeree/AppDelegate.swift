@@ -30,7 +30,7 @@ struct VisualTheme {
 let AppTheme = VisualTheme()
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate, ServerChatControllerDelegate {
 	static let BrowseTabBarIndex = 0
 	static let PinMatchesTabBarIndex = 1
 	static let MeTabBarIndex = 2
@@ -49,9 +49,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		setupAppearance()
-		
+		// Observe singletons
+		ServerChatController.delegate = self
 		AccountController.shared.delegate = self
+		PeeringController.shared.delegate = self
+
+		// Global configuration
+		setupAppearance()
+		configureServerChat()
+
 		notificationManager.initialize()
 		
 		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
@@ -69,7 +75,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			PeeringController.shared.peering = true
 		}
 
-		PeeringController.shared.delegate = self
 		return true
 	}
 
@@ -120,15 +125,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-		NSLog("Remote notifications are unavailable: \(error.localizedDescription)")
+		NSLog("ERROR: Remote notifications are unavailable: \(error.localizedDescription)")
 		InAppNotificationController.display(error: error, localizedTitle: "")
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+		ServerChatController.remoteNotificationsDeviceToken = deviceToken
 		ServerChatController.getOrSetupInstance(onlyLogin: true) { result in
 			switch result {
 			case .failure(let serverChatError):
-				InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "")
+				switch serverChatError {
+				case .identityMissing:
+					// ignored
+					break
+				default:
+					InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "Remote Notification Register Failed")
+				}
+
 			case .success(let serverChatController):
 				serverChatController.configurePusher(deviceToken: deviceToken)
 			}
@@ -160,6 +173,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	// MARK: PeeringControllerDelegate
 
 	func peeringControllerIsReadyToGoOnline() {
+		guard AccountController.shared.accountExists else { return }
 		PeeringController.shared.peering = true
 	}
 
@@ -173,6 +187,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
 	func serverChatLoginFailed(with error: ServerChatError) {
 		InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
+	}
+
+	// MARK: ServerChatControllerDelegate
+
+	func configurePusherFailed(_ error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
 	}
 	
 	// MARK: Private Methods

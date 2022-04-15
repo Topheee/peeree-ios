@@ -42,6 +42,15 @@ func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 	return PeerID(uuidString: String(userId[userId.index(after: atIndex)..<colonIndex]))
 }
 
+/// Must be called as soon as possible.
+func configureServerChat() {
+	let options = MXSDKOptions.sharedInstance()
+	options.enableCryptoWhenStartingMXSession = true
+	options.disableIdenticonUseForUserAvatar = true
+	options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
+	options.applicationGroupIdentifier = messagingAppGroup
+}
+
 // MARK: Types
 
 struct MessageEventData {
