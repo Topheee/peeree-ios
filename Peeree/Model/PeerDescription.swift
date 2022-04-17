@@ -278,7 +278,7 @@ public struct PeereeIdentity: Codable {
 		do {
 			self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: Self.KeyType, size: Self.KeySize)
 		} catch {
-			NSLog("ERROR: creating public key from data: \(error)")
+			elog("creating public key from data: \(error)")
 			return nil
 		}
 	}

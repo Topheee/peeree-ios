@@ -96,11 +96,11 @@ public class AccountController: SecurityDataSource {
 	private var lastObjectionableContentRefresh: Date
 	
 	private func resetSequenceNumber() {
-		NSLog("WARN: resetting sequence number")
+		wlog("resetting sequence number")
 		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
 			guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
 				if let error = _error {
-					NSLog("ERROR: resetting sequence number failed: \(error.localizedDescription)")
+					elog("resetting sequence number failed: \(error.localizedDescription)")
 					self.delegate?.sequenceNumberResetFailed(error: error)
 				}
 				return
@@ -221,7 +221,7 @@ public class AccountController: SecurityDataSource {
 			if let data = model.picture?.jpegData(compressionQuality: AccountController.UploadCompressionQuality) {
 				jpgData = data
 				let str = jpgData[jpgData.startIndex...jpgData.startIndex.advanced(by: 20)].hexString()
-				NSLog("INFO: sending \(str)")
+				ilog("sending \(str)")
 			} else {
 				jpgData = try portrait.jpgData(compressionQuality: AccountController.UploadCompressionQuality)
 			}
@@ -265,7 +265,7 @@ public class AccountController: SecurityDataSource {
 							self.objectionableImageHashes.insert(decodedHash)
 							self.pendingObjectionableImageHashes.removeValue(forKey: decodedHash)
 						} else {
-							NSLog("WARN: Decoding objectionable image hash '\(hexHash)' failed.")
+							wlog("Decoding objectionable image hash '\(hexHash)' failed.")
 						}
 					}
 					self.lastObjectionableContentRefresh = Date()
@@ -418,7 +418,7 @@ public class AccountController: SecurityDataSource {
 			if let error = _error {
 				switch error {
 				case .httpError(403, let messageData):
-					NSLog("ERROR: Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
+					elog("Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
 					reportedError = nil
 				default:
 					self.preprocessAuthenticatedRequestError(error)
@@ -488,10 +488,10 @@ public class AccountController: SecurityDataSource {
 		SwaggerClientAPI.dataSource = self
 
 		if keyPair == nil && _sequenceNumber != nil {
-			NSLog("ERROR: Unrecoverable inconsistant state detected! keyPair is nil and _sequenceNumber is not nil. We need to delete our sequence number. This most likely means that our account was lost!")
+			elog("Unrecoverable inconsistant state detected! keyPair is nil and _sequenceNumber is not nil. We need to delete our sequence number. This most likely means that our account was lost!")
 			clearLocalData(oldPeerID: peerID)
 		} else if keyPair != nil && _sequenceNumber == nil {
-			NSLog("WARN: Inconsistant state! keyPair is not nil and _sequenceNumber is nil.")
+			wlog("Inconsistant state! keyPair is not nil and _sequenceNumber is nil.")
 			// this is probably a recoverable state, since we should be able to restore the sequence number silently with this call:
 			resetSequenceNumber()
 		}
@@ -501,13 +501,13 @@ public class AccountController: SecurityDataSource {
 	private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
 		switch errorResponse {
 		case .httpError(403, let messageData):
-			NSLog("ERROR: Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
+			elog("Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
 			self.resetSequenceNumber()
 		case .parseError(_):
-			NSLog("ERROR: Response could not be parsed.")
+			elog("Response could not be parsed.")
 			break
 		case .sessionTaskError(let statusCode, _, let error):
-			NSLog("ERROR: Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
+			elog("Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
 			if (error as NSError).domain == NSURLErrorDomain {
 				if let sequenceNumber = _sequenceNumber {
 					// we did not even reach the server, so we have to decrement our sequenceNumber again
@@ -540,7 +540,7 @@ public class AccountController: SecurityDataSource {
 			try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
 			try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 		} catch let error {
-			NSLog("ERROR: Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
+			elog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}
 		DispatchQueue.main.async {
 			PeerViewModelController.remove(peerID: oldPeerID)

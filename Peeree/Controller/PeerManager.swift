@@ -75,13 +75,13 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		guard AccountController.shared.hasPinMatch(peerID) else { return }
 		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
 			// TODO handle failure
-			if let error = _error { NSLog("ERROR: indicating pin match failed: \(error)"); return }
+			if let error = _error { elog("indicating pin match failed: \(error)"); return }
 		}
 	}
 
 	func didRange(rssi: NSNumber?, error: Error?) {
 		guard error == nil else {
-			NSLog("Error updating range: \(error!.localizedDescription)")
+			elog("Error updating range: \(error!.localizedDescription)")
 			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 			return
 		}

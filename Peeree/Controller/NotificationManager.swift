@@ -27,7 +27,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
 					// Enable or disable features based on authorization.
 					guard error == nil else {
-						NSLog("ERROR: Error requesting user notification authorization: \(error!.localizedDescription)")
+						elog("Error requesting user notification authorization: \(error!.localizedDescription)")
 						return
 					}
 				}
@@ -115,7 +115,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		let userInfo = response.notification.request.content.userInfo
 		guard let peerIDData = userInfo[NotificationManager.PeerIDKey] as? Data,
 			  let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else {
-			NSLog("ERROR: cannot find peerID in notification content.")
+			elog("cannot find peerID in notification content.")
 			return
 		}
 		guard let action = NotificationActions(rawValue: response.actionIdentifier) else {
@@ -125,7 +125,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			case UNNotificationDismissActionIdentifier:
 				return
 			default:
-				NSLog("ERROR: unknown notification action \(response.actionIdentifier).")
+				elog("unknown notification action \(response.actionIdentifier).")
 				return
 			}
 			return
@@ -137,7 +137,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				  textResponse.userText != "" else { return }
 			PeeringController.shared.interact(with: peerID) { interaction in
 				interaction.send(message: textResponse.userText) { _error in
-					if let error = _error { NSLog("ERR: failed to send message from notification: \(error.localizedDescription)") }
+					if let error = _error { elog("failed to send message from notification: \(error.localizedDescription)") }
 				}
 			}
 		case .peerAppearedPin:
@@ -213,7 +213,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (_error) in
 				if let error = _error {
-					NSLog("ERROR: Scheduling local notification failed: \(error.localizedDescription)")
+					elog("Scheduling local notification failed: \(error.localizedDescription)")
 				}
 			}
 		} else {

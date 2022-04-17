@@ -138,7 +138,7 @@ public class AsymmetricKey: Codable {
 					try KeychainStore.removeFromKeychain(tag: temporaryTag, keyType: type, keyClass: keyClass, size: size)
 				} catch {
 					// only log this
-					NSLog("WARN: Removing temporary key from keychain failed: \(error)")
+					wlog("Removing temporary key from keychain failed: \(error)")
 				}
 			}
 			
@@ -171,7 +171,7 @@ public class AsymmetricKey: Codable {
 					try KeychainStore.removeFromKeychain(tag: tag, keyType: type, keyClass: keyClass, size: size)
 				} catch {
 					// only log this
-					NSLog("INFO: Removing temporary key from keychain failed: \(error)")
+					ilog("Removing temporary key from keychain failed: \(error)")
 				}
 			}
 			
@@ -442,7 +442,7 @@ public struct KeyPair {
 		var _publicKey, _privateKey: SecKey?
 		try SecKey.check(status: SecKeyGeneratePair(attributes as CFDictionary, &_publicKey, &_privateKey), localizedError: NSLocalizedString("Generating cryptographic key pair failed.", comment: "Low level crypto error."))
 		
-		NSLog("INFO: Created key pair with block sizes \(SecKeyGetBlockSize(_privateKey!)), \(SecKeyGetBlockSize(_publicKey!))")
+		ilog("Created key pair with block sizes \(SecKeyGetBlockSize(_privateKey!)), \(SecKeyGetBlockSize(_publicKey!))")
 		
 		privateKey = AsymmetricPrivateKey(key: _privateKey!, type: type, size: size)
 		

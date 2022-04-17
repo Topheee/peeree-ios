@@ -222,7 +222,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	private func messageReceivedSentOrRead(from peerID: PeerID) {
 		guard let peerPath = indexPath(of: peerID) else {
-			NSLog("WARN: Received message from non-displayed peer \(peerID.uuidString).")
+			wlog("Received message from non-displayed peer \(peerID.uuidString).")
 			return
 		}
 

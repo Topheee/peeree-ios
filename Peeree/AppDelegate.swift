@@ -125,7 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-		NSLog("ERROR: Remote notifications are unavailable: \(error.localizedDescription)")
+		elog("Remote notifications are unavailable: \(error.localizedDescription)")
 		InAppNotificationController.display(error: error, localizedTitle: "")
 	}
 

@@ -162,13 +162,10 @@ public final class PersistedPeersController {
 		// we would need to introduce a variable isLoadingPortrait per PeerID, which we would check and set on targetQueue before and after loading bzw. ne, sogar loading state: not loaded, loading, loaded
 		PersistedPeersController.persistenceQueue.async {
 			let url = self.pictureURL(of: peerID)
-			guard let provider = CGDataProvider(url: url as CFURL) else {
-				NSLog("ERROR: could not initialize CGDataProvider.")
-				return
-			}
+			guard let provider = CGDataProvider(url: url as CFURL) else { return }
 			guard let image = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent),
 				  let data = provider.data as Data? else {
-				NSLog("ERROR: getting image or data from CGDataProvider failed.")
+				elog("getting image or data from CGDataProvider failed.")
 				return
 			}
 

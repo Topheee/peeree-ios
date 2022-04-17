@@ -54,7 +54,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			case CBUUID.NicknameSignatureCharacteristicID:
 				nicknameSignatureData = data
 			default:
-				NSLog("ERR: trying to set data for unknown characteristic \(characteristicID). Add it to PeerInfoData.set().")
+				elog("trying to set data for unknown characteristic \(characteristicID). Add it to PeerInfoData.set().")
 				break
 			}
 			var count = Int64(0)
@@ -78,7 +78,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				}
 			} catch {
 				// TODO populate error and inform user about possible malicious peer
-				NSLog("Characteristic verification failed: \(error)")
+				elog("Characteristic verification failed: \(error)")
 				progress.cancel()
 				return nil
 			}
@@ -237,7 +237,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	func authenticate(_ peerID: PeerID) {
 		guard let peripheral = peripheralPeerIDs[peerID], let characteristic = peripheral.peereeService?.get(characteristic: CBUUID.RemoteAuthenticationCharacteristicID) else {
-			NSLog("ERROR: Insufficient resources for reading Bluetooth nonce.")
+			elog("Insufficient resources for reading Bluetooth nonce.")
 			return
 		}
 		peripheral.readValue(for: characteristic)
@@ -295,16 +295,12 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		if error != nil {
-			NSLog("Failed to connect to \(peripheral) (\(error!.localizedDescription)).")
-		} else {
-			NSLog("Failed to connect to \(peripheral).")
-		}
+		wlog("Failed to connect to \(peripheral) (\(error?.localizedDescription ?? "")).")
 		disconnect(peripheral)
 	}
 	
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-//		NSLog("INFO: Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
+//		ilog("Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
 		
 		if _availablePeripherals[peripheral] == nil {
 			_availablePeripherals.updateValue(nil, forKey: peripheral)
@@ -315,13 +311,13 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-		NSLog("Connected peripheral \(peripheral)")
+		dlog("Connected peripheral \(peripheral)")
 		peripheral.delegate = self
 		peripheral.discoverServices([CBUUID.PeereeServiceID])
 	}
 	
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-		NSLog("Disconnected peripheral \(peripheral) \(error != nil ? error!.localizedDescription : "")")
+		dlog("Disconnected peripheral \(peripheral) \(error != nil ? error!.localizedDescription : "")")
 		// error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
 		for characteristicID in CBUUID.SplitCharacteristicIDs {
 			cancelTransmission(to: peripheral, of: characteristicID)
@@ -346,12 +342,12 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
 		guard error == nil else {
-			NSLog("Error discovering services: \(error!.localizedDescription)")
+			elog("Error discovering services: \(error!.localizedDescription)")
 			disconnect(peripheral)
 			return
 		}
 		guard peripheral.services != nil && peripheral.services!.count > 0 else {
-			NSLog("Found peripheral with no services.")
+			wlog("Found peripheral with no services.")
 			disconnect(peripheral)
 			return
 		}
@@ -360,7 +356,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		
 		// Loop through the newly filled peripheral.services array, just in case there's more than one.
 		for service in peripheral.services! {
-			NSLog("Discovered service \(service.uuid.uuidString).")
+			dlog("Discovered service \(service.uuid.uuidString).")
 			guard service.uuid == CBUUID.PeereeServiceID else { continue }
 			
 			peripheral.discoverCharacteristics(CBUUID.PeereeCharacteristicIDs, for:service)
@@ -370,19 +366,19 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
 		guard error == nil else {
-			NSLog("ERROR: discovering characteristics failed: \(error!.localizedDescription)")
+			elog("discovering characteristics failed: \(error!.localizedDescription)")
 			disconnect(peripheral)
 			return
 		}
 		guard let characteristics = service.characteristics else {
-			NSLog("ERROR: discovering characteristics failed: characteristics array is nil.")
+			elog("discovering characteristics failed: characteristics array is nil.")
 			disconnect(peripheral)
 			return
 		}
 
 		var found = false
 		let charUUIDs = characteristics.map { $0.uuid.uuidString.left(8) }
-		NSLog("INFO: Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
+		ilog("Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
 		for characteristic in characteristics {
 			switch characteristic.uuid {
 			case CBUUID.LocalPeerIDCharacteristicID:
@@ -400,7 +396,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		}
 		
 		if !found {
-			NSLog("ERROR: No UUID characteristic found on peripheral \(peripheral). Disconnecting.")
+			elog("No UUID characteristic found on peripheral \(peripheral). Disconnecting.")
 			disconnect(peripheral)
 		}
 	}
@@ -408,11 +404,11 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
 		guard error == nil else {
 			if let cbError = error as? CBError {
-				NSLog("CBError \(cbError.code.rawValue) receiving characteristic \(characteristic.uuid.uuidString) update: \(cbError.localizedDescription)")
+				elog("CBError \(cbError.code.rawValue) receiving characteristic \(characteristic.uuid.uuidString) update: \(cbError.localizedDescription)")
 			} else if let cbAttError = error as? CBATTError {
-				NSLog("CBATTError \(cbAttError.code.rawValue) receiving characteristic \(characteristic.uuid.uuidString) update: \(cbAttError.localizedDescription)")
+				elog("CBATTError \(cbAttError.code.rawValue) receiving characteristic \(characteristic.uuid.uuidString) update: \(cbAttError.localizedDescription)")
 			} else {
-				NSLog("Error \((error! as NSError).code), domain \((error! as NSError).domain) receiving characteristic \(characteristic.uuid.uuidString) update: \(error!.localizedDescription)")
+				elog("Error \((error! as NSError).code), domain \((error! as NSError).domain) receiving characteristic \(characteristic.uuid.uuidString) update: \(error!.localizedDescription)")
 			}
 			cancelTransmission(to: peripheral, of: characteristic.uuid)
 			if characteristic.uuid == CBUUID.AuthenticationCharacteristicID {
@@ -459,14 +455,14 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 
 			guard let peerID = peerID(of: peripheral), let peer = cachedPeers[peerID] else {
-				NSLog("Loaded \(characteristic.uuid.uuidString) resource characteristic of unknown peripheral \(peripheral).")
+				elog("Loaded \(characteristic.uuid.uuidString) resource characteristic of unknown peripheral \(peripheral).")
 				progress.cancel()
 				return
 			}
 			switch characteristic.uuid {
 			case CBUUID.PortraitCharacteristicID:
 				guard let signature = portraitSignatures.removeValue(forKey: peerID) else {
-					NSLog("No signature for loaded portrait provided")
+					elog("No signature for loaded portrait provided")
 					progress.cancel()
 					return
 				}
@@ -474,20 +470,20 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				do {
 					try peer.id.publicKey.verify(message: data, signature: signature)
 				} catch {
-					NSLog("Verification for loaded portrait failed: \(error.localizedDescription)")
+					elog("Verification for loaded portrait failed: \(error.localizedDescription)")
 					progress.cancel()
 					return
 				}
 				
 				guard let image = CGImage(jpegDataProviderSource: CGDataProvider(data: data as CFData)!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent) else {
-					NSLog("Failed to create image with data \(data).")
+					elog("Failed to create image with data \(data).")
 					progress.cancel()
 					return
 				}
 				delegate?.loaded(picture: image, of: peer, hash: data.sha256())
 			case CBUUID.BiographyCharacteristicID:
 				guard let signature = biographySignatures.removeValue(forKey: peerID) else {
-					NSLog("ERROR: No signature for loaded portrait provided.")
+					elog("No signature for loaded portrait provided.")
 					progress.cancel()
 					return
 				}
@@ -495,13 +491,13 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				do {
 					try peer.id.publicKey.verify(message: data, signature: signature)
 				} catch {
-					NSLog("ERROR: Verification for loaded biography failed: \(error.localizedDescription)")
+					elog("Verification for loaded biography failed: \(error.localizedDescription)")
 					progress.cancel()
 					return
 				}
 				
 				guard let biography = String(dataPrefixedEncoding: data) else {
-					NSLog("ERROR: Failed to create biography with data \(data).")
+					elog("Failed to create biography with data \(data).")
 					progress.cancel()
 					return
 				}
@@ -519,7 +515,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		switch transmission.characteristicID {
 		case CBUUID.LocalPeerIDCharacteristicID:
 			guard let peerID = PeerID(data: chunk) else {
-				NSLog("ERROR: Retrieved malformed peer ID \(String(data: chunk, encoding: .utf8) ?? "<non-utf8 string>"). Disconnecting peer \(peripheral).")
+				elog("Retrieved malformed peer ID \(String(data: chunk, encoding: .utf8) ?? "<non-utf8 string>"). Disconnecting peer \(peripheral).")
 				disconnect(peripheral)
 				if #available(iOS 10.0, *) {
 					// does not work yet
@@ -568,7 +564,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			
 		case CBUUID.RemoteAuthenticationCharacteristicID:
 			guard let keyPair = AccountController.shared.keyPair else {
-				NSLog("ERR: KeyPair not available.")
+				elog("KeyPair not available.")
 				return
 			}
 
@@ -579,7 +575,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				peripheral.writeValue(signature, for: characteristic, type: .withResponse)
 			} catch {
 				// TODO present an alert to the user that they won't be able to send messages
-				NSLog("ERROR: Signing Bluetooth remote nonce failed: \(error)")
+				elog("Signing Bluetooth remote nonce failed: \(error)")
 			}
 			
 		case CBUUID.PortraitCharacteristicID, CBUUID.BiographyCharacteristicID:
@@ -592,7 +588,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 
 			// make sure the picture / biography is not too big (13 MB)
 			guard size < 13678905 else {
-				NSLog("ERROR: \(transmission.characteristicID.uuidString.left(8)) is too big: \(size) bytes.")
+				elog("\(transmission.characteristicID.uuidString.left(8)) is too big: \(size) bytes.")
 				return
 			}
 
@@ -638,7 +634,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 						peerData.progress.completedUnitCount = peerData.progress.totalUnitCount
 						peerAppeared(peer, peripheral: peripheral, again: false)
 					} else {
-						NSLog("WARN: Creating peer info failed, disconnecting.")
+						wlog("Creating peer info failed, disconnecting.")
 						// peer info is essential
 						disconnect(peripheral)
 					}
@@ -651,7 +647,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
 		guard error == nil else {
-			NSLog("Error changing notification state: \(error!.localizedDescription)")
+			elog("Error changing notification state: \(error!.localizedDescription)")
 			if !characteristic.isNotifying {
 				cancelTransmission(to: peripheral, of: characteristic.uuid)
 			}
@@ -659,15 +655,15 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		}
 		
 		if (characteristic.isNotifying) {
-			NSLog("Notification began on \(characteristic.uuid.uuidString).")
+			dlog("Notification began on \(characteristic.uuid.uuidString).")
 		} else {
-			NSLog("Notification stopped on \(characteristic.uuid.uuidString).")
+			dlog("Notification stopped on \(characteristic.uuid.uuidString).")
 		}
 	}
 	
 	#if os(iOS)
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-		NSLog("Did read RSSI \(RSSI) of peripheral \(peripheral).")
+		dlog("Did read RSSI \(RSSI) of peripheral \(peripheral).")
 		guard let peerID = peerID(of: peripheral) else { assertionFailure(); return }
 		delegate?.didRange(peerID, rssi: RSSI, error: error)
 	}
@@ -679,7 +675,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	#endif
 	
 	func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-		NSLog("Peripheral transitioned from services \(invalidatedServices) to \(String(describing: peripheral.services)).")
+		dlog("Peripheral transitioned from services \(invalidatedServices) to \(String(describing: peripheral.services)).")
 		if invalidatedServices.count > 0 && (peripheral.services == nil || peripheral.services!.isEmpty) {
 			if peripheral.state == .connected {
 				disconnect(peripheral)
@@ -703,7 +699,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			callbackQueue.async { completion(completionError) }
 		}
 		guard error == nil else {
-			NSLog("Error writing \(characteristic.uuid.uuidString.left(8)) to PeerID \(peerID(of: peripheral)?.uuidString.left(8) ?? "unknown"): \(error!.localizedDescription).")
+			elog("Error writing \(characteristic.uuid.uuidString.left(8)) to PeerID \(peerID(of: peripheral)?.uuidString.left(8) ?? "unknown"): \(error!.localizedDescription).")
 			return
 		}
 		guard let peerID = peerID(of: peripheral) else { return }
@@ -718,7 +714,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
-		NSLog("Peripheral \(peripheral) did update name")
+		dlog("Peripheral \(peripheral) did update name")
 	}
 	
 	override init() {
@@ -746,11 +742,11 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			return
 		}
 
-		NSLog("peerInfoTransmissions[peerID] == nil: \(peerInfoTransmissions[peerID] == nil)")
-		NSLog("!(activeTransmissions.contains { $0.key.peripheralID == peripheral.identifier }): \(!(activeTransmissions.contains { $0.key.peripheralID == peripheral.identifier }))")
-		NSLog("!(reliableWriteProcesses.contains { $0.key.peripheralID == peripheral.identifier }): \(!(reliableWriteProcesses.contains { $0.key.peripheralID == peripheral.identifier }))")
-		NSLog("portraitSignatures[peerID] == nil: \(portraitSignatures[peerID] == nil)")
-		NSLog("biographySignatures[peerID] == nil: \(biographySignatures[peerID] == nil)")
+		dlog("peerInfoTransmissions[peerID] == nil: \(peerInfoTransmissions[peerID] == nil)")
+		dlog("!(activeTransmissions.contains { $0.key.peripheralID == peripheral.identifier }): \(!(activeTransmissions.contains { $0.key.peripheralID == peripheral.identifier }))")
+		dlog("!(reliableWriteProcesses.contains { $0.key.peripheralID == peripheral.identifier }): \(!(reliableWriteProcesses.contains { $0.key.peripheralID == peripheral.identifier }))")
+		dlog("portraitSignatures[peerID] == nil: \(portraitSignatures[peerID] == nil)")
+		dlog("biographySignatures[peerID] == nil: \(biographySignatures[peerID] == nil)")
 		// be careful: if a new transmission or reliable-write characteristic is added, we need to add it here, too!
 		guard peerInfoTransmissions[peerID] == nil &&
 			!(activeTransmissions.contains { $0.key.peripheralID == peripheral.identifier }) &&
@@ -792,7 +788,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 
 			guard let characteristic = peripheral.peereeService?.get(characteristic: characteristicID) else {
-				NSLog("ERR: Tried to load unknown characteristic \(characteristicID.uuidString).")
+				elog("Tried to load unknown characteristic \(characteristicID.uuidString).")
 				callback(nil)
 				return
 			}

@@ -25,7 +25,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		guard let firstViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.FirstViewControllerID),
 			  let secondViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.SecondViewControllerID),
 			  let thirdViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.ThirdViewControllerID) else {
-			NSLog("ERR: Could not instantiate onboarding view controllers.")
+			elog("Could not instantiate onboarding view controllers.")
 			dismiss(animated: true, completion: nil)
 			return
 		}

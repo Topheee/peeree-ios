@@ -28,7 +28,7 @@ public class PeerViewModelController {
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
 	public static func viewModel(of peerID: PeerID) -> PeerViewModel {
 		let clos: () -> PeerViewModel = {
-			NSLog("WRN: From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
+			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let peer = Peer(peerID: peerID, publicKey: bogusKey, nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
 			return PeerViewModel(isAvailable: false, peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil, pictureClassification: .none)
@@ -40,7 +40,7 @@ public class PeerViewModelController {
 	/// Makes modifications to the view model of `peerID`.
 	public static func modify(peerID: PeerID, modifier: (inout PeerViewModel) -> ()) {
 		let clos: () -> PeerViewModel = {
-			NSLog("WRN: From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
+			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let peer = Peer(peerID: peerID, publicKey: bogusKey, nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
 			return PeerViewModel(isAvailable: false, peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil, pictureClassification: .none)

@@ -22,7 +22,7 @@ extension CBPeripheral {
 			if characteristic.properties.contains(.read) {
 				readValue(for: characteristic)
 			} else {
-				NSLog("Attempt to read unreadable characteristic \(characteristic.uuid.uuidString)")
+				elog("Attempt to read unreadable characteristic \(characteristic.uuid.uuidString)")
 			}
 		}
 	}

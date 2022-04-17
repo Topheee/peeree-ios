@@ -117,15 +117,12 @@ public final class UserPeer {
 		do {
 			peerInfo = try unarchiveFromUserDefs(PeerInfo.self, UserPeer.PrefKey)
 		} catch let error {
-			NSLog("ERROR: could not persist UserPeer: \(error.localizedDescription)")
+			elog("could not persist UserPeer: \(error.localizedDescription)")
 		}
 
-		if peerInfo?.hasPicture ?? false {
-			if let provider = CGDataProvider(url: UserPeer.pictureResourceURL as CFURL) {
-				cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
-			} else {
-				NSLog("ERROR: could not initialize CGDataProvider.")
-			}
+		if peerInfo?.hasPicture ?? false,
+		   let provider = CGDataProvider(url: UserPeer.pictureResourceURL as CFURL) {
+			cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
 		}
 
 		// if the user leveled up we need to update it in our PeerInfo as well (this is not very accurate but suffices for now)
@@ -169,7 +166,7 @@ public final class UserPeer {
 		do {
 			try deletePicture()
 		} catch let error {
-			NSLog("ERROR: could not delete UserPeer portrait: \(error.localizedDescription)")
+			elog("could not delete UserPeer portrait: \(error.localizedDescription)")
 		}
 	}
 
@@ -208,7 +205,7 @@ public final class UserPeer {
 		do {
 			try archiveInUserDefs(info, forKey: UserPeer.PrefKey)
 		} catch let error {
-			NSLog("ERROR: could not persist UserPeer: \(error.localizedDescription)")
+			elog("could not persist UserPeer: \(error.localizedDescription)")
 		}
 	}
 

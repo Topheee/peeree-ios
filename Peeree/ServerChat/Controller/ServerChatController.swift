@@ -18,7 +18,7 @@ final class ServerChatController {
 	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
 	// we need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
 	static let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
-		NSLog("ERROR: matrix certificate rejected: \(String(describing: _data))")
+		elog("matrix certificate rejected: \(String(describing: _data))")
 		return false
 	}
 
@@ -67,7 +67,7 @@ final class ServerChatController {
 							reportCreatingInstance(result: .failure(error))
 							return
 						}
-						NSLog("WARN: server chat login failed: \(error.localizedDescription)")
+						wlog("server chat login failed: \(error.localizedDescription)")
 						createAccount { createAccountResult in
 							switch createAccountResult {
 							case .success(let credentials):
@@ -107,7 +107,7 @@ final class ServerChatController {
 			do {
 				try ServerChatController.removePasswordFromKeychain()
 			} catch let removeError {
-				NSLog("WARN: Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
+				wlog("Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
 			}
 
 			completion(.failure(.sdk(error)))
@@ -125,7 +125,7 @@ final class ServerChatController {
 				do {
 					try ServerChatController.removePasswordFromKeychain()
 				} catch {
-					NSLog("ERROR: Could not remove password from keychain after failed registration: \(error.localizedDescription)")
+					elog("Could not remove password from keychain after failed registration: \(error.localizedDescription)")
 				}
 				completion(.failure(.sdk(error)))
 
@@ -174,16 +174,16 @@ final class ServerChatController {
 			if let error = response.error as NSError?,
 			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
 			   mxErrCode == "M_INVALID_USERNAME" {
-				NSLog("ERROR: Our account seems to be deleted. Removing local password to be able to re-register.")
+				elog("Our account seems to be deleted. Removing local password to be able to re-register.")
 				do {
 					try ServerChatController.removePasswordFromKeychain()
 				} catch let pwError {
-					NSLog("WARN: Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
+					wlog("Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
 				}
 			}
 
 			guard let json = response.value else {
-				NSLog("ERROR: Login response is nil.")
+				elog("Login response is nil.")
 				completion(.failure(.fatal(unexpectedNilError())))
 				return
 			}
@@ -232,7 +232,7 @@ final class ServerChatController {
 		}
 		room.leave { response in
 			if let error = response.error {
-				NSLog("ERROR: Failed leaving room: \(error.localizedDescription)")
+				elog("Failed leaving room: \(error.localizedDescription)")
 			}
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
 			self.forget(rooms: leftoverRooms, completion: completion)
@@ -254,11 +254,11 @@ final class ServerChatController {
 				do {
 					try ServerChatController.removePasswordFromKeychain()
 				} catch let error {
-					NSLog("ERROR: \(error.localizedDescription)")
+					elog("\(error.localizedDescription)")
 				}
 				// it seems we need to log out after we deleted the account
 				self.logout { _error in
-					_error.map { NSLog("ERROR: Logout after account deletion failed: \($0.localizedDescription)") }
+					_error.map { elog("Logout after account deletion failed: \($0.localizedDescription)") }
 					// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
 					completion(nil)
 				}
@@ -420,10 +420,10 @@ final class ServerChatController {
 		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: Self.userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
 			switch response.toResult() {
 			case .failure(let error):
-				NSLog("ERROR: setPusher() failed: \(error)")
+				elog("setPusher() failed: \(error)")
 				Self.delegate?.configurePusherFailed(error)
 			case .success():
-				NSLog("DBG: setPusher() was successful.")
+				dlog("setPusher() was successful.")
 			}
 		}
 	}
@@ -441,7 +441,7 @@ final class ServerChatController {
 		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
 			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
 			strongSelf.forget(room: room) { _error in
-				NSLog("DEBUG: Left room: \(String(describing: _error)).")
+				dlog("Left room: \(String(describing: _error)).")
 			}
 		})
 
@@ -451,11 +451,11 @@ final class ServerChatController {
 			guard let strongSelf = self else { return }
 			for room in strongSelf.session.rooms {
 				guard let userId = room.directUserId else {
-					NSLog("ERROR: Found non-direct room.")
+					elog("Found non-direct room.")
 					return
 				}
 				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					NSLog("ERROR: Found room with non-PeerID \(userId).")
+					elog("Found room with non-PeerID \(userId).")
 					return
 				}
 				self?.addRoomAndListenToEvents(room, for: peerID)
@@ -495,7 +495,7 @@ final class ServerChatController {
 	}
 
 	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
-		NSLog("DBG: Asked to create room for \(peerID.uuidString).")
+		dlog("Asked to create room for \(peerID.uuidString).")
 		let peerUserId = serverChatUserId(for: peerID)
 		if let room = roomsForPeerIDs[peerID] ?? session.directJoinedRoom(withUserId: peerUserId) {
 			completion(.success(room))
@@ -520,13 +520,13 @@ final class ServerChatController {
 
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
 		if let oldRoom = roomsForPeerIDs[peerID] {
-			NSLog("WARN: Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
+			wlog("Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
 			guard oldRoom.roomId != room.roomId else {
-				NSLog("WRN: Tried to add already known room \(room.roomId ?? "<unknown room id>").")
+				wlog("Tried to add already known room \(room.roomId ?? "<unknown room id>").")
 				return
 			}
 			self.forget(room: oldRoom) { _error in
-				NSLog("DEBUG: Left old room: \(String(describing: _error)).")
+				dlog("Left old room: \(String(describing: _error)).")
 			}
 		}
 		roomsForPeerIDs[peerID] = room
@@ -552,7 +552,7 @@ final class ServerChatController {
 					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
 					if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 				} catch let error {
-					NSLog("ERR: \(error)")
+					elog("\(error)")
 				}
 			case .roomEncrypted:
 				encryptedEvents.append(event)
@@ -564,7 +564,7 @@ final class ServerChatController {
 
 		room.liveTimeline { _timeline in
 			guard let timeline = _timeline else {
-				NSLog("ERROR: No timeline retrieved.")
+				elog("No timeline retrieved.")
 				return
 			}
 
@@ -577,7 +577,7 @@ final class ServerChatController {
 			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { _failedEvents in
 				if let failedEvents = _failedEvents, failedEvents.count > 0 {
 					for failedEvent in failedEvents {
-						NSLog("WARN: Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
+						wlog("Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
 					}
 				}
 
@@ -591,7 +591,7 @@ final class ServerChatController {
 							catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
 							if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 						} catch let error {
-							NSLog("ERR: \(error)")
+							elog("\(error)")
 						}
 					default:
 						break
@@ -621,10 +621,10 @@ final class ServerChatController {
 							}
 						}
 					} catch let error {
-						NSLog("ERR: \(error)")
+						elog("\(error)")
 					}
 				default:
-					NSLog("WARN: Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
+					wlog("Received event we didn't listen for: \(event.type ?? "<unknown event type>").")
 				}
 			}
 		}
@@ -635,12 +635,12 @@ final class ServerChatController {
 		switch event.eventType {
 		case .roomMember:
 			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
-				NSLog("ERROR: Cannot construct MXRoomCreateContent from event content.")
+				elog("Cannot construct MXRoomCreateContent from event content.")
 				return
 			}
 			guard let userId = event.stateKey else {
 				// we are only interested in joins from other people
-				NSLog("ERROR: No stateKey present in membership event.")
+				elog("No stateKey present in membership event.")
 				return
 			}
 
@@ -652,12 +652,12 @@ final class ServerChatController {
 			case kMXMembershipStringInvite:
 				guard userId == ServerChatController.userId else {
 					// we are only interested in invites for us
-					NSLog("INFO: Received invite event from sender other than us.")
+					ilog("Received invite event from sender other than us.")
 					return
 				}
 				self.session.joinRoom(event.roomId) { joinResponse in
 					guard joinResponse.isSuccess else {
-						NSLog("ERROR: Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
+						elog("Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
 						return
 					}
 					// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
@@ -674,21 +674,21 @@ final class ServerChatController {
 			case kMXMembershipStringLeave:
 				guard userId != ServerChatController.userId else {
 					// we are only interested in leaves from other people
-					NSLog("DEBUG: Received our leave event.")
+					dlog("Received our leave event.")
 					return
 				}
 				guard let room = self.session.room(withRoomId: event.roomId) else {
-					NSLog("ERROR: No such room: \(event.roomId ?? "<nil>").")
+					elog("No such room: \(event.roomId ?? "<nil>").")
 					return
 				}
 
 				// I hope this suspends the event stream as well…
 				self.forget(room: room) { _error in
-					NSLog("DEBUG: Left empty room: \(String(describing: _error)).")
+					dlog("Left empty room: \(String(describing: _error)).")
 				}
 
 				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					NSLog("ERROR: cannot construct PeerID from room directUserId \(userId).")
+					elog("cannot construct PeerID from room directUserId \(userId).")
 					return
 				}
 
@@ -696,17 +696,17 @@ final class ServerChatController {
 
 				DispatchQueue.main.async {
 					guard let id = PeerViewModelController.viewModels[peerID]?.peer.id else {
-						NSLog("WARN: No Peeree Identity available for \(peerID).")
+						wlog("No Peeree Identity available for \(peerID).")
 						return
 					}
 					AccountController.shared.updatePinStatus(of: id, force: true)
 				}
 
 			default:
-				NSLog("WARN: Unexpected room membership \(memberContent.membership ?? "<nil>").")
+				wlog("Unexpected room membership \(memberContent.membership ?? "<nil>").")
 			}
 		default:
-			NSLog("WARN: Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
+			wlog("Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
 			break
 		}
 	}
@@ -729,18 +729,18 @@ final class ServerChatController {
 				}
 				for room in self.session.rooms {
 					guard let userId = room.directUserId else {
-						NSLog("ERROR: Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
+						elog("Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
 						continue
 					}
 					guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-						NSLog("ERROR: Server chat userId \(userId) is not a PeerID.")
+						elog("Server chat userId \(userId) is not a PeerID.")
 						continue
 					}
 					self.addRoomAndListenToEvents(room, for: peerID)
 				}
 
 //				_ = self.session.listenToEvents { event, direction, customObject in
-//					NSLog("DEBUG: global event \(event), \(direction), \(String(describing: customObject))")
+//					dlog("global event \(event), \(direction), \(String(describing: customObject))")
 //				}
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
 					self.process(event: event)
@@ -770,7 +770,7 @@ extension MXSession {
 	func extensiveLogout(_ completion: @escaping (Error?) -> ()) {
 		logout { response in
 			if response.isFailure {
-				NSLog("ERROR: Failed to log out successfully - still cleaning up session data.")
+				elog("Failed to log out successfully - still cleaning up session data.")
 			}
 			// *** roughly based on MXKAccount.closeSession(true) ***
 			// Force a reload of device keys at the next session start.

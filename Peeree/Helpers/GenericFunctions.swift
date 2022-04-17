@@ -94,28 +94,6 @@ func errorMessage(for status: OSStatus) -> String {
 	return msg
 }
 
-/// Debug-level logging of `message`.
-public func dlog(_ message: String) {
-#if DEBUG
-	NSLog("[DBG] \(message)")
-#endif
-}
-
-/// Info-level logging of `message`.
-public func ilog(_ message: String) {
-	NSLog("[INF] \(message)")
-}
-
-/// Warning-level logging of `message`.
-public func wlog(_ message: String) {
-	NSLog("[WRN] \(message)")
-}
-
-/// Error-level logging of `message`.
-public func elog(_ message: String) {
-	NSLog("[ERR] \(message)")
-}
-
 func generateRandomData(length: Int) throws -> Data {
 	var nonce = Data(count: length)
 	let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, length, $0) })
@@ -334,7 +312,7 @@ extension SecKey {
 		guard status != errSecSuccess else { return }
 
 		let msg = errorMessage(for: status)
-		NSLog("DEBUG: OSStatus \(status) check failed: \(msg)")
+		dlog("OSStatus \(status) check failed: \(msg)")
 		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
 	}
 }

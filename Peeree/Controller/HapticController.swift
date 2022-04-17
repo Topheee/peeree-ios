@@ -24,13 +24,13 @@ class HapticController {
 					let engine = try CHHapticEngine()
 					engine.isAutoShutdownEnabled = true
 					engine.stoppedHandler = { reason in
-						NSLog("INFO: The haptic engine stopped: \(reason.rawValue)")
+						ilog("The haptic engine stopped: \(reason.rawValue)")
 						HapticController.hapticEngine = nil
 					}
-					engine.resetHandler = { NSLog("WARN: The haptic engine reset.") }
+					engine.resetHandler = { wlog("The haptic engine reset.") }
 					engine.notifyWhenPlayersFinished { (_error) -> CHHapticEngine.FinishedAction in
 						if let error = _error {
-							NSLog("ERROR: Haptic player finished with error: \(error.localizedDescription)")
+							elog("Haptic player finished with error: \(error.localizedDescription)")
 						}
 						return .stopEngine
 					}
@@ -59,7 +59,7 @@ class HapticController {
 
 				try player.start(atTime: 0)
 			} catch let error {
-				NSLog("ERROR: Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
+				elog("Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
 			}
 		}
 	}
@@ -79,7 +79,7 @@ class HapticController {
 
 				try player.start(atTime: 0)
 			} catch let error {
-				NSLog("ERROR: Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
+				elog("Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
 			}
 		}
 	}

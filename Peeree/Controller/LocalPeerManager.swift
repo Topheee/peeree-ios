@@ -98,7 +98,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
 		guard error == nil else {
-			NSLog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)). - Stopping advertising.")
+			elog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)). - Stopping advertising.")
 			stopAdvertising()
 			return
 		}
@@ -154,7 +154,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					portraitSignature = try keyPair.sign(message: imageData)
 				}
 			} catch {
-				NSLog("ERROR: Failed to create signature characteristics. (\(error.localizedDescription))")
+				elog("Failed to create signature characteristics. (\(error.localizedDescription))")
 			}
 			let peerIDSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read], value: peerIDSignature, permissions: [.readable])
 			let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
@@ -177,12 +177,12 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			return
 		}
 		
-		NSLog("ERROR: Failed to start advertising. (\(theError.localizedDescription))")
+		elog("Failed to start advertising. (\(theError.localizedDescription))")
 		stopAdvertising()
 	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
-		NSLog("DBG: Central \(central.identifier.uuidString.left(8)) did subscribe to \(characteristic.uuid.uuidString.left(8)). Read size: \(central.maximumUpdateValueLength).")
+		dlog("Central \(central.identifier.uuidString.left(8)) did subscribe to \(characteristic.uuid.uuidString.left(8)). Read size: \(central.maximumUpdateValueLength).")
 		switch characteristic.uuid {
 		case CBUUID.BiographyCharacteristicID:
 			send(data: biography.data(prefixedEncoding: biography.smallestEncoding) ?? Data(), via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
@@ -191,7 +191,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				let data = try Data(contentsOf: pictureResourceURL)
 				send(data: data, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
 			} catch {
-				NSLog("ERROR: Failed to read user portrait: \(error.localizedDescription)")
+				elog("Failed to read user portrait: \(error.localizedDescription)")
 			}
 		default:
 			break
@@ -209,13 +209,13 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		// Start sending again
 		guard interruptedTransfers.count > 0 else { return }
 		let (data, characteristic, central, sendSize) = interruptedTransfers.removeLast()
-//		NSLog("DEBUG: continue send \(characteristic.uuid.uuidString.left(8))")
+//		dlog("continue send \(characteristic.uuid.uuidString.left(8))")
 		send(data: data, via: peripheral, of: characteristic, to: central, sendSize: sendSize)
 	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
 		let centralID = request.central.identifier
-		NSLog("Did receive read on \(request.characteristic.uuid.uuidString.left(8)) from central \(centralID)")
+		dlog("Did receive read on \(request.characteristic.uuid.uuidString.left(8)) from central \(centralID)")
 		if let data = peer.getCharacteristicValue(of: request.characteristic.uuid) {
 			// dead code, as we provided those values when we created the mutable characteristics
 			if (request.offset >= data.count) {
@@ -237,7 +237,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				} else {
 					let subSignature = signature.subdata(in: request.offset ..< signature.count-request.offset)
 					if subSignature.count < 1 {
-						NSLog("ERROR: requested signature range is empty. Offset: \(request.offset), signature size: \(signature.count)")
+						elog("requested signature range is empty. Offset: \(request.offset), signature size: \(signature.count)")
 						peripheral.respond(to: request, withResult: .invalidOffset)
 					} else {
 						request.value = subSignature
@@ -245,7 +245,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					}
 				}
 			} catch {
-				NSLog("ERROR: Signing Bluetooth nonce failed: \(error)")
+				elog("Signing Bluetooth nonce failed: \(error)")
 				peripheral.respond(to: request, withResult: .requestNotSupported)
 			}
 		} else if request.characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
@@ -261,12 +261,12 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				nonce.resetBytes(in: 0..<nonce.count)
 				peripheral.respond(to: request, withResult: .success)
 			} catch let error {
-				NSLog("ERROR: Generating random Bluetooth nonce failed: \(error.localizedDescription).")
+				elog("Generating random Bluetooth nonce failed: \(error.localizedDescription).")
 				peripheral.respond(to: request, withResult: .unlikelyError)
 			}
 		} else {
 			// TODO this branch is executed, when no portrait is configured (and PortraitSignatureCharacteristicID is nil)
-			NSLog("WARN: Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
+			wlog("Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
 			peripheral.respond(to: request, withResult: .requestNotSupported)
 		}
 	}
@@ -281,10 +281,10 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		var _message: (PeerID, String)? = nil
 		
 		for request in requests {
-			NSLog("Did receive write on \(request.characteristic.uuid.uuidString.left(8)) from central \(request.central.identifier)")
+			dlog("Did receive write on \(request.characteristic.uuid.uuidString.left(8)) from central \(request.central.identifier)")
 			guard let data = request.value else {
 				// this probably never happens
-				NSLog("ERROR: received empty write request.")
+				elog("received empty write request.")
 				error = .unlikelyError
 				break
 			}
@@ -348,7 +348,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				let authFailedError = CBATTError.insufficientAuthorization
 				
 				guard let publicKeyData = AccountController.shared.publicKey(of: peerID) else {
-					NSLog("ERROR: No public key data available for \(peerID.uuidString).")
+					elog("No public key data available for \(peerID.uuidString).")
 					error = authFailedError // signature verification failed
 					break
 				}
@@ -362,12 +362,12 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
 					if !AccountController.shared.hasPinMatch(peerID) {
 						error = authFailedError // not a pin match
-						NSLog("WARN: the peer \(peerID) which did not pin match us tried to authenticate to us.")
+						wlog("the peer \(peerID) which did not pin match us tried to authenticate to us.")
 						break
 					}
 					authenticatedPinMatchedCentrals[request.central.identifier] = peerID
 				} catch let exc {
-					NSLog("ERROR: A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
+					elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
 					error = authFailedError // signature verification failed
 					break
 				}
@@ -404,6 +404,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			
 			let sizeData = Data(bytesNoCopy: &size, count: MemoryLayout<CBCharacteristic.SplitCharacteristicSize>.size, deallocator: Data.Deallocator.none)
 			guard peripheral.updateValue(sizeData, for: characteristic, onSubscribedCentrals: [central]) else {
+//				dlog("size send interrupted \(characteristic.uuid.uuidString.left(8))")
 				interruptedTransfers.append((data, characteristic, central, true))
 				return
 			}
@@ -428,6 +429,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			// If it didn't work, drop out and wait for the callback
 			guard send else {
 				interruptedTransfers.append((data.subdata(in: fromIndex..<data.endIndex), characteristic, central, false))
+//				dlog("data send interrupted \(characteristic.uuid.uuidString.left(8)) at \(fromIndex) of \(data.endIndex)")
 				return
 			}
 			
@@ -440,6 +442,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		}
 		
 		if fromIndex == data.endIndex {
+			dlog("data send truly finished \(characteristic.uuid.uuidString.left(8))")
 			characteristic.value = nil
 		}
 
