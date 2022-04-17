@@ -548,8 +548,3 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 }
-
-extension PeereeIdentity {
-	public var pinMatched: Bool { AccountController.shared.hasPinMatch(peerID) }
-	public var pinned: Bool { AccountController.shared.isPinned(self) }
-}

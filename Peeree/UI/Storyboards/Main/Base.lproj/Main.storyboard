@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HIO-b7-1gr">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HIO-b7-1gr">
     <device id="retina3_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
@@ -388,16 +388,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="240" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="740" axis="vertical" alignment="center" spacing="12" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="12" y="52" width="296" height="306"/>
+                                <rect key="frame" x="12" y="52" width="296" height="326"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" translatesAutoresizingMaskIntoConstraints="NO" id="rHp-W3-COa">
-                                        <rect key="frame" x="82" y="0.0" width="132" height="132"/>
+                                        <rect key="frame" x="72" y="0.0" width="152" height="152"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" horizontalHuggingPriority="241" verticalHuggingPriority="241" horizontalCompressionResistancePriority="741" verticalCompressionResistancePriority="741" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="132" height="132"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="152" height="152"/>
                                                 <subviews>
                                                     <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="100" height="100"/>
+                                                        <rect key="frame" x="16" y="16" width="120" height="120"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person" label="Portrait">
                                                             <bool key="isElement" value="YES"/>
                                                         </accessibility>
@@ -407,9 +407,9 @@
                                                         </constraints>
                                                     </imageView>
                                                     <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC" customClass="RoundedVisualEffectView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="100" height="100"/>
+                                                        <rect key="frame" x="16" y="16" width="120" height="120"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
-                                                            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         </view>
                                                         <blurEffect style="regular"/>
@@ -448,7 +448,7 @@
                                         </constraints>
                                     </view>
                                     <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="HnQ-9F-bJd">
-                                        <rect key="frame" x="0.0" y="144" width="296" height="162"/>
+                                        <rect key="frame" x="0.0" y="164" width="296" height="162"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
                                                 <rect key="frame" x="8" y="0.0" width="280" height="162"/>
@@ -615,7 +615,7 @@
                                         </constraints>
                                     </view>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
-                                        <rect key="frame" x="93" y="306" width="110" height="0.0"/>
+                                        <rect key="frame" x="93" y="326" width="110" height="0.0"/>
                                         <accessibility key="accessibilityConfiguration">
                                             <bool key="isElement" value="NO"/>
                                         </accessibility>
@@ -624,7 +624,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="247" verticalHuggingPriority="247" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="cqN-Sb-ZzT" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="374" width="320" height="106"/>
+                                <rect key="frame" x="0.0" y="394" width="320" height="86"/>
                                 <subviews>
                                     <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fMG-w9-XfX" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="128" y="6" width="64" height="6"/>
@@ -728,14 +728,14 @@
                                         <dataDetectorType key="dataDetectorTypes" phoneNumber="YES"/>
                                     </textView>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="SIgnature" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eGm-zA-15S">
-                                        <rect key="frame" x="20" y="3" width="280" height="31.5"/>
+                                        <rect key="frame" x="20" y="-17" width="280" height="31.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="BradleyHandITCTT-Bold" family="Bradley Hand" pointSize="25"/>
                                         <color key="textColor" systemColor="systemIndigoColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
-                                        <rect key="frame" x="20" y="42.5" width="280" height="14.5"/>
+                                        <rect key="frame" x="20" y="22.5" width="280" height="14.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="thin" pointSize="12"/>
                                         <nil key="textColor"/>
@@ -960,10 +960,10 @@
                                             </subviews>
                                         </stackView>
                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="EZQ-s8-xvp">
-                                            <rect key="frame" x="16" y="82" width="288" height="332.5"/>
+                                            <rect key="frame" x="22" y="87.5" width="276.5" height="321"/>
                                             <subviews>
                                                 <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" image="PortraitUnavailable" translatesAutoresizingMaskIntoConstraints="NO" id="RZ1-xL-Yml">
-                                                    <rect key="frame" x="0.0" y="0.0" width="288" height="288"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="276.5" height="276.5"/>
                                                     <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person you just matched" label="Portrait">
                                                         <accessibilityTraits key="traits" image="YES" notEnabled="YES"/>
                                                         <bool key="isElement" value="YES"/>
@@ -981,7 +981,7 @@
                                                     </variation>
                                                 </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Person Name" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1Eb-LT-XnB">
-                                                    <rect key="frame" x="0.0" y="312" width="288" height="20.5"/>
+                                                    <rect key="frame" x="0.0" y="300.5" width="276.5" height="20.5"/>
                                                     <accessibility key="accessibilityConfiguration" hint="Name of your pin match" label="Person Name">
                                                         <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
                                                     </accessibility>
@@ -1626,23 +1626,23 @@
             <objects>
                 <viewController id="ZaK-Ee-yIa" customClass="MessagingViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Txw-fJ-F7E">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="396"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="402"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="313"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="308"/>
                                 <connections>
                                     <segue destination="XqI-Aj-cpS" kind="embed" id="QbC-f3-IGm"/>
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
-                                <rect key="frame" x="0.0" y="313" width="320" height="40"/>
+                                <rect key="frame" x="0.0" y="308" width="320" height="45"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="4" width="304" height="30"/>
+                                        <rect key="frame" x="8" y="4" width="304" height="35"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="283" height="30"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="283" height="35"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <color key="textColor" systemColor="labelColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
@@ -1662,7 +1662,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="291" y="0.0" width="13" height="30"/>
+                                                <rect key="frame" x="291" y="0.0" width="13" height="35"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                                 <state key="normal">
                                                     <imageReference key="image" image="paperplane.circle.fill" symbolScale="large"/>
@@ -1699,7 +1699,7 @@
                     <navigationItem key="navigationItem" prompt="Peer" largeTitleDisplayMode="always" id="Vvs-dp-GcW">
                         <nil key="title"/>
                         <button key="titleView" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="aS1-Mz-42g">
-                            <rect key="frame" x="138" y="37" width="44" height="44"/>
+                            <rect key="frame" x="138" y="34" width="44" height="44"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="tintColor" systemColor="labelColor"/>
                             <state key="normal" image="PersonIcon"/>
@@ -1910,13 +1910,13 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="Qvq-U3-y04"/>
+        <segue reference="xMu-Pu-iqx"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34.5"/>
-        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
+        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplatePressed" width="1024" height="1024"/>
