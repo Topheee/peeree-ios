@@ -91,16 +91,15 @@ public final class PersistedPeersController {
 	}
 
 	/// Removes the returned `Peer` instances of `query` from the persisted peers set and whipes them and all associated data from disk.
-	public func filterPeers(query: @escaping (Set<Peer>) -> (Set<Peer>)) {
+	public func removePeers(_ peers: Set<Peer>) {
 		targetQueue.async {
-			let removedPeers = query(self.persistedPeers)
-			self.persistedPeers.subtract(removedPeers)
-			for peer in removedPeers {
+			self.persistedPeers.subtract(peers)
+			for peer in peers {
 				self.persistedBlobs.removeValue(forKey: peer.id.peerID)
 				self.persistedLastReads.removeValue(forKey: peer.id.peerID)
 			}
 			PersistedPeersController.persistenceQueue.async {
-				for peer in removedPeers {
+				for peer in peers {
 					try? self.deleteFile(at: self.pictureURL(of: peer.id.peerID))
 				}
 			}

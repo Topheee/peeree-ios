@@ -11,7 +11,13 @@ import Foundation
 public typealias PeerID = UUID
 
 extension PeerID {
+	static let NotificationInfoKey = "peerID"
+
 	private static let uuidEncoding = String.Encoding.ascii
+
+	/// Whether this is the model of the user's info.
+	public var isLocalPeer: Bool { return self == PeereeIdentityViewModelController.userPeerID }
+
 	init?(data: Data) {
 		guard let string = String(data: data, encoding: PeerID.uuidEncoding) else {
 			assertionFailure()

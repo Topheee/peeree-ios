@@ -40,13 +40,10 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	}
 
 	private func deleteServerChatAccount() {
-		ServerChatController.withInstance { _serverChatController in
-			guard let serverChatController = _serverChatController else { return }
-
-			serverChatController.deleteAccount { _error in
-				if let error = _error {
-					InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
-					try? ServerChatController.removePasswordFromKeychain()
+		ServerChatFactory.use {
+			$0?.deleteAccount() { error in
+				error.map {
+					InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Server Chat Account Deletion Failed", comment: "Title of in-app alert."))
 				}
 			}
 		}
@@ -57,7 +54,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
 			PeeringController.shared.peering = false
 			self.deleteServerChatAccount()
-			AccountController.shared.deleteAccount(completion: self.accountActionCompletionHandler)
+			AccountController.use { $0.deleteAccount(self.accountActionCompletionHandler) }
 		}))
 		let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
 		alertController.addAction(cancelAction)
@@ -68,8 +65,8 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	private func initiateCreateAccount() {
 		let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
 		let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
-		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (action) in
-			AccountController.shared.createAccount(completion: self.accountActionCompletionHandler)
+		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (_) in
+			AppDelegate.createIdentity()
 		}
 		alertController.addAction(createAction)
 		let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
@@ -82,7 +79,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	}
 
 	@IBAction func createDeleteAccount(_ sender: Any) {
-		if AccountController.shared.accountExists {
+		if PeereeIdentityViewModelController.accountExists {
 			initiateDeleteAccount()
 		} else {
 			initiateCreateAccount()
@@ -123,9 +120,11 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		super.prepare(for: segue, sender: sender)
-		if let personDetailVC = segue.destination as? PersonDetailViewController {
-			personDetailVC.peerID = AccountController.shared.peerID
-		}
+
+		guard let personDetailVC = segue.destination as? PersonDetailViewController,
+			  let userPeerID = PeereeIdentityViewModelController.userPeerID else { return }
+
+		personDetailVC.peerID = userPeerID
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
@@ -224,14 +223,18 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 			guard let datePicker = textField.inputView as? UIDatePicker else { return }
 			UserPeer.instance.modify(birthday: datePicker.date)
 		case mailTextField:
-			guard textField.text ?? "" != AccountController.shared.accountEmail ?? "" else { return }
-			guard let newValue = textField.text, newValue != "" else {
-				AccountController.shared.deleteEmail(completion: accountActionCompletionHandler)
-				return
+			let newValue = textField.text ?? ""
+
+			AccountController.use { ac in
+				guard newValue != ac.accountEmail ?? "" else { return }
+
+				if newValue != "" {
+					let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
+					ac.update(email: String(newValue[..<endIndex]), self.accountActionCompletionHandler)
+				} else {
+					ac.deleteEmail(self.accountActionCompletionHandler)
+				}
 			}
-			
-			let endIndex = newValue.index(newValue.startIndex, offsetBy: PeerInfo.MaxEmailSize, limitedBy: newValue.endIndex) ?? newValue.endIndex
-			AccountController.shared.update(email: String(newValue[..<endIndex]), completion: accountActionCompletionHandler)
 		default:
 			break
 		}
@@ -286,6 +289,9 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		return self
 	}
 
+	// MARK: PortraitImagePickerControllerDelegate
+
+	/// Displays image in UI.
 	func picked(image: UIImage?) {
 		portraitImageButton.setImage(image ?? #imageLiteral(resourceName: "PortraitUnavailable"), for: [])
 		if #available(iOS 11.0, *) {
@@ -324,6 +330,14 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				bioTextView.font = UIFont(descriptor: newDescriptor, size: 0.0)
 			}
 		}
+
+		let userPeerDefined = peerInfo != nil
+		nameTextField.isEnabled = userPeerDefined
+		genderControl.isEnabled = userPeerDefined
+
+		if !userPeerDefined {
+			AppDelegate.presentOnboarding()
+		}
 	}
 
 	private func modifyUserInfo(query: @escaping (inout PeerInfo) -> ()) {
@@ -332,7 +346,9 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				query(&peerInfo)
 				info = peerInfo
 			} else {
-				AppDelegate.presentOnboarding()
+				DispatchQueue.main.async {
+					AppDelegate.presentOnboarding()
+				}
 			}
 		}
 	}
@@ -373,33 +389,44 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 	/// Do not allow changes to the user's peer while peering; show onboarding if peer does not exist.
 	private func lockAndLoadView() {
-		UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
-			let userPeerDefined = peerInfo != nil
-			let accountExists = AccountController.shared.accountExists
+		AccountController.use({ ac in
+			let email = ac.accountEmail
+			let peerID = ac.getPeerID()
+			let accountActionInProgress = AccountController.isCreatingAccount || ac.isDeletingAccount
 
-			if accountExists {
+			UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
+				let userPeerDefined = peerInfo != nil
+
 				self.accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
 				self.accountButton.tintColor = .red
-				self.mailTextField.text = AccountController.shared.accountEmail
-				self.accountIDLabel.text = AccountController.shared.getPeerID()
-			} else {
+				self.mailTextField.text = email
+				self.accountIDLabel.text = peerID
+
+				self.mailTextField.isHidden = false
+				self.mailNoteLabel.isHidden = false
+				self.accountIDLabel.isHidden = false
+				self.accountButton.isEnabled = !accountActionInProgress
+
+				self.previewButton.isEnabled = userPeerDefined
+
+				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
+			}
+		}, {
+			UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
+				// account does not exist
 				self.accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
 				self.accountButton.tintColor = AppTheme.tintColor
-			}
 
-			self.mailTextField.isHidden = !accountExists
-			self.mailNoteLabel.isHidden = !accountExists
-			self.accountIDLabel.isHidden = !accountExists
-			self.accountButton.isEnabled = !(AccountController.shared.isCreatingAccount || AccountController.shared.isDeletingAccount)
+				self.mailTextField.isHidden = true
+				self.mailNoteLabel.isHidden = true
+				self.accountIDLabel.isHidden = true
+				self.accountButton.isEnabled = true
 
-			self.previewButton.isEnabled = userPeerDefined && accountExists
+				self.previewButton.isEnabled = false
 
-			self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
-
-			if !userPeerDefined {
-				AppDelegate.presentOnboarding()
-			}
-		}
+				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
+ 			}
+		})
 	}
 
 	private func observeNotifications() {
@@ -410,7 +437,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		}
 
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.accountDeleted.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver(usingBlock: reloadBlock))
 	}
 }

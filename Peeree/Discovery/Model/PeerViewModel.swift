@@ -17,7 +17,7 @@ public struct PeerViewModel {
 
 	/// Keys in the `userInfo` dict of a notification.
 	public enum NotificationInfoKey: String {
-		case peerID, message
+		case message
 	}
 
 	/// Names of notifications sent by `PeerViewModel`.
@@ -29,18 +29,18 @@ public struct PeerViewModel {
 		func post(_ peerID: PeerID, message: String = "") {
 			let userInfo: [AnyHashable : Any]
 			if message != "" {
-				userInfo = [NotificationInfoKey.peerID.rawValue : peerID, NotificationInfoKey.message.rawValue : message]
+				userInfo = [PeerID.NotificationInfoKey : peerID, NotificationInfoKey.message.rawValue : message]
 			} else {
-				userInfo = [NotificationInfoKey.peerID.rawValue : peerID]
+				userInfo = [PeerID.NotificationInfoKey : peerID]
 			}
 			postAsNotification(object: nil, userInfo: userInfo)
 		}
 	}
 
-	/// Reduced states of the pinning progress.
-	public enum PinState {
-		case pinned, pinning, notPinned
-	}
+	// MARK: Constants
+
+	/// The PeerID identifying this view model.
+	public let peerID: PeerID
 
 	// MARK: Variables
 
@@ -48,7 +48,7 @@ public struct PeerViewModel {
 	public var isAvailable = false
 
 	/// All mandatory information of the peer.
-	public var peer: Peer
+	public var info: PeerInfo
 
 	/// Optional self-description of the peer.
 	public var biography: String {
@@ -87,9 +87,6 @@ public struct PeerViewModel {
 	/// Portrait image.
 	public private (set) var cgPicture: CGImage?
 
-	/// Objectionable content classification required by the App Store.
-	public var pictureClassification: AccountController.ContentClassification
-
 	/// SHA-256 hash of the image used for objectionable content classification.
 	public private (set) var pictureHash: Data? = nil
 
@@ -110,10 +107,9 @@ public struct PeerViewModel {
 	// MARK: Methods
 
 	/// The `portrait` of this peer was retrieved and checked against objectionable content hash list.
-	public mutating func loadedAndClassified(portrait: CGImage, hash: Data, classification: AccountController.ContentClassification) {
+	public mutating func loaded(portrait: CGImage, hash: Data) {
 		cgPicture = portrait
 		pictureHash = hash
-		pictureClassification = classification
 
 		post(.pictureLoaded)
 	}
@@ -122,7 +118,6 @@ public struct PeerViewModel {
 	public mutating func deletePortrait() {
 		cgPicture = nil
 		pictureHash = nil
-		pictureClassification = .none
 
 		post(.pictureLoaded)
 	}
@@ -186,21 +181,6 @@ public struct PeerViewModel {
 
 extension PeerViewModel {
 	// MARK: Variables
-
-	/// Shortcut for `peer.id.peerID`.
-	public var peerID: PeerID { return peer.id.peerID }
-
-	/// Whether this is the model of the user's info.
-	public var isLocalPeer: Bool { return self.peerID == AccountController.shared.peerID }
-
-	/// State of the pinning progress.
-	public var pinState: PinState {
-		if peer.id.pinned {
-			return .pinned
-		} else {
-			return AccountController.shared.isPinning(peerID) ? .pinning : .notPinned
-		}
-	}
 
 	public var verificationStatus: String {
 		if verified {

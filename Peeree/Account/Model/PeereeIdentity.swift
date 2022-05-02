@@ -60,8 +60,3 @@ extension PeereeIdentity: Hashable {
 	public var hashValue: Int { return peerID.hashValue ^ publicKeyData.hashValue } // TODO: no idea if XOR is a safe and good combination
 	public func hash(into hasher: inout Hasher) { hasher.combine(peerID); hasher.combine(publicKeyData) }
 }
-
-extension PeereeIdentity {
-	public var pinMatched: Bool { AccountController.shared.hasPinMatch(peerID) }
-	public var pinned: Bool { AccountController.shared.isPinned(self) }
-}

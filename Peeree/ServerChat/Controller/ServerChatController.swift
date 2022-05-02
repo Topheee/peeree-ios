@@ -9,359 +9,50 @@
 import Foundation
 import MatrixSDK
 
-protocol ServerChatControllerDelegate: AnyObject {
-	func configurePusherFailed(_ error: Error)
-}
+/// Internal implementaion of the `ServerChat` protocol.
+final class ServerChatController: ServerChat {
+	// MARK: - Public and Internal
 
-final class ServerChatController {
-	static let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
-	static var userId: String { return serverChatUserId(for: AccountController.shared.peerID) } // TODO race condition and performance (but cannot be let because our peerID may change)
-	// we need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
-	static let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
-		elog("matrix certificate rejected: \(String(describing: _data))")
-		return false
+	/// Creates a `ServerChatController`.
+	init(peerID: PeerID, credentials: MXCredentials, dQueue: DispatchQueue) {
+		self.peerID = peerID
+		self.dQueue = dQueue
+
+		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
+		restClient.completionQueue = dQueue
+		session = MXSession(matrixRestClient: restClient)!
 	}
-
-	static var delegate: ServerChatControllerDelegate? = nil
-
-	static var remoteNotificationsDeviceToken: Data? = nil
-
-	// MARK: Singleton Lifecycle
-
-	/// access only from main thread!
-	private static var _instance: ServerChatController? = nil
-	private static var creatingInstanceCallbacks = [(Result<ServerChatController, ServerChatError>) -> Void]()
-	private static var creatingInstanceOnlyLoginRequests = [Bool]()
-
-	/// Concludes registration process; must be called on the main thread!
-	static private func reportCreatingInstance(result: Result<ServerChatController, ServerChatError>) {
-		creatingInstanceCallbacks.forEach { $0(result) }
-		creatingInstanceCallbacks.removeAll()
-	}
-
-	static func withInstance(getter: @escaping (ServerChatController?) -> Void) {
-		DispatchQueue.main.async { getter(_instance) }
-	}
-
-	/// Retrieves already logged in instance, or creates a new one by logging in.
-	static func getOrSetupInstance(onlyLogin: Bool = false, completion: @escaping (Result<ServerChatController, ServerChatError>) -> Void) {
-		DispatchQueue.main.async {
-			if let instance = _instance {
-				completion(.success(instance))
-				return
-			}
-
-			creatingInstanceCallbacks.append(completion)
-			creatingInstanceOnlyLoginRequests.append(onlyLogin)
-			guard creatingInstanceCallbacks.count == 1 else { return }
-
-			login { loginResult in
-				DispatchQueue.main.async {
-					switch loginResult {
-					case .success(let credentials):
-						setupInstance(with: credentials)
-					case .failure(let error):
-						var reallyOnlyLogin = true
-						creatingInstanceOnlyLoginRequests.forEach { reallyOnlyLogin = reallyOnlyLogin && $0 }
-						guard !reallyOnlyLogin else {
-							reportCreatingInstance(result: .failure(error))
-							return
-						}
-						wlog("server chat login failed: \(error.localizedDescription)")
-						createAccount { createAccountResult in
-							switch createAccountResult {
-							case .success(let credentials):
-								setupInstance(with: credentials)
-							case .failure(let error):
-								reportCreatingInstance(result: .failure(error))
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/// Creates an account on the chat server.
-	private static func createAccount(_ completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
-		guard AccountController.shared.accountExists else {
-			completion(.failure(.identityMissing))
-			return
-		}
-
-		let peerID = AccountController.shared.peerID
-		let username = serverChatUserName(for: peerID)
-		var passwordRawData: Data
-		do {
-			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
-		} catch let error {
-			completion(.failure(.sdk(error)))
-			return
-		}
-		var passwordData = passwordRawData.base64EncodedData()
-		assert(String(data: passwordData, encoding: .utf8) == passwordRawData.base64EncodedString())
-		do {
-			try persistPasswordInKeychain(passwordData)
-			passwordData.resetBytes(in: 0..<passwordData.count)
-		} catch let error {
-			do {
-				try ServerChatController.removePasswordFromKeychain()
-			} catch let removeError {
-				wlog("Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
-			}
-
-			completion(.failure(.sdk(error)))
-			return
-		}
-
-		let registerParameters: [String: Any] = ["auth" : ["type" : kMXLoginFlowTypeDummy],
-												 "username" : username,
-												 "password" : passwordRawData.base64EncodedString(),
-												 "device_id" : userId]
-
-		globalRestClient.register(parameters: registerParameters) { registerResponse in
-			switch registerResponse.toResult() {
-			case .failure(let error):
-				do {
-					try ServerChatController.removePasswordFromKeychain()
-				} catch {
-					elog("Could not remove password from keychain after failed registration: \(error.localizedDescription)")
-				}
-				completion(.failure(.sdk(error)))
-
-			case .success(let responseJSON):
-				guard let mxLoginResponse = MXLoginResponse(fromJSON: responseJSON) else {
-					completion(.failure(.parsing("register response was no JSON: \(responseJSON)")))
-					return
-				}
-
-				let credentials = MXCredentials(loginResponse: mxLoginResponse, andDefaultCredentials: nil)
-
-				// Sanity check as done in MatrixSDK
-				guard credentials.userId != nil || credentials.accessToken != nil else {
-					completion(.failure(.fatal(unexpectedNilError())))
-					return
-				}
-
-				completion(.success(credentials))
-			}
-		}
-
-		passwordRawData.resetBytes(in: 0..<passwordRawData.count)
-	}
-
-	/// Log into server chat account, previously created with `createAccount()`.
-	private static func login(completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
-		guard AccountController.shared.accountExists else {
-			completion(.failure(.identityMissing))
-			return
-		}
-
-		let password: String
-		do {
-			password = try passwordFromKeychain()
-		} catch let error {
-			completion(.failure(.fatal(error)))
-			return
-		}
-		globalRestClient.login(parameters: ["type" : kMXLoginFlowTypePassword,
-											"identifier" : ["type" : kMXLoginIdentifierTypeUser, "user" : userId],
-											"password" : password,
-											// Patch: add the old login api parameters to make dummy login still working
-											"user" : userId,
-											// probably a bad idea for the far future to use the userId as the device_id here, but hell yeah
-											"device_id" : userId]) { response in
-			if let error = response.error as NSError?,
-			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
-			   mxErrCode == "M_INVALID_USERNAME" {
-				elog("Our account seems to be deleted. Removing local password to be able to re-register.")
-				do {
-					try ServerChatController.removePasswordFromKeychain()
-				} catch let pwError {
-					wlog("Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
-				}
-			}
-
-			guard let json = response.value else {
-				elog("Login response is nil.")
-				completion(.failure(.fatal(unexpectedNilError())))
-				return
-			}
-			guard let loginResponse = MXLoginResponse(fromJSON: json) else {
-				completion(.failure(.parsing("ERROR: Cannot create login response from JSON \(json).")))
-				return
-			}
-			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: globalRestClient.credentials)
-			completion(.success(credentials))
-		}
-	}
-
-	/// Sets the `_instance` singleton and starts the server chat session.
-	private static func setupInstance(with credentials: MXCredentials) {
-		let c = ServerChatController(credentials: credentials)
-		c.start { _error in
-			DispatchQueue.main.async {
-				if let error = _error {
-					reportCreatingInstance(result: .failure(.sdk(error)))
-				} else {
-					_instance = c
-
-					// configure the pusher if server chat account didn't exist when AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken() is called
-					Self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
-
-					reportCreatingInstance(result: .success(c))
-				}
-			}
-		}
-	}
-
-	/// tries to leave (and forget [once supported]) <code>room</code>, ignoring any errors
-	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
-		room.leave { response in
-			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
-			completion(response.error)
-		}
-	}
-
-	/// tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
-	private func forget(rooms: [MXRoom], completion: @escaping () -> Void) {
-		var leftoverRooms = rooms // inefficient as hell: always creates a whole copy of the array
-		guard let room = leftoverRooms.popLast() else {
-			completion()
-			return
-		}
-		room.leave { response in
-			if let error = response.error {
-				elog("Failed leaving room: \(error.localizedDescription)")
-			}
-			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
-			self.forget(rooms: leftoverRooms, completion: completion)
-		}
-	}
-
-	func deleteAccount(completion: @escaping (Error?) -> Void) {
-		let password: String
-		do {
-			password = try ServerChatController.passwordFromKeychain()
-		} catch let error {
-			completion(error)
-			return
-		}
-		forget(rooms: session.rooms) {
-			self.session.deactivateAccount(withAuthParameters: ["type" : kMXLoginFlowTypePassword, "user" : ServerChatController.userId, "password" : password], eraseAccount: true) { response in
-				guard response.isSuccess else { completion(response.error); return }
-
-				do {
-					try ServerChatController.removePasswordFromKeychain()
-				} catch let error {
-					elog("\(error.localizedDescription)")
-				}
-				// it seems we need to log out after we deleted the account
-				self.logout { _error in
-					_error.map { elog("Logout after account deletion failed: \($0.localizedDescription)") }
-					// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
-					completion(nil)
-				}
-			}
-		}
-	}
-
-	// MARK: Keychain Access
-
-	/// Writes the access token into the keychain.
-	private static func persistAccessTokenInKeychain(_ token: String) throws {
-		guard let tokenData = token.data(using: .utf8) else { throw unexpectedNilError() }
-
-		// Delete old token first (if available).
-		var query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
-									kSecAttrLabel as String: ServerChatAccessTokenKeychainKey]
-		SecItemDelete(query as CFDictionary)
-
-		query = [kSecClass as String: kSecClassGenericPassword,
-									  kSecAttrAccount as String: userId,
-									  kSecAttrLabel as String: ServerChatAccessTokenKeychainKey,
-									  kSecValueData as String: tokenData]
-		try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding Server Chat token to Keychain failed", comment: "SecItemAdd failed"))
-	}
-
-	/// Writes the `password` into the keychain as an internet password.
-	private static func persistPasswordInKeychain(_ password: Data) throws {
-		let homeServer = homeServerURL.absoluteString
-		let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
-									kSecAttrAccount as String: userId,
-									kSecAttrServer as String: homeServer,
-									kSecValueData as String: password]
-		try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding Server Chat credentials to Keychain failed", comment: "SecItemAdd failed"))
-	}
-
-	private static func passwordFromKeychain() throws -> String {
-		let homeServer = homeServerURL.absoluteString
-		let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
-									kSecAttrServer as String: homeServer,
-									kSecAttrAccount as String: userId,
-									kSecMatchLimit as String: kSecMatchLimitOne,
-									kSecReturnData as String: true]
-		var item: CFTypeRef?
-		try SecKey.check(status: SecItemCopyMatching(query as CFDictionary, &item), localizedError: NSLocalizedString("Reading key from keychain failed.", comment: "Attempt to read a keychain item failed."))
-
-		guard let passwordData = item as? Data,
-			  let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
-			throw createApplicationError(localizedDescription: "passwordData is nil or not UTF-8 encoded.")
-		}
-
-		return password
-	}
-
-	/// force-delete local account information. Only use as a last resort!
-	/*private*/ static func removePasswordFromKeychain() throws {
-		let homeServer = homeServerURL.absoluteString
-		let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
-									kSecAttrServer as String: homeServer]
-		try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting key from keychain failed.", comment: "Attempt to delete a keychain item failed."))
-	}
-
-	// MARK: - Private
-
-	// MARK: Constants
-
-	private let session: MXSession
 
 	// MARK: Variables
 
-	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
+	var delegate: ServerChatDelegate? = nil
 
 	// MARK: Methods
 
+	/// this will close the underlying session and invalidate the global ServerChatController instance.
+	func close() {
+		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
+		notificationObservers.removeAll()
+
+		// *** roughly based on MXKAccount.closeSession(true) ***
+		// Force a reload of device keys at the next session start.
+		// This will fix potential UISIs other peoples receive for our messages.
+		session.crypto?.resetDeviceKeys()
+		session.scanManager?.deleteAllAntivirusScans()
+		session.aggregations?.resetData()
+		session.close()
+	}
+
 	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
-	private func logout(completion: @escaping (Error?) -> Void) {
-		DispatchQueue.main.async {
-			// we need to drop the instance s.t. no two logout requests are made on the same instance
-			ServerChatController._instance = nil
-			// if this fails we cannot do anything anyway
-			self.session.extensiveLogout(completion)
-		}
+	func logout(_ completion: @escaping (Error?) -> Void) {
+		self.session.extensiveLogout(completion)
 	}
 
-	/// this will close the underlying session and invalidate the global ServerChatController instance.
-	static func close() {
-		DispatchQueue.main.async {
-			guard let instance = _instance else { return }
-			// we need to drop the instance s.t. no two logout requests are made on the same instance
-			_instance = nil
+	// MARK: ServerChat
 
-			let session = instance.session
-			// *** roughly based on MXKAccount.closeSession(true) ***
-			// Force a reload of device keys at the next session start.
-			// This will fix potential UISIs other peoples receive for our messages.
-			session.crypto?.resetDeviceKeys()
-			session.scanManager?.deleteAllAntivirusScans()
-			session.aggregations?.resetData()
-			session.close()
-		}
-	}
-
-	func send(message: String, to peerID: PeerID, completion: @escaping (Result<String?, Error>) -> Void) {
+	/// Send a `message` to `peerID`.
+	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, Error>) -> Void) {
 		var event: MXEvent? = nil
 		if let room = roomsForPeerIDs[peerID] {
 			room.sendTextMessage(message, localEcho: &event) { response in
@@ -381,8 +72,9 @@ final class ServerChatController {
 		}
 	}
 
+	/// Set up APNs.
 	func configurePusher(deviceToken: Data) {
-		guard let mx = session.matrixRestClient, AccountController.shared.accountExists else { return }
+		guard let mx = session.matrixRestClient else { return }
 
 		let b64Token = deviceToken.base64EncodedString()
 		let pushData: [String : Any] = [
@@ -417,56 +109,52 @@ final class ServerChatController {
 			UserDefaults.standard.set(profileTag, forKey: Self.ProfileTagKey)
 		}
 
-		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: Self.userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
+		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
 			switch response.toResult() {
 			case .failure(let error):
 				elog("setPusher() failed: \(error)")
-				Self.delegate?.configurePusherFailed(error)
+				self.delegate?.configurePusherFailed(error)
 			case .success():
 				dlog("setPusher() was successful.")
 			}
 		}
 	}
 
-	// MARK: Private
+	// MARK: - Private
 
+	// MARK: Static Constants
+
+	/// Used for APNs.
 	private static let ProfileTagAllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+	/// Matrix pusher profile tag key in `UserDefaults`.
 	private static let ProfileTagKey = "ServerChatController.profileTag"
 
+	// MARK: Constants
+
+	/// The PeerID of the user.
+	private let peerID: PeerID
+
+	/// Target for matrix operations.
+	private let dQueue: DispatchQueue
+
+	/// Matrix session.
+	private let session: MXSession
+
+	// MARK: Variables
+
+	/// Lookup for matrix direct rooms.
+	private var roomsForPeerIDs = SynchronizedDictionary<PeerID, MXRoom>(queueLabel: "\(BundleID).roomsForPeerIDs")
+
+	/// Matrix userId based on user's PeerID.
+	private var userId: String { return serverChatUserId(for: peerID) }
+
+	/// All references to NotificationCenter observers by this object.
 	private var notificationObservers: [Any] = []
 
-	private init(credentials: MXCredentials) {
-		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
-		session = MXSession(matrixRestClient: restClient)!
-		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
-			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
-			strongSelf.forget(room: room) { _error in
-				dlog("Left room: \(String(describing: _error)).")
-			}
-		})
+	// MARK: Methods
 
-		// mxRoomSummaryDidChange fires very often, but at some point the room contains a directUserId
-		// mxRoomInitialSync does not fire that often and contains the directUserId only for the receiver. But that is okay, since the initiator of the room knows it anyway
-		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomInitialSync, object: nil, queue: nil) { [weak self] notification in
-			guard let strongSelf = self else { return }
-			for room in strongSelf.session.rooms {
-				guard let userId = room.directUserId else {
-					elog("Found non-direct room.")
-					return
-				}
-				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					elog("Found room with non-PeerID \(userId).")
-					return
-				}
-				self?.addRoomAndListenToEvents(room, for: peerID)
-			}
-		})
-	}
-
-	deinit {
-		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
-	}
-
+	/// Create a direct room for chatting with `peerID`.
 	private func reallyCreateRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
 		let peerUserId = serverChatUserId(for: peerID)
 		let roomParameters = MXRoomCreationParameters(forDirectRoomWithUser: peerUserId)
@@ -494,6 +182,7 @@ final class ServerChatController {
 		}
 	}
 
+	/// Create a direct room for chatting with `peerID`.
 	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
 		dlog("Asked to create room for \(peerID.uuidString).")
 		let peerUserId = serverChatUserId(for: peerID)
@@ -518,6 +207,7 @@ final class ServerChatController {
 		}
 	}
 
+	/// Listens to events in `room`.
 	private func addRoomAndListenToEvents(_ room: MXRoom, for peerID: PeerID) {
 		if let oldRoom = roomsForPeerIDs[peerID] {
 			wlog("Trying to listen to already registered room \(room.roomId ?? "<no roomId>") to userID \(room.directUserId ?? "<no direct userId>").")
@@ -535,7 +225,7 @@ final class ServerChatController {
 
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
-		let ourUserId = ServerChatController.userId
+		let ourUserId = self.userId
 		let lastReadDate = lastReads[peerID] ?? Date.distantFuture
 
 		// these are all messages that have been sent while we where offline
@@ -614,7 +304,7 @@ final class ServerChatController {
 						let messageEvent = try MessageEventData(messageEvent: event)
 
 						PeeringController.shared.serverChatInteraction(with: peerID) { manager in
-							if event.sender == ServerChatController.userId {
+							if event.sender == ourUserId {
 								manager.didSend(message: messageEvent.message, at: messageEvent.timestamp)
 							} else {
 								manager.received(message: messageEvent.message, at: messageEvent.timestamp)
@@ -631,14 +321,39 @@ final class ServerChatController {
 		}
 	}
 
-	private func process(event: MXEvent) {
+	/// Tries to leave (and forget [once supported]) <code>room</code>, ignoring any errors
+	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
+		room.leave { response in
+			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			completion(response.error)
+		}
+	}
+
+	/// Tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
+	private func forget(rooms: [MXRoom], completion: @escaping () -> Void) {
+		var leftoverRooms = rooms // inefficient as hell: always creates a whole copy of the array
+		guard let room = leftoverRooms.popLast() else {
+			completion()
+			return
+		}
+		room.leave { response in
+			if let error = response.error {
+				elog("Failed leaving room: \(error.localizedDescription)")
+			}
+			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			self.forget(rooms: leftoverRooms, completion: completion)
+		}
+	}
+
+	/// Handles room member events.
+	private func process(memberEvent event: MXEvent) {
 		switch event.eventType {
 		case .roomMember:
 			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
 				elog("Cannot construct MXRoomCreateContent from event content.")
 				return
 			}
-			guard let userId = event.stateKey else {
+			guard let eventUserId = event.stateKey else {
 				// we are only interested in joins from other people
 				elog("No stateKey present in membership event.")
 				return
@@ -650,7 +365,7 @@ final class ServerChatController {
 				break
 
 			case kMXMembershipStringInvite:
-				guard userId == ServerChatController.userId else {
+				guard eventUserId == self.userId else {
 					// we are only interested in invites for us
 					ilog("Received invite event from sender other than us.")
 					return
@@ -663,16 +378,19 @@ final class ServerChatController {
 					// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
 				}
 
-				DispatchQueue.main.async {
-					guard let peerID = peerIDFrom(serverChatUserId: event.sender),
-						  !AccountController.shared.hasPinMatch(peerID),
-						  let id = PeerViewModelController.viewModels[peerID]?.peer.id else {return
-					}
-					AccountController.shared.updatePinStatus(of: id, force: true)
+				// check whether we actually have a pin match with this person
+				guard let peerID = peerIDFrom(serverChatUserId: event.sender) else {
+					elog("Cannot construct PeerID from userId \(event.sender ?? "<nil>").")
+					return
+				}
+
+				AccountController.use { ac in
+					guard !ac.hasPinMatch(peerID) else { return }
+					ac.updatePinStatus(of: peerID, force: true)
 				}
 
 			case kMXMembershipStringLeave:
-				guard userId != ServerChatController.userId else {
+				guard eventUserId != self.userId else {
 					// we are only interested in leaves from other people
 					dlog("Received our leave event.")
 					return
@@ -694,12 +412,9 @@ final class ServerChatController {
 
 				_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
 
-				DispatchQueue.main.async {
-					guard let id = PeerViewModelController.viewModels[peerID]?.peer.id else {
-						wlog("No Peeree Identity available for \(peerID).")
-						return
-					}
-					AccountController.shared.updatePinStatus(of: id, force: true)
+				// check whether we still have a pin match with this person
+				AccountController.use { ac in
+					ac.updatePinStatus(of: peerID, force: true)
 				}
 
 			default:
@@ -711,7 +426,10 @@ final class ServerChatController {
 		}
 	}
 
-	private func start(completion: @escaping (Error?) -> Void) {
+	/// Begin the session.
+	func start(_ completion: @escaping (Error?) -> Void) {
+		observeNotifications()
+
 		let store = MXFileStore(credentials: session.credentials) // MXMemoryStore()
 		session.setStore(store) { setStoreResponse in
 			guard setStoreResponse.isSuccess else {
@@ -743,11 +461,42 @@ final class ServerChatController {
 //					dlog("global event \(event), \(direction), \(String(describing: customObject))")
 //				}
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
-					self.process(event: event)
+					self.process(memberEvent: event)
 				}
 				completion(response.error)
 			}
 		}
+	}
+
+	/// Observes relevant notifications in `NotificationCenter`.
+	private func observeNotifications() {
+		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
+			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
+
+			// we don't need to use dQueue here, since forget is not mutating.
+			strongSelf.forget(room: room) { _error in
+				dlog("Left room: \(String(describing: _error)).")
+			}
+		})
+
+		// mxRoomSummaryDidChange fires very often, but at some point the room contains a directUserId
+		// mxRoomInitialSync does not fire that often and contains the directUserId only for the receiver. But that is okay, since the initiator of the room knows it anyway
+		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomInitialSync, object: nil, queue: nil) { [weak self] notification in
+			guard let strongSelf = self else { return }
+
+			for room in strongSelf.session.rooms {
+				guard let userId = room.directUserId else {
+					elog("Found non-direct room \(room.roomId ?? "<nil>").")
+					return
+				}
+				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
+					elog("Found room with non-PeerID \(userId).")
+					return
+				}
+
+				strongSelf.addRoomAndListenToEvents(room, for: peerID)
+			}
+		})
 	}
 }
 

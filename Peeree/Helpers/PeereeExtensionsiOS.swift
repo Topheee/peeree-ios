@@ -20,14 +20,29 @@ extension PeerViewModel {
 		return portraitOrPlaceholder.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}
 
+	/// Obtains the peer's picture or a placeholder, depending on the objectionable content classification.
 	public var portraitOrPlaceholder: UIImage {
-		return pictureClassification == .objectionable ? #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder") : picture ?? (peer.info.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
+		return pictureClassification == .objectionable ? #imageLiteral(resourceName: "ObjectionablePortraitPlaceholder") : picture ?? (info.hasPicture ? #imageLiteral(resourceName: "PortraitPlaceholder") : #imageLiteral(resourceName: "PortraitUnavailable"))
 	}
 }
 
 extension AppDelegate {
+
+	/// Calls `AccountController.createAccount` and displays its error.
+	static func createIdentity() {
+		AccountController.createAccount { result in
+			switch result {
+			case .success(_):
+				break
+			case .failure(let error):
+				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
+			}
+		}
+	}
+
+	/// Display appropriate view controller for `peerID`.
 	func showOrMessage(peerID: PeerID) {
-		if AccountController.shared.hasPinMatch(peerID) {
+		if PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinMatch {
 			displayMessageViewController(for: peerID)
 		} else {
 			show(peerID: peerID)
@@ -109,6 +124,8 @@ extension AppDelegate {
 	/// Must be called on the main thread!
 	static func requestPin(of peerID: PeerID) {
 		let model = PeerViewModelController.viewModel(of: peerID)
+		let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
+
 		if !model.verified {
 			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 			let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
@@ -117,19 +134,19 @@ extension AppDelegate {
 				}
 			}
 			alertController.addAction(retryVerifyAction)
-			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.peer.info.nickname)
+			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.info.nickname)
 			alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
-				AccountController.shared.pin(model.peer.id)
+				AccountController.use { $0.pin(idModel.id) }
 			})
 			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
 			alertController.preferredAction = retryVerifyAction
 			alertController.present()
-		} else if !AccountController.shared.accountExists {
+		} else if !PeereeIdentityViewModelController.accountExists {
 			InAppNotificationController.display(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")) /*{
 				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
 			}*/
 		} else {
-			AccountController.shared.pin(model.peer.id)
+			AccountController.use { $0.pin(idModel.id) }
 		}
 	}
 
@@ -155,9 +172,9 @@ extension AppDelegate {
 	@objc func toggleNetwork(_ sender: AnyObject) {
 		if PeeringController.shared.isBluetoothOn {
 			PeeringController.shared.peering = !PeeringController.shared.peering
-			AccountController.shared.refreshBlockedContent { error in
+			AccountController.use { $0.refreshBlockedContent { error in
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
-			}
+			} }
 			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
 		} else {
 			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)

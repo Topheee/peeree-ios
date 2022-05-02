@@ -64,7 +64,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		super.viewWillAppear(animated)
 		
 		setPortraitButtonImage()
-		navigationItem.prompt = model.peer.info.nickname
+		navigationItem.prompt = model.info.nickname
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.setPortraitButtonImage()
 		})

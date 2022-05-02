@@ -58,7 +58,7 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 	}
 
 	public func send(message: String, completion: @escaping (Error?) -> Void) {
-		ServerChatController.getOrSetupInstance { instanceResult in
+		ServerChatFactory.getOrSetupInstance { instanceResult in
 			switch instanceResult {
 			case .failure(let error):
 				completion(error)
@@ -72,10 +72,11 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 	// all these methods come from one single queue
 
 	public func indicatePinMatch() {
-		guard AccountController.shared.hasPinMatch(peerID) else { return }
-		remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: peerID, callbackQueue: DispatchQueue.global()) { _error in
-			// TODO handle failure
-			if let error = _error { elog("indicating pin match failed: \(error)"); return }
+		AccountController.use { ac in
+			guard ac.hasPinMatch(self.peerID) else { return }
+			self.remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: self.peerID, callbackQueue: DispatchQueue.global()) { error in
+				error.map { elog("indicating pin match failed: \($0)"); return }
+			}
 		}
 	}
 
@@ -97,9 +98,9 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		}
 	}
 	
-	func loaded(picture: CGImage, hash: Data, classification: AccountController.ContentClassification) {
+	func loaded(picture: CGImage, hash: Data) {
 		self.publish { model in
-			model.loadedAndClassified(portrait: picture, hash: hash, classification: classification)
+			model.loaded(portrait: picture, hash: hash)
 		}
 	}
 
@@ -138,10 +139,8 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		receivedUnverifiedPinMatchIndication = false
 		remotePeerManager.authenticate(peerID)
 
-		DispatchQueue.main.async {
-			guard let model = PeerViewModelController.viewModels[self.peerID] else { return }
-
-			AccountController.shared.updatePinStatus(of: model.peer.id, force: false)
+		AccountController.use { ac in
+			ac.updatePinStatus(of: self.peerID, force: false)
 		}
 	}
 

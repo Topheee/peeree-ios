@@ -346,30 +346,37 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				// it is important that we use the same error code in both the "not a pin match" and "signature verification failed" cases, to prevent from the timing attack
 				// we should not use CBATTError.insufficientAuthentication as then the iPhone begins a pairing process
 				let authFailedError = CBATTError.insufficientAuthorization
-				
-				guard let publicKeyData = AccountController.shared.publicKey(of: peerID) else {
-					elog("No public key data available for \(peerID.uuidString).")
-					error = authFailedError // signature verification failed
-					break
-				}
 
-				let signature = data
-
-				// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
-				do {
-					let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
-					try publicKey.verify(message: nonce, signature: signature)
-					// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
-					if !AccountController.shared.hasPinMatch(peerID) {
-						error = authFailedError // not a pin match
-						wlog("the peer \(peerID) which did not pin match us tried to authenticate to us.")
-						break
+				// TODO report CBAttError
+				AccountController.use { ac in
+					guard let publicKeyData = ac.publicKey(of: peerID) else {
+						elog("No public key data available for \(peerID.uuidString).")
+						error = authFailedError // signature verification failed
+						return
 					}
-					authenticatedPinMatchedCentrals[request.central.identifier] = peerID
-				} catch let exc {
-					elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
-					error = authFailedError // signature verification failed
-					break
+
+					let signature = data
+
+					// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
+					do {
+						let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
+						try publicKey.verify(message: nonce, signature: signature)
+
+						// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
+						guard ac.hasPinMatch(peerID) else {
+							error = authFailedError // not a pin match
+							wlog("the peer \(peerID) which did not pin match us tried to authenticate to us.")
+							return
+						}
+
+						self.dQueue.async {
+							self.authenticatedPinMatchedCentrals[request.central.identifier] = peerID
+						}
+					} catch let exc {
+						elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
+						error = authFailedError // signature verification failed
+						return
+					}
 				}
 			} else {
 				error = .requestNotSupported

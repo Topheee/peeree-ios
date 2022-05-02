@@ -122,7 +122,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
         configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         configuration.httpMaximumConnectionsPerHost = 1
 //        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-        return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
+        return URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
     }()
 
     /**

@@ -211,22 +211,29 @@ public final class UserPeer {
 
 	/// Writes all properties to `PeerViewModelController`; call only from `queue`.
 	private func syncToViewModel() {
-		guard let info = self.peerInfo, AccountController.shared.accountExists, let keyPair = AccountController.shared.keyPair else { return }
-		let peerID = AccountController.shared.peerID
+		guard let info = self.peerInfo else { return }
+
 		// we must access our properties on `queue`
 		let bio = self.biography
 		let pic = self.cgPicture
 
-		DispatchQueue.main.async {
-			PeerViewModelController.update(peer: Peer(id: PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey), info: info), lastSeen: Date())
-			PeerViewModelController.modify(peerID: peerID) { model in
-				model.verified = true
-				model.isAvailable = true
-				model.biography = bio
-				if let portrait = pic {
-					model.loadedAndClassified(portrait: portrait, hash: Data(), classification: .none)
-				} else {
-					model.deletePortrait()
+		AccountController.use { ac in
+			// we must access AccountController properties on its `dQueue`
+			let keyPair = ac.keyPair
+			let peerID = ac.peerID
+
+			DispatchQueue.main.async {
+				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey), pinState: .unpinned))
+				PeerViewModelController.update(peerID, info: info, lastSeen: Date())
+				PeerViewModelController.modify(peerID: peerID) { model in
+					model.verified = true
+					model.isAvailable = true
+					model.biography = bio
+					if let portrait = pic {
+						model.loaded(portrait: portrait, hash: Data())
+					} else {
+						model.deletePortrait()
+					}
 				}
 			}
 		}
@@ -243,7 +250,7 @@ public final class UserPeer {
 
 	/// Adds observer blocks for certain notifications.
 	private func observeNotifications() {
-		_ = AccountController.Notifications.accountCreated.addObserver { _ in
+		_ = AccountController.NotificationName.accountCreated.addObserver { _ in
 			self.queue.async { self.syncToViewModel() }
 		}
 	}

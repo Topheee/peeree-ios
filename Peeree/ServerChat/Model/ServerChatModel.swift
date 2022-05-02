@@ -14,6 +14,8 @@ import MatrixSDK
 /// The Matrix domain.
 let serverChatDomain = "chat.peeree.de"
 
+let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
+
 /// The app group.
 let messagingAppGroup = "group.86J6LQ96WM.de.peeree.messaging"
 

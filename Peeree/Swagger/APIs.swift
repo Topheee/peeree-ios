@@ -6,12 +6,14 @@
 
 import Foundation
 
+/// Provides the mostly mandatory header fields `signature` and `peerID`.
 public protocol SecurityDataSource {
     func getSignature() -> String
     func getPeerID() -> String
 }
 
 open class SwaggerClientAPI {
+    /// Provides the mostly mandatory header fields `signature` and `peerID`.
     public static var dataSource: SecurityDataSource?
     
     public static let `protocol` = "https"
@@ -22,6 +24,7 @@ open class SwaggerClientAPI {
     public static var credential: URLCredential?
     public static var customHeaders: [String:String] = [:]
     static var requestBuilderFactory: RequestBuilderFactory = CustomRequestBuilderFactory()
+    public static var apiResponseQueue: OperationQueue?
 }
 
 open class APIBase {

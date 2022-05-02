@@ -26,10 +26,10 @@ final class PinMatchTableViewController: UITableViewController {
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
+		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
 			self?.addToView(peerID: peerID, updateTable: true)
 		})
-		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
+		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
 			guard let strongSelf = self,
 				  let peerPath = strongSelf.indexPath(of: peerID) else {
 				return
@@ -37,7 +37,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 			strongSelf.viewCache.remove(at: peerPath.row)
 		})
-		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver { [weak self] _ in
+		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { [weak self] _ in
 			self?.tableView.reloadData()
 		})
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
@@ -100,7 +100,7 @@ final class PinMatchTableViewController: UITableViewController {
 		if placeholderCellActive {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.PlaceholderPeerCellID) as! PlaceHolderTableViewCell
 			if PeeringController.shared.peering {
-				let accountExists = AccountController.shared.accountExists
+				let accountExists = PeereeIdentityViewModelController.accountExists
 				cell.heading = accountExists ? NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.") : NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
 				cell.subhead = accountExists ? NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.") : NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
 			} else {
@@ -157,7 +157,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	private func updateCache() {
 		viewCache = PeerViewModelController.viewModels.values.filter { model in
-			return model.peer.id.pinMatched
+			return PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch
 		}
 
 		viewCache.sort { a, b in
@@ -181,7 +181,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	private func fill(cell: UITableViewCell, model: PeerViewModel) {
 		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
-		cell.textLabel?.text = model.peer.info.nickname
+		cell.textLabel?.text = model.info.nickname
 		let unreadMessages = model.unreadMessages
 		let format = NSLocalizedString("%u messages.", comment: "")
 		let unreadMessageCountText = String(format: format, unreadMessages)
@@ -213,7 +213,7 @@ final class PinMatchTableViewController: UITableViewController {
 		}
 
 		// load the picture of the peer from disk once it is displayed
-		if model.picture == nil && model.peer.info.hasPicture {
+		if model.picture == nil && model.info.hasPicture {
 			PeeringController.shared.interact(with: model.peerID) { interaction in
 				interaction.loadLocalPicture()
 			}

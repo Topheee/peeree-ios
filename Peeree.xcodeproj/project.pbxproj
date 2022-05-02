@@ -23,6 +23,11 @@
 		9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */; };
 		9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 9D51ED7C27A68B3E00BF6C0A /* Toast */; };
 		9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */; };
+		9D544F57280D9B51008E7CDF /* ServerChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F56280D9B51008E7CDF /* ServerChat.swift */; };
+		9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */; };
+		9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5A280DE677008E7CDF /* KeychainAccess.swift */; };
+		9D544F5D280F68C0008E7CDF /* PeereeIdentityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */; };
+		9D544F5F280F6922008E7CDF /* PeereeIdentityViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */; };
 		9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D56535E279A1014003F31A2 /* UserPeer.swift */; };
 		9D5D46EE280C6C73002174DB /* PeereeIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
@@ -144,6 +149,11 @@
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceControllerTests.swift; sourceTree = "<group>"; };
 		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppNotificationController.swift; sourceTree = "<group>"; };
+		9D544F56280D9B51008E7CDF /* ServerChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChat.swift; sourceTree = "<group>"; };
+		9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatFactory.swift; sourceTree = "<group>"; };
+		9D544F5A280DE677008E7CDF /* KeychainAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainAccess.swift; sourceTree = "<group>"; };
+		9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentityViewModel.swift; sourceTree = "<group>"; };
+		9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentityViewModelController.swift; sourceTree = "<group>"; };
 		9D56535E279A1014003F31A2 /* UserPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPeer.swift; sourceTree = "<group>"; };
 		9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentity.swift; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinMatchViewController.swift; sourceTree = "<group>"; };
@@ -292,6 +302,7 @@
 			isa = PBXGroup;
 			children = (
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
+				9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -300,6 +311,7 @@
 			isa = PBXGroup;
 			children = (
 				9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */,
+				9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -395,6 +407,7 @@
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */,
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
+				9D544F5A280DE677008E7CDF /* KeychainAccess.swift */,
 				9DE45F34280C0F870016D0DF /* Logging.swift */,
 				9DFE8A961F33769700264CFE /* NetworkReachability.swift */,
 				9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */,
@@ -443,7 +456,9 @@
 		9D79074B27F3A05600920D38 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				9D544F56280D9B51008E7CDF /* ServerChat.swift */,
 				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
+				9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -748,6 +763,7 @@
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
 				9DD61F641EAE33B6004EB56A /* Account.swift in Sources */,
 				9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */,
+				9D544F5F280F6922008E7CDF /* PeereeIdentityViewModelController.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9D9D5A7024046CCF0063532F /* Configuration.swift in Sources */,
 				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
@@ -786,15 +802,19 @@
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
 				9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */,
 				9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */,
+				9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */,
 				9D404617244370990068D22F /* GrowingTextView.swift in Sources */,
 				9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */,
+				9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */,
 				9D90435527A06D0600C29BFA /* PeerViewControllers.swift in Sources */,
 				9DD61F631EAE33B6004EB56A /* Extensions.swift in Sources */,
 				9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */,
 				9D0FA50B27E7B3FA00192DCF /* ServerChatError.swift in Sources */,
+				9D544F5D280F68C0008E7CDF /* PeereeIdentityViewModel.swift in Sources */,
 				9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */,
 				9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */,
 				9DA36A7E279C44A200BF7875 /* PeerInteraction.swift in Sources */,
+				9D544F57280D9B51008E7CDF /* ServerChat.swift in Sources */,
 				9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */,
 				9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */,
 				9DFE8A971F33769700264CFE /* NetworkReachability.swift in Sources */,

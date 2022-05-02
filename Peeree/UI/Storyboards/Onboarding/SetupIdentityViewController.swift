@@ -39,11 +39,7 @@ final class SetupIdentityViewController: UIViewController {
 	@IBAction func finishIntroduction(_ sender: AnyObject) {
 		guard termsSwitch.isOn else { return }
 
-		AccountController.shared.createAccount { (_error) in
-			if let error = _error {
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
-			}
-		}
+		AppDelegate.createIdentity()
 
 		dismiss(animated: true, completion: nil)
 	}

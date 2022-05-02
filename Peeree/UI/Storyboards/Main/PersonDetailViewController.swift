@@ -65,16 +65,19 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
-			AccountController.shared.unpin(id: self.model.peer.id)
+			AccountController.use { $0.unpin(id: self.idModel.id) }
 		}
-		unpinAction.isEnabled = !model.isLocalPeer && model.peer.id.pinned
+		unpinAction.isEnabled = !model.peerID.isLocalPeer && idModel.pinState.isPinned
 		alertController.addAction(unpinAction)
 		let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
-			AccountController.shared.report(model: self.model) { (error) in
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
+			let mdl = self.model
+			AccountController.use { ac in
+				ac.report(model: mdl) { (error) in
+					InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
+				}
 			}
 		}
-		reportAction.isEnabled = !model.isLocalPeer && model.peer.info.hasPicture && model.cgPicture != nil && model.pictureClassification == .none
+		reportAction.isEnabled = !model.peerID.isLocalPeer && model.info.hasPicture && model.cgPicture != nil && model.pictureClassification == .none
 		alertController.addAction(reportAction)
 		
 		alertController.present()
@@ -85,8 +88,9 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	@IBAction func pinPeer(_ sender: UIButton) {
-		guard !model.peer.id.pinned else {
-			AccountController.shared.updatePinStatus(of: model.peer.id, force: true)
+		let mdl = idModel
+		guard !mdl.pinState.isPinned else {
+			AccountController.use { $0.updatePinStatus(of: mdl.id, force: true) }
 			return
 		}
 
@@ -257,7 +261,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		updateState()
 		
 		let simpleStateUpdate = { [weak self] (notification: Notification) in
-			guard let peerID = notification.userInfo?[PeeringController.NotificationInfoKey.peerID.rawValue] as? PeerID,
+			guard let peerID = notification.userInfo?[PeerID.NotificationInfoKey] as? PeerID,
 				  let strongSelf = self, strongSelf.peerID == peerID else { return }
 
 			strongSelf.updateState()
@@ -266,18 +270,15 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver(usingBlock: simpleStateUpdate))
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addObserver(usingBlock: simpleStateUpdate))
-		
-		let simpleHandledNotifications2: [AccountController.Notifications] = [.pinned, .pinningStarted, .pinFailed, .unpinFailed, .pinStateUpdated, .peerReported]
-		for networkNotification in simpleHandledNotifications2 {
-			notificationObservers.append(networkNotification.addObserver(usingBlock: simpleStateUpdate))
-		}
-		
-		notificationObservers.append(AccountController.Notifications.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
+		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addObserver(usingBlock: simpleStateUpdate))
+		notificationObservers.append(AccountController.NotificationName.peerReported.addObserver(usingBlock: simpleStateUpdate))
+
+		notificationObservers.append(AccountController.NotificationName.pinMatch.addObserver(usingBlock: { [weak self] (notification) in
 			simpleStateUpdate(notification)
 			self?.gradientView?.animateGradient = true
 		}))
 
-		notificationObservers.append(AccountController.Notifications.unpinned.addObserver(usingBlock: { (notification) in
+		notificationObservers.append(AccountController.NotificationName.unpinned.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))
 
@@ -291,7 +292,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		let loadPicture = model.cgPicture == nil && model.peer.info.hasPicture
+		let loadPicture = model.cgPicture == nil && model.info.hasPicture
 		let loadBio = model.biography == ""
 
 		interactWithPeer { interaction in
@@ -312,7 +313,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			}
 		}
 
-		gradientView.animateGradient = AccountController.shared.hasPinMatch(peerID)
+		gradientView.animateGradient = idModel.pinState == .pinMatch
 
 		animatePinButton()
 	}
@@ -382,16 +383,16 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	private func updateState() {
+		let idState = idModel
 		let state = model
-		let peer = state.peer
-		let info = peer.info
+		let info = model.info
 
 		updatePinCircleWidth()
-		pinButton.isHidden = state.pinState == .pinning
-		pinButton.isEnabled = !state.isLocalPeer
-		pinButton.isSelected = state.pinState == .pinned
-		pinIndicator.isHidden = state.pinState != .pinning
-		findButtonItem?.isEnabled = peer.id.pinMatched
+		pinButton.isHidden = idState.pinState == .pinning || idState.pinState == .unpinning
+		pinButton.isEnabled = !state.peerID.isLocalPeer
+		pinButton.isSelected = idState.pinState.isPinned
+		pinIndicator.isHidden = !pinButton.isHidden
+		findButtonItem?.isEnabled = idState.pinState == .pinMatch
 		peerIDLabel.text = model.peerID.uuidString
 		bioTextView.text = model.biography
 		hideOrShowPinRelatedViews()
@@ -430,7 +431,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 	// TODO merge with WelcomeViewController.animatePinButton()
 	private func animatePinButton() {
-		guard model.pinState != .pinned, !UIAccessibility.isReduceMotionEnabled,
+		guard !UIAccessibility.isReduceMotionEnabled, !idModel.pinState.isPinned,
 			  let pinView = pinButton, let circleView = pinCircleView else { return }
 
 		let duration = 1.2

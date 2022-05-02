@@ -10,7 +10,7 @@ import Foundation
 
 /// An `error` created by the server chat module.
 public enum ServerChatError: Error {
-	/// Thrown when server chat is used when `AccountController.shared.accountExists` is false.
+	/// Thrown when server chat is used when the `AccountController` singleton does not exist.
 	case identityMissing
 
 	/// Parsing a server response failed; passes a localized error message.

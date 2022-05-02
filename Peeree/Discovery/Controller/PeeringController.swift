@@ -12,7 +12,7 @@ import CoreGraphics
 /// Handles all events specific to a single `PeerID`.
 protocol PeeringDelegate {
 	func loaded(biography: String)
-	func loaded(picture: CGImage, hash: Data, classification: AccountController.ContentClassification)
+	func loaded(picture: CGImage, hash: Data)
 	func didRange(rssi: NSNumber?, error: Error?)
 	func failedVerification(error: Error)
 	func didVerify()
@@ -47,7 +47,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Keys in the `userInfo` dict of a notification.
 	public enum NotificationInfoKey: String {
-		case peerID, again, connectionState
+		case again, connectionState
 	}
 
 	/// Names of notifications sent by `PeeringController`.
@@ -61,9 +61,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			var userInfo: [AnyHashable: Any]? = nil
 			if let id = peerID {
 				if let a = again {
-					userInfo = [NotificationInfoKey.peerID.rawValue : id, NotificationInfoKey.again.rawValue : a]
+					userInfo = [PeerID.NotificationInfoKey : id, NotificationInfoKey.again.rawValue : a]
 				} else {
-					userInfo = [NotificationInfoKey.peerID.rawValue : id]
+					userInfo = [PeerID.NotificationInfoKey : id]
 				}
 			}
 			postAsNotification(object: PeeringController.shared, userInfo: userInfo)
@@ -184,7 +184,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			self.lastSeenDates[peer.id.peerID] = now
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
 
-			PeerViewModelController.update(peer: peer, lastSeen: now)
+			Self.updateViewModels(of: peer, lastSeen: now)
 			PeerViewModelController.modify(peerID: peer.id.peerID) { model in
 				model.isAvailable = true
 			}
@@ -208,6 +208,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
 			PeerViewModelController.modify(peerID: peerID) { model in
 				model.isAvailable = false
+				model.lastSeen = now
 			}
 			Notifications.peerDisappeared.post(peerID)
 		}
@@ -260,7 +261,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		self.cleanupPersistedPeers()
 		DispatchQueue.main.async {
 			for peer in peers {
-				PeerViewModelController.update(peer: peer, lastSeen: self.lastSeenDates[peer.id.peerID] ?? Date.distantPast)
+				Self.updateViewModels(of: peer, lastSeen: self.lastSeenDates[peer.id.peerID] ?? Date.distantPast)
 			}
 			Notifications.persistedPeersLoadedFromDisk.post()
 		}
@@ -366,19 +367,21 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	// MARK: Methods
 
+	/// Starts advertising our data via Bluetooth.
 	private func startAdvertising(restartOnly: Bool) {
-		UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
-			guard (!restartOnly || self.localPeerManager != nil),
-				  let info = peerInfo, AccountController.shared.accountExists,
-				  let keyPair = AccountController.shared.keyPair else { return }
+		AccountController.use { ac in
+			let keyPair = ac.keyPair
+			UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
+				guard (!restartOnly || self.localPeerManager != nil), let info = peerInfo else { return }
 
-			self.localPeerManager?.stopAdvertising()
+				self.localPeerManager?.stopAdvertising()
 
-			let l = LocalPeerManager(peer: Peer(id: PeereeIdentity(peerID: AccountController.shared.peerID, publicKey: keyPair.publicKey), info: info),
-									 biography: biography, keyPair: keyPair, pictureResourceURL: UserPeer.pictureResourceURL)
-			self.localPeerManager = l
-			l.delegate = self
-			l.startAdvertising()
+				let l = LocalPeerManager(peer: Peer(id: ac.identity, info: info),
+										 biography: biography, keyPair: keyPair, pictureResourceURL: UserPeer.pictureResourceURL)
+				self.localPeerManager = l
+				l.delegate = self
+				l.startAdvertising()
+			}
 		}
 	}
 
@@ -402,63 +405,76 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Performs additional logic when a picture was received, e.g. objectionable content checks.
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
-		AccountController.shared.containsObjectionableContent(imageHash: hash) { containsObjectionableContent in
-			self.manage(peerID) { manager in
-				manager.loaded(picture: picture, hash: hash, classification: containsObjectionableContent)
-			}
+		self.manage(peerID) { manager in
+			manager.loaded(picture: picture, hash: hash)
+		}
+	}
+
+	/// Populates the current peer-related data to the view models.
+	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
+		let peerID = peer.id.peerID
+
+		PeerViewModelController.update(peerID, info: peer.info, lastSeen: lastSeen)
+
+		// This is a bit tricky. We can get the public key from both the AccountController and the PersistedPeersController.
+		// For now, we always use the one from the AccountController.
+		PeereeIdentityViewModelController.upsert(peerID: peerID, insert: PeereeIdentityViewModel(id: peer.id)) { _ in
+			// only insert if it wasn't already defined by AccountController
 		}
 	}
 
 	/// Remove peers from disk which haven't been seen for `MaxRememberedHours` and are not pin matched.
 	private func cleanupPersistedPeers() {
 		DispatchQueue.main.async {
-			let now = Date()
-			let never = Date.distantPast
 			let lastSeens = self.lastSeenDates
 
-			let userPeerID: PeerID?
-			if AccountController.shared.accountExists {
-				userPeerID = AccountController.shared.peerID
-			} else {
-				userPeerID = nil
-			}
-
-			self.persistence.filterPeers { peers in
-				let cal = Calendar.current as NSCalendar
-				let removePeers = peers.filter { peer in
-					// never remove our own view model or the view model of pin matched peers
-					guard peer.id.peerID != userPeerID && !peer.id.pinMatched else { return false }
-
-					let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peer.id.peerID] ?? never, to: now, options: []).hour
-					let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
-					return lastSeenAgo > PeeringController.MaxRememberedHours
+			self.persistence.readPeers { peers in
+				AccountController.use { ac in
+					self.performCleanup(allPeers: peers, lastSeens: lastSeens, accountController: ac)
 				}
-
-				self.peerManagers.accessAsync { mgrs in
-					for peer in removePeers {
-						mgrs.removeValue(forKey: peer.id.peerID)
-					}
-				}
-				return removePeers
 			}
 		}
 	}
 
+	/// Cleans unnecessary peers from disk; must be called on AccountController.dQueue!
+	private func performCleanup(allPeers: Set<Peer>, lastSeens: [PeerID: Date], accountController: AccountController) {
+		let now = Date()
+		let never = Date.distantPast
+		let cal = Calendar.current as NSCalendar
+
+		let removePeers = allPeers.filter { peer in
+			// never remove our own view model or the view model of pin matched peers
+			guard peer.id.peerID != accountController.peerID && !accountController.hasPinMatch(peer.id.peerID) else { return false }
+
+			let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peer.id.peerID] ?? never, to: now, options: []).hour
+			let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
+			return lastSeenAgo > PeeringController.MaxRememberedHours
+		}
+
+		self.peerManagers.accessAsync { mgrs in
+			for peer in removePeers {
+				mgrs.removeValue(forKey: peer.id.peerID)
+			}
+		}
+
+		persistence.removePeers(removePeers)
+	}
+
 	/// Observes relevant notifications in `NotificationCenter`.
 	private func observeNotifications() {
-		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver { peerID, _ in
+		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { peerID, _ in
 			self.manage(peerID) { manager in
 				manager.indicatePinMatch()
 			}
 		})
-		notificationObservers.append(AccountController.Notifications.accountCreated.addObserver { _ in
+		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { _ in
 			guard self.peering else { return }
 
 			// restart peering s.t. we also advertise and not only scan
 			self.peering = false
 			self.peering = true
 		})
-		notificationObservers.append(AccountController.Notifications.accountDeleted.addObserver { _ in
+		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver { _ in
 			// delete all cached pictures and finally the persisted PeerInfo records themselves
 			self.persistence.clear()
 			self.peerManagers.removeAll()
@@ -471,19 +487,22 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		let newState = peering
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
 
-		guard AccountController.shared.accountExists else { return }
-
 		if newState {
-			ServerChatController.getOrSetupInstance { result in
+			ServerChatFactory.getOrSetupInstance { result in
 				switch result {
 				case .failure(let error):
-					self.delegate?.serverChatLoginFailed(with: error)
+					switch error {
+					case .identityMissing:
+						break
+					default:
+						self.delegate?.serverChatLoginFailed(with: error)
+					}
 				case .success(_):
 					break
 				}
 			}
 		} else {
-			ServerChatController.close()
+			ServerChatFactory.close()
 		}
 	}
 }

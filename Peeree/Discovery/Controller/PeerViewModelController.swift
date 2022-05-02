@@ -9,7 +9,7 @@
 import Foundation
 
 /// This class is intended for use on the main thread only!
-public class PeerViewModelController {
+public final class PeerViewModelController {
 	// MARK: - Public and Internal
 
 	// MARK: Static Variables
@@ -20,9 +20,9 @@ public class PeerViewModelController {
 	// MARK: Static Methods
 
 	/// Update or set the view model of `Peer`.
-	public static func update(peer: Peer, lastSeen: Date) {
-		viewModels[peer.id.peerID, default: PeerViewModel(peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureClassification: .none, pictureHash: nil)].peer = peer
-		viewModels[peer.id.peerID, default: PeerViewModel(peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureClassification: .none, pictureHash: nil)].lastSeen = lastSeen
+	public static func update(_ peerID: PeerID, info: PeerInfo, lastSeen: Date) {
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].info = info
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].lastSeen = lastSeen
 	}
 
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
@@ -30,8 +30,8 @@ public class PeerViewModelController {
 		let clos: () -> PeerViewModel = {
 			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
-			let peer = Peer(peerID: peerID, publicKey: bogusKey, nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(isAvailable: false, peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil, pictureClassification: .none)
+			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		return viewModels[peerID, default: clos()]
@@ -42,8 +42,8 @@ public class PeerViewModelController {
 		let clos: () -> PeerViewModel = {
 			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
-			let peer = Peer(peerID: peerID, publicKey: bogusKey, nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(isAvailable: false, peer: peer, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil, pictureClassification: .none)
+			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		modifier(&viewModels[peerID, default: clos()])
@@ -57,14 +57,5 @@ public class PeerViewModelController {
 	/// Removes all view models.
 	public static func clear() {
 		viewModels.removeAll()
-	}
-
-	// MARK: - Private
-
-	// MARK: Static Variables
-
-	/// Generates a fake crypto key; probably crashes!
-	private static var bogusKey: AsymmetricPublicKey {
-		return try! KeyPair(label: "PeerViewModelController", privateTag: Data(repeating: 42, count: 2), publicTag: Data(repeating: 42, count: 3), type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: false).publicKey
 	}
 }

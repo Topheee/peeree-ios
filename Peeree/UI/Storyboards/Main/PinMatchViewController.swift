@@ -67,7 +67,7 @@ class PinMatchViewController: PeerViewController {
 	}
 	
 	private func displayPeer() {
-		peerNameLabel?.text = model.peer.info.nickname
+		peerNameLabel?.text = model.info.nickname
 
 		guard portraitView != nil else { return }
 		portraitView.image = model.portraitOrPlaceholder

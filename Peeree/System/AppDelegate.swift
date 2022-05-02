@@ -12,13 +12,8 @@ let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", commen
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
 
 struct VisualTheme {
-	var tintColor: UIColor {
-		if #available(iOS 10, *) {
-			return UIColor(displayP3Red: 21.0/255.0, green: 132.0/255.0, blue: 93.0/255.0, alpha: 1.0)
-		} else {
-			return UIColor(red: 21.0/255.0, green: 132.0/255.0, blue: 93.0/255.0, alpha: 1.0)
-		}
-	}
+	let tintColor = UIColor(red: 21.0/256.0, green: 132.0/256.0, blue: 93.0/256.0, alpha: 1.0)
+
 	var backgroundColor: UIColor {
 		if #available(iOS 13, *) {
 			return UIColor.systemBackground
@@ -30,7 +25,7 @@ struct VisualTheme {
 let AppTheme = VisualTheme()
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate, ServerChatControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate, ServerChatDelegate {
 	static let BrowseTabBarIndex = 0
 	static let PinMatchesTabBarIndex = 1
 	static let MeTabBarIndex = 2
@@ -50,8 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		// Observe singletons
-		ServerChatController.delegate = self
-		AccountController.shared.delegate = self
+		ServerChatFactory.delegate = self
+		AccountController.delegate = self
 		PeeringController.shared.delegate = self
 
 		// Global configuration
@@ -63,7 +58,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
 			self.setupManualAppearance()
 		}
-		_ = AccountController.Notifications.pinned.addObserver { (_) in
+		_ = PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver { (peerID, _) in
+			guard PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinned else { return }
 			if #available(iOS 13.0, *) { HapticController.playHapticPin() }
 		}
 
@@ -109,7 +105,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 *  Stops networking and synchronizes preferences
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
-		ServerChatController.close()
+		ServerChatFactory.close()
 		PeeringController.shared.peering = false
 		UserDefaults.standard.synchronize()
 	}
@@ -130,8 +126,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-		ServerChatController.remoteNotificationsDeviceToken = deviceToken
-		ServerChatController.getOrSetupInstance(onlyLogin: true) { result in
+		ServerChatFactory.remoteNotificationsDeviceToken = deviceToken
+		ServerChatFactory.getOrSetupInstance(onlyLogin: true) { result in
 			switch result {
 			case .failure(let serverChatError):
 				switch serverChatError {
@@ -159,7 +155,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	
 	func publicKeyMismatch(of peerID: PeerID) {
 		DispatchQueue.main.async {
-			let name = PeerViewModelController.viewModel(of: peerID).peer.info.nickname
+			let name = PeerViewModelController.viewModel(of: peerID).info.nickname
 			let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), name)
 			let error = createApplicationError(localizedDescription: message)
 			InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"))
@@ -173,8 +169,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	// MARK: PeeringControllerDelegate
 
 	func peeringControllerIsReadyToGoOnline() {
-		guard AccountController.shared.accountExists else { return }
-		PeeringController.shared.peering = true
+		AccountController.use { _ in PeeringController.shared.peering = true }
 	}
 
 	func encodingPeersFailed(with error: Error) {

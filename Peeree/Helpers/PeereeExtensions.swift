@@ -47,6 +47,14 @@ extension RawRepresentable where Self.RawValue == String {
 		}
 	}
 
+	func post(for peerID: PeerID, userInfo: [AnyHashable : Any]? = nil) {
+		if let ui = userInfo {
+			postAsNotification(object: nil, userInfo: ui.merging([PeerID.NotificationInfoKey : peerID]) { a, _ in a })
+		} else {
+			postAsNotification(object: nil, userInfo: [PeerID.NotificationInfoKey : peerID])
+		}
+	}
+
 	/// Observes notifications with a `name` equal to the `rawValue` of this notification and extracts the `PeerID` from any notification before calling `block`.
 	public func addAnyPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in

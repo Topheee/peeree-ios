@@ -12,14 +12,18 @@ import Toast
 /// Display custom notifications only in-app, sometimes called 'toasts'.
 final class InAppNotificationController {
 	static func display(title: String, message: String, isNegative: Bool = true) {
+		if isNegative {
+			wlog("Displaying in-app warning '\(title)': \(message)")
+		}
+
 		DispatchQueue.main.async {
 			guard let view = UIViewController.frontMostViewController()?.view else { return }
-			
+
 			var style = ToastStyle()
 			if isNegative {
 				style.titleColor = .red
 			}
-			
+
 			view.makeToast(message, duration: InAppNotificationController.NotificationDuration, position: .top, title: title, image: nil, style: style, completion: nil)
 		}
 	}

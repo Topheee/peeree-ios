@@ -82,11 +82,9 @@ public final class BrowseFilterSettings: NSObject, NSSecureCoding {
 		Notifications.filterChanged.post()
 	}
 
-	func check(peer: Peer) -> Bool {
+	func check(info: PeerInfo, pinState: PinState) -> Bool {
 		// always keep matched peers in filter
-		guard !peer.id.pinMatched else { return true }
-
-		let info = peer.info
+		guard pinState != .pinMatch else { return true }
 
 		let matchingGender = gender == .unspecified || (gender == .female && info.gender == .female) || (gender == .male && info.gender == .male) || (gender == .queer && info.gender == .queer)
 		var matchingAge: Bool

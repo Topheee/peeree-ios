@@ -21,6 +21,9 @@ extension PeerObserverContainer {
 	/// Shortcut for `PeerViewModelController.viewModel(of: peerID)`.
 	var model: PeerViewModel { return PeerViewModelController.viewModel(of: peerID) }
 
+	/// Shortcut for `PeereeIdentityViewModelController.viewModel(of: peerID)`.
+	var idModel: PeereeIdentityViewModel { return PeereeIdentityViewModelController.viewModel(of: peerID) }
+
 	/// Shortcut for `PeeringController.shared.interact(with: peerID, completion: completion)`.
 	func interactWithPeer(completion: @escaping (PeerInteraction) -> ()) {
 		PeeringController.shared.interact(with: peerID, completion: completion)

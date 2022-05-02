@@ -30,3 +30,8 @@ public func wlog(_ message: String) {
 public func elog(_ message: String) {
 	os_log("%@", log: .default, type: .error, "[ERR] \(message)\n\(Thread.callStackSymbols)")
 }
+
+/// Fault-level logging of `message`.
+public func flog(_ message: String) {
+	os_log("%@", log: .default, type: .fault, "[FAL] \(message)\n\(Thread.callStackSymbols)")
+}

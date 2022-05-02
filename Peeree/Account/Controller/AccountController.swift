@@ -10,117 +10,121 @@ import Foundation
 import ImageIO
 import CoreServices
 
+/// Informant of failures in the `AccountController`.
 public protocol AccountControllerDelegate {
+	/// The request to pin `peerID` failed with `error`.
 	func pin(of peerID: PeerID, failedWith error: Error)
+
+	/// A requested action on `peerID` failed due to the server assuming a different public key than us; this may imply an attack on the user.
 	func publicKeyMismatch(of peerID: PeerID)
+
+	/// The fallback process for `unauthorized` errors failed.
 	func sequenceNumberResetFailed(error: ErrorResponse)
 }
 
 /**
- * Central singleton for managing all actions according to communication with the Peeree server.
+ * Central singleton managing all communication with the Peeree servers.
  * Do NOT use the network calls in DefaultAPI directly, as then the sequence number won't be updated appropriately
  */
 public class AccountController: SecurityDataSource {
-	/// User defaults key for pinned peers dictionary
-	static private let PinnedPeersKey = "PinnedPeers"
-	/// User defaults key for pinned by peers dictionary
-	static private let PinnedByPeersKey = "PinnedByPeers"
-	/// User defaults key for user's email
-	static private let EmailKey = "Email"
-	/// User defaults key for sequence number
-	static private let SequenceNumberKey = "SequenceNumber"
-	/// User defaults key for objectionable image hashes
-	static private let ObjectionableImageHashesKey = "ObjectionableImageHashes"
-	/// User defaults key for reported and not yet objectionable image hashes
-	static private let PendingObjectionableImageHashesKey = "PendingObjectionableImageHashesKey"
-	/// User defaults key for objectionable content refresh timestamp
-	static private let ObjectionableContentRefreshKey = "ObjectionableContentRefresh"
-	/// JPEG compression quality for portrait report uploads.
-	static private let UploadCompressionQuality: CGFloat = 0.3
 
-	/// Keychain property
-	private static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
-	/// Keychain property
-	private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
-	/// Keychain property
-	private static let KeyLabel = "Peeree Identity"
+	// MARK: Classes, Structs, Enums
 
-	/// Key to our identity in UserDefaults
-	private static let PeerIDKey = "PeerIDKey"
+	/// Names of notifications sent by `AccountController`.
+	public enum NotificationName: String {
+		/// Notifications regarding pins.
+		case pinFailed, unpinFailed, pinMatch, unpinned
 
-	/// refresh objectionable content every day at most (or when the app is killed)
-	static let ObjectionableContentRefreshThreshold: TimeInterval = 60 * 60 * 24
-	
-	public static let shared = AccountController()
-	
-	public enum Notifications: String {
-		public enum NotificationInfoKey: String {
-			case peerID
-		}
-		case pinned, pinningStarted, pinFailed, pinMatch
-		case pinStateUpdated, unpinned, unpinFailed
+		/// Notifications regarding identity management.
 		case accountCreated, accountDeleted
+
+		/// Notification when a picture was reported as inappropriate.
 		case peerReported
-		
-		func post(_ peerID: PeerID) {
-			postAsNotification(object: AccountController.shared, userInfo: [NotificationInfoKey.peerID.rawValue : peerID])
+	}
+
+	// MARK: Static Variables
+
+	/// Informed party when `AccountController` actions fail.
+	public static var delegate: AccountControllerDelegate?
+
+	/// Needed for writing nonces; `16` is a good estimation.
+	public static var blockSize = 16
+
+	/// Call from `dQueue` only!
+	static var isCreatingAccount: Bool {
+		return !creatingInstanceCallbacks.isEmpty
+	}
+
+	// MARK: Static Functions
+
+	/// Retrieves the singleton on its `DispatchQueue`; call all methods on `AccountController` only directly from `getter`!
+	public static func use(_ getter: @escaping (AccountController) -> Void, _ unavailable: (() -> Void)? = nil) {
+		dQueue.async {
+			if let i = instance {
+				getter(i)
+			} else if let ac = load() {
+				instance = ac
+				getter(ac)
+			} else { unavailable?() }
 		}
 	}
-	
-	/*
-	 store pinned public key along with peerID as
-	 1. Alice pins Bob
-	 2. Eve advertises Bob's peerID with her public key
-	 3. Alice validates Bob's peerID with Eve's public key and thinks she met Bob again
-	 4. Eve convinced Alice successfully that she is Bob
-	*/
-	
-	/// stores acknowledged pinned peers and their public keys
-	private var pinnedPeers: SynchronizedDictionary<PeerID, Data>
-	/// stores acknowledged pin matched peers
-	private var pinnedByPeers: SynchronizedSet<PeerID>
-	
-	private var pinningPeers = SynchronizedSet<PeerID>(queueLabel: "\(BundleID).pinningPeers")
 
-	/// the crown juwels of the user and the second part of the user's identity
-	private (set) var keyPair: KeyPair?
+	/// Creates a new `PeereeIdentity` for the user.
+	public static func createAccount(email: String? = nil, _ completion: @escaping (Result<AccountController, Error>) -> Void) { dQueue.async {
+		if let i = instance {
+			completion(.success(i))
+			return
+		}
 
-	/// the unique identity of the user on our social network
-	private (set) var peerID: PeerID
+		creatingInstanceCallbacks.append(completion)
+		guard creatingInstanceCallbacks.count == 1 else { return }
 
-	var identity: PeereeIdentity? { return keyPair.map { PeereeIdentity(peerID: peerID, publicKey: $0.publicKey) } }
+		// generate our asymmetric key pair
+		let keyPair: KeyPair
+		do {
+			// try to remove the old key, just to be sure
+			try? removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
+			try? removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 
-	// only access these only from the main thread!
-	private var objectionableImageHashes: Set<Data>
-	private var pendingObjectionableImageHashes: [Data : Date]
-	private var lastObjectionableContentRefresh: Date
-	
-	private func resetSequenceNumber() {
-		wlog("resetting sequence number")
-		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
-			guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
-				if let error = _error {
-					elog("resetting sequence number failed: \(error.localizedDescription)")
-					self.delegate?.sequenceNumberResetFailed(error: error)
-				}
+			// this will add the pair to the keychain, from where it is read later by the constructor
+			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: true)
+
+			SwaggerClientAPI.dataSource = InitialSecurityDataSource(keyPair: keyPair)
+		} catch let error {
+			reportCreatingInstance(result: .failure(error))
+			return
+		}
+
+		AccountAPI.putAccount(email: email) { (_account, _error) in
+			guard let account = _account else {
+				let desc = NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")
+				reportCreatingInstance(result: .failure(_error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])))
 				return
 			}
-			
-			self._sequenceNumber = sequenceNumberDataCipher
+
+			UserDefaults.standard.set(account.peerID.uuidString, forKey: PeerIDKey)
+			UserDefaults.standard.set(NSNumber(value: account.sequenceNumber), forKey: SequenceNumberKey)
+
+			let a = AccountController(peerID: account.peerID, sequenceNumber: account.sequenceNumber, keyPair: keyPair)
+			instance = a
+			reportCreatingInstance(result: .success(a))
+
+			NotificationName.accountCreated.postAsNotification(object: a, userInfo: [PeerID.NotificationInfoKey : account.peerID])
 		}
-	}
-	
-	private static let SequenceNumberIncrement: Int32 = 13
-	private var _sequenceNumber: Int32? {
-		didSet {
-			if let sequenceNumber = _sequenceNumber {
-				UserDefaults.standard.set(NSNumber(value: sequenceNumber), forKey: AccountController.SequenceNumberKey)
-			} else {
-				UserDefaults.standard.removeObject(forKey: AccountController.SequenceNumberKey)
-			}
-		}
-	}
-	
+	} }
+
+	// MARK: Variables
+
+	/// The crown juwels of the user and the second part of the user's identity.
+	let keyPair: KeyPair
+
+	/// The identifier of the user on our social network.
+	let peerID: PeerID
+
+	/// The user's unique identity on our social network.
+	var identity: PeereeIdentity { return PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey) }
+
+	/// The email address associated with this account; if any.
 	private (set) var accountEmail: String? {
 		didSet {
 			if accountEmail != nil && accountEmail! != "" {
@@ -131,40 +135,48 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 
-	public var accountExists: Bool { return _sequenceNumber != nil }
-
-	private (set) var isCreatingAccount = false
+	/// Whether the account deletion process is running.
 	private (set) var isDeletingAccount = false
 
-	public var delegate: AccountControllerDelegate?
-	
+	/// Retrieves the full known public key of `peerID`, if available.
 	public func publicKey(of peerID: PeerID) -> Data? { return pinnedPeers[peerID] }
-	
+
+	/// Retrieves the full known identity of `peerID`.
+	public func id(of peerID: PeerID) throws -> PeereeIdentity {
+		guard let publicKeyData = pinnedPeers[peerID] else {
+			throw createApplicationError(localizedDescription: NSLocalizedString("Unknown peer.", comment: "Requested information about an unknown peer."))
+		}
+
+		return PeereeIdentity(peerID: peerID, publicKey: try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize))
+	}
+
 	/// Returns whether we have a pin match with that specific PeerID. Note, that this does NOT imply we have a match with a concrete PeerInfo of that PeerID, as that PeerInfo may be a malicious peer
 	public func hasPinMatch(_ peerID: PeerID) -> Bool {
 		// it is enough to check whether we are pinned by peerID, as we only know that if we matched
 		return pinnedByPeers.contains(peerID)
 	}
-	
-	/// Returns whether we pinned that specific PeerID. Note, that this does NOT imply we pinned that person who's telling us he has this PeerID, as that PeerInfo may be a malicious peer. Thus, always check verification status of PeerInfo additionally
+
+	/// Returns whether we pinned that specific PeerIdentity.
 	public func isPinned(_ id: PeereeIdentity) -> Bool {
-		return pinnedPeers.contains { $0.0 == id.peerID && $0.1 == id.publicKeyData }
+		return pinnedPeers[id.peerID] == id.publicKeyData
 	}
-	
+
+	/// Checks whether the pinning process is (already) running for `peerID`.
 	public func isPinning(_ peerID: PeerID) -> Bool {
 		return pinningPeers.contains(peerID)
 	}
 
+	/// Pins a person and checks for a pin match.
 	public func pin(_ id: PeereeIdentity) {
-		guard accountExists else { return }
-
 		let peerID = id.peerID
-		guard !isPinned(id) && !(pinningPeers.contains(peerID)) else { return }
-		
-		self.pinningPeers.insert(peerID)
-		Notifications.pinningStarted.post(peerID)
+		guard !isPinned(id) && !isPinning(peerID) else { return }
+
+		pinningPeers.insert(peerID)
+		updateModels(of: [id])
+
 		PinsAPI.putPin(pinnedID: peerID, pinnedKey: id.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
 			self.pinningPeers.remove(peerID)
+
 			if let error = _error {
 				self.preprocessAuthenticatedRequestError(error)
 				// possible HTTP errors:
@@ -172,45 +184,45 @@ public class AccountController: SecurityDataSource {
 				//
 				switch error {
 				case .httpError(409, _), .sessionTaskError(409?, _, _):
-					self.delegate?.publicKeyMismatch(of: peerID)
+					Self.delegate?.publicKeyMismatch(of: peerID)
 				default:
-					self.delegate?.pin(of: peerID, failedWith: error)
+					Self.delegate?.pin(of: peerID, failedWith: error)
 				}
-				Notifications.pinFailed.post(peerID)
-			} else if let isPinMatch = _isPinMatch  {
+				self.post(.pinFailed, peerID)
+			} else if let isPinMatch = _isPinMatch {
 				self.pin(id: id, isPinMatch: isPinMatch)
 			} else {
-				Notifications.pinFailed.post(peerID)
+				self.post(.pinFailed, peerID)
 			}
+
+			self.updateModels(of: [id])
 		}
 	}
 
+	/// Removes the pin from a person.
 	public func unpin(id: PeereeIdentity) {
-		guard accountExists && isPinned(id) else { return }
+		guard isPinned(id) else { return }
 		let peerID = id.peerID
-		
+
+		unpinningPeers.insert(peerID)
+		updateModels(of: [id])
+
 		PinsAPI.deletePin(pinnedID: peerID) { (_, _error) in
+			self.unpinningPeers.remove(peerID)
+
 			if let error = _error {
 				self.preprocessAuthenticatedRequestError(error)
-				Notifications.unpinFailed.post(peerID)
+				self.post(.unpinFailed, peerID)
 			} else {
 				self.removePin(from: id)
-				Notifications.unpinned.post(peerID)
 			}
-		}
-	}
-	
-	public enum ContentClassification {
-		case objectionable, pending, none
-	}
-	
-	public func containsObjectionableContent(imageHash: Data, completion: @escaping (ContentClassification) -> Void) {
-		DispatchQueue.main.async {
-			completion(self.objectionableImageHashes.contains(imageHash) ? .objectionable : (self.pendingObjectionableImageHashes[imageHash] != nil ? .pending : .none))
+
+			self.updateModels(of: [id])
 		}
 	}
 
-	public func report(model: PeerViewModel, errorCallback: @escaping (Error) -> Void) {
+	/// Reports the picture of a person as inappropriate.
+	public func report(model: PeerViewModel, _ errorCallback: @escaping (Error) -> Void) {
 		guard let portrait = model.cgPicture, let hash = model.pictureHash else { return }
 		
 		let hashString = hash.hexString()
@@ -239,19 +251,21 @@ public class AccountController: SecurityDataSource {
 				errorCallback(error)
 			} else {
 				DispatchQueue.main.async {
-					self.pendingObjectionableImageHashes[hash] = Date()
-					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
-					PeerViewModelController.modify(peerID: model.peerID) { workModel in
-						workModel.pictureClassification = .pending
-						Notifications.peerReported.post(model.peerID)
+					PeereeIdentityViewModelController.pendingObjectionableImageHashes[hash] = Date()
+
+					let save = PeereeIdentityViewModelController.pendingObjectionableImageHashes
+					Self.dQueue.async {
+						archiveObjectInUserDefs(save as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
 					}
+
+					self.post(.peerReported, model.peerID)
 				}
 			}
 		}
 	}
-	
-	public func refreshBlockedContent(errorCallback: @escaping (Error) -> Void) {
-		guard accountExists else { return }
+
+	/// Downloads objectionable content hashes.
+	public func refreshBlockedContent(_ errorCallback: @escaping (Error) -> Void) {
 		guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
 
 		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
@@ -259,19 +273,22 @@ public class AccountController: SecurityDataSource {
 				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
 			} else if let hexHashes = _hexHashes {
+				let hashesAsData = Set<Data>(hexHashes.compactMap { Data(hexString: $0) })
+
+				let nsPendingObjectionableImageHashes: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PendingObjectionableImageHashesKey)
+				let pendingObjectionableImageHashes = (nsPendingObjectionableImageHashes as? Dictionary<Data,Date> ?? Dictionary<Data,Date>()).filter { element in
+					return !hashesAsData.contains(element.key)
+				}
+
+				archiveObjectInUserDefs(hashesAsData as NSSet, forKey: AccountController.ObjectionableImageHashesKey)
+				archiveObjectInUserDefs(pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
+
+				self.lastObjectionableContentRefresh = Date()
+				UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
+
 				DispatchQueue.main.async {
-					for hexHash in hexHashes {
-						if let decodedHash = Data(hexString: hexHash) {
-							self.objectionableImageHashes.insert(decodedHash)
-							self.pendingObjectionableImageHashes.removeValue(forKey: decodedHash)
-						} else {
-							wlog("Decoding objectionable image hash '\(hexHash)' failed.")
-						}
-					}
-					self.lastObjectionableContentRefresh = Date()
-					UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
-					archiveObjectInUserDefs(self.objectionableImageHashes as NSSet, forKey: AccountController.ObjectionableImageHashesKey)
-					archiveObjectInUserDefs(self.pendingObjectionableImageHashes as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
+					PeereeIdentityViewModelController.objectionableImageHashes = hashesAsData
+					PeereeIdentityViewModelController.pendingObjectionableImageHashes = pendingObjectionableImageHashes
 				}
 			} else {
 				errorCallback(ErrorResponse.parseError(nil))
@@ -279,70 +296,46 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 
+	/// Persists the pin.
 	private func pin(id: PeereeIdentity, isPinMatch: Bool) {
-		guard accountExists else { return }
+		let peerID = id.peerID
 
-		self.pinnedPeers.accessAsync { (dictionary) in
-			let peerID = id.peerID
-			if dictionary[peerID] != id.publicKeyData {
-				dictionary[peerID] = id.publicKeyData
-				// access the set on the queue to ensure the last peerID is also included
-				archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
-				
-				Notifications.pinned.post(peerID)
-			}
-			
-			if isPinMatch {
-				self.pinnedByPeers.accessAsync { (set) in
-					if !set.contains(peerID) {
-						set.insert(peerID)
-						// access the set on the queue to ensure the last peerID is also included
-						archiveObjectInUserDefs(set as NSSet, forKey: AccountController.PinnedByPeersKey)
+		if pinnedPeers[peerID] != id.publicKeyData {
+			pinnedPeers[peerID] = id.publicKeyData
+			// access the set on the queue to ensure the last peerID is also included
+			archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
+		}
 
-						// post this on the main queue
-						Notifications.pinMatch.post(peerID)
-					}
-				}
-			}
+		guard isPinMatch else { return }
+
+		if !pinnedByPeers.contains(peerID) {
+			pinnedByPeers.insert(peerID)
+			// access the set on the queue to ensure the last peerID is also included
+			archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
+
+			// post this on the main queue
+			self.post(.pinMatch, peerID)
 		}
 	}
 
+	/// Persists the pin removal.
 	private func removePin(from id: PeereeIdentity) {
 		let peerID = id.peerID
-		self.pinnedPeers.accessAsync { (dictionary) in
-			dictionary.removeValue(forKey: peerID)
+
+		pinnedPeers.removeValue(forKey: peerID)
+		// access the set on the queue to ensure the last peerID is also included
+		archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
+
+		if pinnedByPeers.remove(peerID) != nil {
 			// access the set on the queue to ensure the last peerID is also included
-			archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
-			Notifications.pinFailed.post(peerID)
+			archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 		}
-		
-		self.pinnedByPeers.accessAsync { (set) in
-			if set.remove(peerID) != nil {
-				// access the set on the queue to ensure the last peerID is also included
-				archiveObjectInUserDefs(set as NSSet, forKey: AccountController.PinnedByPeersKey)
-			}
-		}
-	}
-	
-	private func clearPins() {
-		self.pinningPeers.removeAll()
-		
-		self.pinnedPeers.accessAsync { (dictionary) in
-			dictionary.removeAll()
-			// access the set on the queue to ensure the last peerID is also included
-			archiveObjectInUserDefs(dictionary as NSDictionary, forKey: AccountController.PinnedPeersKey)
-		}
-		
-		self.pinnedByPeers.accessAsync { (set) in
-			set.removeAll()
-			// access the set on the queue to ensure the last peerID is also included
-			archiveObjectInUserDefs(set as NSSet, forKey: AccountController.PinnedByPeersKey)
-		}
+
+		post(.unpinned, peerID)
 	}
 
 	/// Retrieve the pin (matched) status from the server. If `force` is `false`, do not update if we believe we have a pin match.
 	public func updatePinStatus(of id: PeereeIdentity, force: Bool) {
-		guard accountExists else { return }
 		// attack scenario: Eve sends pin match indication to Alice, but Alice only asks server, if she pinned Eve in the first place => Eve can observe Alice's internet communication and can figure out, whether Alice pinned her, depending on whether Alice' asked the server after the indication.
 		// thus, we (Alice) have to at least once validate with the server, even if we know, that we did not pin Eve
 		// This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive a pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
@@ -366,50 +359,15 @@ public class AccountController: SecurityDataSource {
 				default:
 					self.removePin(from: id)
 				}
-				Notifications.pinStateUpdated.post(id.peerID)
+
+				self.updateModels(of: [id])
 			}
 		}
 	}
-	
-	public func createAccount(completion: @escaping (Error?) -> Void) {
-		guard !isCreatingAccount else { return } // TODO: data race (accessed on different queue below)
-		isCreatingAccount = true
-		_sequenceNumber = nil // we are not responsible here to ensure that no account already exists and need to not send this sequence number as our public key
-		do {
-			// try to remove the old key, just to be sure
-			try? KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
-			try? KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 
-			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: true)
-		} catch let error {
-			completion(error)
-			return
-		}
-	
-		AccountAPI.putAccount(email: accountEmail) { (_account, _error) in
-			var completionError: Error?
-			defer {
-				self.isCreatingAccount = false
-				completion(completionError)
-				if completionError == nil {
-					Notifications.accountCreated.post(self.peerID)
-				}
-			}
-			
-			guard let account = _account else {
-				completionError = _error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")])
-				return
-			}
-
-			self._sequenceNumber = account.sequenceNumber
-			self.peerID = account.peerID // TODO: this is a data race, but I don't want to put PeerID on a special queue
-			UserDefaults.standard.set(account.peerID.uuidString, forKey: AccountController.PeerIDKey)
-			completionError = nil
-		}
-	}
-	
-	public func deleteAccount(completion: @escaping (Error?) -> Void) {
-		guard accountExists, !isDeletingAccount else { return }
+	/// Permanently delete this identity; do not use this `AccountController` instance after this completes successfully!
+	public func deleteAccount(_ completion: @escaping (Error?) -> Void) {
+		guard !isDeletingAccount else { return }
 		isDeletingAccount = true
 		let oldPeerID = peerID
 
@@ -425,16 +383,21 @@ public class AccountController: SecurityDataSource {
 				}
 			}
 			if reportedError == nil {
-				self.clearLocalData(oldPeerID: oldPeerID)
+				self.clearLocalData(oldPeerID: oldPeerID) {
+					self.isDeletingAccount = false
+					completion(reportedError)
+					NotificationName.accountDeleted.postAsNotification(object: self)
+				}
+			} else {
+				self.isDeletingAccount = false
+				completion(reportedError)
 			}
-			self.isDeletingAccount = false
-			completion(reportedError)
 		}
 	}
-	
-	public func update(email: String, completion: @escaping (Error?) -> Void) {
-		guard accountExists else { return }
-		guard email != "" else { deleteEmail(completion: completion); return }
+
+	/// Changes the email address of the account or removes it if `email` is the empty string.
+	public func update(email: String, _ completion: @escaping (Error?) -> Void) {
+		guard email != "" else { deleteEmail(completion); return }
 		AccountAPI.putAccountEmail(email: email) { (_, _error) in
 			if let error = _error {
 				self.preprocessAuthenticatedRequestError(error)
@@ -444,9 +407,9 @@ public class AccountController: SecurityDataSource {
 			completion(_error)
 		}
 	}
-	
-	public func deleteEmail(completion: @escaping (Error?) -> Void) {
-		guard accountExists else { return }
+
+	/// Removes the email address from the account.
+	public func deleteEmail(_ completion: @escaping (Error?) -> Void) {
 		AccountAPI.deleteAccountEmail { (_, _error) in
 			if let error = _error {
 				self.preprocessAuthenticatedRequestError(error)
@@ -457,46 +420,248 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 	
-	// MARK: SecurityDelegate
-	
+	// MARK: SecurityDataSource
+
+	/// Returns the string representation of our UUID.
 	public func getPeerID() -> String {
 		return peerID.uuidString
 	}
-	
-	public func getSignature() -> String {
-		return (try? computeSignature()) ?? (try? keyPair?.externalPublicKey().base64EncodedString()) ?? ""
-	}
-	
-	// MARK: Private Functions
-	
-	private init() {
-		peerID = UserDefaults.standard.string(forKey: AccountController.PeerIDKey).map { UUID(uuidString: $0) ?? PeerID() } ?? PeerID()
-		self.keyPair = try? KeyPair(fromKeychainWith: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
-		// TODO PERFORMANCE (startup time): read from UserDefs and decode on background queue
-		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
-		pinnedByPeers = SynchronizedSet(queueLabel: "\(BundleID).pinnedByPeers", set: nsPinnedBy as? Set<PeerID> ?? Set())
-		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
-		pinnedPeers = SynchronizedDictionary(queueLabel: "\(BundleID).pinnedPeers", dictionary: nsPinned as? [PeerID : Data] ?? [PeerID : Data]())
-		let nsObjectionableImageHashes: NSSet? = unarchiveObjectFromUserDefs(AccountController.ObjectionableImageHashesKey)
-		objectionableImageHashes = nsObjectionableImageHashes as? Set<Data> ?? Set()
-		let nsPendingObjectionableImageHashes: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PendingObjectionableImageHashesKey)
-		pendingObjectionableImageHashes = nsPendingObjectionableImageHashes as? Dictionary<Data,Date> ?? Dictionary<Data,Date>()
-		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
-		accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
-		// TODO move sequence number into keychain
-		_sequenceNumber = (UserDefaults.standard.object(forKey: AccountController.SequenceNumberKey) as? NSNumber)?.int32Value
-		SwaggerClientAPI.dataSource = self
 
-		if keyPair == nil && _sequenceNumber != nil {
-			elog("Unrecoverable inconsistant state detected! keyPair is nil and _sequenceNumber is not nil. We need to delete our sequence number. This most likely means that our account was lost!")
-			clearLocalData(oldPeerID: peerID)
-		} else if keyPair != nil && _sequenceNumber == nil {
-			wlog("Inconsistant state! keyPair is not nil and _sequenceNumber is nil.")
-			// this is probably a recoverable state, since we should be able to restore the sequence number silently with this call:
-			resetSequenceNumber()
+	/// Authenticates the server request.
+	public func getSignature() -> String {
+		do {
+			return try computeSignature()
+		} catch let error {
+			flog("Cannot compute signature: \(error)")
+			return ""
 		}
 	}
-	
+
+	// MARK: - Private
+
+	/// Creates the AccountController singleton and installs it in the rest of the app.
+	private init(peerID: PeerID, sequenceNumber: Int32, keyPair: KeyPair) {
+		self.peerID = peerID
+		self.sequenceNumber = sequenceNumber
+
+		self.keyPair = keyPair
+		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
+		pinnedByPeers = nsPinnedBy as? Set<PeerID> ?? Set()
+		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
+		pinnedPeers = nsPinned as? [PeerID : Data] ?? [PeerID : Data]()
+		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
+		accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
+
+		opQueue.underlyingQueue = Self.dQueue
+
+		// side-effects (not the best style …)
+		Self.blockSize = keyPair.blockSize
+
+		SwaggerClientAPI.apiResponseQueue = opQueue
+		SwaggerClientAPI.dataSource = self
+
+		let models: [PeereeIdentityViewModel] = pinnedPeers.compactMap { (peerID, publicKeyData) in
+			guard let id = PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData) else { return nil }
+			return PeereeIdentityViewModel(id: id, pinState: self.pinState(of: peerID))
+		}
+
+		DispatchQueue.main.async {
+			PeereeIdentityViewModelController.userPeerID = peerID
+			for model in models {
+				PeereeIdentityViewModelController.insert(model: model)
+			}
+		}
+	}
+
+	// MARK: Classes, Structs, Enums
+
+	/// Used during account creation.
+	private struct InitialSecurityDataSource: SecurityDataSource {
+		// MARK: Constants
+
+		let keyPair: KeyPair
+
+		// MARK: SecurityDataSource
+
+		public func getPeerID() -> String {
+			return ""
+		}
+
+		public func getSignature() -> String {
+			do {
+				return try keyPair.externalPublicKey().base64EncodedString()
+			} catch let error {
+				flog("exporting public key failed: \(error)")
+				return ""
+			}
+		}
+	}
+
+	// MARK: Static Constants
+
+	/// User defaults key for pinned peers dictionary
+	private static let PinnedPeersKey = "PinnedPeers"
+	/// User defaults key for pinned by peers dictionary
+	private static let PinnedByPeersKey = "PinnedByPeers"
+	/// User defaults key for user's email
+	private static let EmailKey = "Email"
+	/// User defaults key for sequence number
+	private static let SequenceNumberKey = "SequenceNumber"
+	/// User defaults key for objectionable image hashes
+	private static let ObjectionableImageHashesKey = "ObjectionableImageHashes"
+	/// User defaults key for reported and not yet objectionable image hashes
+	private static let PendingObjectionableImageHashesKey = "PendingObjectionableImageHashesKey"
+	/// User defaults key for objectionable content refresh timestamp
+	private static let ObjectionableContentRefreshKey = "ObjectionableContentRefresh"
+	/// JPEG compression quality for portrait report uploads.
+	private static let UploadCompressionQuality: CGFloat = 0.3
+
+	/// Keychain property.
+	private static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
+	/// Keychain property.
+	private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
+	/// Keychain property.
+	private static let KeyLabel = "Peeree Identity"
+
+	/// Key to our identity in UserDefaults
+	private static let PeerIDKey = "PeerIDKey"
+
+	/// Refresh objectionable content every day at most (or when the app is killed).
+	private static let ObjectionableContentRefreshThreshold: TimeInterval = 60 * 60 * 24
+
+	/// The number added to the current sequence number after each server chat operation.
+	private static let SequenceNumberIncrement: Int32 = 13
+
+	/// The dispatch queue for actions on `AccountController`; should be private but is used in Server Chat as well for efficiency.
+	/*private*/ static let dQueue = DispatchQueue(label: "de.peeree.AccountController", qos: .default)
+
+	/// Singleton instance of this class.
+	private static var instance: AccountController?
+
+	/// Collected callbacks which where requesting a new account (through `createAcction()`)
+	private static var creatingInstanceCallbacks = [(Result<AccountController, Error>) -> Void]()
+
+	// MARK: Static Functions
+
+	/// Factory method for `AccountController`.
+	private static func load() -> AccountController? {
+		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
+		guard let peerID = UUID(uuidString: str) else {
+			wlog("our peer ID is not a UUID, deleting!")
+			UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
+			return nil
+		}
+
+		// TODO move sequence number into keychain
+		let sequenceNumber: Int32
+		if let sn = (UserDefaults.standard.object(forKey: Self.SequenceNumberKey) as? NSNumber)?.int32Value {
+			sequenceNumber = sn
+		} else {
+			wlog("Sequence Number is nil")
+			// we set it to 0 s. t. it can be reset later by our normal reset process
+			sequenceNumber = 0
+		}
+
+		do {
+			let ac = AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: try KeyPair(fromKeychainWith: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize))
+
+			return ac
+		} catch let error {
+			flog("cannot load our key from keychain: \(error)")
+			return nil
+		}
+	}
+
+	/// Concludes registration process; must be called on `dQueue`!
+	static private func reportCreatingInstance(result: Result<AccountController, Error>) {
+		creatingInstanceCallbacks.forEach { $0(result) }
+		creatingInstanceCallbacks.removeAll()
+	}
+
+	// MARK: Constants
+
+	/// Operation queue for work on this object.
+	private let opQueue = OperationQueue()
+
+	// MARK: Variables
+
+	/*
+	 store pinned public key along with peerID as
+	 1. Alice pins Bob
+	 2. Eve advertises Bob's peerID with her public key
+	 3. Alice validates Bob's peerID with Eve's public key and thinks she met Bob again
+	 4. Eve convinced Alice successfully that she is Bob
+	*/
+
+	/// Pinned peers and their public keys.
+	private var pinnedPeers: [PeerID : Data]
+	/// Pin matched peers.
+	private var pinnedByPeers: Set<PeerID>
+
+	/// Peers with underway requests to pin.
+	private var pinningPeers = Set<PeerID>()
+
+	/// Peers with underway requests to unpin from.
+	private var unpinningPeers = Set<PeerID>()
+
+	/// Timestamp of last successful refresh of objectionable content.
+	private var lastObjectionableContentRefresh: Date
+
+	/// Incrementing secret number we use to authenticate requests to the server.
+	private var sequenceNumber: Int32 {
+		didSet {
+			UserDefaults.standard.set(NSNumber(value: sequenceNumber), forKey: Self.SequenceNumberKey)
+		}
+	}
+
+	// MARK: Methods
+
+	/// Calculates the current pin state machine state for `peerID`.
+	private func pinState(of peerID: PeerID) -> PinState {
+		if pinningPeers.contains(peerID) {
+			return .pinning
+		} else if unpinningPeers.contains(peerID) {
+			return .unpinning
+		} else if pinnedByPeers.contains(peerID) {
+			return .pinMatch
+		} else if pinnedPeers[peerID] != nil {
+			return .pinned
+		} else {
+			return .unpinned
+		}
+	}
+
+	/// Populate changes in `ids` to the appropriate view models.
+	private func updateModels(of ids: [PeereeIdentity]) {
+		let models = ids.map { id in
+			PeereeIdentityViewModel(id: id, pinState: pinState(of: id.peerID))
+		}
+
+		DispatchQueue.main.async {
+			for model in models {
+				PeereeIdentityViewModelController.upsert(peerID: model.peerID, insert: model) { mdl in
+					mdl.pinState = model.pinState
+				}
+			}
+		}
+	}
+
+	/// Request a new sequence number, since we may have run out of sync with the server.
+	private func resetSequenceNumber() {
+		wlog("resetting sequence number")
+		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
+			guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
+				if let error = _error {
+					elog("resetting sequence number failed: \(error.localizedDescription)")
+					Self.delegate?.sequenceNumberResetFailed(error: error)
+				}
+				return
+			}
+
+			self.sequenceNumber = sequenceNumberDataCipher
+		}
+	}
+
 	/// resets sequence number to state before request if the request did not reach the server
 	private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
 		switch errorResponse {
@@ -509,10 +674,8 @@ public class AccountController: SecurityDataSource {
 		case .sessionTaskError(let statusCode, _, let error):
 			elog("Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
 			if (error as NSError).domain == NSURLErrorDomain {
-				if let sequenceNumber = _sequenceNumber {
-					// we did not even reach the server, so we have to decrement our sequenceNumber again
-					_sequenceNumber = sequenceNumber.subtractingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
-				}
+				// we did not even reach the server, so we have to decrement our sequenceNumber again
+				sequenceNumber = sequenceNumber.subtractingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
 			}
 			if statusCode == 403 { // forbidden
 				// the signature was invalid, so request a new sequenceNumber
@@ -522,29 +685,63 @@ public class AccountController: SecurityDataSource {
 			break
 		}
 	}
-	
+
+	/// Computes a digital signature based on the current `sequenceNumber` and increments the `sequenceNumber` afterwards.
 	private func computeSignature() throws -> String {
-		guard let sequenceNumber = _sequenceNumber, let sequenceNumberData = String(sequenceNumber).data(using: .utf8), let keyPair = keyPair else {
+		guard let sequenceNumberData = String(sequenceNumber).data(using: .utf8) else {
 			throw NSError(domain: "Peeree", code: -2, userInfo: nil)
 		}
-		
-		_sequenceNumber = sequenceNumber.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
+
+		sequenceNumber = sequenceNumber.addingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
 		return try keyPair.sign(message: sequenceNumberData).base64EncodedString()
 	}
 
-	private func clearLocalData(oldPeerID: PeerID) {
+	/// Wipes all data after the account was deleted.
+	private func clearLocalData(oldPeerID: PeerID, _ completion: @escaping () -> Void) {
+		Self.instance = nil
+
 		self.accountEmail = nil
-		self._sequenceNumber = nil
-		self.clearPins()
+		UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
+		UserDefaults.standard.removeObject(forKey: Self.EmailKey)
+		UserDefaults.standard.removeObject(forKey: Self.SequenceNumberKey)
+
+		pinningPeers.removeAll()
+		unpinningPeers.removeAll()
+
+		pinnedPeers.removeAll()
+		archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
+
+		pinnedByPeers.removeAll()
+		archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
+
 		do {
-			try KeychainStore.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
-			try KeychainStore.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
+			try removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
+			try removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 		} catch let error {
-			elog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
+			flog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}
+
+		SwaggerClientAPI.apiResponseQueue = nil
+		SwaggerClientAPI.dataSource = nil
 		DispatchQueue.main.async {
-			PeerViewModelController.remove(peerID: oldPeerID)
-			Notifications.accountDeleted.postAsNotification(object: self)
+			PeereeIdentityViewModelController.clear()
+			Self.dQueue.async { completion() }
+		}
+	}
+
+	/// Sends `notification` with regards to `peerID`.
+	private func post(_ notification: NotificationName, _ peerID: PeerID) {
+		notification.postAsNotification(object: self, userInfo: [PeerID.NotificationInfoKey : peerID])
+	}
+}
+
+extension AccountController {
+	/// Retrieve the pin (matched) status from the server. If `force` is `false`, do not update if we believe we have a pin match.
+	public func updatePinStatus(of peerID: PeerID, force: Bool) {
+		do {
+			updatePinStatus(of: try self.id(of: peerID), force: force)
+		} catch let error {
+			elog("Unknown PeerID \(peerID) in updatePinStatus(): \(error)")
 		}
 	}
 }

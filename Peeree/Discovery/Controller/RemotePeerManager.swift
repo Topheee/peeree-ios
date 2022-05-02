@@ -284,8 +284,8 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				}
 				
 				peripheral.readValue(for: characteristics[1])
-				if AccountController.shared.accountExists {
-					peripheral.writeValue(AccountController.shared.peerID.encode(), for: characteristics[2], type: .withResponse)
+				AccountController.use { ac in
+					peripheral.writeValue(ac.peerID.encode(), for: characteristics[2], type: .withResponse)
 				}
 			}
 			delegate?.remotePeerManagerIsReady()
@@ -385,8 +385,8 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				peripheral.readValue(for: characteristic)
 				found = true
 			case CBUUID.RemoteUUIDCharacteristicID:
-				if AccountController.shared.accountExists {
-					peripheral.writeValue(AccountController.shared.peerID.encode(), for: characteristic, type: .withResponse)
+				AccountController.use { ac in
+					peripheral.writeValue(ac.peerID.encode(), for: characteristic, type: .withResponse)
 				}
 			case CBUUID.ConnectBackCharacteristicID:
 				peripheral.writeValue(true.binaryRepresentation, for: characteristic, type: .withResponse)
@@ -563,21 +563,17 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 			
 		case CBUUID.RemoteAuthenticationCharacteristicID:
-			guard let keyPair = AccountController.shared.keyPair else {
-				elog("KeyPair not available.")
-				return
+			AccountController.use { ac in
+				do {
+					let signature = try ac.keyPair.sign(message: chunk)
+
+					peripheral.writeValue(signature, for: characteristic, type: .withResponse)
+				} catch {
+					// TODO present an alert to the user that they won't be able to send messages
+					elog("Signing Bluetooth remote nonce failed: \(error)")
+				}
 			}
 
-			let nonce = chunk
-			do {
-				let signature = try keyPair.sign(message: nonce)
-				
-				peripheral.writeValue(signature, for: characteristic, type: .withResponse)
-			} catch {
-				// TODO present an alert to the user that they won't be able to send messages
-				elog("Signing Bluetooth remote nonce failed: \(error)")
-			}
-			
 		case CBUUID.PortraitCharacteristicID, CBUUID.BiographyCharacteristicID:
 			guard chunk.count >= MemoryLayout<Int32>.size else { break }
 
@@ -821,7 +817,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	private func writeNonce(to peripheral: CBPeripheral, with peerID: PeerID, characteristic: CBCharacteristic) {
 		let writeType = CBCharacteristicWriteType.withResponse
-		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), AccountController.shared.keyPair?.blockSize ?? PeereeIdentity.KeySize)
+		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), AccountController.blockSize)
 		do {
 			var nonce = try generateRandomData(length: randomByteCount)
 			nonces[peripheral] = nonce

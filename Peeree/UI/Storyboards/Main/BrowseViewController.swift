@@ -24,13 +24,13 @@ final class BrowseViewController: UITableViewController {
 	static let ViewPeerSegueID = "ViewPeerSegue"
 
 	/// Data source for `tableView`.
-	private var viewCache: [[PeerViewModel]] = [[], []]
+	private var table: [[(PeerID, Date)]] = [[], []]
 
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var placeholderCellActive: Bool {
 		var peerAvailable = false
-		for peerArray in viewCache {
+		for peerArray in table {
 			peerAvailable = peerAvailable || peerArray.count > 0
 		}
 		return !peerAvailable || !PeeringController.shared.peering
@@ -52,7 +52,7 @@ final class BrowseViewController: UITableViewController {
 			return
 		}
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-		peerVC.peerID = viewCache[cellPath.section][cellPath.row].peerID
+		peerVC.peerID = table[cellPath.section][cellPath.row].0
 	}
 	
 	override func viewDidLoad() {
@@ -101,11 +101,11 @@ final class BrowseViewController: UITableViewController {
 	// MARK: UITableViewDataSource
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return placeholderCellActive ? 1 : viewCache.count
+		return placeholderCellActive ? 1 : table.count
 	}
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return placeholderCellActive ? 1 : viewCache[section].count
+		return placeholderCellActive ? 1 : table[section].count
 	}
 	
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -134,11 +134,12 @@ final class BrowseViewController: UITableViewController {
 			return UITableViewCell()
 		}
 
-		let model = viewCache[indexPath.section][indexPath.row]
-		cell.fill(with: model)
+		let peerID = table[indexPath.section][indexPath.row].0
+		let model = PeerViewModelController.viewModel(of: peerID)
+		cell.fill(with: model, PeereeIdentityViewModelController.viewModel(of: peerID))
 
 		// load the picture of the peer from disk once it is displayed
-		if model.picture == nil && model.peer.info.hasPicture {
+		if model.picture == nil && model.info.hasPicture {
 			PeeringController.shared.interact(with: model.peerID) { interaction in
 				interaction.loadLocalPicture()
 			}
@@ -148,7 +149,7 @@ final class BrowseViewController: UITableViewController {
 	}
 	
 	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		guard !placeholderCellActive, viewCache[section].count > 0, let peerSection = TableSection(rawValue: section) else {
+		guard !placeholderCellActive, table[section].count > 0, let peerSection = TableSection(rawValue: section) else {
 			return super.tableView(tableView, titleForHeaderInSection: section)
 		}
 		
@@ -170,11 +171,11 @@ final class BrowseViewController: UITableViewController {
 
 	/// Finds index of `peerID` in the `section` subarray of `viewCache`.
 	private func row(of peerID: PeerID, inSection section: Int) -> Int? {
-		return viewCache[section].firstIndex { $0.peerID == peerID }
+		return table[section].firstIndex { $0.0 == peerID }
 	}
 
 	private func indexPath(of peerID: PeerID) -> IndexPath? {
-		for i in 0..<viewCache.count  {
+		for i in 0..<table.count  {
 			if let row = row(of: peerID, inSection: i) {
 				return IndexPath(row: row, section: i)
 			}
@@ -188,17 +189,20 @@ final class BrowseViewController: UITableViewController {
 	override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
 		guard !placeholderCellActive else { return nil }
 
-		let id = self.viewCache[indexPath.section][indexPath.row].peer.id
-		if id.pinned {
+		let peerID = self.table[indexPath.section][indexPath.row].0
+		let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
+
+		if idModel.pinState.isPinned {
 			let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (action, view, completion) in
-				AccountController.shared.unpin(id: id)
-				completion(true)
+				AccountController.use({ $0.unpin(id: idModel.id); completion(true) }, { completion(false) })
 			}
 			return UISwipeActionsConfiguration(actions: [unpinAction])
 		} else {
 			let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
-				AccountController.shared.pin(id)
-				completion(true)
+				AccountController.use({ ac in
+					ac.pin(idModel.id)
+					completion(true)
+				}, { completion(false) })
 			}
 			pinAction.backgroundColor = AppTheme.tintColor
 			return UISwipeActionsConfiguration(actions: [pinAction])
@@ -220,17 +224,19 @@ final class BrowseViewController: UITableViewController {
 	
 	// MARK: Private Methods
 
-	/// Adds `model` to `viewCache` and returns the appropriate section.
-	private func addToCache(model: PeerViewModel) -> Int {
-		let section: TableSection = BrowseFilterSettings.shared.check(peer: model.peer) ? .inFilter : .outFilter
-		viewCache[section.rawValue].insert(model, at: 0)
+	/// Adds `model` to `table` and returns the appropriate section.
+	private func addToTable(_ peerID: PeerID) -> Int {
+		let model = PeerViewModelController.viewModel(of: peerID)
+		let pinState = PeereeIdentityViewModelController.viewModel(of: peerID).pinState
+		let section: TableSection = BrowseFilterSettings.shared.check(info: model.info, pinState: pinState) ? .inFilter : .outFilter
+		table[section.rawValue].insert((model.peerID, model.lastSeen), at: 0)
 		return section.rawValue
 	}
 
 	/// Adds `model` to `viewCache` and updates `tableView`.
-	private func addToView(model: PeerViewModel, updateTable: Bool) {
+	private func addToView(_ peerID: PeerID, updateTable: Bool) {
 		let placeHolderWasActive = placeholderCellActive
-		let section = addToCache(model: model)
+		let section = addToTable(peerID)
 
 		if updateTable {
 			if placeHolderWasActive {
@@ -254,7 +260,7 @@ final class BrowseViewController: UITableViewController {
 			reload(peerID: peerID)
 			return
 		}
-		addToView(model: PeerViewModelController.viewModel(of: peerID), updateTable: true)
+		addToView(peerID, updateTable: true)
 	}
 	
 	private func peerDisappeared(_ peerID: PeerID) {
@@ -269,9 +275,7 @@ final class BrowseViewController: UITableViewController {
 		} else {
 			networkButton.setTitle(NSLocalizedString("Go Online", comment: "Toggle to online mode. Also title in browse view."), for: [])
 
-			for i in 0..<viewCache.count {
-				viewCache[i].removeAll()
-			}
+			clearViewCache()
 			tableView.reloadData()
 		}
 		networkButton.setNeedsLayout()
@@ -281,24 +285,21 @@ final class BrowseViewController: UITableViewController {
 	private func reload(peerID: PeerID) {
 		guard let indexPath = indexPath(of: peerID), let oldSection = TableSection(rawValue: indexPath.section) else { return }
 
-		// we have to refresh our cache if a peer changes - PeerInfos are structs!
 		let newModel = PeerViewModelController.viewModel(of: peerID)
-		if newModel.lastSeen == viewCache[indexPath.section][indexPath.row].lastSeen {
-			viewCache[indexPath.section][indexPath.row] = newModel
+		if newModel.lastSeen == table[indexPath.section][indexPath.row].1 {
 			tableView.reloadRows(at: [indexPath], with: .automatic)
 		} else {
 			var newIndexPath = position(in: oldSection, lastSeen: newModel.lastSeen)
 			// we assume that only the lastSeen attribute changed and nothing that affects the filter (s.t. the section keeps the same)
 			let immediatelyAfterOrSameRange = indexPath.row...indexPath.row+1
 			if immediatelyAfterOrSameRange.contains(newIndexPath.row) {
-				viewCache[indexPath.section][indexPath.row] = newModel
 				tableView.reloadRows(at: [indexPath], with: .automatic)
 			} else {
 				if newIndexPath.row > indexPath.row {
 					newIndexPath.row -= 1
 				}
-				viewCache[indexPath.section].remove(at: indexPath.row)
-				viewCache[indexPath.section].insert(newModel, at: newIndexPath.row)
+				table[indexPath.section].remove(at: indexPath.row)
+				table[indexPath.section].insert((newModel.peerID, newModel.lastSeen), at: newIndexPath.row)
 				tableView.moveRow(at: indexPath, to: newIndexPath)
 				tableView.reloadRows(at: [newIndexPath], with: .automatic)
 			}
@@ -307,22 +308,19 @@ final class BrowseViewController: UITableViewController {
 
 	/// Calculates the position of a peer in the lastSeen-sorted section.
 	private func position(in section: TableSection, lastSeen: Date) -> IndexPath {
-		// we assume viewCache is sorted by lastSeen already
-		var row = 0
-		for model in viewCache[section.rawValue] {
-			if lastSeen > model.lastSeen {
-				return IndexPath(row: row, section: section.rawValue)
-			}
-			row += 1
+		// We assume our table is sorted by lastSeen already. We could even do a binary search here.
+		let row = table[section.rawValue].firstIndex { (_, lastLastSeen) in
+			return lastSeen > lastLastSeen
 		}
-		return IndexPath(row: row, section: section.rawValue)
+		return IndexPath(row: row ?? 0, section: section.rawValue)
 	}
 
 	/// Populates `viewCache` from scratch.
 	private func updateCache() {
 		let now = Date()
 		let cal = Calendar.current as NSCalendar
-		let userPeerID = AccountController.shared.peerID
+		let userPeerID = PeereeIdentityViewModelController.userPeerID
+
 		var displayedModels = PeerViewModelController.viewModels.values.filter { model in
 			let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: model.lastSeen, to: now, options: []).hour
 			let lastSeenAgo = lastSeenAgoCalc ?? BrowseViewController.MaxRememberedHours + 1
@@ -331,15 +329,16 @@ final class BrowseViewController: UITableViewController {
 		displayedModels.sort { a, b in a.lastSeen > b.lastSeen }
 		clearViewCache()
 		for displayedModel in displayedModels {
-			let section: TableSection = BrowseFilterSettings.shared.check(peer: displayedModel.peer) ? .inFilter : .outFilter
-			viewCache[section.rawValue].append(displayedModel)
+			let pinState = PeereeIdentityViewModelController.viewModel(of: displayedModel.peerID).pinState
+			let section: TableSection = BrowseFilterSettings.shared.check(info: displayedModel.info, pinState: pinState) ? .inFilter : .outFilter
+			table[section.rawValue].append((displayedModel.peerID, displayedModel.lastSeen))
 		}
 		self.tableView?.reloadData()
 	}
 
 	/// Removes all entries from the subarrays of `viewCache`.
 	private func clearViewCache() {
-		for i in 0..<viewCache.count { viewCache[i].removeAll() }
+		for i in 0..<table.count { table[i].removeAll() }
 	}
 
 	private func observeNotifications() {
@@ -356,10 +355,7 @@ final class BrowseViewController: UITableViewController {
 		})
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(AccountController.Notifications.pinMatch.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.pinned.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.unpinned.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.Notifications.pinStateUpdated.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver(usingBlock: reloadBlock))
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
 
 		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in

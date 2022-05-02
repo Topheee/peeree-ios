@@ -17,8 +17,8 @@ final class PeerTableViewCell: UITableViewCell {
 	@IBOutlet private weak var genderLabel: UILabel!
 	@IBOutlet private weak var pinImageView: UIImageView!
 
-	func fill(with peerModel: PeerViewModel) {
-		let peerInfo = peerModel.peer.info
+	func fill(with peerModel: PeerViewModel, _ idModel: PeereeIdentityViewModel) {
+		let peerInfo = peerModel.info
 		portraitImageView.image = peerModel.portraitOrPlaceholder.roundedCropped(cropRect: portraitImageView.bounds, backgroundColor: AppTheme.backgroundColor)
 		nameLabel.text = peerInfo.nickname
 		lastSeenLabel.text = peerModel.lastSeenText
@@ -26,7 +26,7 @@ final class PeerTableViewCell: UITableViewCell {
 		ageTagView.setNeedsDisplay()
 		ageLabel.text = "\(peerInfo.age ?? 0)"
 		genderLabel.text = peerInfo.gender.localizedRawValue
-		pinImageView.isHidden = !peerModel.peer.id.pinned
-		pinImageView.image = peerModel.peer.id.pinMatched ? #imageLiteral(resourceName: "PinTemplatePressed") : #imageLiteral(resourceName: "PinTemplate")
+		pinImageView.isHidden = !idModel.pinState.isPinned
+		pinImageView.image = idModel.pinState == .pinMatch ? #imageLiteral(resourceName: "PinTemplatePressed") : #imageLiteral(resourceName: "PinTemplate")
 	}
 }
