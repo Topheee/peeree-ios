@@ -168,7 +168,11 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 	private var circleLayer: CAShapeLayer!
 
 	/// Set to `true` to temporarly disable update the `strokeEnd` when the progress updates.
-	public var pauseUpdates = false
+	public var pauseUpdates = false {
+		didSet {
+			circleLayer?.isHidden = pauseUpdates
+		}
+	}
 
 	public var loadProgress: Progress? {
 		get {

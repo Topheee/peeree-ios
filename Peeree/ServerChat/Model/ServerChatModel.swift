@@ -22,6 +22,9 @@ let messagingAppGroup = "group.86J6LQ96WM.de.peeree.messaging"
 /// ServerChat access token key in keychain.
 let ServerChatAccessTokenKeychainKey = "ServerChatAccessTokenKey"
 
+/// ServerChat refresh token key in keychain.
+let ServerChatRefreshTokenKeychainKey = "ServerChatRefreshTokenKeychainKey"
+
 /// Our identity in UserDefaults.
 let ServerChatPeerIDKey = "ServerChatPeerIDKey"
 

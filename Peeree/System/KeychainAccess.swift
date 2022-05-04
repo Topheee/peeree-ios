@@ -92,7 +92,7 @@ func persistSecretInKeychain(secret: String, label: String) throws {
 	try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding secret to Keychain failed", comment: "SecItemAdd failed"))
 }
 
-/// Retrieves an internet password from the keychain.
+/// Retrieves a generic unspecified secret from the keychain.
 func secretFromKeychain(label: String) throws -> String {
 	let query: [String: Any] = [kSecClass as String:		kSecClassGenericPassword,
 								kSecAttrLabel as String:	label,
@@ -107,6 +107,13 @@ func secretFromKeychain(label: String) throws -> String {
 	}
 
 	return password
+}
+
+/// Purges a generic unspecified secret from the keychain.
+func removeSecretFromKeychain(label: String) throws {
+	let query: [String: Any] = [kSecClass as String:		kSecClassGenericPassword,
+								kSecAttrLabel as String:	label]
+	try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting key from keychain failed.", comment: "Attempt to delete a keychain item failed."))
 }
 
 /// Writes the `password` into the keychain as an internet password.

@@ -106,7 +106,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				remotePeerManager.stopScan()
 			}
 
-			connectionChangedState()
+			connectionChangedState(newValue)
 		}
 	}
 
@@ -171,7 +171,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			self.localPeerManager = nil
 		}
 		peerManagers.removeAll()
-		connectionChangedState()
+		connectionChangedState(false)
 	}
 
 	func peerAppeared(_ peer: Peer, again: Bool) {
@@ -371,6 +371,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private func startAdvertising(restartOnly: Bool) {
 		AccountController.use { ac in
 			let keyPair = ac.keyPair
+			// these values MAY arrive a little late, but that is very unlikely
+			self.remotePeerManager.set(userPeerID: ac.peerID, keyPair: keyPair)
+
 			UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
 				guard (!restartOnly || self.localPeerManager != nil), let info = peerInfo else { return }
 
@@ -410,7 +413,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
-	/// Populates the current peer-related data to the view models.
+	/// Populates the current peer-related data to the view models; must be called on the main thread!
 	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
 		let peerID = peer.id.peerID
 
@@ -470,11 +473,18 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { _ in
 			guard self.peering else { return }
 
-			// restart peering s.t. we also advertise and not only scan
-			self.peering = false
-			self.peering = true
+			AccountController.use { ac in
+				self.remotePeerManager.set(userPeerID: ac.peerID, keyPair: ac.keyPair)
+
+				DispatchQueue.main.async {
+					// restart peering s.t. we also advertise and not only scan
+					self.peering = false
+					self.peering = true
+				}
+			}
 		})
 		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver { _ in
+			self.remotePeerManager.set(userPeerID: nil, keyPair: nil)
 			// delete all cached pictures and finally the persisted PeerInfo records themselves
 			self.persistence.clear()
 			self.peerManagers.removeAll()
@@ -483,8 +493,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 
 	/// Posts `connectionChangedState` notification and starts/stops the server chat module.
-	private func connectionChangedState() {
-		let newState = peering
+	private func connectionChangedState(_ newState: Bool) {
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
 
 		if newState {

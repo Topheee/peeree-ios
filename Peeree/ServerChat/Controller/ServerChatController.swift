@@ -14,11 +14,31 @@ final class ServerChatController: ServerChat {
 	// MARK: - Public and Internal
 
 	/// Creates a `ServerChatController`.
-	init(peerID: PeerID, credentials: MXCredentials, dQueue: DispatchQueue) {
+	init(peerID: PeerID, credentials: MXCredentials, dQueue: DispatchQueue, _ persistCredentialsCallback: @escaping () -> Void) {
 		self.peerID = peerID
 		self.dQueue = dQueue
 
-		let restClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: nil)
+		let restClient = MXRestClient(credentials: credentials) { data in
+			flog("server chat certificate is not trusted.")
+			return false
+		} persistentTokenDataHandler: { callback in
+			dlog("server chat persistentTokenDataHandler was called.")
+			// Block called when the rest client needs to check the persisted refresh token data is valid and optionally persist new refresh data to disk if it is not.
+			callback?([credentials]) { shouldPersist in
+				// credentials (access and refresh token) changed during refresh
+				if shouldPersist { persistCredentialsCallback() }
+			}
+		} unauthenticatedHandler: { mxError, isSoftLogout, isRefreshTokenAuth, completion in
+			dlog("server chat unauthenticatedHandler was called.")
+			// Block called when the rest client has become unauthenticated(E.g. refresh failed or server invalidated an access token).
+			// TODO handle dis
+			if let error = mxError {
+				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
+			} else {
+				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
+			}
+		}
+
 		restClient.completionQueue = dQueue
 		session = MXSession(matrixRestClient: restClient)!
 	}
@@ -47,6 +67,20 @@ final class ServerChatController: ServerChat {
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
 	func logout(_ completion: @escaping (Error?) -> Void) {
 		self.session.extensiveLogout(completion)
+	}
+
+	/// Removes the server chat account permanently.
+	func deleteAccount(password: String, _ completion: @escaping (ServerChatError?) -> Void) {
+		session.deactivateAccount(withAuthParameters: ["type" : kMXLoginFlowTypePassword, "user" : self.userId, "password" : password], eraseAccount: true) { response in
+			guard response.isSuccess else { completion(.sdk(response.error ?? unexpectedNilError())); return }
+
+			// it seems we need to log out after we deleted the account
+			self.logout { _error in
+				_error.map { elog("Logout after account deletion failed: \($0.localizedDescription)") }
+				// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
+				completion(nil)
+			}
+		}
 	}
 
 	// MARK: ServerChat
@@ -325,6 +359,7 @@ final class ServerChatController: ServerChat {
 	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
 		room.leave { response in
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			room.close()
 			completion(response.error)
 		}
 	}
@@ -337,6 +372,7 @@ final class ServerChatController: ServerChat {
 			return
 		}
 		room.leave { response in
+			room.close()
 			if let error = response.error {
 				elog("Failed leaving room: \(error.localizedDescription)")
 			}
@@ -358,6 +394,8 @@ final class ServerChatController: ServerChat {
 				elog("No stateKey present in membership event.")
 				return
 			}
+
+			dlog("processing server chat member event type \(memberContent.membership ?? "<nil>") in room \(event.roomId ?? "<nil>") from \(eventUserId).")
 
 			switch memberContent.membership {
 			case kMXMembershipStringJoin:
@@ -400,7 +438,6 @@ final class ServerChatController: ServerChat {
 					return
 				}
 
-				// I hope this suspends the event stream as well…
 				self.forget(room: room) { _error in
 					dlog("Left empty room: \(String(describing: _error)).")
 				}

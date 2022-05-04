@@ -93,7 +93,16 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 
 	private let dQueue = DispatchQueue(label: "com.peeree.remotepeermanager_q", qos: .default, attributes: [])
-	
+
+	/// Our peerID; access only from `dQueue`.
+	private var userPeerID: PeerID? = nil
+
+	/// For authenticating ourselves.
+	private var keyPair: KeyPair? = nil
+
+	/// Needed for writing nonces; `16` is a good estimation.
+	private var blockSize = 16
+
 	///	Since bluetooth connections are not very durable, all peers and their images are cached.
 	private var cachedPeers = [PeerID : Peer]()
 	private var peerInfoTransmissions = [PeerID : PeerInfoData]()
@@ -137,22 +146,24 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	func scan() {
-		#if os(iOS)
-			guard !isScanning else { return }
-		#endif
-		
 		// we need to allow duplicates, because in the following scenario non-allow did not work:
 		// 0. both are online and found each other
 		// 1. the other peer goes offline and back online
 		// 2. he finds me, but I do not find him, because my CentralManager does not report him, because we disconnected him
 		//centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
-		centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
+		dQueue.async {
+#if os(iOS)
+			guard !self.isScanning else { return }
+#endif
+
+			self.centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
+		}
 	}
 	
 	func stopScan() {
-		guard isScanning else { return }
-		
 		dQueue.sync {
+			guard self.isScanning else { return }
+
 			self.centralManager.stopScan()
 			for (_, (progress, _)) in self.activeTransmissions {
 				progress.cancel()
@@ -169,6 +180,14 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			self.peripheralPeerIDs.removeAll()
 			self.cachedPeers.removeAll()
 			self.delegate?.scanningStopped()
+		}
+	}
+
+	func set(userPeerID peerID: PeerID?, keyPair: KeyPair?) {
+		dQueue.async {
+			self.userPeerID = peerID
+			self.keyPair = keyPair
+			self.blockSize = keyPair?.blockSize ?? self.blockSize
 		}
 	}
 
@@ -284,9 +303,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				}
 				
 				peripheral.readValue(for: characteristics[1])
-				AccountController.use { ac in
-					peripheral.writeValue(ac.peerID.encode(), for: characteristics[2], type: .withResponse)
-				}
+				userPeerID.map { peripheral.writeValue($0.encode(), for: characteristics[2], type: .withResponse) }
 			}
 			delegate?.remotePeerManagerIsReady()
 		default:
@@ -346,21 +363,19 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			disconnect(peripheral)
 			return
 		}
-		guard peripheral.services != nil && peripheral.services!.count > 0 else {
+		guard let services = peripheral.services, services.count > 0 else {
 			wlog("Found peripheral with no services.")
 			disconnect(peripheral)
 			return
 		}
-		
-		// Discover the characteristic we want...
-		
+
 		// Loop through the newly filled peripheral.services array, just in case there's more than one.
-		for service in peripheral.services! {
+		for service in services {
 			dlog("Discovered service \(service.uuid.uuidString).")
 			guard service.uuid == CBUUID.PeereeServiceID else { continue }
-			
+
+			// Discover the characteristic we want...
 			peripheral.discoverCharacteristics(CBUUID.PeereeCharacteristicIDs, for:service)
-//			peripheral.discoverCharacteristics(nil, for:service)
 		}
 	}
 	
@@ -385,9 +400,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				peripheral.readValue(for: characteristic)
 				found = true
 			case CBUUID.RemoteUUIDCharacteristicID:
-				AccountController.use { ac in
-					peripheral.writeValue(ac.peerID.encode(), for: characteristic, type: .withResponse)
-				}
+				userPeerID.map { peripheral.writeValue($0.encode(), for: characteristic, type: .withResponse) }
 			case CBUUID.ConnectBackCharacteristicID:
 				peripheral.writeValue(true.binaryRepresentation, for: characteristic, type: .withResponse)
 			default:
@@ -563,9 +576,9 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 			
 		case CBUUID.RemoteAuthenticationCharacteristicID:
-			AccountController.use { ac in
+			keyPair.map {
 				do {
-					let signature = try ac.keyPair.sign(message: chunk)
+					let signature = try $0.sign(message: chunk)
 
 					peripheral.writeValue(signature, for: characteristic, type: .withResponse)
 				} catch {
@@ -817,7 +830,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	private func writeNonce(to peripheral: CBPeripheral, with peerID: PeerID, characteristic: CBCharacteristic) {
 		let writeType = CBCharacteristicWriteType.withResponse
-		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), AccountController.blockSize)
+		let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), blockSize)
 		do {
 			var nonce = try generateRandomData(length: randomByteCount)
 			nonces[peripheral] = nonce

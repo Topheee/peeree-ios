@@ -47,9 +47,6 @@ public class AccountController: SecurityDataSource {
 	/// Informed party when `AccountController` actions fail.
 	public static var delegate: AccountControllerDelegate?
 
-	/// Needed for writing nonces; `16` is a good estimation.
-	public static var blockSize = 16
-
 	/// Call from `dQueue` only!
 	static var isCreatingAccount: Bool {
 		return !creatingInstanceCallbacks.isEmpty
@@ -455,8 +452,6 @@ public class AccountController: SecurityDataSource {
 		opQueue.underlyingQueue = Self.dQueue
 
 		// side-effects (not the best style …)
-		Self.blockSize = keyPair.blockSize
-
 		SwaggerClientAPI.apiResponseQueue = opQueue
 		SwaggerClientAPI.dataSource = self
 

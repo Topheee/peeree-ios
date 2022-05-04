@@ -194,15 +194,18 @@ final class BrowseViewController: UITableViewController {
 
 		if idModel.pinState.isPinned {
 			let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (action, view, completion) in
-				AccountController.use({ $0.unpin(id: idModel.id); completion(true) }, { completion(false) })
+				AccountController.use({
+					$0.unpin(id: idModel.id)
+					DispatchQueue.main.async { completion(true) }
+				}, { DispatchQueue.main.async { completion(false) } })
 			}
 			return UISwipeActionsConfiguration(actions: [unpinAction])
 		} else {
 			let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
 				AccountController.use({ ac in
 					ac.pin(idModel.id)
-					completion(true)
-				}, { completion(false) })
+					DispatchQueue.main.async { completion(true) }
+				}, { DispatchQueue.main.async { completion(false) } })
 			}
 			pinAction.backgroundColor = AppTheme.tintColor
 			return UISwipeActionsConfiguration(actions: [pinAction])

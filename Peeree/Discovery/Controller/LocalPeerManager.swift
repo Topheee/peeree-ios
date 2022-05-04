@@ -76,6 +76,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		
 		dQueue.async {
 			self._availableCentrals.removeAll()
+			self.authenticatedPinMatchedCentrals.removeAll()
 			self.nonces.removeAll()
 			self.interruptedTransfers.removeAll()
 			self.delegate?.advertisingStopped()
@@ -85,6 +86,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	func disconnect(_ cbPeerID: UUID) {
 		dQueue.async {
 			_ = self._availableCentrals.removeValue(forKey: cbPeerID)
+			_ = self.authenticatedPinMatchedCentrals.removeValue(forKey: cbPeerID)
 		}
 	}
 	

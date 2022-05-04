@@ -11,6 +11,7 @@ import Foundation
 public typealias PeerID = UUID
 
 extension PeerID {
+	/// Key in the `userInfo` dictionary of `Notification`.
 	static let NotificationInfoKey = "peerID"
 
 	private static let uuidEncoding = String.Encoding.ascii
