@@ -282,6 +282,11 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			simpleStateUpdate(notification)
 		}))
 
+		notificationObservers.append(AccountController.NotificationName.unmatch.addObserver(usingBlock: { [weak self] (notification) in
+			simpleStateUpdate(notification)
+			self?.gradientView?.animateGradient = false
+		}))
+
 		notificationObservers.append(PeerViewModel.NotificationName.biographyLoaded.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))

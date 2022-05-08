@@ -12,7 +12,7 @@ import OSLog
 /// Debug-level logging of `message`.
 public func dlog(_ message: @autoclosure () -> String) {
 #if DEBUG
-	os_log("%@", log: .default, type: .debug, "[DBG] \(message)")
+	os_log("%@", log: .default, type: .debug, "[DBG] \(message())")
 #endif
 }
 

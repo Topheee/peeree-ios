@@ -476,11 +476,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			AccountController.use { ac in
 				self.remotePeerManager.set(userPeerID: ac.peerID, keyPair: ac.keyPair)
 
-				DispatchQueue.main.async {
-					// restart peering s.t. we also advertise and not only scan
-					self.peering = false
-					self.peering = true
-				}
+				// restart peering s.t. we also advertise and not only scan
+				self.peering = false
+				self.peering = true
 			}
 		})
 		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver { _ in
@@ -494,6 +492,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Posts `connectionChangedState` notification and starts/stops the server chat module.
 	private func connectionChangedState(_ newState: Bool) {
+		DispatchQueue.main.async { PeerViewModelController.peering = newState }
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
 
 		if newState {

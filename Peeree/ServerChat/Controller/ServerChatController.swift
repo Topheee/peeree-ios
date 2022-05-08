@@ -85,23 +85,47 @@ final class ServerChatController: ServerChat {
 
 	// MARK: ServerChat
 
-	/// Send a `message` to `peerID`.
-	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, Error>) -> Void) {
-		var event: MXEvent? = nil
-		if let room = roomsForPeerIDs[peerID] {
-			room.sendTextMessage(message, localEcho: &event) { response in
-				completion(response.toResult())
-			}
-		} else {
-			createRoom(with: peerID) { result in
-				switch (result) {
-				case .success(let room):
-					room.sendTextMessage(message, localEcho: &event) { response in
-						completion(response.toResult())
+	/// Checks whether `peerID` can receive or messages.
+	func canChat(with peerID: PeerID, _ completion: @escaping (ServerChatError?) -> Void) {
+		self.createRoom(with: peerID) { result in
+			switch (result) {
+			case .success(let room):
+				room.members { response in
+					guard let roomMembers = response.value else {
+						self.handle(response: response, in: room, with: peerID) { recoverResult in
+							completion(recoverResult.error)
+						}
+						return
 					}
-				case .failure(let error):
-					completion(.failure(error))
+					guard let joinedMembers = roomMembers?.joinedMembers else {
+						completion(.fatal(unexpectedNilError()))
+						return
+					}
+
+					let peerUserId = serverChatUserId(for: peerID)
+					if joinedMembers.contains(where: { $0.userId == peerUserId }) {
+						completion(nil)
+					} else {
+						completion(.cannotChat(peerID, .notJoined))
+					}
 				}
+			case .failure(let error):
+				completion(error)
+			}
+		}
+	}
+
+	/// Send a `message` to `peerID`.
+	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void) {
+		createRoom(with: peerID) { result in
+			switch (result) {
+			case .success(let room):
+				var event: MXEvent? = nil
+				room.sendTextMessage(message, localEcho: &event) { response in
+					self.handle(response: response, in: room, with: peerID, completion)
+				}
+			case .failure(let error):
+				completion(.failure(error))
 			}
 		}
 	}
@@ -189,38 +213,39 @@ final class ServerChatController: ServerChat {
 	// MARK: Methods
 
 	/// Create a direct room for chatting with `peerID`.
-	private func reallyCreateRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
+	private func reallyCreateRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, ServerChatError>) -> Void) {
 		let peerUserId = serverChatUserId(for: peerID)
 		let roomParameters = MXRoomCreationParameters(forDirectRoomWithUser: peerUserId)
 		roomParameters.visibility = kMXRoomDirectoryVisibilityPrivate
 		self.session.canEnableE2EByDefaultInNewRoom(withUsers: [peerUserId]) { canEnableE2E in
 			guard canEnableE2E else {
-				completion(.failure(createApplicationError(localizedDescription: NSLocalizedString("End-to-end encryption is not available for this peer.", comment: "Low-level server chat error"))))
+				completion(.failure(.cannotChat(peerID, .noEncryption)))
 				return
 			}
 			roomParameters.initialStateEvents = [MXRoomCreationParameters.initialStateEventForEncryption(withAlgorithm: kMXCryptoMegolmAlgorithm)]
 			self.session.createRoom(parameters: roomParameters) { response in
 				guard let roomResponse = response.value else {
-					completion(.failure(response.error!))
+					completion(.failure(.sdk(response.error ?? unexpectedNilError())))
 					return
 				}
 				guard let room = self.session.room(withRoomId: roomResponse.roomId) else {
-					completion(.failure(unexpectedNilError()))
+					completion(.failure(.fatal(unexpectedNilError())))
 					return
 				}
 				self.addRoomAndListenToEvents(room, for: peerID)
 				completion(.success(room))
 			}
-		} failure: { _error in
-			completion(.failure(_error ?? unexpectedNilError()))
+		} failure: { error in
+			completion(.failure(.sdk(error ?? unexpectedNilError())))
 		}
 	}
 
 	/// Create a direct room for chatting with `peerID`.
-	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, Error>) -> Void) {
+	private func createRoom(with peerID: PeerID, completion: @escaping (Result<MXRoom, ServerChatError>) -> Void) {
 		dlog("Asked to create room for \(peerID.uuidString).")
 		let peerUserId = serverChatUserId(for: peerID)
-		if let room = roomsForPeerIDs[peerID] ?? session.directJoinedRoom(withUserId: peerUserId) {
+		// unfortunately, directJoinedRoom returns a room we are not joined anymore in some cases
+		if let room = roomsForPeerIDs[peerID] /*?? session.directJoinedRoom(withUserId: peerUserId) */ {
 			completion(.success(room))
 			return
 		}
@@ -229,9 +254,7 @@ final class ServerChatController: ServerChat {
 		if #available(iOS 10, *) {
 			session.matrixRestClient.profile(forUser: peerUserId) { response in
 				guard response.isSuccess else {
-					let format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
-					let description = String(format: format, peerID.uuidString)
-					completion(.failure(createApplicationError(localizedDescription: description)))
+					completion(.failure(.cannotChat(peerID, .noProfile)))
 					return
 				}
 				self.reallyCreateRoom(with: peerID, completion: completion)
@@ -357,6 +380,7 @@ final class ServerChatController: ServerChat {
 
 	/// Tries to leave (and forget [once supported]) <code>room</code>, ignoring any errors
 	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
+		guard room.summary?.membership == .join else { completion(nil); return }
 		room.leave { response in
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
 			room.close()
@@ -381,6 +405,55 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
+	/// Tries to recover from certain errors (currently only `M_FORBIDDEN`); must be called from `dQueue`.
+	private func handle<T>(response: MXResponse<T>, in room: MXRoom, with peerID: PeerID, _ completion: @escaping (Result<T, ServerChatError>) -> Void) {
+		guard (response.error as? NSError)?.userInfo["errcode"] as? String == kMXErrCodeStringForbidden else {
+			completion(response.toResult().mapError { .sdk($0) })
+			return
+		}
+
+		self.forget(room: room) { error in
+			dlog("forgetting room after unpin completed with \(error?.localizedDescription ?? "no error")")
+		}
+		_ = self.roomsForPeerIDs.removeValue(forKey: peerID)
+
+		AccountController.use {
+			$0.updatePinStatus(of: peerID, force: true) { pinState in
+				self.dQueue.async {
+					guard pinState == .pinMatch else {
+						completion(.failure(.cannotChat(peerID, .unmatched)))
+						return
+					}
+
+					// TODO: knock on room instead once that is supported by MatrixSDK
+					self.createRoom(with: peerID) { createRoomResult in
+						dlog("creating new room after re-pin completed: \(createRoomResult)")
+						completion(response.toResult().mapError { .sdk($0) })
+					}
+				}
+			}
+		}
+	}
+
+	/// Join the Matrix room identified by `roomId`.
+	private func join(roomId: String, with peerID: PeerID) {
+		AccountController.use { ac in
+			ac.updatePinStatus(of: peerID, force: false) { pinState in
+				guard pinState == .pinMatch else { return }
+
+				self.dQueue.async {
+					self.session.joinRoom(roomId) { joinResponse in
+						guard joinResponse.isSuccess else {
+							elog("Cannot join room \(roomId): \(joinResponse.error ?? unexpectedNilError())")
+							return
+						}
+						// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
+					}
+				}
+			}
+		}
+	}
+
 	/// Handles room member events.
 	private func process(memberEvent event: MXEvent) {
 		switch event.eventType {
@@ -399,21 +472,14 @@ final class ServerChatController: ServerChat {
 
 			switch memberContent.membership {
 			case kMXMembershipStringJoin:
-				// we handle joins through the mxRoomInitialSync notification
-				break
+				guard eventUserId != self.userId, let peerID = peerIDFrom(serverChatUserId: eventUserId) else { return }
+				ServerChatNotificationName.readyToChat.post(for: peerID)
 
 			case kMXMembershipStringInvite:
 				guard eventUserId == self.userId else {
 					// we are only interested in invites for us
 					ilog("Received invite event from sender other than us.")
 					return
-				}
-				self.session.joinRoom(event.roomId) { joinResponse in
-					guard joinResponse.isSuccess else {
-						elog("Cannot join room \(event.roomId ?? "<nil>"): \(joinResponse.error ?? unexpectedNilError())")
-						return
-					}
-					// we do not addRoomAndListenToEvents here, since we do it in the mxRoomInitialSync notification
 				}
 
 				// check whether we actually have a pin match with this person
@@ -422,10 +488,7 @@ final class ServerChatController: ServerChat {
 					return
 				}
 
-				AccountController.use { ac in
-					guard !ac.hasPinMatch(peerID) else { return }
-					ac.updatePinStatus(of: peerID, force: true)
-				}
+				join(roomId: event.roomId, with: peerID)
 
 			case kMXMembershipStringLeave:
 				guard eventUserId != self.userId else {
@@ -442,8 +505,8 @@ final class ServerChatController: ServerChat {
 					dlog("Left empty room: \(String(describing: _error)).")
 				}
 
-				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					elog("cannot construct PeerID from room directUserId \(userId).")
+				guard let peerID = peerIDFrom(serverChatUserId: eventUserId) else {
+					elog("cannot construct PeerID from room directUserId \(eventUserId).")
 					return
 				}
 
@@ -460,6 +523,77 @@ final class ServerChatController: ServerChat {
 		default:
 			wlog("Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
 			break
+		}
+	}
+
+	/// Initial setup routine; must be called on `AccountController.dQueue`!
+	private func handleInitialRoom(_ room: MXRoom, ac: AccountController) {
+		guard let theirUserId = room.directUserId else {
+			elog("Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
+			return
+		}
+		guard let peerID = peerIDFrom(serverChatUserId: theirUserId) else {
+			elog("Server chat userId \(theirUserId) is not a PeerID.")
+			return
+		}
+
+		let isMatch = ac.hasPinMatch(peerID)
+
+		room.members { membersResponse in
+			guard let _members = membersResponse.value, let members = _members,
+				  let ourMember = members.members.first(where: { $0.userId == self.userId}) else {
+				flog("We are not a member of room \(room).")
+				return
+			}
+
+			guard isMatch || ourMember.membership == .leave || ourMember.membership == .ban else {
+				self.forget(room: room) { error in
+					error.map { dlog("forgetting non-leave/ban room with non-matched peer \(peerID.uuidString) failed: \($0)") }
+				}
+				return
+			}
+
+			switch ourMember.membership {
+			case .invite:
+				self.join(roomId: room.roomId, with: peerID)
+
+			case .join:
+				guard let theirMember = members.members.first(where: { $0.userId == theirUserId}) else {
+					wlog("They are not a member of room \(room)")
+					self.forget(room: room) { error in
+						error.map { dlog("forgetting room with peer \(peerID.uuidString) when they are not part of the room failed: \($0)") }
+					}
+					return
+				}
+
+				switch theirMember.membership {
+				case .unknown, .invite, .join:
+					self.addRoomAndListenToEvents(room, for: peerID)
+				case .leave, .ban:
+					self.forget(room: room) { error in
+						error.map { dlog("forgetting room with peer \(peerID.uuidString) after they left failed: \($0)") }
+					}
+				@unknown default:
+					self.addRoomAndListenToEvents(room, for: peerID)
+				}
+
+			case .leave, .ban, .unknown:
+				// ignored
+				break
+
+			@unknown default:
+				// ignored
+				break
+			}
+		}
+	}
+
+	/// Initial setup routine
+	private func handleInitialRooms() {
+		AccountController.use { ac in
+			for room in self.session.rooms {
+				self.handleInitialRoom(room, ac: ac)
+			}
 		}
 	}
 
@@ -482,21 +616,9 @@ final class ServerChatController: ServerChat {
 					completion(response.error ?? unexpectedNilError())
 					return
 				}
-				for room in self.session.rooms {
-					guard let userId = room.directUserId else {
-						elog("Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
-						continue
-					}
-					guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-						elog("Server chat userId \(userId) is not a PeerID.")
-						continue
-					}
-					self.addRoomAndListenToEvents(room, for: peerID)
-				}
 
-//				_ = self.session.listenToEvents { event, direction, customObject in
-//					dlog("global event \(event), \(direction), \(String(describing: customObject))")
-//				}
+				self.handleInitialRooms()
+
 				_ = self.session.listenToEvents([.roomMember]) { event, direction, state in
 					self.process(memberEvent: event)
 				}
@@ -507,12 +629,26 @@ final class ServerChatController: ServerChat {
 
 	/// Observes relevant notifications in `NotificationCenter`.
 	private func observeNotifications() {
-		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
+		let pinStateChangeHandler: (PeerID, Notification) -> Void = { [weak self] peerID, _ in
 			guard let strongSelf = self, let room = strongSelf.roomsForPeerIDs.removeValue(forKey: peerID) else { return }
 
 			// we don't need to use dQueue here, since forget is not mutating.
 			strongSelf.forget(room: room) { _error in
 				dlog("Left room: \(String(describing: _error)).")
+			}
+		}
+
+		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver(pinStateChangeHandler))
+		notificationObservers.append(AccountController.NotificationName.unmatch.addAnyPeerObserver(pinStateChangeHandler))
+
+		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
+			guard let strongSelf = self else { return }
+
+			// Creates a room with `peerID` for chatting; also notifies them over the internet that we have a match.
+			strongSelf.dQueue.async {
+				strongSelf.createRoom(with: peerID) { result in
+					result.error.map { dlog("inviting \(peerID) failed: \($0)") }
+				}
 			}
 		})
 

@@ -17,42 +17,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	static let MessagePeerSegueID = "MessagePeerSegue"
 
-	private func listenForNotifications() {
-		for notificationType: PeerViewModel.NotificationName in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
-			notificationObservers.append(notificationType.addAnyPeerObserver { [weak self] peerID, _  in
-				self?.messageReceivedSentOrRead(from: peerID)
-			})
-		}
-
-		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
-			self?.addToView(peerID: peerID, updateTable: true)
-		})
-		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
-			guard let strongSelf = self,
-				  let peerPath = strongSelf.indexPath(of: peerID) else {
-				return
-			}
-
-			strongSelf.viewCache.remove(at: peerPath.row)
-		})
-		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { [weak self] _ in
-			self?.tableView.reloadData()
-		})
-		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber,
-				  let strongSelf = self else { return }
-			if state.boolValue {
-				strongSelf.updateCache()
-			} else {
-				strongSelf.tableView.reloadData()
-			}
-		})
-		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
-			self?.updateCache()
-		})
-	}
+	@IBAction func unwindToPinMatchTableViewController(_ segue: UIStoryboardSegue) { }
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -64,7 +29,7 @@ final class PinMatchTableViewController: UITableViewController {
 		super.viewDidAppear(animated)
 
 		updateCache()
-		listenForNotifications()
+		observeNotifications()
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -85,7 +50,7 @@ final class PinMatchTableViewController: UITableViewController {
 			return
 		}
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
-		peerVC.peerID = viewCache[cellPath.row].peerID
+		peerVC.peerID = table[cellPath.row]
 	}
 
 	// MARK: UITableViewDataSource
@@ -93,13 +58,13 @@ final class PinMatchTableViewController: UITableViewController {
 	override func numberOfSections(in tableView: UITableView) -> Int { return 1 }
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		tableView.isScrollEnabled = !placeholderCellActive
-		return placeholderCellActive ? 1 : viewCache.count
+		return placeholderCellActive ? 1 : table.count
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		if placeholderCellActive {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.PlaceholderPeerCellID) as! PlaceHolderTableViewCell
-			if PeeringController.shared.peering {
+			if PeerViewModelController.peering {
 				let accountExists = PeereeIdentityViewModelController.accountExists
 				cell.heading = accountExists ? NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.") : NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
 				cell.subhead = accountExists ? NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.") : NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
@@ -112,7 +77,7 @@ final class PinMatchTableViewController: UITableViewController {
 			return cell
 		} else {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!
-			fill(cell: cell, model: viewCache[indexPath.row])
+			fill(cell: cell, model: PeerViewModelController.viewModel(of: table[indexPath.row]))
 			return cell
 		}
 	}
@@ -143,11 +108,11 @@ final class PinMatchTableViewController: UITableViewController {
 	// MARK: Variables
 
 	/// Data source for `tableView`.
-	private var viewCache: [PeerViewModel] = []
+	private var table: [PeerID] = []
 
 	/// Whether `tableView` should display only one cell containing a status info.
 	private var placeholderCellActive: Bool {
-		return viewCache.count == 0 || !PeeringController.shared.peering
+		return table.count == 0 || !PeerViewModelController.peering
 	}
 
 	/// Reference holder to `NotificationCenter` observers.
@@ -155,26 +120,30 @@ final class PinMatchTableViewController: UITableViewController {
 
 	// MARK: Methods
 
+	/// Populates `table` from scratch.
 	private func updateCache() {
-		viewCache = PeerViewModelController.viewModels.values.filter { model in
-			return PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch
+		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeerViewModelController.viewModels.values.compactMap { model in
+			guard PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch else { return nil }
+			return (model.peerID, model.transcripts.last?.timestamp, model.lastSeen)
 		}
 
-		viewCache.sort { a, b in
-			guard let aTimestamp = a.transcripts.last?.timestamp else {
-				if b.transcripts.isEmpty {
+		pinMatchedPeerViewModels.sort { a, b in
+			guard let aTimestamp = a.lastMessage else {
+				if b.lastMessage == nil {
 					return a.lastSeen > b.lastSeen
 				} else {
 					return false
 				}
 			}
 
-			guard let bTimestamp = b.transcripts.last?.timestamp else {
+			guard let bTimestamp = b.lastMessage else {
 				return true
 			}
 
 			return aTimestamp > bTimestamp
 		}
+
+		table = pinMatchedPeerViewModels.map { $0.peerID }
 
 		self.tableView?.reloadData()
 	}
@@ -226,12 +195,9 @@ final class PinMatchTableViewController: UITableViewController {
 			return
 		}
 
-		// we have to refresh our cache if a peer changes - PeerInfos are structs!
-		viewCache[peerPath.row] = PeerViewModelController.viewModel(of: peerID)
-
 		let topIndexPath = IndexPath(row: 0, section: 0)
 		if peerPath.row != 0 {
-			viewCache.swapAt(0, peerPath.row)
+			table.swapAt(0, peerPath.row)
 			tableView.moveRow(at: peerPath, to: topIndexPath)
 			tableView.reloadRows(at: [topIndexPath], with: .automatic)
 		} else {
@@ -242,8 +208,6 @@ final class PinMatchTableViewController: UITableViewController {
 	private func reload(peerID: PeerID) {
 		guard let indexPath = indexPath(of: peerID) else { return }
 
-		// we have to refresh our cache if a peer changes - PeerInfos are structs!
-		viewCache[indexPath.row] = PeerViewModelController.viewModel(of: peerID)
 		tableView.reloadRows(at: [indexPath], with: .automatic)
 	}
 
@@ -252,19 +216,19 @@ final class PinMatchTableViewController: UITableViewController {
 	}
 
 	private func indexPath(of peerID: PeerID) -> IndexPath? {
-		if let row = viewCache.firstIndex(where: { $0.peerID == peerID }) {
+		if let row = table.firstIndex(where: { $0 == peerID }) {
 			return IndexPath(row: row, section: 0)
 		}
 		return nil
 	}
 
-	private func addToCache(model: PeerViewModel) {
-		viewCache.insert(model, at: 0)
+	private func addToCache(_ peerID: PeerID) {
+		table.insert(peerID, at: 0)
 	}
 
 	private func addToView(peerID: PeerID, updateTable: Bool) {
 		//let placeHolderWasActive = placeholderCellActive
-		addToCache(model: PeerViewModelController.viewModel(of: peerID))
+		addToCache(peerID)
 
 		if updateTable { tableView.reloadData() }
 		/* this would be the performant variant, however I saw crashes with it (the number of rows after insert …), probably due to placeholderCellActive changing in between, because PeeringController.shared.peering is a data race
@@ -276,6 +240,43 @@ final class PinMatchTableViewController: UITableViewController {
 			}
 		}
 		 */
+	}
+
+	/// Observes relevant notifications in `NotificationCenter`.
+	private func observeNotifications() {
+		for notificationType: PeerViewModel.NotificationName in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
+			notificationObservers.append(notificationType.addAnyPeerObserver { [weak self] peerID, _  in
+				self?.messageReceivedSentOrRead(from: peerID)
+			})
+		}
+
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver { [weak self] (peerID, _) in self?.reload(peerID: peerID) })
+		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
+			self?.addToView(peerID: peerID, updateTable: true)
+		})
+		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver { [weak self] peerID, _ in
+			guard let strongSelf = self,
+				  let peerPath = strongSelf.indexPath(of: peerID) else {
+				return
+			}
+
+			strongSelf.table.remove(at: peerPath.row)
+		})
+		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { [weak self] _ in
+			self?.tableView.reloadData()
+		})
+		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
+			guard let state = notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber,
+				  let strongSelf = self else { return }
+			if state.boolValue {
+				strongSelf.updateCache()
+			} else {
+				strongSelf.tableView.reloadData()
+			}
+		})
+		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
+			self?.updateCache()
+		})
 	}
 }
 

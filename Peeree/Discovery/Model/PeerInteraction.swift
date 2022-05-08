@@ -14,7 +14,6 @@ import Foundation
  - Attention: All methods of this protocol must be called from the main thread!
  */
 public protocol PeerInteraction {
-	func send(message: String, completion: @escaping (Error?) -> Void)
 	func loadLocalPicture()
 	func loadPicture(callback: @escaping (Progress?) -> ())
 	func loadBio(callback: @escaping (Progress?) -> ())

@@ -33,7 +33,7 @@ final class BrowseViewController: UITableViewController {
 		for peerArray in table {
 			peerAvailable = peerAvailable || peerArray.count > 0
 		}
-		return !peerAvailable || !PeeringController.shared.peering
+		return !peerAvailable || !PeerViewModelController.peering
 	}
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
@@ -60,7 +60,7 @@ final class BrowseViewController: UITableViewController {
 
 		tableView.scrollsToTop = true
 
-		connectionChangedState(PeeringController.shared.peering)
+		connectionChangedState(PeerViewModelController.peering)
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
@@ -125,7 +125,7 @@ final class BrowseViewController: UITableViewController {
 			} else {
 				cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
 			}
-			cell.setContent(mode: PeeringController.shared.peering ? .alone : .offline)
+			cell.setContent(mode: PeerViewModelController.peering ? .alone : .offline)
 			return cell
 		}
 
@@ -238,6 +238,10 @@ final class BrowseViewController: UITableViewController {
 
 	/// Adds `model` to `viewCache` and updates `tableView`.
 	private func addToView(_ peerID: PeerID, updateTable: Bool) {
+		_ = addToTable(peerID)
+		if updateTable { tableView.reloadData() }
+		// this sometimes crashed, when peerAppeared occured when we are offline:
+/*
 		let placeHolderWasActive = placeholderCellActive
 		let section = addToTable(peerID)
 
@@ -248,6 +252,7 @@ final class BrowseViewController: UITableViewController {
 				add(row: 0, section: section)
 			}
 		}
+ */
 	}
 	
 	private func add(row: Int, section: Int) {
@@ -351,15 +356,15 @@ final class BrowseViewController: UITableViewController {
 		})
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addAnyPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeeringController.shared.peering)
+			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeerViewModelController.peering)
 		})
 		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
 			self?.updateCache()
 		})
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver(usingBlock: reloadBlock))
-		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(usingBlock: reloadBlock))
+		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver(reloadBlock))
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(reloadBlock))
 
 		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
 			self?.updateCache()

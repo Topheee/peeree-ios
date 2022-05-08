@@ -128,12 +128,23 @@ func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
 // MARK: - Extensions
 
 extension Result where Failure: Error {
+	/// Returns the encapsulated `Failure` error, if any.
 	var error: Failure? {
 		switch self {
 		case .failure(let error):
 			return error
 		case .success(_):
 			return nil
+		}
+	}
+
+	/// Returns the encapsulated `Success` value, if any.
+	var value: Success? {
+		switch self {
+		case .failure(_):
+			return nil
+		case .success(let value):
+			return value
 		}
 	}
 }

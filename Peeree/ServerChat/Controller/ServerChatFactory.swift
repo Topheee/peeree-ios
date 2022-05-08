@@ -120,6 +120,8 @@ public class ServerChatFactory {
 						elog("\(error.localizedDescription)")
 					}
 
+					self.serverChatController = nil
+
 					completion(nil)
 				}
 			}
@@ -211,6 +213,8 @@ public class ServerChatFactory {
 					wlog("Something in the SDK during server chat login failed: \(sdkError.localizedDescription)")
 				case .fatal(let fatalError):
 					wlog("Something really bad in the SDK during server chat login failed: \(fatalError.localizedDescription)")
+				case .cannotChat(_, _):
+					flog("this should never happen: we cannot chat with ourselves.")
 				}
 
 				self.createAccount { createAccountResult in
@@ -298,8 +302,8 @@ public class ServerChatFactory {
 		let password: String
 		do {
 			password = try passwordFromKeychain()
-		} catch let error {
-			completion(.failure(.fatal(error)))
+		} catch {
+			completion(.failure(.identityMissing))
 			return
 		}
 
@@ -351,15 +355,6 @@ public class ServerChatFactory {
 		} catch let error {
 			failure(.fatal(error))
 		}
-	}
-
-	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
-	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
-	private func logout(completion: @escaping (Error?) -> Void) {
-		// if this fails we cannot do anything anyway
-		self.serverChatController?.logout(completion)
-		// we need to drop the instance s.t. no two logout requests are made on the same instance
-		self.serverChatController = nil
 	}
 
 	/// Sets the `serverChatController` singleton and starts the server chat session.

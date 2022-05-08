@@ -29,9 +29,15 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		self.messageTextView.text = ""
 
 		self.sendMessageButton.isEnabled = false
-		PeeringController.shared.interact(with: peerID) { interaction in
-			interaction.send(message: message) { error in
-				error.map { InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog")) }
+		let title = NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog")
+		ServerChatFactory.getOrSetupInstance { instanceResult in
+			switch instanceResult {
+			case .failure(let error):
+				InAppNotificationController.display(serverChatError: error, localizedTitle: title)
+			case .success(let serverChat):
+				serverChat.send(message: message, to: self.peerID) { result in
+					result.error.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
+				}
 			}
 		}
 	}
@@ -65,20 +71,41 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		
 		setPortraitButtonImage()
 		navigationItem.prompt = model.info.nickname
-		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
-			self?.setPortraitButtonImage()
-		})
+		observeNotifications()
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		connectionChangedState(PeeringController.shared.peering)
+		guard idModel.pinState == .pinMatch else {
+			unwind()
+			return
+		}
+
+		connectionChangedState(PeerViewModelController.peering)
 
 		registerForKeyboardNotifications()
 
 		chatTableView?.scrollToBottom(animated: true)
-		messageTextView.becomeFirstResponder()
+		messageTextView.isEditable = false
+
+		let title = NSLocalizedString("Chat Unavailable", comment: "Title of alert dialog")
+		ServerChatFactory.getOrSetupInstance { instanceResult in
+			switch instanceResult {
+			case .failure(let error):
+				InAppNotificationController.display(serverChatError: error, localizedTitle: title)
+			case .success(let serverChat):
+				serverChat.canChat(with: self.peerID) { error in
+					error.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
+					guard error == nil else { return }
+
+					DispatchQueue.main.async {
+						self.messageTextView.isEditable = true
+						self.messageTextView.becomeFirstResponder()
+					}
+				}
+			}
+		}
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -147,6 +174,28 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		if up {
 			chatTableView?.scrollToBottom(animated: true)
 		}
+	}
+
+	/// Observes relevant notifications in `NotificationCenter`.
+	private func observeNotifications() {
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.setPortraitButtonImage()
+		})
+		notificationObservers.append(AccountController.NotificationName.unpinned.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.unwind()
+		})
+		notificationObservers.append(AccountController.NotificationName.unmatch.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.unwind()
+		})
+		notificationObservers.append(ServerChatNotificationName.readyToChat.addPeerObserver(for: peerID) { [weak self] _ in
+			self?.messageTextView?.isEditable = true
+			self?.messageTextView?.becomeFirstResponder()
+		})
+	}
+
+	/// Unwind us from the view hierarchy.
+	private func unwind() {
+		performSegue(withIdentifier: "unwindToPinMatchTableViewController", sender: nil)
 	}
 
 	// MARK: ConnectionStateObserver

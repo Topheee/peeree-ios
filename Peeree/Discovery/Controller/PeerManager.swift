@@ -57,17 +57,6 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		remotePeerManager.verify(peerID)
 	}
 
-	public func send(message: String, completion: @escaping (Error?) -> Void) {
-		ServerChatFactory.getOrSetupInstance { instanceResult in
-			switch instanceResult {
-			case .failure(let error):
-				completion(error)
-			case .success(let serverChat):
-				serverChat.send(message: message, to: self.peerID) { completion($0.error) }
-			}
-		}
-	}
-
 	// MARK: PeeringDelegate
 	// all these methods come from one single queue
 

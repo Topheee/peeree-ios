@@ -136,13 +136,19 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	var isBluetoothOn: Bool { return centralManager.state == .poweredOn }
-	
-	var isScanning: Bool {
+
+	/// Whether the underlying `CBCentralManager` is scanning for peripherals; must be called on `dQueue`.
+	private var _isScanning: Bool {
 		if #available(macOS 10.13, iOS 6.0, *) {
 			return centralManager.isScanning
 		} else {
 			return true // shitty shit is not available on mac - what the fuck?
 		}
+	}
+
+	/// Whether the underlying `CBCentralManager` is scanning for peripherals; involves a `sync` dispatch.
+	var isScanning: Bool {
+		dQueue.sync { return _isScanning }
 	}
 	
 	func scan() {
@@ -153,7 +159,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		//centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID], options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
 		dQueue.async {
 #if os(iOS)
-			guard !self.isScanning else { return }
+			guard !self._isScanning else { return }
 #endif
 
 			self.centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
@@ -161,8 +167,8 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	}
 	
 	func stopScan() {
-		dQueue.sync {
-			guard self.isScanning else { return }
+		dQueue.async {
+			guard self._isScanning else { return }
 
 			self.centralManager.stopScan()
 			for (_, (progress, _)) in self.activeTransmissions {

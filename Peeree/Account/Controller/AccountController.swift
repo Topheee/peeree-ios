@@ -33,7 +33,7 @@ public class AccountController: SecurityDataSource {
 	/// Names of notifications sent by `AccountController`.
 	public enum NotificationName: String {
 		/// Notifications regarding pins.
-		case pinFailed, unpinFailed, pinMatch, unpinned
+		case pinFailed, unpinFailed, pinMatch, unmatch, unpinned
 
 		/// Notifications regarding identity management.
 		case accountCreated, accountDeleted
@@ -303,16 +303,25 @@ public class AccountController: SecurityDataSource {
 			archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
 		}
 
-		guard isPinMatch else { return }
+		// check whether the pin match state changed
+		guard pinnedByPeers.contains(peerID) != isPinMatch else { return }
 
-		if !pinnedByPeers.contains(peerID) {
+		if isPinMatch {
+			// this is a pin match we weren't aware of
 			pinnedByPeers.insert(peerID)
-			// access the set on the queue to ensure the last peerID is also included
-			archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 
 			// post this on the main queue
 			self.post(.pinMatch, peerID)
+		} else {
+			// the opposite removed the pin (unmatched us)
+			pinnedByPeers.remove(peerID)
+
+			// post this on the main queue
+			self.post(.unmatch, peerID)
 		}
+
+		// access the set on the queue to ensure the last peerID is also included
+		archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 	}
 
 	/// Persists the pin removal.
@@ -332,12 +341,15 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Retrieve the pin (matched) status from the server. If `force` is `false`, do not update if we believe we have a pin match.
-	public func updatePinStatus(of id: PeereeIdentity, force: Bool) {
+	public func updatePinStatus(of id: PeereeIdentity, force: Bool, _ completion: ((PinState) -> Void)? = nil) {
 		// attack scenario: Eve sends pin match indication to Alice, but Alice only asks server, if she pinned Eve in the first place => Eve can observe Alice's internet communication and can figure out, whether Alice pinned her, depending on whether Alice' asked the server after the indication.
 		// thus, we (Alice) have to at least once validate with the server, even if we know, that we did not pin Eve
 		// This is achieved through the hasPinMatch query, as this will always fail, if we do not have a true match, thus we query ALWAYS the server when we receive a pin match indication. If flooding attack (Eve sends us dozens of indications) gets serious, implement above behaviour, that we only validate once
 
-		guard force || !hasPinMatch(id.peerID) else { return }
+		guard force || !hasPinMatch(id.peerID) else {
+			completion?(.pinMatch)
+			return
+		}
 
 		let pinPublicKey = id.publicKeyData.base64EncodedData()
 
@@ -358,6 +370,8 @@ public class AccountController: SecurityDataSource {
 				}
 
 				self.updateModels(of: [id])
+
+				completion?(self.pinState(of: id.peerID))
 			}
 		}
 	}
@@ -732,9 +746,9 @@ public class AccountController: SecurityDataSource {
 
 extension AccountController {
 	/// Retrieve the pin (matched) status from the server. If `force` is `false`, do not update if we believe we have a pin match.
-	public func updatePinStatus(of peerID: PeerID, force: Bool) {
+	public func updatePinStatus(of peerID: PeerID, force: Bool, _ completion: ((PinState) -> Void)? = nil) {
 		do {
-			updatePinStatus(of: try self.id(of: peerID), force: force)
+			updatePinStatus(of: try self.id(of: peerID), force: force, completion)
 		} catch let error {
 			elog("Unknown PeerID \(peerID) in updatePinStatus(): \(error)")
 		}

@@ -56,7 +56,7 @@ extension RawRepresentable where Self.RawValue == String {
 	}
 
 	/// Observes notifications with a `name` equal to the `rawValue` of this notification and extracts the `PeerID` from any notification before calling `block`.
-	public func addAnyPeerObserver(peerIDKey: String = "peerID", usingBlock block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
+	public func addAnyPeerObserver(peerIDKey: String = "peerID", _ block: @escaping (PeerID, Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
 			if let peerID = notification.userInfo?[peerIDKey] as? PeerID {
 				block(peerID, notification)
@@ -65,9 +65,9 @@ extension RawRepresentable where Self.RawValue == String {
 	}
 
 	/// Observes notifications with a `name` equal to the `rawValue` of this notification and the value of the entry with key `peerIDKey` equal to `observedPeerID`.
-	public func addPeerObserver(for observedPeerID: PeerID, peerIDKey: String = "peerID", usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
+	public func addPeerObserver(for observedPeerID: PeerID, _ block: @escaping (Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
-			if let peerID = notification.userInfo?[peerIDKey] as? PeerID, observedPeerID == peerID {
+			if let peerID = notification.userInfo?[PeerID.NotificationInfoKey] as? PeerID, observedPeerID == peerID {
 				block(notification)
 			}
 		}

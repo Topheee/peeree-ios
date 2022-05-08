@@ -76,6 +76,22 @@ final class InAppNotificationController {
 				display(title: localizedTitle, message: error.localizedDescription)
 			case .fatal(let error):
 				display(title: localizedTitle, message: error.localizedDescription)
+			case .cannotChat(let peerID, let reason):
+				let name = PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+
+				let format: String
+				switch reason {
+				case .noProfile:
+					format = NSLocalizedString("%@ cannot chat online.", comment: "Error message when creating server chat room")
+				case .noEncryption:
+					format = NSLocalizedString("%@ cannot chat securely.", comment: "Low-level server chat error")
+				case .notJoined:
+					format = NSLocalizedString("%@ is not yet available to chat. Please try again later.", comment: "Both parties need to be in the chat room before messages can be sent.")
+				case .unmatched:
+					format = NSLocalizedString("%@ removed their pin.", comment: "Message for the user that he cannot chat anymore with a person.")
+				}
+
+				display(title: localizedTitle, message: String(format: format, name))
 			}
 		}
 	}

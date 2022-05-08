@@ -135,9 +135,10 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		case .pinMatchMessage, .messageReply:
 			guard let textResponse = response as? UNTextInputNotificationResponse,
 				  textResponse.userText != "" else { return }
-			PeeringController.shared.interact(with: peerID) { interaction in
-				interaction.send(message: textResponse.userText) { _error in
-					if let error = _error { elog("failed to send message from notification: \(error.localizedDescription)") }
+
+			ServerChatFactory.getOrSetupInstance { instanceResult in
+				instanceResult.value?.send(message: textResponse.userText, to: peerID) { messageResult in
+					messageResult.error.map { elog("failed to send message from notification: \($0.localizedDescription)") }
 				}
 			}
 		case .peerAppearedPin:

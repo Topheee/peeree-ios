@@ -17,6 +17,9 @@ public final class PeerViewModelController {
 	/// All information available for a PeerID.
 	public static private (set) var viewModels = [PeerID : PeerViewModel]()
 
+	/// The `PeeringController.peering` state for the main thread.
+	public static var peering: Bool = false
+
 	// MARK: Static Methods
 
 	/// Update or set the view model of `Peer`.
