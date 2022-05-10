@@ -61,12 +61,15 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 	// all these methods come from one single queue
 
 	public func indicatePinMatch() {
+		// turned off to prevent simultaneous room invites in server chat
+		/*
 		AccountController.use { ac in
 			guard ac.hasPinMatch(self.peerID) else { return }
 			self.remotePeerManager.reliablyWrite(data: true.binaryRepresentation, to: CBUUID.PinMatchIndicationCharacteristicID, of: self.peerID, callbackQueue: DispatchQueue.global()) { error in
 				error.map { elog("indicating pin match failed: \($0)"); return }
 			}
 		}
+		 */
 	}
 
 	func didRange(rssi: NSNumber?, error: Error?) {

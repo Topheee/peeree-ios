@@ -54,14 +54,6 @@ final class BrowseViewController: UITableViewController {
 		guard let cellPath = tableView.indexPath(for: tappedCell) else { return }
 		peerVC.peerID = table[cellPath.section][cellPath.row].0
 	}
-	
-	override func viewDidLoad() {
-		super.viewDidLoad()
-
-		tableView.scrollsToTop = true
-
-		connectionChangedState(PeerViewModelController.peering)
-	}
 
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
@@ -78,7 +70,7 @@ final class BrowseViewController: UITableViewController {
 			networkButton.backgroundColor = UIColor.white
 		}
 
-		updateCache()
+		connectionChangedState(PeerViewModelController.peering)
 		observeNotifications()
 	}
 

@@ -349,6 +349,9 @@
                                 </connections>
                             </tableViewCell>
                         </prototypes>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="boolean" keyPath="scrollsToTop" value="YES"/>
+                        </userDefinedRuntimeAttributes>
                         <connections>
                             <outlet property="dataSource" destination="44q-aX-Sii" id="hX0-wi-NlW"/>
                             <outlet property="delegate" destination="44q-aX-Sii" id="Ygd-vz-8co"/>
@@ -1912,13 +1915,13 @@
         </designable>
     </designables>
     <inferredMetricsTieBreakers>
-        <segue reference="xMu-Pu-iqx"/>
+        <segue reference="Qvq-U3-y04"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubble" width="45.5" height="34.5"/>
-        <image name="MessageBubbleOpposite" width="44.5" height="34"/>
+        <image name="MessageBubbleOpposite" width="45.5" height="34.5"/>
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplatePressed" width="1024" height="1024"/>

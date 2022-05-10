@@ -168,7 +168,7 @@ public class ServerChatFactory {
 	private var creatingInstanceOnlyLoginRequests = [Bool]()
 
 	/// Matrix userId based on user's PeerID.
-	private var userId: String { return serverChatUserId(for: peerID) }
+	private var userId: String { return peerID.serverChatUserId }
 
 	// MARK: Methods
 
@@ -231,7 +231,7 @@ public class ServerChatFactory {
 
 	/// Creates an account on the chat server.
 	private func createAccount(_ completion: @escaping (Result<MXCredentials, ServerChatError>) -> Void) {
-		let username = serverChatUserName(for: peerID)
+		let username = peerID.serverChatUserName
 
 		var passwordRawData: Data
 		do {

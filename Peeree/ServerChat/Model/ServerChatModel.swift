@@ -28,14 +28,16 @@ let ServerChatRefreshTokenKeychainKey = "ServerChatRefreshTokenKeychainKey"
 /// Our identity in UserDefaults.
 let ServerChatPeerIDKey = "ServerChatPeerIDKey"
 
-/// Transform `peerID` into a server chat username.
-func serverChatUserName(for peerID: PeerID) -> String {
-	return peerID.uuidString.lowercased()
-}
+extension PeerID {
+	/// Use our string representation as a server chat username.
+	public var serverChatUserName: String {
+		return uuidString.lowercased()
+	}
 
-/// Transform `peerID` into a ('fully qualified') server chat user ID.
-func serverChatUserId(for peerID: PeerID) -> String {
-	return "@\(serverChatUserName(for: peerID)):\(serverChatDomain)"
+	/// Transform `peerID` into a ('fully qualified') server chat user ID.
+	public var serverChatUserId: String {
+		return "@\(serverChatUserName):\(serverChatDomain)"
+	}
 }
 
 /// Extract the `PeerID` from a ('fully qualified') server chat user ID `userId`.

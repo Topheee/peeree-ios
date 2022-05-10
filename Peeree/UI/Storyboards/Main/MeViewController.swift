@@ -365,7 +365,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		// TODO iOS 11 bug: we do only need to add the accessory height on our own, if the navigation bar is NOT collapsed
 		// TEST with iOS < 11
 		let accessoryHeight = inputToShow?.inputAccessoryView?.frame.height ?? 0.0
-		let inputHeight = (info[UIResponder.keyboardFrameBeginUserInfoKey] as! CGRect).height
+		let inputHeight = (info[UIResponder.keyboardFrameEndUserInfoKey] as! CGRect).height
 		let keyboardHeight = accessoryHeight + inputHeight
 
 		let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardHeight, right: 0.0)
