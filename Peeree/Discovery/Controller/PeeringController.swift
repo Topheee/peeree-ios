@@ -344,7 +344,20 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private static let LastSeenKey = "RecentPeersController.LastSeenKey"
 	private static let MaxRememberedHours = 48
 
-	// MARK: Static Variables
+	// MARK: Static Methods
+
+	/// Populates the current peer-related data to the view models; must be called on the main thread!
+	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
+		let peerID = peer.id.peerID
+
+		PeerViewModelController.update(peerID, info: peer.info, lastSeen: lastSeen)
+
+		// This is a bit tricky. We can get the public key from both the AccountController and the PersistedPeersController.
+		// For now, we always use the one from the AccountController.
+		PeereeIdentityViewModelController.upsert(peerID: peerID, insert: PeereeIdentityViewModel(id: peer.id)) { model in
+			// only insert if it wasn't already defined by AccountController
+		}
+	}
 
 	// MARK: Constants
 
@@ -410,19 +423,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
 		self.manage(peerID) { manager in
 			manager.loaded(picture: picture, hash: hash)
-		}
-	}
-
-	/// Populates the current peer-related data to the view models; must be called on the main thread!
-	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
-		let peerID = peer.id.peerID
-
-		PeerViewModelController.update(peerID, info: peer.info, lastSeen: lastSeen)
-
-		// This is a bit tricky. We can get the public key from both the AccountController and the PersistedPeersController.
-		// For now, we always use the one from the AccountController.
-		PeereeIdentityViewModelController.upsert(peerID: peerID, insert: PeereeIdentityViewModel(id: peer.id)) { _ in
-			// only insert if it wasn't already defined by AccountController
 		}
 	}
 

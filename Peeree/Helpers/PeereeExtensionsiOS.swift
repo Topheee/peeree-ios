@@ -29,12 +29,13 @@ extension PeerViewModel {
 extension AppDelegate {
 
 	/// Calls `AccountController.createAccount` and displays its error.
-	static func createIdentity() {
+	static func createIdentity(displayError: Bool = true) {
 		AccountController.createAccount { result in
 			switch result {
 			case .success(_):
 				break
 			case .failure(let error):
+				guard displayError else { return }
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
 			}
 		}

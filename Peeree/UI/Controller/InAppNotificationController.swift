@@ -69,7 +69,7 @@ final class InAppNotificationController {
 		} else {
 			switch error {
 			case .identityMissing:
-				display(title: localizedTitle, message: NSLocalizedString("Server Chat requires a Peeree Identity.", comment: "Error message."))
+				display(title: localizedTitle, message: NSLocalizedString("Chatting requires a Peeree Identity.", comment: "Error message"))
 			case .parsing(let parsingError):
 				display(title: localizedTitle, message: parsingError)
 			case .sdk(let error):

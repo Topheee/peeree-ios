@@ -54,6 +54,8 @@ final class ServerChatController: ServerChat {
 		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
 		notificationObservers.removeAll()
 
+		self.roomIdsListeningOn.removeAll()
+
 		// *** roughly based on MXKAccount.closeSession(true) ***
 		// Force a reload of device keys at the next session start.
 		// This will fix potential UISIs other peoples receive for our messages.
@@ -87,13 +89,7 @@ final class ServerChatController: ServerChat {
 
 	/// Checks whether `peerID` can receive or messages.
 	func canChat(with peerID: PeerID, _ completion: @escaping (ServerChatError?) -> Void) {
-		getJoinedOrInvitedRoom(with: peerID, bothJoined: true) { result in
-			if result != nil {
-				completion(nil)
-			} else {
-				completion(.cannotChat(peerID, .notJoined))
-			}
-		}
+		getJoinedOrInvitedRoom(with: peerID, bothJoined: true) { completion($0 != nil ? nil : .cannotChat(peerID, .notJoined)) }
 	}
 
 	/// Send a `message` to `peerID`.
@@ -343,6 +339,7 @@ final class ServerChatController: ServerChat {
 		room.liveTimeline { _timeline in
 			guard let timeline = _timeline else {
 				elog("No timeline retrieved.")
+				self.roomIdsListeningOn.remove(room.roomId)
 				return
 			}
 
@@ -409,11 +406,13 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
-	/// Tries to leave (and forget [once supported]) <code>room</code>, ignoring any errors
+	/// Tries to leave (and forget [once supported by the SDK]) `room`.
 	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
-		guard room.summary?.membership == .join else { completion(nil); return }
+		guard room.summary == nil || room.summary?.membership == .join || room.summary?.membership == .invite else { completion(nil); return }
+
 		room.leave { response in
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
+			self.roomIdsListeningOn.remove(room.roomId)
 			room.close()
 			completion(response.error)
 		}
@@ -427,6 +426,7 @@ final class ServerChatController: ServerChat {
 			return
 		}
 		room.leave { response in
+			self.roomIdsListeningOn.remove(room.roomId)
 			room.close()
 			if let error = response.error {
 				elog("Failed leaving room: \(error.localizedDescription)")

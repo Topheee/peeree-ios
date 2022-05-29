@@ -420,7 +420,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				self.mailTextField.isHidden = true
 				self.mailNoteLabel.isHidden = true
 				self.accountIDLabel.isHidden = true
-				self.accountButton.isEnabled = true
+				self.accountButton.isEnabled = !AccountController.isCreatingAccount
 
 				self.previewButton.isEnabled = false
 

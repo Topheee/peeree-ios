@@ -103,7 +103,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	/// Needed for writing nonces; `16` is a good estimation.
 	private var blockSize = 16
 
-	///	Since bluetooth connections are not very durable, all peers and their images are cached.
+	/// Since bluetooth connections are not very durable, all peers and their images are cached.
 	private var cachedPeers = [PeerID : Peer]()
 	private var peerInfoTransmissions = [PeerID : PeerInfoData]()
 
@@ -112,11 +112,13 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 	
 	private var centralManager: CBCentralManager!
 	
-	///	All readable remote peers the app is currently connected to. The keys are updated immediately when a new peripheral shows up, as we have to keep a reference to it. However, the values are not filled until the peripheral tell's us his ID.
+	/// All readable remote peers the app is currently connected to. The keys are updated immediately when a new peripheral shows up, as we have to keep a reference to it. However, the values are not filled until the peripheral tell's us his ID.
 	private var _availablePeripherals = [CBPeripheral : PeerID?]()
-	/// Maps the identifieres of peripherals to the IDs of the peers they represent.
+
+	/// Maps the identifiers of peripherals to the IDs of the peers they represent.
 	private var peripheralPeerIDs = SynchronizedDictionary<PeerID, CBPeripheral>(queueLabel: "\(BundleID).peripheralPeerIDs")
-	
+
+	/// Random bytes used for cryptographic signing and verification.
 	private var nonces = [CBPeripheral : Data]()
 	private var portraitSignatures = [PeerID : Data]()
 	private var biographySignatures = [PeerID : Data]()
@@ -189,6 +191,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 		}
 	}
 
+	/// Defines the values of our Peeree Identity.
 	func set(userPeerID peerID: PeerID?, keyPair: KeyPair?) {
 		dQueue.async {
 			self.userPeerID = peerID
@@ -602,8 +605,8 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 
 			// make sure the picture / biography is not too big (13 MB)
-			guard size < 13678905 else {
-				elog("\(transmission.characteristicID.uuidString.left(8)) is too big: \(size) bytes.")
+			guard size < 13678905  && size > 0 else {
+				elog("\(transmission.characteristicID.uuidString.left(8)) is too big or small: \(size) bytes.")
 				return
 			}
 

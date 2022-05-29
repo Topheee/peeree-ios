@@ -237,7 +237,7 @@ public class ServerChatFactory {
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
 		} catch let error {
-			completion(.failure(.sdk(error)))
+			completion(.failure(.fatal(error)))
 			return
 		}
 		var passwordData = passwordRawData.base64EncodedData()
@@ -254,7 +254,7 @@ public class ServerChatFactory {
 				wlog("Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
 			}
 
-			completion(.failure(.sdk(error)))
+			completion(.failure(.fatal(error)))
 			return
 		}
 
@@ -403,8 +403,9 @@ public class ServerChatFactory {
 		try persistInternetPasswordInKeychain(account: userId, url: homeServerURL, password)
 	}
 
+	/// Retrieves our account's password from the keychain.
 	private func passwordFromKeychain() throws -> String {
-		try internetPasswordFromKeychain(account: userId, url: homeServerURL)
+		return try internetPasswordFromKeychain(account: userId, url: homeServerURL)
 	}
 
 	/// force-delete local account information. Only use as a last resort!

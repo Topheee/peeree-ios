@@ -83,3 +83,9 @@ struct MessageEventData {
 		self.message = message
 	}
 }
+
+/// Notifications emitted by the server chat subsystem.
+public enum ServerChatNotificationName: String {
+	/// We are ready to chat with a `peerID` (sent along).
+	case readyToChat
+}

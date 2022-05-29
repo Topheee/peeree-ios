@@ -13,7 +13,6 @@ import CoreBluetooth
 typealias CentralID = UUID
 
 protocol LocalPeerManagerDelegate: AnyObject {
-//	func networkTurnedOff()
 	func advertisingStarted()
 	func advertisingStopped()
 	func receivedPinMatchIndication(from peerID: PeerID)

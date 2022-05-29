@@ -219,7 +219,7 @@ final class BrowseViewController: UITableViewController {
 	
 	// MARK: Private Methods
 
-	/// Adds `model` to `table` and returns the appropriate section.
+	/// Adds `peerID` to `table` and returns the appropriate section.
 	private func addToTable(_ peerID: PeerID) -> Int {
 		let model = PeerViewModelController.viewModel(of: peerID)
 		let pinState = PeereeIdentityViewModelController.viewModel(of: peerID).pinState
@@ -228,7 +228,7 @@ final class BrowseViewController: UITableViewController {
 		return section.rawValue
 	}
 
-	/// Adds `model` to `viewCache` and updates `tableView`.
+	/// Adds `peerID` to `table` and updates `tableView`.
 	private func addToView(_ peerID: PeerID, updateTable: Bool) {
 		_ = addToTable(peerID)
 		if updateTable { tableView.reloadData() }

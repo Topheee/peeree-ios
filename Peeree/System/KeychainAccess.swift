@@ -33,7 +33,7 @@ func keyDataFromKeychain(label: String, tag: Data, keyType: CFString, keyClass: 
 								   kSecAttrKeyType as String: keyType,
 								   kSecReturnData as String: NSNumber(value: true)]
 	var item: CFTypeRef?
-	try SecKey.check(status: SecItemCopyMatching(getquery as CFDictionary, &item), localizedError: NSLocalizedString("Reading key from keychain failed.", comment: "Attempt to read a keychain item failed."))
+	try SecKey.check(status: SecItemCopyMatching(getquery as CFDictionary, &item), localizedError: NSLocalizedString("Reading key data from keychain failed.", comment: "Attempt to read a keychain item failed."))
 
 	return (item as! CFData) as Data
 }
@@ -89,7 +89,7 @@ func persistSecretInKeychain(secret: String, label: String) throws {
 	query = [kSecClass as String:		kSecClassGenericPassword,
 			 kSecAttrLabel as String:	label,
 			 kSecValueData as String:	tokenData]
-	try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding secret to Keychain failed", comment: "SecItemAdd failed"))
+	try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding secret to keychain failed.", comment: "SecItemAdd failed"))
 }
 
 /// Retrieves a generic unspecified secret from the keychain.
@@ -99,7 +99,7 @@ func secretFromKeychain(label: String) throws -> String {
 								kSecMatchLimit as String:	kSecMatchLimitOne,
 								kSecReturnData as String:	true]
 	var item: CFTypeRef?
-	try SecKey.check(status: SecItemCopyMatching(query as CFDictionary, &item), localizedError: NSLocalizedString("Reading internet password from keychain failed.", comment: "Attempt to read a keychain item failed."))
+	try SecKey.check(status: SecItemCopyMatching(query as CFDictionary, &item), localizedError: NSLocalizedString("Reading generic secret from keychain failed.", comment: "Attempt to read a keychain item failed."))
 
 	guard let passwordData = item as? Data,
 		  let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
@@ -113,7 +113,7 @@ func secretFromKeychain(label: String) throws -> String {
 func removeSecretFromKeychain(label: String) throws {
 	let query: [String: Any] = [kSecClass as String:		kSecClassGenericPassword,
 								kSecAttrLabel as String:	label]
-	try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting key from keychain failed.", comment: "Attempt to delete a keychain item failed."))
+	try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting secret from keychain failed.", comment: "Attempt to delete a keychain item failed."))
 }
 
 /// Writes the `password` into the keychain as an internet password.
@@ -122,7 +122,7 @@ func persistInternetPasswordInKeychain(account: String, url: URL, _ password: Da
 								kSecAttrAccount as String:	account,
 								kSecAttrServer as String:	url.absoluteString,
 								kSecValueData as String:	password]
-	try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding internet password to Keychain failed", comment: "SecItemAdd failed"))
+	try SecKey.check(status: SecItemAdd(query as CFDictionary, nil), localizedError: NSLocalizedString("Adding internet password to keychain failed.", comment: "SecItemAdd failed"))
 }
 
 /// Retrieves an internet password from the keychain.
@@ -148,5 +148,5 @@ func removeInternetPasswordFromKeychain(account: String, url: URL) throws {
 	let query: [String: Any] = [kSecClass as String:		kSecClassInternetPassword,
 								kSecAttrAccount as String:	account,
 								kSecAttrServer as String:	url.absoluteString]
-	try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting key from keychain failed.", comment: "Attempt to delete a keychain item failed."))
+	try SecKey.check(status: SecItemDelete(query as CFDictionary), localizedError: NSLocalizedString("Deleting internet password from keychain failed.", comment: "Attempt to delete a keychain item failed."))
 }

@@ -299,7 +299,6 @@ public class AccountController: SecurityDataSource {
 
 		if pinnedPeers[peerID] != id.publicKeyData {
 			pinnedPeers[peerID] = id.publicKeyData
-			// access the set on the queue to ensure the last peerID is also included
 			archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
 		}
 
@@ -320,7 +319,6 @@ public class AccountController: SecurityDataSource {
 			self.post(.unmatch, peerID)
 		}
 
-		// access the set on the queue to ensure the last peerID is also included
 		archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 	}
 
@@ -329,11 +327,9 @@ public class AccountController: SecurityDataSource {
 		let peerID = id.peerID
 
 		pinnedPeers.removeValue(forKey: peerID)
-		// access the set on the queue to ensure the last peerID is also included
 		archiveObjectInUserDefs(pinnedPeers as NSDictionary, forKey: AccountController.PinnedPeersKey)
 
 		if pinnedByPeers.remove(peerID) != nil {
-			// access the set on the queue to ensure the last peerID is also included
 			archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 		}
 

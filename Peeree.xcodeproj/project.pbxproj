@@ -29,8 +29,6 @@
 		9D544F5D280F68C0008E7CDF /* PeereeIdentityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */; };
 		9D544F5F280F6922008E7CDF /* PeereeIdentityViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */; };
 		9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D56535E279A1014003F31A2 /* UserPeer.swift */; };
-		9D5A7E7D2822A2480039EACB /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5A7E7C2822A2480039EACB /* MatrixSDK */; };
-		9D5A7E802822A3350039EACB /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5A7E7F2822A3350039EACB /* SwiftyBeaver */; };
 		9D5D46EE280C6C73002174DB /* PeereeIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
 		9D6AFE59264C23E90065262D /* ServerChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6AFE58264C23E90065262D /* ServerChatController.swift */; };
@@ -64,6 +62,7 @@
 		9DA36A84279D5CA400BF7875 /* PeerViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */; };
 		9DAAC35C1BD6B7C50039611F /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DAD8F961ECF512F00363016 /* PinPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAD8F951ECF512F00363016 /* PinPoints.swift */; };
+		9DAF8FE8282C4FA800D8BCAF /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DAF8FE7282C4FA800D8BCAF /* MatrixSDK */; };
 		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
 		9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3916C2049F6E100543F74 /* Main.storyboard */; };
 		9DB677FB24030480005EECB3 /* PinsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F824030480005EECB3 /* PinsAPI.swift */; };
@@ -241,9 +240,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D5A7E7D2822A2480039EACB /* MatrixSDK in Frameworks */,
+				9DAF8FE8282C4FA800D8BCAF /* MatrixSDK in Frameworks */,
 				9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */,
-				9D5A7E802822A3350039EACB /* SwiftyBeaver in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -634,8 +632,7 @@
 			name = Peeree;
 			packageProductDependencies = (
 				9D51ED7C27A68B3E00BF6C0A /* Toast */,
-				9D5A7E7C2822A2480039EACB /* MatrixSDK */,
-				9D5A7E7F2822A3350039EACB /* SwiftyBeaver */,
+				9DAF8FE7282C4FA800D8BCAF /* MatrixSDK */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -701,8 +698,7 @@
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			packageReferences = (
 				9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */,
-				9D5A7E7B2822A2480039EACB /* XCRemoteSwiftPackageReference "MatrixSDK" */,
-				9D5A7E7E2822A3350039EACB /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
+				9DAF8FE6282C4FA800D8BCAF /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -1010,7 +1006,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.2;
+				CURRENT_PROJECT_VERSION = 1.5.3;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -1020,7 +1016,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.5.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1045,7 +1041,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.2;
+				CURRENT_PROJECT_VERSION = 1.5.3;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -1057,7 +1053,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.2;
+				MARKETING_VERSION = 1.5.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1172,20 +1168,12 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		9D5A7E7B2822A2480039EACB /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
+		9DAF8FE6282C4FA800D8BCAF /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/niochat/MatrixSDK";
+			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.23.2;
-			};
-		};
-		9D5A7E7E2822A3350039EACB /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.9.0;
+				minimumVersion = 0.23.9;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1196,15 +1184,10 @@
 			package = 9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */;
 			productName = Toast;
 		};
-		9D5A7E7C2822A2480039EACB /* MatrixSDK */ = {
+		9DAF8FE7282C4FA800D8BCAF /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9D5A7E7B2822A2480039EACB /* XCRemoteSwiftPackageReference "MatrixSDK" */;
+			package = 9DAF8FE6282C4FA800D8BCAF /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
-		};
-		9D5A7E7F2822A3350039EACB /* SwiftyBeaver */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9D5A7E7E2822A3350039EACB /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
-			productName = SwiftyBeaver;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
