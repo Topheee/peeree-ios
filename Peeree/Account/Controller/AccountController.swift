@@ -181,6 +181,7 @@ public class AccountController: SecurityDataSource {
 				//
 				switch error {
 				case .httpError(409, _), .sessionTaskError(409?, _, _):
+					// TODO: we should probably remove the peer
 					Self.delegate?.publicKeyMismatch(of: peerID)
 				default:
 					Self.delegate?.pin(of: peerID, failedWith: error)
@@ -720,8 +721,7 @@ public class AccountController: SecurityDataSource {
 		archiveObjectInUserDefs(pinnedByPeers as NSSet, forKey: AccountController.PinnedByPeersKey)
 
 		do {
-			try removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
-			try removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
+			try keyPair.removeFromKeychain()
 		} catch let error {
 			flog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}

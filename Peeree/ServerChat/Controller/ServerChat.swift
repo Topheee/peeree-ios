@@ -32,4 +32,5 @@ public protocol ServerChat {
 public protocol ServerChatDelegate: AnyObject {
 	// MARK: Methods
 	func configurePusherFailed(_ error: Error)
+	func cannotJoinRoom(_ error: Error)
 }

@@ -189,7 +189,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	func configurePusherFailed(_ error: Error) {
 		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
 	}
-	
+
+	func cannotJoinRoom(_ error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
+	}
+
 	// MARK: Private Methods
 	
 	private func setupManualAppearance() {
