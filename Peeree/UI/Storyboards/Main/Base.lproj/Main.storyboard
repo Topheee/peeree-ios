@@ -391,16 +391,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="240" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="740" axis="vertical" alignment="center" spacing="12" baselineRelativeArrangement="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DbU-Tc-UDS">
-                                <rect key="frame" x="12" y="52" width="296" height="414"/>
+                                <rect key="frame" x="12" y="52" width="296" height="407.5"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" translatesAutoresizingMaskIntoConstraints="NO" id="rHp-W3-COa">
-                                        <rect key="frame" x="28" y="0.0" width="240" height="240"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="296" height="296"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" horizontalHuggingPriority="241" verticalHuggingPriority="241" horizontalCompressionResistancePriority="741" verticalCompressionResistancePriority="741" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="240" height="240"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="296" height="296"/>
                                                 <subviews>
                                                     <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="208" height="208"/>
+                                                        <rect key="frame" x="16" y="16" width="264" height="264"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person" label="Portrait">
                                                             <bool key="isElement" value="YES"/>
                                                         </accessibility>
@@ -410,9 +410,9 @@
                                                         </constraints>
                                                     </imageView>
                                                     <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC" customClass="RoundedVisualEffectView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="208" height="208"/>
+                                                        <rect key="frame" x="16" y="16" width="264" height="264"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
-                                                            <rect key="frame" x="0.0" y="0.0" width="208" height="208"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="264" height="264"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         </view>
                                                         <blurEffect style="regular"/>
@@ -451,13 +451,13 @@
                                         </constraints>
                                     </view>
                                     <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="HnQ-9F-bJd">
-                                        <rect key="frame" x="0.0" y="252" width="296" height="162"/>
+                                        <rect key="frame" x="0.0" y="308" width="296" height="99.5"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
-                                                <rect key="frame" x="8" y="0.0" width="280" height="162"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="fillProportionally" alignment="center" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
+                                                <rect key="frame" x="8" y="0.0" width="280" height="87.5"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="256" verticalHuggingPriority="256" horizontalCompressionResistancePriority="756" verticalCompressionResistancePriority="756" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="29q-7d-1Xd">
-                                                        <rect key="frame" x="0.0" y="49" width="102" height="64"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="256" verticalHuggingPriority="256" horizontalCompressionResistancePriority="756" verticalCompressionResistancePriority="756" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="29q-7d-1Xd">
+                                                        <rect key="frame" x="56.5" y="0.0" width="167.5" height="28"/>
                                                         <subviews>
                                                             <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="257" verticalHuggingPriority="257" horizontalCompressionResistancePriority="757" verticalCompressionResistancePriority="757" translatesAutoresizingMaskIntoConstraints="NO" id="yo1-ut-E67" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="94" height="28"/>
@@ -516,7 +516,7 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="257" verticalHuggingPriority="257" horizontalCompressionResistancePriority="757" verticalCompressionResistancePriority="757" translatesAutoresizingMaskIntoConstraints="NO" id="aUs-rV-7r7" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="36" width="65.5" height="28"/>
+                                                                <rect key="frame" x="102" y="0.0" width="65.5" height="28"/>
                                                                 <subviews>
                                                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="758" verticalCompressionResistancePriority="758" distribution="equalSpacing" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="qJ6-fC-OOJ">
                                                                         <rect key="frame" x="2" y="0.0" width="55.5" height="28"/>
@@ -577,36 +577,18 @@
                                                             </view>
                                                         </subviews>
                                                     </stackView>
-                                                    <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="SM8-m1-KQC">
-                                                        <rect key="frame" x="118" y="0.0" width="162" height="162"/>
-                                                        <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="59x-ms-KVN">
-                                                                <rect key="frame" x="16" y="16" width="130" height="130"/>
-                                                                <accessibility key="accessibilityConfiguration" hint="Pin this person and mark him or her as interesting" label="Pin"/>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="width" secondItem="59x-ms-KVN" secondAttribute="height" multiplier="1:1" id="VW1-3f-p53"/>
-                                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="nhQ-EY-bws"/>
-                                                                </constraints>
-                                                                <state key="normal" image="PinTemplate"/>
-                                                                <state key="selected" image="PinTemplatePressed"/>
-                                                                <connections>
-                                                                    <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="0qx-Lg-ytW"/>
-                                                                </connections>
-                                                            </button>
-                                                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="749" verticalHuggingPriority="749" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="sY1-cI-JZt">
-                                                                <rect key="frame" x="71" y="71" width="20" height="20"/>
-                                                            </activityIndicatorView>
-                                                        </subviews>
-                                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                                        <constraints>
-                                                            <constraint firstItem="59x-ms-KVN" firstAttribute="top" secondItem="SM8-m1-KQC" secondAttribute="topMargin" constant="8" id="1mA-Kl-4vr"/>
-                                                            <constraint firstAttribute="bottomMargin" secondItem="59x-ms-KVN" secondAttribute="bottom" constant="8" id="Jp8-1P-njL"/>
-                                                            <constraint firstItem="59x-ms-KVN" firstAttribute="leading" secondItem="SM8-m1-KQC" secondAttribute="leadingMargin" constant="8" id="Rs6-zn-8ji"/>
-                                                            <constraint firstItem="sY1-cI-JZt" firstAttribute="centerY" secondItem="SM8-m1-KQC" secondAttribute="centerY" id="gHR-oD-Erw"/>
-                                                            <constraint firstItem="sY1-cI-JZt" firstAttribute="centerX" secondItem="SM8-m1-KQC" secondAttribute="centerX" id="lj2-JB-QYZ"/>
-                                                            <constraint firstAttribute="trailingMargin" secondItem="59x-ms-KVN" secondAttribute="trailing" constant="8" id="qvf-Xv-aYU"/>
-                                                        </constraints>
-                                                    </view>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" changesSelectionAsPrimaryAction="YES" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="HFc-7O-6xq">
+                                                        <rect key="frame" x="105.5" y="52" width="69" height="35.5"/>
+                                                        <state key="normal" title="Button"/>
+                                                        <buttonConfiguration key="configuration" style="tinted" title="Pin" imagePadding="8" cornerStyle="large">
+                                                            <imageReference key="image" image="PinSymbol" symbolScale="default"/>
+                                                            <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="36" weight="ultraLight"/>
+                                                            <fontDescription key="titleFontDescription" type="system" weight="light" pointSize="18"/>
+                                                        </buttonConfiguration>
+                                                        <connections>
+                                                            <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="VRL-Cp-m6y"/>
+                                                        </connections>
+                                                    </button>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
@@ -614,11 +596,11 @@
                                             <constraint firstItem="ega-fn-5Me" firstAttribute="top" secondItem="HnQ-9F-bJd" secondAttribute="top" id="ULp-Oo-9AF"/>
                                             <constraint firstAttribute="trailing" secondItem="ega-fn-5Me" secondAttribute="trailing" constant="8" id="dQf-bw-Eup"/>
                                             <constraint firstItem="ega-fn-5Me" firstAttribute="leading" secondItem="HnQ-9F-bJd" secondAttribute="leading" constant="8" id="nYG-h1-hp0"/>
-                                            <constraint firstAttribute="bottom" secondItem="ega-fn-5Me" secondAttribute="bottom" id="rGb-TZ-vyo"/>
+                                            <constraint firstAttribute="bottom" secondItem="ega-fn-5Me" secondAttribute="bottom" constant="12" id="rGb-TZ-vyo"/>
                                         </constraints>
                                     </view>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" verticalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y5H-8y-Wvq">
-                                        <rect key="frame" x="93" y="414" width="110" height="0.0"/>
+                                        <rect key="frame" x="93" y="407.5" width="110" height="0.0"/>
                                         <accessibility key="accessibilityConfiguration">
                                             <bool key="isElement" value="NO"/>
                                         </accessibility>
@@ -627,7 +609,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="247" verticalHuggingPriority="247" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="cqN-Sb-ZzT" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="482" width="320" height="86"/>
+                                <rect key="frame" x="0.0" y="475.5" width="320" height="92.5"/>
                                 <subviews>
                                     <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fMG-w9-XfX" customClass="RoundedRectView" customModule="Peeree" customModuleProvider="target">
                                         <rect key="frame" x="128" y="6" width="64" height="6"/>
@@ -730,14 +712,14 @@
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                         <dataDetectorType key="dataDetectorTypes" phoneNumber="YES"/>
                                     </textView>
-                                    <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="SIgnature" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eGm-zA-15S">
+                                    <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" ambiguous="YES" text="SIgnature" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eGm-zA-15S">
                                         <rect key="frame" x="20" y="-17" width="280" height="31.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" name="BradleyHandITCTT-Bold" family="Bradley Hand" pointSize="25"/>
                                         <color key="textColor" systemColor="systemIndigoColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
+                                    <label hidden="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" ambiguous="YES" text="PeerID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9C-MG-2LW">
                                         <rect key="frame" x="20" y="22.5" width="280" height="14.5"/>
                                         <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" weight="thin" pointSize="12"/>
@@ -814,10 +796,7 @@
                         <outlet property="peerIDLabel" destination="i9C-MG-2LW" id="bDX-sF-YUh"/>
                         <outlet property="picturePinStackView" destination="DbU-Tc-UDS" id="yKz-Dn-tHv"/>
                         <outlet property="pinAndTagsStackView" destination="ega-fn-5Me" id="4Rz-UR-oNd"/>
-                        <outlet property="pinButton" destination="59x-ms-KVN" id="MZ5-sJ-KEZ"/>
-                        <outlet property="pinCircleView" destination="SM8-m1-KQC" id="dlu-s4-hGI"/>
-                        <outlet property="pinIndicator" destination="sY1-cI-JZt" id="16I-2M-mZB"/>
-                        <outlet property="pinWidthConstraint" destination="nhQ-EY-bws" id="StT-kz-aUz"/>
+                        <outlet property="pinButton" destination="HFc-7O-6xq" id="Xty-IY-jXU"/>
                         <outlet property="portraitBottomConstraint" destination="pZU-oO-ghk" id="yve-UP-j4W"/>
                         <outlet property="portraitEffectView" destination="pRr-uE-8dC" id="Cum-CT-DKu"/>
                         <outlet property="portraitImageView" destination="S6f-fD-kvO" id="n95-5P-stf"/>
@@ -827,6 +806,7 @@
                         <outlet property="reportButton" destination="UHa-Bh-87N" id="ESP-06-EpT"/>
                         <outlet property="signatureLabel" destination="eGm-zA-15S" id="0rL-6o-hoz"/>
                         <outlet property="signatureToBioConstraint" destination="NHL-Rh-auq" id="e7w-Lj-Ujp"/>
+                        <outlet property="tagsStackView" destination="29q-7d-1Xd" id="JDd-15-npf"/>
                         <outlet property="traitsButton" destination="Y5H-8y-Wvq" id="18k-Kv-kaq"/>
                         <segue destination="HBT-0P-XDL" kind="unwind" identifier="unwindToBrowseViewController" unwindAction="unwindToBrowseViewController:" id="pHU-MH-iZf"/>
                     </connections>
@@ -1633,19 +1613,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="396"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="401"/>
                                 <connections>
                                     <segue destination="XqI-Aj-cpS" kind="embed" id="QbC-f3-IGm"/>
                                 </connections>
                             </containerView>
                             <view contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="Lkr-13-Jfz">
-                                <rect key="frame" x="0.0" y="396" width="320" height="45"/>
+                                <rect key="frame" x="0.0" y="401" width="320" height="40"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="pns-Vh-qyy">
-                                        <rect key="frame" x="8" y="4" width="304" height="35"/>
+                                        <rect key="frame" x="8" y="4" width="304" height="30"/>
                                         <subviews>
                                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="7Il-00-It7" customClass="GrowingTextView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="283" height="35"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="283" height="30"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                                 <color key="textColor" systemColor="labelColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
@@ -1665,7 +1645,7 @@
                                                 </connections>
                                             </textView>
                                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="291" y="0.0" width="13" height="35"/>
+                                                <rect key="frame" x="291" y="0.0" width="13" height="30"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                                 <state key="normal">
                                                     <imageReference key="image" image="paperplane.circle.fill" symbolScale="large"/>
@@ -1925,8 +1905,7 @@
         <image name="PersonIcon" width="30" height="30"/>
         <image name="PersonIconFilled" width="30" height="30"/>
         <image name="PinButtonTemplatePressed" width="1024" height="1024"/>
-        <image name="PinTemplate" width="1024" height="1024"/>
-        <image name="PinTemplatePressed" width="1024" height="1024"/>
+        <image name="PinSymbol" width="13" height="17"/>
         <image name="PortraitPlaceholder" width="512" height="512"/>
         <image name="PortraitUnavailable" width="512" height="512"/>
         <image name="ReadIconSocial" width="30" height="30"/>

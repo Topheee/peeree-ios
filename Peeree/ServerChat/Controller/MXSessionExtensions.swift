@@ -144,7 +144,7 @@ extension MXSession {
 		}
 	}
 
-	/// Retrieves an already joined or invited room with `peerID`.
+	/// Retrieves an already joined or invited room with `userId`.
 	func getJoinedOrInvitedRoom(with userId: String, bothJoined: Bool, _ completion: @escaping (MXRoom?) -> Void) {
 		// unfortunately, due shitty circumstance we may have several direct rooms with a person and MXSession.directJoinedRoom does not always return a room where both joined, so we cannot use it here
 		guard let directRooms = self.directRooms?[userId]?.compactMap({ self.room(withRoomId: $0) }) else {

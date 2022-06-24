@@ -18,11 +18,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	@IBOutlet private weak var ageLabel: UILabel!
 	@IBOutlet private weak var genderLabel: UILabel!
 	@IBOutlet private weak var pinButton: UIButton!
-	@IBOutlet private weak var pinCircleView: UIView!
 	@IBOutlet private weak var traitsButton: UIButton!
 	@IBOutlet private weak var gradientView: GradientView!
-	@IBOutlet private weak var pinIndicator: UIActivityIndicatorView!
-	@IBOutlet private weak var findButtonItem: UIBarButtonItem!
 	@IBOutlet private weak var peerIDLabel: UILabel!
 	@IBOutlet private weak var bioTextView: UITextView!
 	@IBOutlet private weak var bioHeadingLabel: UILabel!
@@ -31,11 +28,11 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	
 	@IBOutlet private weak var ageTagView: RoundedRectView!
 	@IBOutlet private weak var genderTagView: RoundedRectView!
+	@IBOutlet private weak var tagsStackView: UIStackView!
 	@IBOutlet private weak var pinAndTagsStackView: UIStackView!
 
 	@IBOutlet private var bioHeightZeroConstraint: NSLayoutConstraint!
 	@IBOutlet private weak var signatureToBioConstraint: NSLayoutConstraint!
-	@IBOutlet private weak var pinWidthConstraint: NSLayoutConstraint!
 
 	@IBOutlet weak var portraitTrailingConstraint: NSLayoutConstraint!
 	@IBOutlet weak var portraitLeadingConstraint: NSLayoutConstraint!
@@ -45,7 +42,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 	// properties for the biography animation
 	private var bioAnimationTranslationY: CGFloat = 0.0
-	private var animationStateWhenBegan = BiographyViewState(wasCompact: false, hideBioContent: false, wasAnimatingGradient: false, oldBackgroundColor: nil) // just initialized with something
+	private var animationStateWhenBegan = BiographyViewState(wasCompact: false, hideBioContent: false, wasAnimatingGradient: false) // just initialized with something
 	private var _bioAnimator: Any!
 	@available(iOS 10.0, *)
 	private var bioAnimator: UIViewPropertyAnimator? { return _bioAnimator as? UIViewPropertyAnimator }
@@ -103,16 +100,12 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let wasCompact: Bool
 		let hideBioContent: Bool
 		let wasAnimatingGradient: Bool
-		let oldBackgroundColor: UIColor?
 	}
 
 	/// Preparse the view for the biography animation.
 	private func rampUpBiographyAnimation() -> BiographyViewState {
 		let wasCompact = picturePinStackView.axis == .horizontal
-		let oldBackgroundColor = pinCircleView.backgroundColor
 		let hideBioContent = hideBioContent(for: wasCompact ? .vertical : .horizontal)
-		pinCircleView.backgroundColor = nil
-		pinCircleView.isOpaque = false
 		bioTextView.isHidden = false
 		signatureLabel.isHidden = false
 		peerIDLabel.isHidden = false
@@ -123,17 +116,14 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		portraitImageView.pauseUpdates = true
 
 		view.layoutIfNeeded()
-		return BiographyViewState(wasCompact: wasCompact, hideBioContent: hideBioContent, wasAnimatingGradient: wasAnimatingGradient, oldBackgroundColor: oldBackgroundColor)
+		return BiographyViewState(wasCompact: wasCompact, hideBioContent: hideBioContent, wasAnimatingGradient: wasAnimatingGradient)
 	}
 
 	private func finalizeBiographyAnimation(from state: BiographyViewState) {
-		pinCircleView.isOpaque = true
-		pinCircleView.backgroundColor = state.oldBackgroundColor
 		bioTextView.isHidden = state.hideBioContent
 		peerIDLabel.isHidden = state.hideBioContent
 		bioTextView.superview?.setNeedsDisplay()
 		// reset animation because frame size changed
-		animatePinButton()
 		gradientView.animateGradient = state.wasAnimatingGradient
 
 		// restart circle updates and update to the latest state
@@ -147,7 +137,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 		picturePinStackView.axis = wasCompact ? .vertical : .horizontal
 		picturePinStackView.alignment = wasCompact ? .center : .fill
-		pinAndTagsStackView.spacing = wasCompact ? 16.0 : 8.0
+//		pinAndTagsStackView.spacing = wasCompact ? 16.0 : 8.0
+		tagsStackView.axis = wasCompact ? .horizontal : .vertical
 
 		portraitTrailingConstraint.constant = wasCompact ? 16.0 : 6.0
 		portraitLeadingConstraint.constant = wasCompact ? 16.0 : 6.0
@@ -164,7 +155,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	private func animateBiographyProperties(from state: BiographyViewState) {
 		bioTextView.alpha = state.hideBioContent ? 0.0 : 1.0
 		peerIDLabel.alpha = state.hideBioContent ? 0.0 : 1.0
-		updatePinCircleWidth()
 	}
 
 	@available(iOS 10.0, *)
@@ -203,7 +193,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 			signatureAnimator?.isReversed = reverse
 			let oldState = self.animationStateWhenBegan
 			bioAnimator?.addCompletion { _ in
-				let reversedState = BiographyViewState(wasCompact: !oldState.wasCompact, hideBioContent: !oldState.hideBioContent, wasAnimatingGradient: oldState.wasAnimatingGradient, oldBackgroundColor: oldState.oldBackgroundColor)
+				let reversedState = BiographyViewState(wasCompact: !oldState.wasCompact, hideBioContent: !oldState.hideBioContent, wasAnimatingGradient: oldState.wasAnimatingGradient)
 				let completionState = reverse ? reversedState : oldState
 				if reverse {
 					// we need to set the constraints back
@@ -247,7 +237,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		pinButton.setImage(#imageLiteral(resourceName: "PinButtonTemplatePressed"), for: [.disabled, .selected])
+		pinButton?.setTitle(NSLocalizedString("Pinned", comment: "Button title in 'selected' state"), for: .selected)
 		if #available(iOS 14, *) {
 			// SF-Symbols work
 		} else {
@@ -265,7 +255,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 				  let strongSelf = self, strongSelf.peerID == peerID else { return }
 
 			strongSelf.updateState()
-			strongSelf.animatePinButton()
 		}
 		
 		notificationObservers.append(PeeringController.Notifications.peerAppeared.addObserver(usingBlock: simpleStateUpdate))
@@ -290,8 +279,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		notificationObservers.append(PeerViewModel.NotificationName.biographyLoaded.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))
-
-		pinCircleView.layer.borderColor = AppTheme.tintColor.cgColor
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -319,8 +306,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		}
 
 		gradientView.animateGradient = idModel.pinState == .pinMatch
-
-		animatePinButton()
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {
@@ -335,14 +320,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		gradientView.animateGradient = false
 		portraitImageView.loadProgress = nil
 		portraitImageView.image = nil
-		
-		// reset position from animation, if the user slides back in
-		clearPinAnimations()
-	}
-
-	override func viewDidLayoutSubviews() {
-		super.viewDidLayoutSubviews()
-		updatePinCircleWidth()
 	}
 
 	// MARK: ProgressManagerDelegate
@@ -392,12 +369,12 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let state = model
 		let info = model.info
 
-		updatePinCircleWidth()
-		pinButton.isHidden = idState.pinState == .pinning || idState.pinState == .unpinning
-		pinButton.isEnabled = !state.peerID.isLocalPeer
+		let pinActionInProgress = idState.pinState == .pinning || idState.pinState == .unpinning
+		if #available(iOS 15.0, *) {
+			pinButton.configuration?.showsActivityIndicator = pinActionInProgress
+		}
+		pinButton.isEnabled = !state.peerID.isLocalPeer && !pinActionInProgress
 		pinButton.isSelected = idState.pinState.isPinned
-		pinIndicator.isHidden = !pinButton.isHidden
-		findButtonItem?.isEnabled = idState.pinState == .pinMatch
 		peerIDLabel.text = model.peerID.uuidString
 		bioTextView.text = model.biography
 		hideOrShowPinRelatedViews()
@@ -419,52 +396,5 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		if #available(iOS 11.0, *) {
 			portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
 		}
-	}
-
-	private func updatePinCircleWidth() {
-		guard let circleView = self.pinCircleView else { return }
-		circleView.layer.borderWidth = circleView.bounds.width * 0.03
-		circleView.layer.cornerRadius = circleView.bounds.width / 2.0
-	}
-
-	@discardableResult private func clearPinAnimations() -> CFTimeInterval? {
-		let beginTime = pinCircleView?.layer.animation(forKey: "cornerRadius")?.beginTime
-		pinCircleView?.layer.removeAllAnimationsInSublayers()
-		pinButton?.layer.removeAllAnimationsInSublayers()
-		return beginTime
-	}
-
-	// TODO merge with WelcomeViewController.animatePinButton()
-	private func animatePinButton() {
-		guard !UIAccessibility.isReduceMotionEnabled, !idModel.pinState.isPinned,
-			  let pinView = pinButton, let circleView = pinCircleView else { return }
-
-		let duration = 1.2
-		let damping: CGFloat = 1.0
-		let initialVelocity: CGFloat = 1.0
-		if let previousBeginTime = clearPinAnimations() {
-			let absolutePreviousTime = circleView.layer.convertTime(previousBeginTime, to: nil)
-			let alreadyDone = duration - fmod(absolutePreviousTime, duration)
-			circleView.layer.timeOffset = fmod(circleView.layer.timeOffset + alreadyDone, duration)
-		}
-
-		self.updatePinCircleWidth()
-
-		// how much the circle is scaled down
-		let scaleFactor: CGFloat = -0.05
-		let circleFrame = circleView.frame
-
-		circleView.layer.cornerRadius = circleView.frame.width / 5.0
-		pinView.superview?.setNeedsLayout()
-		pinView.superview?.layoutIfNeeded()
-		UIView.animate(withDuration: duration, delay: 0.0, usingSpringWithDamping: damping, initialSpringVelocity: initialVelocity, options: [.autoreverse, .allowUserInteraction, .repeat, .curveEaseInOut]) {
-			pinView.frame = pinView.frame.offsetBy(dx: 0.0, dy: -circleFrame.width * scaleFactor)
-			circleView.layer.cornerRadius = circleView.frame.width / 2.0
-		} completion: { (completed) in
-			// ignored
-		}
-
-//		let animation = CASpringAnimation(keyPath: #keyPath(CALayer.cornerRadius))
-//		anim
 	}
 }

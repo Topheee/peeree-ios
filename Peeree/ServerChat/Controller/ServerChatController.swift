@@ -68,7 +68,10 @@ final class ServerChatController: ServerChat {
 	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
 	func logout(_ completion: @escaping (Error?) -> Void) {
-		self.session.extensiveLogout(completion)
+		session.extensiveLogout { error in
+			self.close()
+			completion(error)
+		}
 	}
 
 	/// Removes the server chat account permanently.
@@ -260,7 +263,7 @@ final class ServerChatController: ServerChat {
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = self.userId
-		let lastReadDate = lastReads[peerID] ?? Date.distantFuture
+		let lastReadDate = lastReads[peerID] ?? Date.distantPast
 
 		// these are all messages that have been sent while we where offline
 		var catchUpMissedMessages = [Transcript]()
@@ -337,6 +340,7 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
+	/// Removes all cached data related to `room` and closes (removes all listeners) it.
 	private func cleanup(room: MXRoom) {
 		room.close()
 		roomTimelines.removeValue(forKey: room.roomId)?.destroy()
@@ -490,75 +494,6 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
-	/// Initial setup routine; must be called on `AccountController.dQueue`!
-	private func handleInitialRoom(_ room: MXRoom, ac: AccountController) {
-		guard let theirUserId = room.directUserId else {
-			elog("Room \(room.roomId ?? "<unknown>") is either not direct or the userId is not loaded.")
-			return
-		}
-		guard let peerID = peerIDFrom(serverChatUserId: theirUserId) else {
-			elog("Server chat userId \(theirUserId) is not a PeerID.")
-			return
-		}
-
-		ac.updatePinStatus(of: peerID, force: false) { pinState in
-			guard pinState == .pinMatch else {
-				self.forget(room: room) { error in
-					error.map { dlog("forgetting room with peer \(peerID.uuidString) when we have no match failed: \($0)") }
-				}
-				return
-			}
-			guard let membership = room.summary?.membership else {
-				flog("can't get membership of room \(room.roomId ?? "<nil>") with peer \(peerID.uuidString)")
-				return
-			}
-
-			switch membership {
-			case .invite:
-				self.join(roomId: room.roomId, with: peerID)
-
-			case .join:
-				room.members { membersResponse in
-					guard let _members = membersResponse.value, let members = _members else {
-						flog("Failed to get members of \(room): \(membersResponse.error?.localizedDescription ?? "<nil>").")
-						return
-					}
-
-					guard let theirMember = members.members.first(where: { $0.userId == theirUserId}) else {
-						wlog("They are not a member of room \(room)")
-						self.forget(room: room) { error in
-							error.map { dlog("forgetting room with peer \(peerID.uuidString) when they are not part of the room failed: \($0)") }
-						}
-						return
-					}
-
-					switch theirMember.membership {
-					case .unknown, .invite, .join:
-						self.listenToEvents(in: room, with: peerID)
-					case .leave, .ban:
-						self.refreshPinStatus(of: peerID, force: true) {
-							wlog("The other peer \(peerID.uuidString) left the room for no reason.")
-							room.invite(.userId(theirUserId)) { response in
-								// TODO: this always fails with "sender [us] not in room"
-								response.error.map { dlog("inviting peer \(peerID.uuidString) back into room after they left failed: \($0)") }
-							}
-						}
-					@unknown default:
-						self.listenToEvents(in: room, with: peerID)
-					}
-				}
-
-			case .leave, .ban, .unknown:
-				// ignored
-				break
-
-			@unknown default:
-				// ignored
-				break
-			}
-		}
-	}
-
 	/// Initial setup routine
 	private func handleInitialRooms() {
 		guard let directChatPeerIDs = session.directRooms?.keys.compactMap({ peerIDFrom(serverChatUserId: $0) }) else { return }
@@ -628,6 +563,7 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
+	/// Parses `event` and informs the rest of the app with the contents.
 	private func process(messageEvent event: MXEvent) {
 		guard let peerID = roomIdsListeningOn[event.roomId ?? ""] else { return }
 

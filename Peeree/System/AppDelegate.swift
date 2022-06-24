@@ -99,6 +99,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		} else {
 			UIApplication.shared.cancelAllLocalNotifications()
 		}
+
+		UIApplication.shared.applicationIconBadgeNumber = 0
 	}
 
 	/**
@@ -122,7 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
 	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
 		elog("Remote notifications are unavailable: \(error.localizedDescription)")
-		InAppNotificationController.display(error: error, localizedTitle: "")
+		InAppNotificationController.display(error: error, localizedTitle: "Notification Registration Failed")
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -135,7 +137,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 					// ignored
 					break
 				default:
-					InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "Remote Notification Register Failed")
+					InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "Remote Notification Registration Failed")
 				}
 
 			case .success(let serverChatController):

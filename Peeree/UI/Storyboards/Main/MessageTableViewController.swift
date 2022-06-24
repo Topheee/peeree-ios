@@ -53,12 +53,10 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	// MARK: - PeerMessagingObserver
 
 	func messageQueued() {
-		markRead()
 		appendTranscript()
 	}
 
 	func messageReceived() {
-		markRead()
 		appendTranscript()
 	}
 	func messageSent() { appendTranscript() }
@@ -69,6 +67,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	// Helper method for inserting a sent/received message into the data source and reload the view.
 	// Make sure you call this on the main thread
 	private func appendTranscript() {
+		markRead()
 		self.tableView.reloadData()
 
 		// Scroll to the bottom so we focus on the latest message
