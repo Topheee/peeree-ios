@@ -148,7 +148,7 @@ final class InAppNotificationViewController: UIViewController {
 	
 	static func presentGlobally(title: String, message: String, isNegative: Bool = true, tapAction: (() -> Void)? = nil) {
 		DispatchQueue.main.async {
-			guard let topVC = UIApplication.shared.keyWindow?.rootViewController else { return }
+			guard let topVC = UIApplication.shared.windows.first?.rootViewController else { return }
 			let vc = InAppNotificationViewController(title: title, message: message, isNegative: isNegative, tapAction: tapAction)
 			vc.present(in: topVC.presentedViewController ?? topVC, duration: 5.0 + Double(message.count) / 42.0)
 		}

@@ -100,7 +100,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        NSLog("ERROR: session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
+        elog("session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
     }
 }
 
@@ -113,11 +113,16 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
     private lazy var sessionManager: URLSession = {
         let configuration = URLSessionConfiguration.default
 //        these are set for each request: configuration.httpAdditionalHeaders = buildHeaders()
-//        configuration.httpShouldUsePipelining = true
-        configuration.timeoutIntervalForRequest = 5.0
+        configuration.httpShouldUsePipelining = false
+        configuration.timeoutIntervalForRequest = 10.0
         configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
+        configuration.httpCookieAcceptPolicy = .never
+        configuration.httpShouldSetCookies = false
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        configuration.httpMaximumConnectionsPerHost = 1
 //        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-        return URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)
+        return URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
     }()
 
     /**
@@ -208,7 +213,7 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
                             // https://github.com/swagger-api/swagger-parser/pull/34
                             completion(Response(response: httpResponse, body: ("" as! T)), nil)
                         } else {
-                            NSLog("ERROR: parsing server response failed (\(error))")
+                            elog("parsing server response failed (\(error))")
                             completion(nil, ErrorResponse.parseError(data))
                         }
                     }

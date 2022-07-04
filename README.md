@@ -4,6 +4,7 @@ This project contains the source code of the [Peeree](https://www.peeree.de/) iO
 
 ## Building the App
 
+For the *Peeree* target in the Xcode project's settings, change the developer profile to your own profile and change the `Bundle Identifier` as well.
 Simply open `Peeree.xcodeproj` using Xcode and hit `build`.
 
 ## Dependencies
@@ -17,4 +18,4 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-Copyright © 2020 Christopher Kobusch. All rights reserved.
+Copyright © 2021 Christopher Kobusch. All rights reserved.

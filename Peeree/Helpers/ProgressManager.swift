@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol ProgressManagerDelegate: class {
+public protocol ProgressManagerDelegate: AnyObject {
 	func progressDidUpdate(_ progress: Progress)
 	func progressDidCancel(_ progress: Progress)
 	func progressDidPause(_ progress: Progress)

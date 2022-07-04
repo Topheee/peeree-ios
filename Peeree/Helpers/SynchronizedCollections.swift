@@ -120,6 +120,13 @@ final public class SynchronizedDictionary<Key: Hashable, Value> {
 			self.dictionary.removeAll()
 		}
 	}
+
+	/// calls completion with the value that was replaced, or nil if a new key-value pair was added.
+	public func updateValueAsync(_ value: Value, forKey key: Key, completion: @escaping (Value?) -> ()) {
+		accessQueue.async {
+			completion(self.dictionary.updateValue(value, forKey: key))
+		}
+	}
 }
 
 // we could implement CollectionType, SequenceType here, but nope

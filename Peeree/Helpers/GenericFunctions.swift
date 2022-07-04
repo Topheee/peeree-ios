@@ -12,13 +12,41 @@ import CoreGraphics
 // MARK: - Functions
 
 func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
+	#if TESTING
+	PeereeTests.UserDefaultsMock.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	#else
 	UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	#endif
 }
 
 func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
+	#if TESTING
+	guard let data = UserDefaultsMock.standard.object(forKey: forKey) as? Data else { return nil }
+	#else
 	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+	#endif
 	
 	return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
+}
+
+/// Encode `object` and put the resulting encoded `Data` value into `UserDefaults`.
+func archiveInUserDefs<T: Encodable>(_ object: T, forKey: String) throws {
+	#if TESTING
+	PeereeTests.UserDefaultsMock.standard.set(PropertyListEncoder().encode(object), forKey: forKey)
+	#else
+	UserDefaults.standard.set(try PropertyListEncoder().encode(object), forKey: forKey)
+	#endif
+}
+
+/// Read `Data` from `UserDefaults`, decode it and return it.
+func unarchiveFromUserDefs<T: Decodable>(_ type: T.Type, _ forKey: String) throws -> T? {
+	#if TESTING
+	guard let data = UserDefaultsMock.standard.object(forKey: forKey) as? Data else { return nil }
+	#else
+	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
+	#endif
+
+	return try PropertyListDecoder().decode(type, from: data)
 }
 
 /// create a plist and add it to copied resources. In the file, make the root entry to an array and add string values to it
@@ -27,36 +55,55 @@ func arrayFromBundle(name: String) -> [String]? {
 	return NSArray(contentsOf: url) as? [String]
 }
 
-/// this does nothing else than throwing an exception
+/// Creates an `NSError` with the main bundle's `bundleIdentifier` as `domain`.
 func createApplicationError(localizedDescription: String, code: Int = -1) -> Error {
-	return NSError(domain: "Peeree", code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
+	return NSError(domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath, code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
 }
 
+/// Creates an unrecoverable error describing an unexpected nil value.
+func unexpectedNilError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)
+}
 
-//"Swift 2" - not working
-///// Objective-C __bridge cast
-//func bridge<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
-//	return UnsafePointer(Unmanaged.passUnretained(obj).toOpaque())
-//	// return unsafeAddressOf(obj) // ***
-//}
-//
-///// Objective-C __bridge cast
-//func bridge<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
-//	return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeUnretainedValue()
-//	// return unsafeBitCast(ptr, T.self) // ***
-//}
-//
-///// Objective-C __bridge_retained equivalent. Casts the object pointer to a void pointer and retains the object.
-//func bridgeRetained<T : AnyObject>(_ obj : T) -> UnsafeRawPointer {
-//	return UnsafePointer(Unmanaged.passRetained(obj).toOpaque())
-//}
-//
-///// Objective-C __bridge_transfer equivalent. Converts the void pointer back to an object pointer and consumes the retain.
-//func bridgeTransfer<T : AnyObject>(_ ptr : UnsafeRawPointer) -> T {
-//	return Unmanaged<T>.fromOpaque(OpaquePointer(ptr)).takeRetainedValue()
-//}
+/// Creates an unrecoverable error describing an unexpected enum value.
+func unexpectedEnumValueError() -> Error {
+	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
+}
 
-//Swift 1.2
+/// Creates an `Error` based on the value of `errno`.
+func createSystemError() -> Error? {
+	let code = errno
+	guard let errorCString = strerror(code), let errorString = String(utf8String: errorCString) else { return nil }
+
+	return createApplicationError(localizedDescription: errorString, code: Int(code))
+}
+
+func errorMessage(for status: OSStatus) -> String {
+	let fallbackMessage = "OSStatus \(status)"
+	let msg: String
+	#if os(OSX)
+		msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
+	#else
+		if #available(iOS 11.3, *) {
+			msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
+		} else {
+			perror(nil)
+			msg = fallbackMessage
+		}
+	#endif
+	return msg
+}
+
+func generateRandomData(length: Int) throws -> Data {
+	var nonce = Data(count: length)
+	let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, length, $0) })
+	if status == errSecSuccess {
+		return nonce
+	} else {
+		throw createApplicationError(localizedDescription: errorMessage(for: status), code: Int(status))
+	}
+}
+
 /// Objective-C __bridge cast
 func bridge<T : AnyObject>(obj : T) -> UnsafeRawPointer {
 	return UnsafeRawPointer(Unmanaged.passUnretained(obj).toOpaque())
@@ -79,6 +126,28 @@ func bridgeTransfer<T : AnyObject>(ptr : UnsafeRawPointer) -> T {
 
 
 // MARK: - Extensions
+
+extension Result where Failure: Error {
+	/// Returns the encapsulated `Failure` error, if any.
+	var error: Failure? {
+		switch self {
+		case .failure(let error):
+			return error
+		case .success(_):
+			return nil
+		}
+	}
+
+	/// Returns the encapsulated `Success` value, if any.
+	var value: Success? {
+		switch self {
+		case .failure(_):
+			return nil
+		case .success(let value):
+			return value
+		}
+	}
+}
 
 extension CGRect {
 	var center: CGPoint {
@@ -161,6 +230,10 @@ extension String {
 		let leftEnd = index(endIndex, offsetBy: -count, limitedBy: startIndex) ?? startIndex
 		return String(self[leftEnd...])
 	}
+	
+	var middleIndex: String.Index {
+		return index(startIndex, offsetBy: count / 2, limitedBy: endIndex) ?? endIndex
+	}
 }
 
 // Hex string parsing, e. g. useful for interaction with PostgreSQL's bytea type
@@ -183,9 +256,7 @@ extension Data {
 			self.append(num)
 		}
 	}
-}
 
-extension Data {
 	struct EmptyError: Error {}
 	/**
 	replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
@@ -244,5 +315,55 @@ extension CGColor {
 			invertedComponents[index] = 1.0 - invertedComponents[index]
 		}
 		return CGColor(colorSpace: colorSpace!, components: invertedComponents)
+	}
+}
+
+extension SecKey {
+	static func check(status: OSStatus, localizedError: String) throws {
+		guard status != errSecSuccess else { return }
+
+		let msg = errorMessage(for: status)
+		dlog("OSStatus \(status) check failed: \(msg)")
+		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
+	}
+}
+
+
+import ImageIO
+import CoreServices
+extension CGImage {
+	static func from(url: URL) throws -> CGImage? {
+		guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data source", code: -502)
+		}
+		return CGImageSourceCreateImageAtIndex(src, 0, nil)
+	}
+
+	func jpgData(compressionQuality: CGFloat) throws -> Data {
+		let jpgDataBuffer = NSMutableData()
+
+		guard let dest = CGImageDestinationCreateWithData(jpgDataBuffer, "public.jpeg" as CFString /* kUTTypeJPEG */, 1, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG data destination", code: -503)
+		}
+		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)
+		CGImageDestinationAddImage(dest, self, nil)
+
+		guard CGImageDestinationFinalize(dest) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -504)
+		}
+
+		return jpgDataBuffer as Data
+	}
+
+	func save(to url: URL, compressionQuality: CGFloat) throws {
+		guard let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.jpeg" as CFString /* kUTTypeJPEG */, 1, nil) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to create JPEG URL destination", code: -503)
+		}
+		CGImageDestinationSetProperties(dest, [kCGImageDestinationLossyCompressionQuality : NSNumber(value: Float(compressionQuality))] as CFDictionary)
+		CGImageDestinationAddImage(dest, self, nil)
+
+		guard CGImageDestinationFinalize(dest) else {
+			throw createApplicationError(localizedDescription: "ERROR: failed to finalize image destination", code: -504)
+		}
 	}
 }

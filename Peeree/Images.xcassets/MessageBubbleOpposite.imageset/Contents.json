@@ -1,140 +1,140 @@
 {
   "images" : [
     {
-      "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
-        "cap-insets" : {
-          "bottom" : 17,
-          "top" : 17,
-          "right" : 16,
-          "left" : 28
-        }
-      },
-      "idiom" : "universal",
       "filename" : "MessageBubbleOpposite.png",
-      "scale" : "1x"
-    },
-    {
+      "idiom" : "universal",
       "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
         "cap-insets" : {
           "bottom" : 17,
-          "top" : 17,
+          "left" : 28,
           "right" : 16,
-          "left" : 28
-        }
+          "top" : 17
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
       },
-      "idiom" : "universal",
-      "filename" : "MessageBubbleOppositeDark.png",
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
       "scale" : "1x"
     },
     {
-      "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
-        "cap-insets" : {
-          "bottom" : 34,
-          "top" : 34,
-          "right" : 33,
-          "left" : 57
-        }
-      },
-      "idiom" : "universal",
-      "filename" : "MessageBubbleOpposite@2x.png",
-      "scale" : "2x"
-    },
-    {
-      "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
-        "cap-insets" : {
-          "bottom" : 34,
-          "top" : 33,
-          "right" : 32,
-          "left" : 56
-        }
-      },
-      "idiom" : "universal",
-      "filename" : "MessageBubbleOppositeDark@2x.png",
       "appearances" : [
         {
           "appearance" : "luminosity",
           "value" : "dark"
         }
       ],
+      "filename" : "MessageBubbleOppositeDark.png",
+      "idiom" : "universal",
+      "resizing" : {
+        "cap-insets" : {
+          "bottom" : 17,
+          "left" : 28,
+          "right" : 16,
+          "top" : 17
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
+      },
+      "scale" : "1x"
+    },
+    {
+      "filename" : "MessageBubbleOpposite@2x.png",
+      "idiom" : "universal",
+      "resizing" : {
+        "cap-insets" : {
+          "bottom" : 34,
+          "left" : 57,
+          "right" : 33,
+          "top" : 34
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
+      },
       "scale" : "2x"
     },
     {
-      "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
-        "cap-insets" : {
-          "bottom" : 51,
-          "top" : 50,
-          "right" : 48,
-          "left" : 84
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
         }
-      },
+      ],
+      "filename" : "MessageBubbleOppositeDark@2x.png",
       "idiom" : "universal",
+      "resizing" : {
+        "cap-insets" : {
+          "bottom" : 34,
+          "left" : 56,
+          "right" : 32,
+          "top" : 33
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
+      },
+      "scale" : "2x"
+    },
+    {
       "filename" : "MessageBubbleOpposite@3x.png",
+      "idiom" : "universal",
+      "resizing" : {
+        "cap-insets" : {
+          "bottom" : 50,
+          "left" : 84,
+          "right" : 48,
+          "top" : 50
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
+      },
       "scale" : "3x"
     },
     {
-      "resizing" : {
-        "mode" : "9-part",
-        "center" : {
-          "mode" : "tile",
-          "width" : 1,
-          "height" : 1
-        },
-        "cap-insets" : {
-          "bottom" : 51,
-          "top" : 50,
-          "right" : 48,
-          "left" : 84
-        }
-      },
-      "idiom" : "universal",
-      "filename" : "MessageBubbleOppositeDark@3x.png",
       "appearances" : [
         {
           "appearance" : "luminosity",
           "value" : "dark"
         }
       ],
+      "filename" : "MessageBubbleOppositeDark@3x.png",
+      "idiom" : "universal",
+      "resizing" : {
+        "cap-insets" : {
+          "bottom" : 50,
+          "left" : 84,
+          "right" : 48,
+          "top" : 50
+        },
+        "center" : {
+          "height" : 1,
+          "mode" : "tile",
+          "width" : 1
+        },
+        "mode" : "9-part"
+      },
       "scale" : "3x"
     }
   ],
   "info" : {
-    "version" : 1,
-    "author" : "xcode"
+    "author" : "xcode",
+    "version" : 1
   }
 }
