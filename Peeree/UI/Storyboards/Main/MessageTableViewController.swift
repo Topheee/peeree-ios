@@ -37,7 +37,11 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+#if SHOWCASE
+		return 2
+#else
 		return model.transcripts.count
+#endif
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -46,7 +50,16 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 			return UITableViewCell()
 		}
 
+#if SHOWCASE
+		switch indexPath.row {
+		case 0:
+			cell.set(transcript: Transcript(direction: .send, message: NSLocalizedString("Hey, I really like your moves! Wanna take a break together at the bar?", comment: "Showcase text message"), timestamp: Date()))
+		default:
+			cell.set(transcript: Transcript(direction: .receive, message: NSLocalizedString("Sure, meet me there!", comment: "Showcase text message"), timestamp: Date()))
+		}
+#else
 		cell.set(transcript: model.transcripts[indexPath.row])
+#endif
 		return cell
 	}
 

@@ -10,4 +10,4 @@ NSPhotoLibraryUsageDescription = "Your photo library is used to choose a portrai
 NSMotionUsageDescription = "The accelerator sensor is used to improve location calculations.";
 NSBluetoothPeripheralUsageDescription = "Bluetooth is used to connect to other Peeree users around you. Nothing is shared while you are offline.";
 NSBluetoothAlwaysUsageDescription = "Bluetooth is used to connect to other Peeree users around you. Nothing is shared while you are offline.";
-NSCameraUsageDescription = "Take a picture of you to be better recognizable.";
+NSCameraUsageDescription = "Your camera is only used when you take a picture for your profile.";

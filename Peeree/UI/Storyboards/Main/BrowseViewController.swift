@@ -33,13 +33,21 @@ final class BrowseViewController: UITableViewController {
 		for peerArray in table {
 			peerAvailable = peerAvailable || peerArray.count > 0
 		}
+#if SHOWCASE
+		return !peerAvailable
+#else
 		return !peerAvailable || !PeerViewModelController.peering
+#endif
 	}
 	
 	@IBAction func unwindToBrowseViewController(_ segue: UIStoryboardSegue) { }
 
 	@IBAction func toggleNetwork(_ sender: AnyObject) {
+#if SHOWCASE
+		updateCache()
+#else
 		AppDelegate.shared.toggleNetwork(sender)
+#endif
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -117,7 +125,13 @@ final class BrowseViewController: UITableViewController {
 			} else {
 				cell.frame.size.height = tableView.bounds.height - tableView.contentInset.bottom
 			}
+
+#if SHOWCASE
+			cell.setContent(mode: .alone)
+#else
 			cell.setContent(mode: PeerViewModelController.peering ? .alone : .offline)
+#endif
+
 			return cell
 		}
 
@@ -269,6 +283,10 @@ final class BrowseViewController: UITableViewController {
 	
 	private func connectionChangedState(_ nowOnline: Bool) {
 		tableView.reloadData()
+
+#if SHOWCASE
+		networkButton.setTitle(NSLocalizedString("Go Offline", comment: "Toggle to offline mode. Also title in browse view."), for: [])
+#else
 		if nowOnline {
 			networkButton.setTitle(NSLocalizedString("Go Offline", comment: "Toggle to offline mode. Also title in browse view."), for: [])
 			updateCache()
@@ -278,6 +296,8 @@ final class BrowseViewController: UITableViewController {
 			clearViewCache()
 			tableView.reloadData()
 		}
+#endif
+
 		networkButton.setNeedsLayout()
 		tableView.isScrollEnabled = nowOnline
 	}
@@ -317,6 +337,9 @@ final class BrowseViewController: UITableViewController {
 
 	/// Populates `viewCache` from scratch.
 	private func updateCache() {
+#if SHOWCASE
+		let displayedModels = PeerViewModelController.viewModels.values
+#else
 		let now = Date()
 		let cal = Calendar.current as NSCalendar
 		let userPeerID = PeereeIdentityViewModelController.userPeerID
@@ -327,6 +350,8 @@ final class BrowseViewController: UITableViewController {
 			return lastSeenAgo < BrowseViewController.MaxRememberedHours && model.peerID != userPeerID
 		}
 		displayedModels.sort { a, b in a.lastSeen > b.lastSeen }
+#endif
+
 		clearViewCache()
 		for displayedModel in displayedModels {
 			let pinState = PeereeIdentityViewModelController.viewModel(of: displayedModel.peerID).pinState

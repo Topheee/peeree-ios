@@ -112,7 +112,11 @@ final class PinMatchTableViewController: UITableViewController {
 
 	/// Whether `tableView` should display only one cell containing a status info.
 	private var placeholderCellActive: Bool {
+#if SHOWCASE
+		return table.count == 0
+#else
 		return table.count == 0 || !PeerViewModelController.peering
+#endif
 	}
 
 	/// Reference holder to `NotificationCenter` observers.
@@ -122,6 +126,9 @@ final class PinMatchTableViewController: UITableViewController {
 
 	/// Populates `table` from scratch.
 	private func updateCache() {
+#if SHOWCASE
+		table = PeerViewModelController.viewModels.values.map { $0.peerID }
+#else
 		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeerViewModelController.viewModels.values.compactMap { model in
 			guard PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch else { return nil }
 			return (model.peerID, model.transcripts.last?.timestamp, model.lastSeen)
@@ -144,6 +151,7 @@ final class PinMatchTableViewController: UITableViewController {
 		}
 
 		table = pinMatchedPeerViewModels.map { $0.peerID }
+#endif
 
 		self.tableView?.reloadData()
 	}
