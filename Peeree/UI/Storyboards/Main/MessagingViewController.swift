@@ -77,10 +77,13 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
+#if SHOWCASE
+#else
 		guard idModel.pinState == .pinMatch else {
 			unwind()
 			return
 		}
+#endif
 
 		connectionChangedState(PeerViewModelController.peering)
 
@@ -89,11 +92,13 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		chatTableView?.scrollToBottom(animated: true)
 		messageTextView.isEditable = false
 
-		let title = NSLocalizedString("Chat Unavailable", comment: "Title of alert dialog")
 		ServerChatFactory.getOrSetupInstance { instanceResult in
+			let title = NSLocalizedString("Chat Unavailable", comment: "Title of alert dialog")
+
 			switch instanceResult {
 			case .failure(let error):
 				InAppNotificationController.display(serverChatError: error, localizedTitle: title)
+
 			case .success(let serverChat):
 				serverChat.canChat(with: self.peerID) { error in
 					error.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
@@ -111,7 +116,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
 
-		messageTextView.resignFirstResponder()
+		messageTextView?.resignFirstResponder()
 	}
 
 	override func viewDidDisappear(_ animated: Bool) {

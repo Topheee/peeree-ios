@@ -143,7 +143,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		for observer in notificationObservers {
 			NotificationCenter.default.removeObserver(observer)
 		}
-		bioTextView.resignFirstResponder()
+		bioTextView?.resignFirstResponder()
 	}
 	
 	override func viewDidLayoutSubviews() {

@@ -85,6 +85,9 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	}
 
 	@IBAction func pinPeer(_ sender: UIButton) {
+#if SHOWCASE
+		AccountController.NotificationName.pinMatch.post(for: model.peerID)
+#else
 		let mdl = idModel
 		guard !mdl.pinState.isPinned else {
 			AccountController.use { $0.updatePinStatus(of: mdl.id, force: true) }
@@ -93,6 +96,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 		AppDelegate.requestPin(of: peerID)
 		updateState()
+#endif
 	}
 
 	/// The state of the view when biography animation began.
@@ -373,8 +377,15 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		if #available(iOS 15.0, *) {
 			pinButton.configuration?.showsActivityIndicator = pinActionInProgress
 		}
+
+#if SHOWCASE
+		pinButton.isEnabled = true
+		pinButton.isSelected = true
+#else
 		pinButton.isEnabled = !state.peerID.isLocalPeer && !pinActionInProgress
 		pinButton.isSelected = idState.pinState.isPinned
+#endif
+
 		peerIDLabel.text = model.peerID.uuidString
 		bioTextView.text = model.biography
 		hideOrShowPinRelatedViews()

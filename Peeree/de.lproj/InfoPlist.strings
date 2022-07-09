@@ -10,4 +10,4 @@ NSPhotoLibraryUsageDescription = "Deine Fotoalben werden benutzt, um dein Portra
 NSMotionUsageDescription = "Der Bewegungssensor wird zur Verbesserung der Ortung benutzt.";
 NSBluetoothPeripheralUsageDescription = "Bluetooth wird zum Verbinden mit anderen Peeree-Benutzern in deiner Nähe benutzt. Nichts wird geteilt während du offline bist.";
 NSBluetoothAlwaysUsageDescription = "Bluetooth wird zum Verbinden mit anderen Peeree-Benutzern in deiner Nähe benutzt. Nichts wird geteilt während du offline bist.";
-NSCameraUsageDescription = "Nimm ein Foto von dir auf, um besser erkannt zu werden.";
+NSCameraUsageDescription = "Deine Kamera wird nur benutzt, wenn du ein Foto für dein Profil aufnimmst.";

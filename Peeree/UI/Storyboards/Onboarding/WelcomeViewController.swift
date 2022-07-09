@@ -54,8 +54,8 @@ final class WelcomeViewController: UIViewController {
 	}
 	
 	@objc func animatePinButton(timer: Timer?) {
-		UIView.animate(withDuration: 1.0, delay: 0.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.autoreverse, .repeat, .allowUserInteraction], animations: {
-			self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -3.0)
+		UIView.animate(withDuration: 1.5, delay: 2.0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.autoreverse, .repeat, .allowUserInteraction], animations: {
+			self.pinButton.frame = self.pinButton.frame.offsetBy(dx: 0.0, dy: -1.5)
 		}, completion: nil)
 		self.timer = nil
 	}
