@@ -30,7 +30,15 @@ public protocol ServerChat {
 
 /// Server chat informed party.
 public protocol ServerChatDelegate: AnyObject {
+
 	// MARK: Methods
+
+	/// Configuring the Pusher on the server chat server failed.
 	func configurePusherFailed(_ error: Error)
+
+	/// Joining a server chat room failed.
 	func cannotJoinRoom(_ error: Error)
+
+	/// Decrypting an encrypted server chat event failed; call `recreateRoom` to re-create the room (losing all messages).
+	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void)
 }

@@ -139,7 +139,7 @@ extension AppDelegate {
 			alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
 				AccountController.use { $0.pin(idModel.id) }
 			})
-			alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+			alertController.addCancelAction()
 			alertController.preferredAction = retryVerifyAction
 			alertController.present()
 		} else if !PeereeIdentityViewModelController.accountExists {

@@ -92,6 +92,8 @@ final class InAppNotificationController {
 				}
 
 				display(title: localizedTitle, message: String(format: format, name))
+			case .noAccount:
+				display(title: localizedTitle, message: "No server chat account yet.")
 			}
 		}
 	}
