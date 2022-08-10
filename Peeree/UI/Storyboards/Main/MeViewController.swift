@@ -56,9 +56,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 			self.deleteServerChatAccount()
 			AccountController.use { $0.deleteAccount(self.accountActionCompletionHandler) }
 		}))
-		let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
-		alertController.addAction(cancelAction)
-		alertController.preferredAction = cancelAction
+		alertController.preferredAction = alertController.addCancelAction()
 		present(alertController, animated: true, completion: nil)
 	}
 
@@ -73,7 +71,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 			AppDelegate.viewTerms(in: self)
 		}
 		alertController.addAction(viewTermsAction)
-		alertController.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil))
+		alertController.addCancelAction()
 		alertController.preferredAction = createAction
 		alertController.present()
 	}

@@ -28,6 +28,9 @@ public enum ServerChatError: Error {
 	/// Thrown when server chat is used when the `AccountController` singleton does not exist.
 	case identityMissing
 
+	/// Thrown when no server chat account exists yet.
+	case noAccount
+
 	/// Thrown when we are not able to chat with a peer for `reason`.
 	case cannotChat(PeerID, ServerChatCannotChatReason)
 

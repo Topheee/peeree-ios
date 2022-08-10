@@ -436,7 +436,7 @@ final class ServerChatController: ServerChat {
 			case kMXMembershipStringInvite:
 				guard eventUserId == self.userId else {
 					// we are only interested in invites for us
-					ilog("Received invite event from sender other than us.")
+					dlog("Received invite event for other user.")
 					return
 				}
 
@@ -604,9 +604,40 @@ final class ServerChatController: ServerChat {
 
 				self.handleInitialRooms()
 
-//				_ = self.session.listenToEvents { event, direction, customObject in
-//					dlog("event \(event.eventId ?? "<nil>") in room \(event.roomId ?? "<nil>")")
-//				}
+				_ = self.session.listenToEvents { event, direction, customObject in
+					dlog("event \(event.eventId ?? "<nil>") in room \(event.roomId ?? "<nil>")")
+
+					guard let decryptionError = event.decryptionError as? NSError,
+						  let peerID = peerIDFrom(serverChatUserId: event.sender) else { return }
+
+					// Unfortunately, unrecoverable decryption errors may occasionally occur.
+					// For instance, I had the case that the iPhone was in a direct room with an Android and was itself able to send messages, which the Android was able to receive and decrypt.
+					// However, once the Android sent a message, it raised the infamous "UISI" (unknown inbound session id) error on the iPhone's side.
+					// There are numerous reasons for this error and the library authors do not seem to be able to cope with the problem.
+					// See for instance this issue: https://github.com/vector-im/element-web/issues/2996
+
+					// The main problem for us is that the sending device (the Android) did not get any feedback at all that the message could not be decrypted.
+					// Thus from the Android perspective it looks like the message was sent (and received) successfully. THIS IS BAD.
+
+					// I cannot find a way to recover from these UISI errors. And they happened to me before, too.
+					// There is something called [Device Dehydration](https://github.com/uhoreg/matrix-doc/blob/dehydration/proposals/2697-device-dehydration.md), but that seems to cover another purpose.
+					// There is also this (implemented) proposal: https://github.com/uhoreg/matrix-doc/blob/dehydration/proposals/1719-olm_unwedging.md, which should actually cover broken rooms (they call them "wedged"). However, looking at the source code ([MXCrypto decryptEvent2:inTimeline:]) of the matrix-ios-sdk, this automatic handling only applies to `MXDecryptingErrorBadEncryptedMessageCode` errors, but not `MXDecryptingErrorUnknownInboundSessionIdCode` ones.
+
+					// The only option I see is to leave the room and create a new one.
+
+					self.delegate?.decryptionError(decryptionError, peerID: peerID) {
+						guard let roomID = event.roomId,
+							let room = self.session.room(withRoomId: roomID) else { return }
+
+						self.forget(room: room) { forgetError in
+							forgetError.map { dlog("forgetting room with broken encryption failed: \($0)") }
+
+							self.getOrCreateRoom(with: peerID) { result in
+								dlog("replaced room with broken encryption with result \(result)")
+							}
+						}
+					}
+				}
 
 				_ = self.session.listenToEvents([.roomMember, .roomMessage]) { event, direction, state in
 					switch event.eventType {

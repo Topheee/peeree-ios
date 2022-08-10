@@ -446,8 +446,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		let cal = Calendar.current as NSCalendar
 
 		let removePeers = allPeers.filter { peer in
-			// never remove our own view model or the view model of pin matched peers
-			guard peer.id.peerID != accountController.peerID && !accountController.hasPinMatch(peer.id.peerID) else { return false }
+			// never remove our own view model or the view model of pinned peers
+			guard peer.id.peerID != accountController.peerID && !accountController.isPinned(peer.id) else { return false }
 
 			let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peer.id.peerID] ?? never, to: now, options: []).hour
 			let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1

@@ -196,6 +196,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
 	}
 
+	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void) {
+		let name = PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+
+		let alertTitle = NSLocalizedString("Broken Chatroom", comment: "Title of broken room alert")
+		let alertBody = String(format: NSLocalizedString("Your chat room with '%@' seems to be broken, because the decryption of a message failed (%@). You may re-create the room to fix the error, but this will delete all your messages.", comment: "Content of broken room alert."), name, error.localizedDescription)
+		let recreateRoomButtonTitle = NSLocalizedString("Re-create room", comment: "Caption of button.")
+
+		let alertController = UIAlertController(title: alertTitle, message: alertBody, preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
+		let createAction = UIAlertAction(title: recreateRoomButtonTitle, style: .`default`) { (_) in
+			recreateRoom()
+		}
+		alertController.addAction(createAction)
+		alertController.addCancelAction()
+		alertController.preferredAction = createAction
+		alertController.present()
+	}
+
 	// MARK: Private Methods
 	
 	private func setupManualAppearance() {

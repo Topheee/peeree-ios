@@ -112,13 +112,9 @@ public class ServerChatFactory {
 						return
 					}
 
-					do {
-						try self.removePasswordFromKeychain()
-						try removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
-						try removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
-					} catch let error {
-						elog("\(error.localizedDescription)")
-					}
+					try? self.removePasswordFromKeychain()
+					try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
+					try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
 
 					self.serverChatController = nil
 
@@ -204,26 +200,18 @@ public class ServerChatFactory {
 				}
 
 				switch error {
-				case .identityMissing:
-					// this is expected, e.g. when creating the account
-					break
-				case .parsing(let parsingMessage):
-					wlog("Parsing during server chat login failed: \(parsingMessage)")
-				case .sdk(let sdkError):
-					wlog("Something in the SDK during server chat login failed: \(sdkError.localizedDescription)")
-				case .fatal(let fatalError):
-					wlog("Something really bad in the SDK during server chat login failed: \(fatalError.localizedDescription)")
-				case .cannotChat(_, _):
-					flog("this should never happen: we cannot chat with ourselves.")
-				}
-
-				self.createAccount { createAccountResult in
-					switch createAccountResult {
-					case .success(let credentials):
-						self.setupInstance(with: credentials)
-					case .failure(let error):
-						self.reportCreatingInstance(result: .failure(error))
+				case .noAccount:
+					self.createAccount { createAccountResult in
+						switch createAccountResult {
+						case .success(let credentials):
+							self.setupInstance(with: credentials)
+						case .failure(let error):
+							self.reportCreatingInstance(result: .failure(error))
+						}
 					}
+
+				default:
+					self.reportCreatingInstance(result: .failure(error))
 				}
 			}
 		}
@@ -303,7 +291,7 @@ public class ServerChatFactory {
 		do {
 			password = try passwordFromKeychain()
 		} catch {
-			completion(.failure(.identityMissing))
+			completion(.failure(.noAccount))
 			return
 		}
 
@@ -337,6 +325,8 @@ public class ServerChatFactory {
 
 			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: self.globalRestClient.credentials)
 
+			try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
+			try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
 			credentials.accessToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey) }
 			credentials.refreshToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey) }
 

@@ -58,7 +58,7 @@ final class PortraitImagePickerController: NSObject, UIImagePickerControllerDele
 			self.save(image: nil)
 		})
 		if allowCancel {
-			_ = alertController.addCancelAction()
+			alertController.addCancelAction()
 		}
 		alertController.present()
 	}
