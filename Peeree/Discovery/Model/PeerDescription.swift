@@ -26,7 +26,7 @@ public struct Peer: Codable, Equatable {
 
 	/// Constructs a `Peer` from the binary representations of its properties.
 	init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data) {
-		guard let id = PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData),
+		guard let id = try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData),
 			  let pi = PeerInfo(aggregateData: aggregateData, nicknameData: nicknameData) else {
 			return nil
 		}

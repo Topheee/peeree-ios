@@ -69,10 +69,7 @@ public class ServerChatFactory {
 
 	/// Closes the underlying session and invalidates the global ServerChatController instance.
 	public static func close() {
-		use { factory in
-			factory?.serverChatController?.close()
-			factory?.serverChatController = nil
-		}
+		use { $0?.closeServerChat() }
 	}
 
 	/// Removes the server chat account permanently.
@@ -106,7 +103,11 @@ public class ServerChatFactory {
 					return
 				}
 
+				self.isDeletingAccount = true
+
 				scc.deleteAccount(password: password) { error in
+					self.isDeletingAccount = false
+
 					if let error = error {
 						completion(error)
 						return
@@ -116,7 +117,7 @@ public class ServerChatFactory {
 					try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
 					try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
 
-					self.serverChatController = nil
+					self.closeServerChat()
 
 					completion(nil)
 				}
@@ -163,10 +164,21 @@ public class ServerChatFactory {
 	/// Keeps track of the `onlyLogin` parameters of all invocations of `getOrSetupInstance`.
 	private var creatingInstanceOnlyLoginRequests = [Bool]()
 
+	/// Whether account deletion request is in progress.
+	private var isDeletingAccount = false
+
 	/// Matrix userId based on user's PeerID.
 	private var userId: String { return peerID.serverChatUserId }
 
 	// MARK: Methods
+
+	/// Closes the underlying session and invalidates the global ServerChatController instance; must be called on `dQueue`.
+	private func closeServerChat(with error: Error? = nil) {
+		serverChatController?.close()
+		serverChatController = nil
+
+		Self.delegate?.serverChatClosed(error: error)
+	}
 
 	/// Login, create account or get readily configured `ServerChatController`.
 	private func setup(onlyLogin: Bool = false, _ completion: @escaping (Result<ServerChat, ServerChatError>) -> Void) {
@@ -349,11 +361,42 @@ public class ServerChatFactory {
 
 	/// Sets the `serverChatController` singleton and starts the server chat session.
 	private func setupInstance(with credentials: MXCredentials, _ failure: ((ServerChatError) -> Void)? = nil) {
-		let c = ServerChatController(peerID: peerID, credentials: credentials, dQueue: Self.dQueue) {
-			// I hope the credentials are passed by reference …
-			credentials.accessToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey) }
-			credentials.refreshToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey) }
-		}
+		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
+			flog("server chat certificate is not trusted.")
+			Self.delegate?.serverChatCertificateIsInvalid()
+			return false
+		}, persistentTokenDataHandler: { callback in
+			dlog("server chat persistentTokenDataHandler was called.")
+			// Block called when the rest client needs to check the persisted refresh token data is valid and optionally persist new refresh data to disk if it is not.
+			callback?([credentials]) { shouldPersist in
+				// credentials (access and refresh token) changed during refresh
+				guard shouldPersist else { return }
+
+				// The credentials are passed by reference, so their token properties have changed by now.
+				credentials.accessToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey) }
+				credentials.refreshToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey) }
+			}
+		}, unauthenticatedHandler: { [weak self] mxError, isSoftLogout, isRefreshTokenAuth, completion in
+			// Block called when the rest client has become unauthenticated(E.g. refresh failed or server invalidated an access token).
+
+			guard let strongSelf = self, !strongSelf.isDeletingAccount else { return }
+
+			if let error = mxError {
+				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
+			} else {
+				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
+			}
+
+			Self.dQueue.async {
+				strongSelf.closeServerChat(with: mxError?.createNSError())
+
+				completion?()
+			}
+		})
+
+		restClient.completionQueue = Self.dQueue
+
+		let c = ServerChatController(peerID: peerID, restClient: restClient, dQueue: Self.dQueue)
 
 		c.start { _error in
 			Self.dQueue.async {

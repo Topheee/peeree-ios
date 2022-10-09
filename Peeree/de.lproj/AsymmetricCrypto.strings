@@ -1,0 +1,38 @@
+/* Writing raw key data to the keychain produced an error. */
+"Adding key data to keychain failed." = "Schlüsseldaten zum Schlüsselbund hinzufügen fehlgeschlagen.";
+
+/* Cryptographically encrypting a message failed. */
+"Cryptographically encrypting failed." = "Kryptografische Verschlüsselung fehlgeschlagen.";
+
+/* Cryptographically signing a message failed. */
+"Cryptographically signing failed." = "Kryptografisches Unterschreiben fehlgeschlagen.";
+
+/* Cryptographically decrypting a message failed. */
+"Decrypting cipher text failed." = "Entschlüsselung fehlgeschlagen.";
+
+/* Error description for verifying exception, which should never actually occur */
+"Elliptic curve algorithm %@ does not support verifying." = "Elliptischer-Kurven-Algorithmus %@ unterstützt keine Verifikation.";
+
+/* Error description for encryption exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support encryption." = "Elliptischer-Kurven-Algorithmus %@ unterstützt keine Verschlüsselung.";
+
+/* Error description for signing exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support signing." = "Elliptischer-Kurven-Algorithmus %@ unterstützt keine Signierung.";
+
+/* Error description for decryption exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support decryption." = "Elliptischer-Kurven-Algorithmus %@ unterstützt keine Entschlüsselung.";
+
+/* Low level crypto error. */
+"Generating cryptographic key pair failed." = "Kryptografische Schlüsselpaarerzeugung fehlgeschlagen.";
+
+/* Error description for cryptographic operation failure */
+"macOS below 10.12.1 is not supported." = "macOS bevor 10.12.1 wird nicht unterstützt.";
+
+/* Low level error. */
+"No public key derivable." = "Kein öffentlicher Schlüssel ableitbar.";
+
+/* Exception when trying to encrypt too-big data. */
+"Plain text length (%d) exceeds block size %d" = "Länge des unverschlüsselten Texts (%d) ist länger als die Blockgröße %d";
+
+/* Cryptographically verifying a message failed. */
+"Verifying signature failed." = "Verifizierung der Signatur fehlgeschlagen.";

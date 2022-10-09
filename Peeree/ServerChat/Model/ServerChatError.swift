@@ -37,7 +37,7 @@ public enum ServerChatError: Error {
 	/// Parsing a server response failed; passes a localized error message.
 	case parsing(String)
 
-	/// Passes on an error produces by the SDK.
+	/// Passes on an error produced by the SDK.
 	case sdk(Error)
 
 	/// Passes on a fatal error.

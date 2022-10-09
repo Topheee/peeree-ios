@@ -14,38 +14,15 @@ final class ServerChatController: ServerChat {
 	// MARK: - Public and Internal
 
 	/// Creates a `ServerChatController`.
-	init(peerID: PeerID, credentials: MXCredentials, dQueue: DispatchQueue, _ persistCredentialsCallback: @escaping () -> Void) {
+	init(peerID: PeerID, restClient: MXRestClient, dQueue: DispatchQueue) {
 		self.peerID = peerID
 		self.dQueue = dQueue
-
-		let restClient = MXRestClient(credentials: credentials) { data in
-			flog("server chat certificate is not trusted.")
-			return false
-		} persistentTokenDataHandler: { callback in
-			dlog("server chat persistentTokenDataHandler was called.")
-			// Block called when the rest client needs to check the persisted refresh token data is valid and optionally persist new refresh data to disk if it is not.
-			callback?([credentials]) { shouldPersist in
-				// credentials (access and refresh token) changed during refresh
-				if shouldPersist { persistCredentialsCallback() }
-			}
-		} unauthenticatedHandler: { mxError, isSoftLogout, isRefreshTokenAuth, completion in
-			dlog("server chat unauthenticatedHandler was called.")
-			// Block called when the rest client has become unauthenticated(E.g. refresh failed or server invalidated an access token).
-			// TODO handle dis
-			if let error = mxError {
-				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
-			} else {
-				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
-			}
-		}
-
-		restClient.completionQueue = dQueue
 		session = MXSession(matrixRestClient: restClient)!
 	}
 
 	// MARK: Variables
 
-	var delegate: ServerChatDelegate? = nil
+	weak var delegate: ServerChatDelegate? = nil
 
 	// MARK: Methods
 
@@ -446,19 +423,28 @@ final class ServerChatController: ServerChat {
 					return
 				}
 
+				guard self.pendingInvitedRoomIds[peerID] == nil else {
+					// for whatever reason we receive this event twice
+					return
+				}
+
+				self.pendingInvitedRoomIds[peerID] = event.roomId
+
 				// check whether we still have a pin match with this person
 				AccountController.use { ac in
 					guard ac.hasPinMatch(peerID) else {
 						self.dQueue.async {
-							self.pendingInvitedRoomIds[peerID] = event.roomId
-
 							// this will trigger the AccountController.NotificationName.PinMatch notification, where we will then join the room
 							self.refreshPinStatus(of: peerID, force: true, nil)
 						}
 						return
 					}
 
-					self.join(roomId: event.roomId, with: peerID)
+					self.dQueue.async {
+						guard self.pendingInvitedRoomIds.removeValue(forKey: peerID) != nil else { return }
+
+						self.join(roomId: event.roomId, with: peerID)
+					}
 				}
 
 			case kMXMembershipStringLeave:
@@ -644,6 +630,7 @@ final class ServerChatController: ServerChat {
 					case .roomMessage:
 						self.process(messageEvent: event)
 					default:
+						guard direction == .forwards else { return }
 						self.process(memberEvent: event)
 					}
 				}

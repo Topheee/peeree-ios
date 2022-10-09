@@ -467,7 +467,7 @@ public class AccountController: SecurityDataSource {
 		SwaggerClientAPI.dataSource = self
 
 		let models: [PeereeIdentityViewModel] = pinnedPeers.compactMap { (peerID, publicKeyData) in
-			guard let id = PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData) else { return nil }
+			guard let id = try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData) else { return nil }
 			return PeereeIdentityViewModel(id: id, pinState: self.pinState(of: peerID))
 		}
 

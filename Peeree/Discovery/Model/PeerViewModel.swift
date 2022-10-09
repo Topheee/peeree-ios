@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreGraphics
+import DequeModule
 
 /// Holds current information of a peer to be used in the UI. Thus, all variables and methods must be accessed from main thread!
 public struct PeerViewModel {
@@ -59,7 +60,7 @@ public struct PeerViewModel {
 	}
 
 	/// Message thread with this peer.
-	public private (set) var transcripts: [Transcript]
+	public private (set) var transcripts: Deque<Transcript>
 
 	/// Amount of messages received, which haven't been seen yet by the user.
 	public var unreadMessages: Int {
@@ -124,7 +125,13 @@ public struct PeerViewModel {
 
 	/// A message was received from this peer.
 	public mutating func received(message: String, at date: Date) {
-		transcripts.append(Transcript(direction: .receive, message: message, timestamp: date))
+		let transcript = Transcript(direction: .receive, message: message, timestamp: date)
+		if let lastMessage = transcripts.last, lastMessage.timestamp < date {
+			transcripts.append(transcript)
+		} else {
+			insert(messages: [transcript])
+		}
+
 		unreadMessages += 1
 
 		post(.messageReceived, message: message)
@@ -132,15 +139,26 @@ public struct PeerViewModel {
 
 	/// A message was successfully sent to this peer.
 	public mutating func didSend(message: String, at date: Date) {
-		transcripts.append(Transcript(direction: .send, message: message, timestamp: date))
+		let transcript = Transcript(direction: .send, message: message, timestamp: date)
+		if let lastMessage = transcripts.last, lastMessage.timestamp < date {
+			transcripts.append(transcript)
+		} else {
+			insert(messages: [transcript])
+		}
+
 		post(.messageSent)
 	}
 
 	/// Mass-append messages. Only fires Notifications.unreadMessageCountChanged. Does not produce notifications.
 	public mutating func catchUp(messages: [Transcript], unreadCount: Int) {
-		transcripts.append(contentsOf: messages)
+		insert(messages: messages)
 		unreadMessages = unreadCount
 		post(.unreadMessageCountChanged)
+	}
+
+	/// Removes all cached transcripts.
+	public mutating func clearTranscripts() {
+		transcripts.removeAll(keepingCapacity: false)
 	}
 
 	// MARK: - Private
@@ -172,6 +190,15 @@ public struct PeerViewModel {
 	}()
 
 	// MARK: Methods
+
+	/// Inserts messages into our message list in the correct order (by time).
+	private mutating func insert(messages: [Transcript]) {
+		guard messages.count > 0 else { return }
+
+		// this can be optimized heavily
+		transcripts.append(contentsOf: messages)
+		transcripts.sort { $0.timestamp < $1.timestamp }
+	}
 
 	/// Shortcut.
 	private func post(_ notification: NotificationName, message: String = "") {

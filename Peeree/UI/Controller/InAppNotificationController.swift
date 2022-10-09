@@ -7,24 +7,61 @@
 //
 
 import UIKit
-import Toast
+import NotificationBannerSwift
 
 /// Display custom notifications only in-app, sometimes called 'toasts'.
 final class InAppNotificationController {
-	static func display(title: String, message: String, isNegative: Bool = true) {
+	/// Provides colors for the in-app notification banners.
+	private class BannerColorer: BannerColorsProtocol {
+		/// Provides colors for the in-app notification banner styles.
+		func color(for style: BannerStyle) -> UIColor {
+			if #available(iOS 13.0, *) {
+				return UIColor.systemGroupedBackground
+			} else {
+				return UIColor.lightGray
+			}
+		}
+	}
+
+	/// Proxy to provide an Objective-C Selector.
+	private class TapHandler: NSObject {
+		/// Action to be executed on tap gesture.
+		private let notificationAction: (() -> Void)
+
+		/// Executes `notificationAction`.
+		@objc func handleTap(sender: UITapGestureRecognizer) {
+			if sender.state == .ended {
+				notificationAction()
+			}
+		}
+
+		/// Constructs a proxy around `notificationAction`.
+		init(notificationAction: @escaping () -> Void) {
+			self.notificationAction = notificationAction
+		}
+	}
+
+	/// Show a globally visible in-app notification, similar to a 'toast'.
+	static func display(title: String, message: String, isNegative: Bool = true, _ notificationAction: (() -> Void)? = nil) {
 		if isNegative {
 			wlog("Displaying in-app warning '\(title)': \(message)")
 		}
 
 		DispatchQueue.main.async {
-			guard let view = UIViewController.frontMostViewController()?.view else { return }
-
-			var style = ToastStyle()
-			if isNegative {
-				style.titleColor = .red
+			let banner = NotificationBanner(title: title, subtitle: message, style: isNegative ? .danger : .info, colors: BannerColorer())
+			banner.titleLabel?.textColor = UIColor.systemRed
+			if #available(iOS 13.0, *) {
+				banner.subtitleLabel?.textColor = UIColor.label
+			} else {
+				banner.subtitleLabel?.textColor = UIColor.darkText
 			}
 
-			view.makeToast(message, duration: InAppNotificationController.NotificationDuration, position: .top, title: title, image: nil, style: style, completion: nil)
+			banner.duration = Self.NotificationDuration
+
+			if let action = notificationAction {
+				banner.addGestureRecognizer(UITapGestureRecognizer(target: TapHandler(notificationAction: action), action: #selector(TapHandler.handleTap(sender:))))
+			}
+			banner.show()
 		}
 	}
 
@@ -60,9 +97,10 @@ final class InAppNotificationController {
 			errorMessage += "\n\(furtherDescription!)"
 		}
 
-		display(title: localizedTitle, message: errorMessage)
+		display(title: localizedTitle, message: errorMessage, isNegative: true, notificationAction)
 	}
 
+	/// Shows a 'toast' explaining `serverChatError`; use this function for Errors from `ServerChatController`.
 	static func display(serverChatError error: ServerChatError, localizedTitle: String) {
 		if (error as NSError).code == NSURLErrorCannotConnectToHost && (error as NSError).domain == NSURLErrorDomain {
 			display(title: localizedTitle, message: serverDownMessage)
@@ -98,11 +136,12 @@ final class InAppNotificationController {
 		}
 	}
 
+	/// Shows a 'toast' explaining a generic error.
 	static func display(error: Error, localizedTitle: String) {
 		display(title: localizedTitle, message: error.localizedDescription)
 	}
 
-	private static let NotificationDuration = 5.76
+	private static let NotificationDuration: TimeInterval = 5.76
 
 	private static var serverDownMessage: String { return NSLocalizedString("Sorry, we are currently busy trying to plug in the WiFi cable. Please try again in a couple of minutes.", comment: "Error message when a connection cannot be made.") }
 }

@@ -24,14 +24,9 @@ public struct PeereeIdentity: Codable {
 	}
 
 	/// Constructs a `PeereeIdentity` from a `PeerID` and the binary representation of a public key.
-	init?(peerID: PeerID, publicKeyData: Data) {
+	init(peerID: PeerID, publicKeyData: Data) throws {
 		self.peerID = peerID
-		do {
-			self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: Self.KeyType, size: Self.KeySize)
-		} catch {
-			elog("creating public key from data: \(error)")
-			return nil
-		}
+		self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: Self.KeyType, size: Self.KeySize)
 	}
 
 	// MARK: Constants

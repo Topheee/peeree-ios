@@ -1,0 +1,38 @@
+/* Writing raw key data to the keychain produced an error. */
+"Adding key data to keychain failed." = "Adding key data to keychain failed.";
+
+/* Cryptographically encrypting a message failed. */
+"Cryptographically encrypting failed." = "Cryptographically encrypting failed.";
+
+/* Cryptographically signing a message failed. */
+"Cryptographically signing failed." = "Cryptographically signing failed.";
+
+/* Cryptographically decrypting a message failed. */
+"Decrypting cipher text failed." = "Decrypting cipher text failed.";
+
+/* Error description for verifying exception, which should never actually occur */
+"Elliptic curve algorithm %@ does not support verifying." = "Elliptic curve algorithm %@ does not support verifying.";
+
+/* Error description for encryption exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support encryption." = "Elliptic curve algorithm %@ does not support encryption.";
+
+/* Error description for signing exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support signing." = "Elliptic curve algorithm %@ does not support signing.";
+
+/* Error description for decryption exception, which should never actually occur. */
+"Elliptic curve algorithm %@ does not support decryption." = "Elliptic curve algorithm %@ does not support decryption.";
+
+/* Low level crypto error. */
+"Generating cryptographic key pair failed." = "Generating cryptographic key pair failed.";
+
+/* Error description for cryptographic operation failure */
+"macOS below 10.12.1 is not supported." = "macOS below 10.12.1 is not supported.";
+
+/* Low level error. */
+"No public key derivable." = "No public key derivable.";
+
+/* Exception when trying to encrypt too-big data. */
+"Plain text length (%d) exceeds block size %d" = "Plain text length (%d) exceeds block size %d";
+
+/* Cryptographically verifying a message failed. */
+"Verifying signature failed." = "Verifying signature failed.";

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "SecureColored.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
