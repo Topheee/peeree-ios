@@ -78,7 +78,8 @@ func createSystemError() -> Error? {
 	return createApplicationError(localizedDescription: errorString, code: Int(code))
 }
 
-func errorMessage(for status: OSStatus) -> String {
+/// Retrieves the error message describing `status`.
+func errorMessage(describing status: OSStatus) -> String {
 	let fallbackMessage = "OSStatus \(status)"
 	let msg: String
 	#if os(OSX)
@@ -94,14 +95,20 @@ func errorMessage(for status: OSStatus) -> String {
 	return msg
 }
 
+/// Throwing wrapper around `SecRandomCopyBytes(_:_:_:)`.
 func generateRandomData(length: Int) throws -> Data {
 	var nonce = Data(count: length)
 	let status = nonce.withUnsafeMutablePointer({ SecRandomCopyBytes(kSecRandomDefault, length, $0) })
 	if status == errSecSuccess {
 		return nonce
 	} else {
-		throw createApplicationError(localizedDescription: errorMessage(for: status), code: Int(status))
+		throw makeOSStatusError(from: status)
 	}
+}
+
+/// Converts an `OSStatus` returned by a security function to an `Error`.
+func makeOSStatusError(from status: OSStatus) -> Error {
+	return NSError(domain: kCFErrorDomainOSStatus as String, code: Int(status), userInfo: [NSLocalizedDescriptionKey : errorMessage(describing: status)])
 }
 
 /// Objective-C __bridge cast
@@ -258,18 +265,22 @@ extension Data {
 	}
 
 	struct EmptyError: Error {}
-	/**
-	replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
-	*/
+
+	/// Allows operations on the binary data via an `UnsafePointer`.
+	///
+	/// This function is a replacement of the old `mutating func withUnsafeBytes<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`.
+	/// - Throws: An `EmptyError` error is thrown if `count` is zero, or the error thrown by `body`.
 	func withUnsafePointer<ResultType, ContentType>(_ body: (UnsafePointer<ContentType>) throws -> ResultType) rethrows -> ResultType {
 		return try self.withUnsafeBytes { (bufferPointer: UnsafeRawBufferPointer) in
 			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
 			return try body(bytePointer)
 		}
 	}
-	/**
-	replacement of the old `mutating func withUnsafeMutableBytes<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`. Use only when `count` > 0, otherwise an `EmptyError` error is thrown.
-	*/
+
+	/// Allows operations on the binary data via an `UnsafeMutablePointer`.
+	///
+	/// This function is a replacement of the old `mutating func withUnsafeMutableBytes<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType`.
+	/// - Throws: An `EmptyError` error is thrown if `count` is zero, or the error thrown by `body`.
 	mutating func withUnsafeMutablePointer<ResultType, ContentType>(_ body: (UnsafeMutablePointer<ContentType>) throws -> ResultType) rethrows -> ResultType {
 		return try self.withUnsafeMutableBytes { (bufferPointer: UnsafeMutableRawBufferPointer) in
 			guard let bytePointer = bufferPointer.bindMemory(to: ContentType.self).baseAddress else { throw EmptyError() }
@@ -319,12 +330,21 @@ extension CGColor {
 }
 
 extension SecKey {
+	/// Throws an error when `status` indicates a failure, otherwise does nothing.
+	///
+	/// - Parameter status: The status code returned by a security operation.
+	/// - Parameter localizedError: The error message added as `NSLocalizedDescriptionKey` to the thrown error.
+	///
+	/// - Throws: An `NSError` when `status` is not `errSecSuccess`, with `NSLocalizedFailureReasonErrorKey` set to the error message corresponding to `status`.
 	static func check(status: OSStatus, localizedError: String) throws {
 		guard status != errSecSuccess else { return }
 
-		let msg = errorMessage(for: status)
+		let msg = errorMessage(describing: status)
 		dlog("OSStatus \(status) check failed: \(msg)")
-		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey : "\(localizedError) \(msg)"])
+		let userInfo: [String : Any] = [NSLocalizedDescriptionKey : localizedError,
+								 NSLocalizedFailureReasonErrorKey : msg,
+									   NSLocalizedFailureErrorKey : makeOSStatusError(from: status)]
+		throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: userInfo)
 	}
 }
 

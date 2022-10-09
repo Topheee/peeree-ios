@@ -22,8 +22,11 @@
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
 		9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */; };
-		9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 9D51ED7C27A68B3E00BF6C0A /* Toast */; };
 		9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */; };
+		9D536B4428EDA77100B7207D /* AsymmetricCrypto.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */; };
+		9D536B4828EDBA7300B7207D /* KeychainAccess.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */; };
+		9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */; };
+		9D536B5128F0674500B7207D /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5028F0674500B7207D /* DequeModule */; };
 		9D544F57280D9B51008E7CDF /* ServerChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F56280D9B51008E7CDF /* ServerChat.swift */; };
 		9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */; };
 		9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5A280DE677008E7CDF /* KeychainAccess.swift */; };
@@ -76,8 +79,6 @@
 		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */; };
 		9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */; };
-		9DCE945A1F30EB8600F31330 /* InAppNotification.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9DCE94581F30EB8600F31330 /* InAppNotification.xib */; };
-		9DCE945D1F30EC4D00F31330 /* InAppNotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCE945C1F30EC4D00F31330 /* InAppNotificationViewController.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42C1EC46FD000A01AEF /* PeerID.swift */; };
 		9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */; };
@@ -138,6 +139,10 @@
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceControllerTests.swift; sourceTree = "<group>"; };
 		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppNotificationController.swift; sourceTree = "<group>"; };
+		9D536B4328EDA77100B7207D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
+		9D536B4528EDA77B00B7207D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
+		9D536B4928EDBA7300B7207D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/KeychainAccess.strings; sourceTree = "<group>"; };
+		9D536B4B28EDBA7700B7207D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/KeychainAccess.strings; sourceTree = "<group>"; };
 		9D544F56280D9B51008E7CDF /* ServerChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChat.swift; sourceTree = "<group>"; };
 		9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatFactory.swift; sourceTree = "<group>"; };
 		9D544F5A280DE677008E7CDF /* KeychainAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainAccess.swift; sourceTree = "<group>"; };
@@ -196,8 +201,6 @@
 		9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingDescriptionViewController.swift; sourceTree = "<group>"; };
 		9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsymmetricCrypto.swift; sourceTree = "<group>"; };
 		9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SynchronizedCollections.swift; path = Peeree/Helpers/SynchronizedCollections.swift; sourceTree = "<group>"; };
-		9DCE94581F30EB8600F31330 /* InAppNotification.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = InAppNotification.xib; path = Peeree/Storyboards/InAppNotification/InAppNotification.xib; sourceTree = "<group>"; };
-		9DCE945C1F30EC4D00F31330 /* InAppNotificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InAppNotificationViewController.swift; path = Peeree/Storyboards/InAppNotification/InAppNotificationViewController.swift; sourceTree = "<group>"; };
 		9DCE94631F30EDBA00F31330 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleMaskView.swift; sourceTree = "<group>"; };
 		9DD1B42C1EC46FD000A01AEF /* PeerID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerID.swift; sourceTree = "<group>"; };
@@ -230,7 +233,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D7608C1285527A7007F52AD /* MatrixSDK in Frameworks */,
-				9D51ED7D27A68B3E00BF6C0A /* Toast in Frameworks */,
+				9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */,
+				9D536B5128F0674500B7207D /* DequeModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,7 +385,6 @@
 		9D5D46F6280C7E23002174DB /* View */ = {
 			isa = PBXGroup;
 			children = (
-				9DCE94541F30EAEF00F31330 /* InAppNotification */,
 				9D5D46F4280C7DC1002174DB /* Launch */,
 				9DD049441C5FC80800A91C71 /* CircleMaskView.swift */,
 				9D404616244370990068D22F /* GrowingTextView.swift */,
@@ -514,25 +517,17 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */,
 				9DBC9F912676A4E900B68395 /* Peeree.entitlements */,
 				9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */,
 				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D1AF3D1204AA2CF00B616AF /* Localizable.strings */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
+				9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */,
 			);
 			name = "Supporting Files";
 			path = ..;
-			sourceTree = "<group>";
-		};
-		9DCE94541F30EAEF00F31330 /* InAppNotification */ = {
-			isa = PBXGroup;
-			children = (
-				9DCE945C1F30EC4D00F31330 /* InAppNotificationViewController.swift */,
-				9DCE94581F30EB8600F31330 /* InAppNotification.xib */,
-			);
-			name = InAppNotification;
-			path = ../../..;
 			sourceTree = "<group>";
 		};
 		9DD61F3C1EAE3356004EB56A /* Swagger */ = {
@@ -620,8 +615,9 @@
 			);
 			name = Peeree;
 			packageProductDependencies = (
-				9D51ED7C27A68B3E00BF6C0A /* Toast */,
 				9D7608C0285527A7007F52AD /* MatrixSDK */,
+				9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */,
+				9D536B5028F0674500B7207D /* DequeModule */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -653,7 +649,7 @@
 			attributes = {
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 1330;
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1400;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9DA0F7B41B5C3AB800F3BA87 = {
@@ -686,8 +682,9 @@
 			);
 			mainGroup = 9DA0F7AC1B5C3AB800F3BA87;
 			packageReferences = (
-				9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */,
 				9D7608BF285527A7007F52AD /* XCRemoteSwiftPackageReference "MatrixSDK" */,
+				9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */,
+				9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -705,11 +702,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */,
-				9DCE945A1F30EB8600F31330 /* InAppNotification.xib in Resources */,
 				9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
+				9D536B4428EDA77100B7207D /* AsymmetricCrypto.strings in Resources */,
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
+				9D536B4828EDBA7300B7207D /* KeychainAccess.strings in Resources */,
 				9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */,
 				9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
@@ -765,7 +763,6 @@
 				9D8A593D1B92F96E00164C9F /* BrowseViewController.swift in Sources */,
 				9DD61F671EAE33B6004EB56A /* Pin.swift in Sources */,
 				9DD61F681EAE33B6004EB56A /* Models.swift in Sources */,
-				9DCE945D1F30EC4D00F31330 /* InAppNotificationViewController.swift in Sources */,
 				9DFF60F1269236A200FEA957 /* PeerObserverContainers.swift in Sources */,
 				9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */,
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
@@ -853,6 +850,24 @@
 			name = FirstLaunch.storyboard;
 			sourceTree = "<group>";
 		};
+		9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9D536B4328EDA77100B7207D /* en */,
+				9D536B4528EDA77B00B7207D /* de */,
+			);
+			name = AsymmetricCrypto.strings;
+			sourceTree = "<group>";
+		};
+		9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9D536B4928EDBA7300B7207D /* en */,
+				9D536B4B28EDBA7700B7207D /* de */,
+			);
+			name = KeychainAccess.strings;
+			sourceTree = "<group>";
+		};
 		9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -924,7 +939,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_SWIFT_FLAGS = "";
@@ -975,7 +990,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1002,7 +1017,8 @@
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1039,7 +1055,8 @@
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_UNROLL_LOOPS = YES;
 				INFOPLIST_FILE = Peeree/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1152,29 +1169,42 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */ = {
+		9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/scalessec/Toast-Swift";
+			repositoryURL = "https://github.com/Daltron/NotificationBanner";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
+				minimumVersion = 3.0.0;
+			};
+		};
+		9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		9D7608BF285527A7007F52AD /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
-				kind = exactVersion;
-				version = 0.23.9;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.23.19;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9D51ED7C27A68B3E00BF6C0A /* Toast */ = {
+		9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9D51ED7B27A68B3E00BF6C0A /* XCRemoteSwiftPackageReference "Toast-Swift" */;
-			productName = Toast;
+			package = 9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */;
+			productName = NotificationBannerSwift;
+		};
+		9D536B5028F0674500B7207D /* DequeModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = DequeModule;
 		};
 		9D7608C0285527A7007F52AD /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;

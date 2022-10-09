@@ -12,15 +12,32 @@ import CoreBluetooth
 /// Values of this type are intended to contain <code>CBCentral.identifier</code>'s only.
 typealias CentralID = UUID
 
+/// The informed party of a ``LocalPeerManager``, which handles the 'server' part of the Bluetooth communication
+///
+/// > Note: All methods are called from the manager's internal dispatch queue.
 protocol LocalPeerManagerDelegate: AnyObject {
+	/// The Bluetooth service is now being advertised, meaning the user is now visible to other people.
 	func advertisingStarted()
-	func advertisingStopped()
+
+	/// The Bluetooth service is no longer being advertised, meaning the user is not visible to other people.
+	func advertisingStopped(with error: Error?)
+
+	/// Verifying the identity of a peer that is reading our data failed.
+	func authenticationFromPeerFailed(_ peerID: PeerID, with error: Error)
+
+	/// Digitally signing at least one of the profile characteristics failed, meaning other peers won't display us.
+	func characteristicSigningFailed(with error: Error)
+
+	/// Another peer claims we have a pin match with them.
 	func receivedPinMatchIndication(from peerID: PeerID)
+
+	/// Another peer sent us a message.
 	func received(message: String, from peerID: PeerID)
 }
 
-/// The LocalPeerManager singleton serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
-/// All the CBPeripheralManagerDelegate methods work on a separate queue so you must not call them yourself.
+/// The LocalPeerManager serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
+///
+/// > Warning: All the `CBPeripheralManagerDelegate` methods are assumed to be executed on an internal dipatch queue so you must not call them yourself!
 final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	private let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", qos: .utility, attributes: [])
 	private let peer: Peer
@@ -40,48 +57,33 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	private var nonces = [CentralID : Data]()
 	private var remoteNonces = [PeerID : Data]()
 	private var partialRemoteUUIDs = [CentralID : Data]()
-	
+
+	/// Informed when advertising is started/stopped or a remote peer wrote data to us.
 	weak var delegate: LocalPeerManagerDelegate?
 
+	/// Advertises the profile information to other peers.
 	init(peer: Peer, biography: String, keyPair: KeyPair, pictureResourceURL: URL) {
 		self.peer = peer
 		self.biography = biography
 		self.keyPair = keyPair
 		self.pictureResourceURL = pictureResourceURL
 	}
-	
-	var isAdvertising: Bool {
-//		return dQueue.sync {
-			return peripheralManager != nil //&& peripheralManager.isAdvertising
-//		}
-	}
-	
+
+	/// Begin advertising the Bluetooth service to other device around.
 	func startAdvertising() {
-		guard !isAdvertising else { return }
-		
-//		#if os(iOS)
-//		peripheralManager = CBPeripheralManager(delegate: self, queue: dQueue, options: [CBPeripheralManagerOptionRestoreIdentifierKey : "PeripheralManager"])
-//		#else
-		peripheralManager = CBPeripheralManager(delegate: self, queue: dQueue, options: nil)
-//		#endif
-	}
-	
-	func stopAdvertising() {
-		guard isAdvertising else { return }
-		
-		peripheralManager.removeAllServices()
-		peripheralManager.stopAdvertising()
-		peripheralManager = nil
-		
 		dQueue.async {
-			self._availableCentrals.removeAll()
-			self.authenticatedPinMatchedCentrals.removeAll()
-			self.nonces.removeAll()
-			self.interruptedTransfers.removeAll()
-			self.delegate?.advertisingStopped()
+			guard self.peripheralManager == nil else { return }
+
+			self.peripheralManager = CBPeripheralManager(delegate: self, queue: self.dQueue, options: nil)
 		}
 	}
-	
+
+	/// Stop advertising the Bluetooth service to other device around.
+	func stopAdvertising() {
+		dQueue.async { self.abortAdvertising(with: nil) }
+	}
+
+	/// Forgets all data about the central with `identifier` equals to `cbPeerID`.
 	func disconnect(_ cbPeerID: UUID) {
 		dQueue.async {
 			_ = self._availableCentrals.removeValue(forKey: cbPeerID)
@@ -98,9 +100,9 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 //	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
-		guard error == nil else {
-			elog("Adding service \(service.uuid.uuidString) failed (\(error!.localizedDescription)). - Stopping advertising.")
-			stopAdvertising()
+		if let error = error {
+			elog("Adding service \(service.uuid.uuidString) failed (\(error.localizedDescription)). - Stopping advertising.")
+			abortAdvertising(with: error)
 			return
 		}
 		
@@ -117,55 +119,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		case .poweredOff:
 			stopAdvertising()
 		case .poweredOn:
-			// value: UserPeerManager.instance.peer.idData
-			let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: peer.id.idData, permissions: [.readable])
-			// value: remote peer.idData
-			let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-			// value: Data(count: 1)
-			let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-			// value try? Data(contentsOf: UserPeerManager.pictureResourceURL)
-			let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
-			// value: aggregateData
-			let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: peer.info.aggregateData, permissions: [.readable])
-			// value: lastChangedData
-			let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: peer.info.lastChangedData, permissions: [.readable])
-			// value nicknameData
-			let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: peer.info.nicknameData, permissions: [.readable])
-			// value UserPeerManager.instance.peer.publicKey
-			let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: peer.id.publicKeyData, permissions: [.readable])
-			// value nonce when read, signed nonce when written
-			// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
-			let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
-			// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
-			let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
-			// value: String.data(prefixedEncoding:)
-			let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-			// value: String.data(prefixedEncoding:)
-			let biographyCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographyCharacteristicID, properties: [.indicate], value: nil, permissions: [])
-
-			// provide signature characteristics
-			var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil, biographySignature: Data? = nil
-			do {
-				peerIDSignature = try keyPair.sign(message: peer.id.idData)
-				aggregateSignature = try keyPair.sign(message: peer.info.aggregateData)
-				nicknameSignature = try keyPair.sign(message: peer.info.nicknameData)
-				try biography.data(prefixedEncoding: biography.smallestEncoding).map { biographySignature = try keyPair.sign(message: $0) }
-				if peer.info.hasPicture {
-					let imageData = try Data(contentsOf: pictureResourceURL)
-					portraitSignature = try keyPair.sign(message: imageData)
-				}
-			} catch {
-				elog("Failed to create signature characteristics. (\(error.localizedDescription))")
-			}
-			let peerIDSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read], value: peerIDSignature, permissions: [.readable])
-			let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
-			let aggregateSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateSignatureCharacteristicID, properties: [.read], value: aggregateSignature, permissions: [.readable])
-			let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
-			let biographySignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographySignatureCharacteristicID, properties: [.read], value: biographySignature, permissions: [.readable])
-
-			let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-			peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
-			peripheral.add(peereeService)
+			peripheral.add(createService())
 		@unknown default:
 			// just wait
 			break
@@ -177,9 +131,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			delegate?.advertisingStarted()
 			return
 		}
-		
-		elog("Failed to start advertising. (\(theError.localizedDescription))")
-		stopAdvertising()
+
+		abortAdvertising(with: theError)
 	}
 	
 	func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
@@ -263,10 +216,13 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				peripheral.respond(to: request, withResult: .success)
 			} catch let error {
 				elog("Generating random Bluetooth nonce failed: \(error.localizedDescription).")
+				delegate?.authenticationFromPeerFailed(peerID, with: error)
 				peripheral.respond(to: request, withResult: .unlikelyError)
 			}
+		} else if request.characteristic.uuid == CBUUID.PortraitSignatureCharacteristicID {
+			// this can happen when we do not have a portrait set and thus the PortraitSignatureCharacteristicID value is `nil`
+			peripheral.respond(to: request, withResult: .insufficientResources)
 		} else {
-			// TODO this branch is executed, when no portrait is configured (and PortraitSignatureCharacteristicID is nil)
 			wlog("Received unimplemented read request for characteristic: \(request.characteristic.uuid.uuidString)")
 			peripheral.respond(to: request, withResult: .requestNotSupported)
 		}
@@ -344,24 +300,16 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					break
 				}
 
-				// it is important that we use the same error code in both the "not a pin match" and "signature verification failed" cases, to prevent from the timing attack
-				// we should not use CBATTError.insufficientAuthentication as then the iPhone begins a pairing process
-				let authFailedError = CBATTError.insufficientAuthorization
-
 				// TODO report CBAttError
 				AccountController.use { ac in
-					guard let publicKeyData = ac.publicKey(of: peerID) else {
-						elog("No public key data available for \(peerID.uuidString).")
-						error = authFailedError // signature verification failed
-						return
-					}
-
-					let signature = data
+					// it is important that we use the same error code in both the "not a pin match" and "signature verification failed" cases, to prevent from the timing attack
+					// we should not use CBATTError.insufficientAuthentication as then the iPhone begins a pairing process
+					let authFailedError = CBATTError.insufficientAuthorization
 
 					// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
 					do {
-						let publicKey = try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize)
-						try publicKey.verify(message: nonce, signature: signature)
+						let id = try ac.id(of: peerID)
+						try id.publicKey.verify(message: nonce, signature: data)
 
 						// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
 						guard ac.hasPinMatch(peerID) else {
@@ -375,6 +323,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 						}
 					} catch let exc {
 						elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
+						self.delegate?.authenticationFromPeerFailed(peerID, with: exc)
 						error = authFailedError // signature verification failed
 						return
 					}
@@ -404,7 +353,79 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	}
 	
 	// MARK: Private Methods
-	
+
+	/// An unforeseen error prevents us from advertising; must be called on `dQueue`.
+	private func abortAdvertising(with error: Error?) {
+		guard let manager = peripheralManager else { return }
+
+		manager.removeAllServices()
+		manager.stopAdvertising()
+		peripheralManager = nil
+
+		self._availableCentrals.removeAll()
+		self.authenticatedPinMatchedCentrals.removeAll()
+		self.nonces.removeAll()
+		self.interruptedTransfers.removeAll()
+		self.delegate?.advertisingStopped(with: error)
+	}
+
+	/// Generate the to-be-advertised GATT service.
+	private func createService() -> CBMutableService {
+		// value: UserPeerManager.instance.peer.idData
+		let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: peer.id.idData, permissions: [.readable])
+		// value: remote peer.idData
+		let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+		// value: Data(count: 1)
+		let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+		// value try? Data(contentsOf: UserPeerManager.pictureResourceURL)
+		let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+		// value: aggregateData
+		let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: peer.info.aggregateData, permissions: [.readable])
+		// value: lastChangedData
+		let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: peer.info.lastChangedData, permissions: [.readable])
+		// value nicknameData
+		let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: peer.info.nicknameData, permissions: [.readable])
+		// value UserPeerManager.instance.peer.publicKey
+		let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: peer.id.publicKeyData, permissions: [.readable])
+		// value nonce when read, signed nonce when written
+		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
+		let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
+		let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+		// value: String.data(prefixedEncoding:)
+		let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+		// value: String.data(prefixedEncoding:)
+		let biographyCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographyCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+
+		// provide signature characteristics
+		var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil, biographySignature: Data? = nil
+		do {
+			peerIDSignature = try keyPair.sign(message: peer.id.idData)
+			aggregateSignature = try keyPair.sign(message: peer.info.aggregateData)
+			nicknameSignature = try keyPair.sign(message: peer.info.nicknameData)
+			try biography.data(prefixedEncoding: biography.smallestEncoding).map { biographySignature = try keyPair.sign(message: $0) }
+			if peer.info.hasPicture {
+				let imageData = try Data(contentsOf: pictureResourceURL)
+				portraitSignature = try keyPair.sign(message: imageData)
+			}
+		} catch {
+			elog("Failed to create signature characteristics. (\(error.localizedDescription))")
+			delegate?.characteristicSigningFailed(with: error)
+		}
+
+		let peerIDSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read], value: peerIDSignature, permissions: [.readable])
+		let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
+		let aggregateSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateSignatureCharacteristicID, properties: [.read], value: aggregateSignature, permissions: [.readable])
+		let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
+		let biographySignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographySignatureCharacteristicID, properties: [.read], value: biographySignature, permissions: [.readable])
+
+		let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
+		peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
+
+		return peereeService
+	}
+
+	/// Synchronously transmit `data` to peer until send queue is full.
 	private func send(data: Data, via peripheral: CBPeripheralManager, of characteristic: CBMutableCharacteristic, to central: CBCentral, sendSize: Bool) {
 		if sendSize {
 			// send the amount of bytes in data in the first package
@@ -460,6 +481,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 }
 
 extension Peer {
+	/// Retrieves the binary data to be sent over Bluetooth for characteristics, which values are stored in a ``Peer``.
 	func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
 		switch characteristicID {
 		case CBUUID.LocalPeerIDCharacteristicID:

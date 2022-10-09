@@ -170,6 +170,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
 	// MARK: PeeringControllerDelegate
 
+	func advertisingStopped(with error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Bluetooth Publish Failed", comment: "Error title"))
+	}
+
 	func peeringControllerIsReadyToGoOnline() {
 		AccountController.use { _ in PeeringController.shared.peering = true }
 	}
@@ -183,7 +187,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func serverChatLoginFailed(with error: ServerChatError) {
-		InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Server Chat Failed", comment: "Error message title"))
+		InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
 	}
 
 	// MARK: ServerChatControllerDelegate
@@ -200,7 +204,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		let name = PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString
 
 		let alertTitle = NSLocalizedString("Broken Chatroom", comment: "Title of broken room alert")
-		let alertBody = String(format: NSLocalizedString("Your chat room with '%@' seems to be broken, because the decryption of a message failed (%@). You may re-create the room to fix the error, but this will delete all your messages.", comment: "Content of broken room alert."), name, error.localizedDescription)
+		let alertBody = String(format: NSLocalizedString("broken_chatroom_content", comment: "Content of broken room alert."), name, error.localizedDescription)
 		let recreateRoomButtonTitle = NSLocalizedString("Re-create room", comment: "Caption of button.")
 
 		let alertController = UIAlertController(title: alertTitle, message: alertBody, preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
@@ -211,6 +215,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		alertController.addCancelAction()
 		alertController.preferredAction = createAction
 		alertController.present()
+	}
+
+	func serverChatCertificateIsInvalid() {
+		let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
+		InAppNotificationController.display(serverChatError: .fatal(error), localizedTitle: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))
+	}
+
+	func serverChatClosed(error: Error?) {
+		PeerViewModelController.clearTranscripts()
+
+		error.map {
+			InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Connection to Chat Server Lost", comment: "Error message title"))
+		}
 	}
 
 	// MARK: Private Methods

@@ -16,7 +16,7 @@ extension PeerID {
 
 	private static let uuidEncoding = String.Encoding.ascii
 
-	/// Whether this is the model of the user's info.
+	/// Whether this is the ``PeerID`` of the local user.
 	public var isLocalPeer: Bool { return self == PeereeIdentityViewModelController.userPeerID }
 
 	init?(data: Data) {

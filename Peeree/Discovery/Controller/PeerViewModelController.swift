@@ -61,4 +61,11 @@ public final class PeerViewModelController {
 	public static func clear() {
 		viewModels.removeAll()
 	}
+
+	/// Clears all cached transcripts.
+	public static func clearTranscripts() {
+		viewModels.keys.forEach { peerID in
+			viewModels[peerID]?.clearTranscripts()
+		}
+	}
 }

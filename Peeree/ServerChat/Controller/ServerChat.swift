@@ -41,4 +41,12 @@ public protocol ServerChatDelegate: AnyObject {
 
 	/// Decrypting an encrypted server chat event failed; call `recreateRoom` to re-create the room (losing all messages).
 	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void)
+
+	/// The certificate of the server is invalid.
+	func serverChatCertificateIsInvalid()
+
+	/// The server chat session disconnected.
+	///
+	/// - Parameter error: Set if the server chat session became invalid.
+	func serverChatClosed(error: Error?)
 }

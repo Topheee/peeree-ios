@@ -26,6 +26,9 @@ protocol PeeringDelegate {
 
 /// Receiver of `PeeringController` events.
 public protocol PeeringControllerDelegate {
+	/// Advertising the Bluetooth service stopped ungracefully.
+	func advertisingStopped(with error: Error)
+
 	/// An error during the server chat login or account creation failed.
 	func serverChatLoginFailed(with error: ServerChatError)
 
@@ -99,10 +102,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				remotePeerManager.scan()
 				startAdvertising(restartOnly: false)
 			} else {
-				UserPeer.instance.read(on: nil) { _, _, _, _ in
-					self.localPeerManager?.stopAdvertising()
-					self.localPeerManager = nil
-				}
+				stopAdvertising()
 				remotePeerManager.stopScan()
 			}
 
@@ -145,7 +145,19 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	// MARK: LocalPeerManagerDelegate
 
 	func advertisingStarted() {}
-	func advertisingStopped() {}
+
+	func advertisingStopped(with error: Error?) {
+		error.map { delegate?.advertisingStopped(with: $0) }
+	}
+
+	func authenticationFromPeerFailed(_ peerID: PeerID, with error: Error) {
+		// ignored for now, since we do not rely on authentication via Bluetooth (was only necessary for messaging, which is not used anymore)
+	}
+
+	func characteristicSigningFailed(with error: Error) {
+		stopAdvertising()
+		delegate?.advertisingStopped(with: error)
+	}
 
 	func receivedPinMatchIndication(from peerID: PeerID) {
 		manage(peerID) { manager in
@@ -166,10 +178,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 
 	func scanningStopped() {
-		UserPeer.instance.read(on: nil) { _, _, _, _ in
-			self.localPeerManager?.stopAdvertising()
-			self.localPeerManager = nil
-		}
+		stopAdvertising()
 		peerManagers.removeAll()
 		connectionChangedState(false)
 	}
@@ -199,9 +208,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 
 	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
-		UserPeer.instance.read(on: nil) { _, _, _, _ in
-			self.localPeerManager?.disconnect(cbPeerID)
-		}
+		localPeerManager?.disconnect(cbPeerID)
+
 		DispatchQueue.main.async {
 			let now = Date()
 			self.lastSeenDates[peerID] = now
@@ -398,6 +406,14 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				l.delegate = self
 				l.startAdvertising()
 			}
+		}
+	}
+
+	/// Stops advertising our data via Bluetooth.
+	private func stopAdvertising() {
+		UserPeer.instance.read(on: nil) { _, _, _, _ in
+			self.localPeerManager?.stopAdvertising()
+			self.localPeerManager = nil
 		}
 	}
 

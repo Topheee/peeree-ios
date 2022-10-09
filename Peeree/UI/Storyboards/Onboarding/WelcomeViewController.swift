@@ -17,7 +17,6 @@ final class WelcomeViewController: UIViewController {
 	@IBAction func pressPin(_ sender: Any) {
 		if #available(iOS 13.0, *) { HapticController.playHapticPin() }
 		pinButton.layer.removeAllAnimations()
-		pinButton.isSelected = !pinButton.isSelected
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
