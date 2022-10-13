@@ -47,12 +47,6 @@
 /* Class = "UILabel"; text = "Value"; ObjectID = "57R-R9-5LU"; */
 "57R-R9-5LU.text" = "Value";
 
-/* Class = "UIButton"; accessibilityHint = "Pin this person and mark him or her as interesting"; ObjectID = "59x-ms-KVN"; */
-"59x-ms-KVN.accessibilityHint" = "Pin this person and mark him or her as interesting";
-
-/* Class = "UIButton"; accessibilityLabel = "Pin"; ObjectID = "59x-ms-KVN"; */
-"59x-ms-KVN.accessibilityLabel" = "Pin";
-
 /* Class = "UITabBarItem"; title = "Radar"; ObjectID = "5mI-Pb-pBa"; */
 "5mI-Pb-pBa.title" = "Radar";
 
@@ -112,6 +106,18 @@
 
 /* Class = "UILabel"; text = "Signature"; ObjectID = "eGm-zA-15S"; */
 "eGm-zA-15S.text" = "Signature";
+
+/* Class = "UIButton"; accessibilityHint = "Pin this person and mark him or her as interesting"; ObjectID = "HFc-7O-6xq"; */
+"HFc-7O-6xq.accessibilityHint" = "Pin this person and mark him or her as interesting";
+
+/* Class = "UIButton"; accessibilityLabel = "Pin"; ObjectID = "HFc-7O-6xq"; */
+"HFc-7O-6xq.accessibilityLabel" = "Pin";
+
+/* Class = "UIButton"; configuration.title = "Pin"; ObjectID = "HFc-7O-6xq"; */
+"HFc-7O-6xq.configuration.title" = "Pin";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "HFc-7O-6xq"; */
+"HFc-7O-6xq.normalTitle" = "Pin";
 
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Safes your birthday";

@@ -27,11 +27,6 @@ public final class PersistedPeersController {
 		self.targetQueue = targetQueue
 	}
 
-	// MARK: Static Constants
-
-	/// The JPEG compression quality when saving peers to disk.
-	public static let StandardPortraitCompressionQuality: CGFloat = 0.0
-
 	// MARK: Variables
 
 	public var delegate: PersistedPeersControllerDelegate? = nil
@@ -327,7 +322,7 @@ public final class PersistedPeersController {
 			do {
 				let url = self.pictureURL(of: peerID)
 				if let pic = portrait {
-					try pic.save(to: url, compressionQuality: PersistedPeersController.StandardPortraitCompressionQuality)
+					try pic.save(to: url, compressionQuality: StandardPortraitCompressionQuality)
 				} else {
 					try self.deleteFile(at: url)
 				}

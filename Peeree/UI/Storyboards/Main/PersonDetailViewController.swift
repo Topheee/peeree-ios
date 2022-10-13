@@ -133,6 +133,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		// restart circle updates and update to the latest state
 		portraitImageView.pauseUpdates = false
 		pictureProgressManager.map { portraitImageView.progressDidUpdate($0.progress) }
+
+		UIAccessibility.post(notification: .layoutChanged, argument: nil)
 	}
 
 	/// set constraints to desired state. Call this in an animation block.

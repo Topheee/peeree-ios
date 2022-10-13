@@ -48,7 +48,7 @@ final class InAppNotificationController {
 		}
 
 		DispatchQueue.main.async {
-			let banner = NotificationBanner(title: title, subtitle: message, style: isNegative ? .danger : .info, colors: BannerColorer())
+			let banner = FloatingNotificationBanner(title: title, subtitle: message, style: isNegative ? .danger : .info, colors: BannerColorer())
 			banner.titleLabel?.textColor = UIColor.systemRed
 			if #available(iOS 13.0, *) {
 				banner.subtitleLabel?.textColor = UIColor.label

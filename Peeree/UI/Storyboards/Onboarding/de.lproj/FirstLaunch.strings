@@ -1,4 +1,7 @@
 
+/* Class = "UIViewController"; title = "Identity Page"; ObjectID = "1x6-5B-I1t"; */
+"1x6-5B-I1t.title" = "Identitätsseite";
+
 /* Class = "UILabel"; text = "Headline"; ObjectID = "2uW-xz-nDp"; */
 "2uW-xz-nDp.text" = "Überschrift";
 
@@ -14,14 +17,14 @@
 /* Class = "UIViewController"; title = "Welcome Page"; ObjectID = "9TP-2c-bIB"; */
 "9TP-2c-bIB.title" = "First";
 
+/* Class = "UIButton"; accessibilityHint = "Opens webpage"; ObjectID = "B8N-ff-SfB"; */
+"B8N-ff-SfB.accessibilityHint" = "Öffnet Webseite";
+
+/* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "B8N-ff-SfB"; */
+"B8N-ff-SfB.accessibilityLabel" = "Zeige Nutzungsbedingungen";
+
 /* Class = "UIViewController"; title = "Setup Page"; ObjectID = "BiV-OX-JbO"; */
-"BiV-OX-JbO.title" = "Second";
-
-/* Class = "UIButton"; accessibilityHint = "Opens webpage"; ObjectID = "CIc-zF-Z6d"; */
-"CIc-zF-Z6d.accessibilityHint" = "Öffnet Webseite";
-
-/* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "CIc-zF-Z6d"; */
-"CIc-zF-Z6d.accessibilityLabel" = "Zeige Nutzungsbedingungen";
+"BiV-OX-JbO.title" = "Einstellungsseite";
 
 /* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "Edb-N4-ctC"; */
 "Edb-N4-ctC.text" = "So schützen wir deine Privatsphäre:";
@@ -29,17 +32,29 @@
 /* Class = "UILabel"; text = "Create Your Identity"; ObjectID = "Gjn-yR-TEz"; */
 "Gjn-yR-TEz.text" = "Erstelle deine Identität";
 
+/* Class = "UIButton"; accessibilityHint = "Marks people as interesting"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.accessibilityHint" = "Marks people as interesting";
+
+/* Class = "UIButton"; accessibilityLabel = "Sample pin button"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.accessibilityLabel" = "Beispiel Pin-Knopf";
+
+/* Class = "UIButton"; configuration.title = "Pin"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.configuration.title" = "Pinnen";
+
+/* Class = "UIButton"; normalTitle = "Pin"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.normalTitle" = "Pinnen";
+
 /* Class = "UILabel"; text = "Create Your Profile"; ObjectID = "JLo-5M-7YM"; */
 "JLo-5M-7YM.text" = "Erstelle dein Profil";
 
 /* Class = "UILabel"; text = "Pin people to show your interest."; ObjectID = "NTY-bS-98x"; */
 "NTY-bS-98x.text" = "Pinne Leute, um dein Interesse zu zeigen.";
 
-/* Class = "UISwitch"; accessibilityHint = "Agrees to terms of use"; ObjectID = "PJj-hH-ACO"; */
-"PJj-hH-ACO.accessibilityHint" = "Akzeptiert Nutzungsbedinungen";
+/* Class = "UISwitch"; accessibilityHint = "Agrees to terms of use"; ObjectID = "Nh6-0z-Qqd"; */
+"Nh6-0z-Qqd.accessibilityHint" = "Akzeptiert Nutzungsbedinungen";
 
-/* Class = "UISwitch"; accessibilityLabel = "Accept terms of use"; ObjectID = "PJj-hH-ACO"; */
-"PJj-hH-ACO.accessibilityLabel" = "Akzeptiere Nutzungsbedinungen";
+/* Class = "UISwitch"; accessibilityLabel = "Accept"; ObjectID = "Nh6-0z-Qqd"; */
+"Nh6-0z-Qqd.accessibilityLabel" = "Akzeptieren";
 
 /* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.accessibilityLabel" = "Begrüßung";
@@ -47,14 +62,29 @@
 /* Class = "UILabel"; text = "Introduction"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.text" = "Einführung";
 
+/* Class = "UIImageView"; accessibilityHint = "Decor"; ObjectID = "TsH-Tf-btM"; */
+"TsH-Tf-btM.accessibilityHint" = "Deko";
+
+/* Class = "UIImageView"; accessibilityHint = "Decor"; ObjectID = "TsH-Tf-btM"; */
+"TsH-Tf-btM.accessibilityLabel" = "Peeree Logo";
+
 /* Class = "UILabel"; text = "This information is stored on device and is not sent to Peeree servers."; ObjectID = "UHy-zX-ffX"; */
 "UHy-zX-ffX.text" = "Diese Informationen werden nicht auf Peeree-Servern gespeichert.";
+
+/* Class = "UITextField"; accessibilityLabel = "Birthday"; ObjectID = "wnp-nT-XDC"; */
+"wnp-nT-XDC.accessibilityLabel" = "Geburtstag";
+
+/* Class = "UITextField"; placeholder = "Birthday"; ObjectID = "wnp-nT-XDC"; */
+"wnp-nT-XDC.placeholder" = "Geburtstag";
 
 /* Class = "UIButton"; accessibilityHint = "Finishes introduction"; ObjectID = "mz2-gM-3h9"; */
 "mz2-gM-3h9.accessibilityHint" = "Beendet Einführung";
 
 /* Class = "UIButton"; accessibilityLabel = "Launch app"; ObjectID = "mz2-gM-3h9"; */
 "mz2-gM-3h9.accessibilityLabel" = "Starte App";
+
+/* Class = "UIButton"; configuration.title = "Create Identity"; ObjectID = "mz2-gM-3h9"; */
+"mz2-gM-3h9.configuration.title" = "Identität Erstellen";
 
 /* Class = "UIButton"; normalTitle = "Create Identity"; ObjectID = "mz2-gM-3h9"; */
 "mz2-gM-3h9.normalTitle" = "Identität Erstellen";

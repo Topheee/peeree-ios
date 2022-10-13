@@ -21,55 +21,11 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 	private static let PortraitAttachmentIdentifier = "PortraitAttachmentIdentifier"
 
+	/// Prepares local and remote notification handling.
 	func initialize() {
-		_ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
-			if #available(iOS 10.0, *) {
-				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-					// Enable or disable features based on authorization.
-					guard error == nil else {
-						elog("Error requesting user notification authorization: \(error!.localizedDescription)")
-						return
-					}
-				}
-			} else {
-				let pinMatchMessageAction = UIMutableUserNotificationAction()
-				pinMatchMessageAction.identifier = NotificationActions.pinMatchMessage.rawValue
-				pinMatchMessageAction.title = NSLocalizedString("Send Message", comment: "Notification action title.")
-				let messageReplyAction = UIMutableUserNotificationAction()
-				messageReplyAction.identifier = NotificationActions.messageReply.rawValue
-				messageReplyAction.title = NSLocalizedString("Reply", comment: "Notification action title.")
-				messageReplyAction.behavior = .textInput
-				messageReplyAction.parameters = [UIUserNotificationTextInputActionButtonTitleKey : NSLocalizedString("Send", comment: "Text notification button title.")]
-				let peerAppearedPinAction = UIMutableUserNotificationAction()
-				peerAppearedPinAction.identifier = NotificationActions.peerAppearedPin.rawValue
-				peerAppearedPinAction.title = NSLocalizedString("Pin", comment: "Notification action title.")
-				let pinMatchCategory = UIMutableUserNotificationCategory()
-				let messageCategory = UIMutableUserNotificationCategory()
-				let peerAppearedCategory = UIMutableUserNotificationCategory()
-				pinMatchCategory.identifier = NotificationCategory.pinMatch.rawValue
-				messageCategory.identifier = NotificationCategory.message.rawValue
-				peerAppearedCategory.identifier = NotificationCategory.peerAppeared.rawValue
-				pinMatchCategory.setActions([pinMatchMessageAction], for: .default)
-				pinMatchCategory.setActions([pinMatchMessageAction], for: .minimal)
+		(try? BrowseFilter.getFilter()).map { filter = $0 }
 
-				UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: [pinMatchCategory, messageCategory, peerAppearedCategory]))
-			}
-		}
-
-		_ = PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
-			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
-			self.peerAppeared(peerID, again: again ?? false)
-		}
-
-		_ = AccountController.NotificationName.pinMatch.addAnyPeerObserver { peerID, _  in
-			self.pinMatchOccured(peerID)
-		}
-
-		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
-			guard let message = notification.userInfo?[PeerViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
-
-			self.received(message: message, from: peerID)
-		}
+		observeNotifications()
 
 		if #available(iOS 10.0, *) {
 			UIApplication.shared.registerForRemoteNotifications()
@@ -148,14 +104,13 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 
 		// unschedule all notifications of this category
+		let categoryID = response.notification.request.content.categoryIdentifier
 		center.getDeliveredNotifications { (notifications) in
-			var identifiers = [String]()
-			for notification in notifications {
-				if notification.request.content.categoryIdentifier == response.notification.request.content.categoryIdentifier {
-					identifiers.append(notification.request.identifier)
-				}
+			let sameCategoryIdentifiers: [String] = notifications.compactMap {
+				$0.request.content.categoryIdentifier == categoryID ? $0.request.identifier : nil
 			}
-			center.removeDeliveredNotifications(withIdentifiers: identifiers)
+
+			center.removeDeliveredNotifications(withIdentifiers: sameCategoryIdentifiers)
 		}
 	}
 
@@ -167,6 +122,9 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			return
 		}
 
+		// unschedule all remote notifications when we received a local one
+		dismissRemoteNotifications()
+
 		if #available(iOS 14.0, *) {
 			completionHandler(UNNotificationPresentationOptions.banner)
 		} else {
@@ -174,7 +132,14 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 	}
 
-	// MARK: Private Methods
+	// - MARK: Private
+
+	// MARK: Variables
+
+	/// Currently applied filter.
+	private var filter = BrowseFilter()
+
+	// MARK: Methods
 
 	/// shows an in-app or system (local) notification related to a peer
 	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory, displayInApp: Bool) {
@@ -231,6 +196,9 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				UIApplication.shared.presentLocalNotificationNow(note)
 			}
 		}
+
+		// unschedule all remote notifications when we received a local one
+		dismissRemoteNotifications()
 	}
 
 	private func received(message: String, from peerID: PeerID) {
@@ -248,6 +216,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
 			if tabBarVC.selectedIndex == AppDelegate.PinMatchesTabBarIndex {
 				messagesNotVisible = ((tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerID != peerID
+			} else {
+				tabBarVC.incrementItemBatch(itemIndex: AppDelegate.PinMatchesTabBarIndex)
 			}
 		}
 		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: messagesNotVisible)
@@ -256,7 +226,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
 		guard !again, let model = PeerViewModelController.viewModels[peerID],
 			  let idModel = PeereeIdentityViewModelController.viewModels[peerID],
-			  BrowseFilterSettings.shared.check(info: model.info, pinState: idModel.pinState) else { return }
+			  filter.check(info: model.info, pinState: idModel.pinState) else { return }
 
 		PeeringController.shared.interact(with: peerID) { interaction in
 			interaction.loadBio { _ in }
@@ -268,6 +238,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
 			if tabBarVC.selectedIndex == AppDelegate.BrowseTabBarIndex {
 				notBrowsing = (tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController)?.visibleViewController as? BrowseViewController == nil
+			} else {
+				tabBarVC.incrementItemBatch(itemIndex: AppDelegate.BrowseTabBarIndex)
 			}
 		}
 
@@ -285,6 +257,77 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
 			let alertBody = String(format: alertBodyFormat, PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString)
 			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch, displayInApp: true)
+		}
+	}
+
+	/// Unschedules all remote notifications.
+	private func dismissRemoteNotifications() {
+		let center = UNUserNotificationCenter.current()
+
+		center.getDeliveredNotifications { (notifications) in
+			let remoteNotificationIdentifiers: [String] = notifications.compactMap { notification in
+				guard notification.request.trigger is UNPushNotificationTrigger else { return nil }
+
+				return notification.request.identifier
+			}
+
+			center.removeDeliveredNotifications(withIdentifiers: remoteNotificationIdentifiers)
+		}
+	}
+
+	/// Listen on `NotificationCenter`.
+	private func observeNotifications() {
+		_ = PeeringController.Notifications.connectionChangedState.addObserver { notification in
+			if #available(iOS 10.0, *) {
+				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+					// Enable or disable features based on authorization.
+					guard error == nil else {
+						elog("Error requesting user notification authorization: \(error!.localizedDescription)")
+						return
+					}
+				}
+			} else {
+				let pinMatchMessageAction = UIMutableUserNotificationAction()
+				pinMatchMessageAction.identifier = NotificationActions.pinMatchMessage.rawValue
+				pinMatchMessageAction.title = NSLocalizedString("Send Message", comment: "Notification action title.")
+				let messageReplyAction = UIMutableUserNotificationAction()
+				messageReplyAction.identifier = NotificationActions.messageReply.rawValue
+				messageReplyAction.title = NSLocalizedString("Reply", comment: "Notification action title.")
+				messageReplyAction.behavior = .textInput
+				messageReplyAction.parameters = [UIUserNotificationTextInputActionButtonTitleKey : NSLocalizedString("Send", comment: "Text notification button title.")]
+				let peerAppearedPinAction = UIMutableUserNotificationAction()
+				peerAppearedPinAction.identifier = NotificationActions.peerAppearedPin.rawValue
+				peerAppearedPinAction.title = NSLocalizedString("Pin", comment: "Notification action title.")
+				let pinMatchCategory = UIMutableUserNotificationCategory()
+				let messageCategory = UIMutableUserNotificationCategory()
+				let peerAppearedCategory = UIMutableUserNotificationCategory()
+				pinMatchCategory.identifier = NotificationCategory.pinMatch.rawValue
+				messageCategory.identifier = NotificationCategory.message.rawValue
+				peerAppearedCategory.identifier = NotificationCategory.peerAppeared.rawValue
+				pinMatchCategory.setActions([pinMatchMessageAction], for: .default)
+				pinMatchCategory.setActions([pinMatchMessageAction], for: .minimal)
+
+				UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: [pinMatchCategory, messageCategory, peerAppearedCategory]))
+			}
+		}
+
+		_ = PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
+			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
+			self.peerAppeared(peerID, again: again ?? false)
+		}
+
+		_ = AccountController.NotificationName.pinMatch.addAnyPeerObserver { peerID, _  in
+			self.pinMatchOccured(peerID)
+		}
+
+		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
+			guard let message = notification.userInfo?[PeerViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
+
+			self.received(message: message, from: peerID)
+		}
+
+		_ = BrowseFilter.NotificationName.filterChanged.addObserver { notification in
+			(notification.object as? BrowseFilter).map { self.filter = $0 }
 		}
 	}
 }

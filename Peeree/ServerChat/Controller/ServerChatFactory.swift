@@ -113,9 +113,15 @@ public class ServerChatFactory {
 						return
 					}
 
-					try? self.removePasswordFromKeychain()
-					try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
-					try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
+					do { try self.removePasswordFromKeychain() } catch {
+						elog("deleting password failed: \(error)")
+					}
+					do { try removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey) } catch {
+						elog("deleting access token failed: \(error)")
+					}
+					do { try removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey) } catch {
+						elog("deleting refresh token failed: \(error)")
+					}
 
 					self.closeServerChat()
 
@@ -337,10 +343,24 @@ public class ServerChatFactory {
 
 			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: self.globalRestClient.credentials)
 
+			// we must remove old tokens before we can insert new ones
 			try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
 			try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
-			credentials.accessToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey) }
-			credentials.refreshToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey) }
+
+			credentials.accessToken.map {
+				do {
+					try persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey)
+				} catch {
+					wlog("could not persist access token in keychain: \(error.localizedDescription)")
+				}
+			}
+			credentials.refreshToken.map {
+				do {
+					try persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey)
+				} catch {
+					wlog("could not persist refresh token in keychain: \(error.localizedDescription)")
+				}
+			}
 
 			completion(.success(credentials))
 		}

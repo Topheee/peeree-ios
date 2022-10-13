@@ -28,6 +28,8 @@ final class PinMatchTableViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
+		tabBarController?.tabBar.items?[AppDelegate.PinMatchesTabBarIndex].badgeValue = nil
+
 		updateCache()
 		observeNotifications()
 	}

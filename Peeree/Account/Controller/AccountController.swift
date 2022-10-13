@@ -747,6 +747,7 @@ extension AccountController {
 			updatePinStatus(of: try self.id(of: peerID), force: force, completion)
 		} catch let error {
 			elog("Unknown PeerID \(peerID) in updatePinStatus(): \(error)")
+			completion?(.unpinned)
 		}
 	}
 }

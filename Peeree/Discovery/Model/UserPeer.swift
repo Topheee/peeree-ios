@@ -15,6 +15,12 @@ public final class UserPeer {
 
 	// MARK: Classes, Structs, Enums
 
+	/// Names of notifications sent by ``UserPeer``.
+	public enum NotificationName: String {
+		/// One of the properties of UserPeer's ``PeerInfo`` changed.
+		case changed
+	}
+
 	// MARK: Static Constants
 
 	/// The singleton instance of this class.
@@ -71,7 +77,7 @@ public final class UserPeer {
 			var err: Error? = nil
 			do {
 				if let pic = portrait {
-					try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: PersistedPeersController.StandardPortraitCompressionQuality)
+					try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: StandardPortraitCompressionQuality)
 				} else {
 					try self.deletePicture()
 				}
@@ -244,7 +250,7 @@ public final class UserPeer {
 		queue.async {
 			query()
 			self.syncToViewModel()
-			PeeringController.shared.restartAdvertising()
+			NotificationName.changed.postAsNotification(object: self)
 		}
 	}
 

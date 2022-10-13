@@ -504,6 +504,10 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			self.peerManagers.removeAll()
 			PeerViewModelController.clear()
 		})
+
+		notificationObservers.append(UserPeer.NotificationName.changed.addObserver { _ in
+			self.restartAdvertising()
+		})
 	}
 
 	/// Posts `connectionChangedState` notification and starts/stops the server chat module.

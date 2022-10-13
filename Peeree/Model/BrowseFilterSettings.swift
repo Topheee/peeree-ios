@@ -1,5 +1,5 @@
 //
-//  BrowseFilterSettings.swift
+//  BrowseFilter.swift
 //  Peeree
 //
 //  Created by Christopher Kobusch on 13.09.15.
@@ -8,91 +8,79 @@
 
 import Foundation
 
-/**
- *  This class encapsulates all values with which the remote peers are filtered before they are presented to the user.
- *  Except for the Singleton it is NOT thread-safe, and as there is currently only one writing entity there is no need to implement this.ssss
- */
-public final class BrowseFilterSettings: NSObject, NSSecureCoding {
-	private static let PrefKey = "peeree-prefs-browse-filter"
-	
-	private static let AgeMinKey = "ageMin"
-	private static let AgeMaxKey = "ageMax"
-	private static let GenderKey = "gender"
-	private static let OnlyWithAgeKey = "WithAgeKey"
-	private static let OnlyWithPictureKey = "WithPictureKey"
-	
-	private static var __once: () = { () -> Void in
-		Singleton.sharedInstance = unarchiveObjectFromUserDefs(PrefKey) ?? BrowseFilterSettings()
-	}()
-	private struct Singleton {
-		static var sharedInstance: BrowseFilterSettings!
-	}
-	
-	public static var shared: BrowseFilterSettings {
-		_ = BrowseFilterSettings.__once
-		return Singleton.sharedInstance
-	}
-	
-	public static var supportsSecureCoding : Bool {
-		return true
-	}
-	
-	public enum Notifications: String {
-		case filterChanged
-		
-		func post() {
-			postAsNotification(object: BrowseFilterSettings.shared)
-		}
-	}
-	
-	public enum GenderType: Int {
-		case unspecified = 0, male, female, queer
-	}
-	
-	/// range from 10..100
-	public var ageMin: Float = 10.0
-	/// range from 10..100 or 0, where 0 means ∞
-	public var ageMax: Float = 0.0
-	
-	public var gender: GenderType = .unspecified
-	
-	public var onlyWithAge: Bool = false
-	public var onlyWithPicture: Bool = false
-	
-	private override init() {}
-	
-	@objc required public init?(coder aDecoder: NSCoder) {
-		gender = GenderType(rawValue: aDecoder.decodeInteger(forKey: BrowseFilterSettings.GenderKey))!
-		ageMin = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMinKey)
-		ageMax = aDecoder.decodeFloat(forKey: BrowseFilterSettings.AgeMaxKey)
-		onlyWithAge = aDecoder.decodeBool(forKey: BrowseFilterSettings.OnlyWithAgeKey)
-		onlyWithPicture = aDecoder.decodeBool(forKey: BrowseFilterSettings.OnlyWithPictureKey)
-	}
-	
-	@objc public func encode(with aCoder: NSCoder) {
-		aCoder.encode(ageMin, forKey: BrowseFilterSettings.AgeMinKey)
-		aCoder.encode(ageMax, forKey: BrowseFilterSettings.AgeMaxKey)
-		aCoder.encode(gender.rawValue, forKey: BrowseFilterSettings.GenderKey)
-		aCoder.encode(onlyWithAge, forKey: BrowseFilterSettings.OnlyWithAgeKey)
-		aCoder.encode(onlyWithPicture, forKey: BrowseFilterSettings.OnlyWithPictureKey)
-	}
-	
-	func writeToDefaults() {
-		archiveObjectInUserDefs(self, forKey: BrowseFilterSettings.PrefKey)
-		Notifications.filterChanged.post()
+/// Encapsulates values on which the remote peers are filtered before they are presented to the user.
+struct BrowseFilter: Codable {
+	/// Key in `UserDefaults`.
+	private static let PrefKey = "BrowseFilter"
+
+	/// Key in `UserDefaults`.
+	//private static let AgeMinKey = "ageMin", AgeMaxKey = "ageMax", GenderOptionsKey = "genderOptions", OnlyWithAgeKey = "WithAgeKey", OnlyWithPictureKey = "WithPictureKey"
+
+	/// Retrieves the stored filter from `UserDefaults`.
+	public static func getFilter() throws -> BrowseFilter {
+		return try unarchiveFromUserDefs(BrowseFilter.self, PrefKey) ?? BrowseFilter()
 	}
 
+	/// Names of notifications sent by ``BrowseFilter``.
+	enum NotificationName: String {
+		/// The persisted filter changed; the sending object is the persisted ``BrowseFilter``.
+		case filterChanged
+	}
+
+	/// Only notify about specific genders.
+	struct GenderFilter: OptionSet, Codable {
+		let rawValue: Int
+
+		/// Include females.
+		static let females	= GenderFilter(rawValue: 1 << 0)
+
+		/// Include males.
+		static let males	= GenderFilter(rawValue: 1 << 1)
+
+		/// Include queers.
+		static let queers	= GenderFilter(rawValue: 1 << 2)
+
+		/// Include all genders.
+		static let all: GenderFilter = [.females, .males, .queers]
+	}
+	
+	/// Minimum age to be included; range from 10..100.
+	var ageMin: Float = 10.0
+
+	/// Maximum age to be included; range from 10..100 or 0, where 0 means ∞.
+	var ageMax: Float = 0.0
+
+	/// Genders to be included.
+	var gender: GenderFilter = GenderFilter.all
+
+	/// Include only people who have an age set.
+	var onlyWithAge: Bool = false
+
+	/// Include only people who have configured a portrait picture.
+	var onlyWithPicture: Bool = false
+
+	/// Persists this filter.
+	func writeToDefaults() throws {
+		try archiveInUserDefs(self, forKey: BrowseFilter.PrefKey)
+		NotificationName.filterChanged.postAsNotification(object: self)
+	}
+
+	/// Applies this filter and returns whether it fits.
 	func check(info: PeerInfo, pinState: PinState) -> Bool {
 		// always keep matched peers in filter
 		guard pinState != .pinMatch else { return true }
 
-		let matchingGender = gender == .unspecified || (gender == .female && info.gender == .female) || (gender == .male && info.gender == .male) || (gender == .queer && info.gender == .queer)
+		let matchingGender = (gender.contains(.females) && info.gender == .female) ||
+			(gender.contains(.males) && info.gender == .male) ||
+			(gender.contains(.queers) && info.gender == .queer)
+
 		var matchingAge: Bool
 		if let peerAge = info.age {
 			matchingAge = ageMin <= Float(peerAge) && (ageMax == 0.0 || ageMax >= Float(peerAge))
 		} else {
 			matchingAge = true
 		}
+
 		let hasRequiredProperties = (!onlyWithPicture || info.hasPicture) && (!onlyWithAge || info.age != nil)
 
 		return matchingAge && matchingGender && hasRequiredProperties
