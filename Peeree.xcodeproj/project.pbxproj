@@ -21,12 +21,12 @@
 		9D49A6802843EFBB0087EEB5 /* MXSessionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D49A67F2843EFBB0087EEB5 /* MXSessionExtensions.swift */; };
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
-		9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */; };
 		9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */; };
 		9D536B4428EDA77100B7207D /* AsymmetricCrypto.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */; };
 		9D536B4828EDBA7300B7207D /* KeychainAccess.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */; };
 		9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */; };
 		9D536B5128F0674500B7207D /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5028F0674500B7207D /* DequeModule */; };
+		9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */; };
 		9D544F57280D9B51008E7CDF /* ServerChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F56280D9B51008E7CDF /* ServerChat.swift */; };
 		9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */; };
 		9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5A280DE677008E7CDF /* KeychainAccess.swift */; };
@@ -137,7 +137,6 @@
 		9D49A67F2843EFBB0087EEB5 /* MXSessionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXSessionExtensions.swift; sourceTree = "<group>"; };
 		9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMatchTableViewController.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceControllerTests.swift; sourceTree = "<group>"; };
 		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppNotificationController.swift; sourceTree = "<group>"; };
 		9D536B4328EDA77100B7207D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
 		9D536B4528EDA77B00B7207D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
@@ -235,6 +234,7 @@
 				9D7608C1285527A7007F52AD /* MatrixSDK in Frameworks */,
 				9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */,
 				9D536B5128F0674500B7207D /* DequeModule in Frameworks */,
+				9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,7 +265,6 @@
 				9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */,
 				9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */,
 				9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */,
-				9D4E4FA827A9D0B000646F0A /* PersistenceControllerTests.swift */,
 			);
 			path = PeereeTests;
 			sourceTree = "<group>";
@@ -618,6 +617,7 @@
 				9D7608C0285527A7007F52AD /* MatrixSDK */,
 				9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */,
 				9D536B5028F0674500B7207D /* DequeModule */,
+				9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -685,6 +685,7 @@
 				9D7608BF285527A7007F52AD /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 				9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */,
 				9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */,
+				9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -814,7 +815,6 @@
 			files = (
 				9DC00AB52662F27500C1DA3C /* PeerInfoTests.swift in Sources */,
 				9DC00AB32662EED900C1DA3C /* AsymmetricCryptoTests.swift in Sources */,
-				9D4E4FA927A9D0B000646F0A /* PersistenceControllerTests.swift in Sources */,
 				9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */,
 				9DC00AB02662ED6A00C1DA3C /* BrowseFilterSettingsTests.swift in Sources */,
 			);
@@ -1185,6 +1185,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/yonat/MultiSelectSegmentedControl";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		9D7608BF285527A7007F52AD /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
@@ -1205,6 +1213,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */;
 			productName = DequeModule;
+		};
+		9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */;
+			productName = MultiSelectSegmentedControl;
 		};
 		9D7608C0285527A7007F52AD /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -17,17 +17,17 @@
 /* Class = "UIViewController"; title = "Setup Page"; ObjectID = "BiV-OX-JbO"; */
 "BiV-OX-JbO.title" = "Setup Page";
 
-/* Class = "UIButton"; accessibilityHint = "Opens webpage"; ObjectID = "CIc-zF-Z6d"; */
-"CIc-zF-Z6d.accessibilityHint" = "Opens webpage";
-
-/* Class = "UIButton"; accessibilityLabel = "View terms of use"; ObjectID = "CIc-zF-Z6d"; */
-"CIc-zF-Z6d.accessibilityLabel" = "View terms of use";
-
 /* Class = "UILabel"; text = "This is how we protect your Privacy:"; ObjectID = "Edb-N4-ctC"; */
 "Edb-N4-ctC.text" = "This is how we protect your Privacy:";
 
 /* Class = "UILabel"; text = "Create Your Identity"; ObjectID = "Gjn-yR-TEz"; */
 "Gjn-yR-TEz.text" = "Create Your Identity";
+
+/* Class = "UIButton"; configuration.title = "Pin"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.configuration.title" = "Pin";
+
+/* Class = "UIButton"; normalTitle = "Pin"; ObjectID = "ID0-Pb-0BP"; */
+"ID0-Pb-0BP.normalTitle" = "Pin";
 
 /* Class = "UILabel"; text = "Create Your Profile"; ObjectID = "JLo-5M-7YM"; */
 "JLo-5M-7YM.text" = "Create Your Profile";
@@ -35,11 +35,11 @@
 /* Class = "UILabel"; text = "Pin people to show your interest."; ObjectID = "NTY-bS-98x"; */
 "NTY-bS-98x.text" = "Pin people to show your interest.";
 
-/* Class = "UISwitch"; accessibilityHint = "Agrees to terms of use"; ObjectID = "PJj-hH-ACO"; */
-"PJj-hH-ACO.accessibilityHint" = "Agrees to terms of use";
+/* Class = "UISwitch"; accessibilityHint = "Agrees to terms of use"; ObjectID = "Nh6-0z-Qqd"; */
+"Nh6-0z-Qqd.accessibilityHint" = "Agrees to terms of use";
 
-/* Class = "UISwitch"; accessibilityLabel = "Accept terms of use"; ObjectID = "PJj-hH-ACO"; */
-"PJj-hH-ACO.accessibilityLabel" = "Accept terms of use";
+/* Class = "UISwitch"; accessibilityLabel = "Accept"; ObjectID = "Nh6-0z-Qqd"; */
+"Nh6-0z-Qqd.accessibilityLabel" = "Accept";
 
 /* Class = "UILabel"; accessibilityLabel = "Greeting"; ObjectID = "TFv-dL-32n"; */
 "TFv-dL-32n.accessibilityLabel" = "Greeting";

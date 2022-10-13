@@ -8,6 +8,9 @@
 
 import Foundation
 
+/// The JPEG compression quality when serializing portraits.
+let StandardPortraitCompressionQuality: CGFloat = 0.0
+
 /// The Peeree identity of a user combined with their mandatory info.
 public struct Peer: Codable, Equatable {
 	// MARK: - Public and Internal

@@ -218,3 +218,14 @@ extension UIAlertController {
 		return action
 	}
 }
+
+extension UITabBarController {
+	/// Adds `by` amount to the badge number at index `itemIndex`
+	func incrementItemBatch(itemIndex: Int, by: Int = 1) {
+		guard tabBar.items?.count ?? 0 > itemIndex else { return }
+
+		let oldCountString = tabBar.items?[itemIndex].badgeValue ?? "0"
+		let oldCount = Int(oldCountString) ?? 0
+		tabBar.items?[itemIndex].badgeValue = String(oldCount + by)
+	}
+}

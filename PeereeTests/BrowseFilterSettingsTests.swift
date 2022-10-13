@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import Peeree
+@testable import Peeree
 
 class BrowseFilterSettingsTests: XCTestCase {
 
@@ -22,27 +22,20 @@ class BrowseFilterSettingsTests: XCTestCase {
 	func testEncoding() throws {
 		// This is an example of a functional test case.
 		// Use XCTAssert and related functions to verify your tests produce the correct results.
-		let filter = BrowseFilterSettings.shared
-		filter.ageMin = 42
-		filter.ageMax = 42
-		filter.gender = .male
-		filter.onlyWithAge = true
-		filter.onlyWithPicture = true
-		if #available(iOS 11.0, *) {
-			let archiver = NSKeyedArchiver(requiringSecureCoding: true)
-			filter.encode(with: archiver)
-			let data = archiver.encodedData
-			let unarchiver = try NSKeyedUnarchiver(forReadingFrom: data)
-			let decodedFilter = BrowseFilterSettings(coder: unarchiver)
-			XCTAssertNotNil(decodedFilter)
-			XCTAssertEqual(filter.ageMin, decodedFilter!.ageMin)
-			XCTAssertEqual(filter.ageMax, decodedFilter!.ageMax)
-			XCTAssertEqual(filter.gender, decodedFilter!.gender)
-			XCTAssertEqual(filter.onlyWithAge, decodedFilter!.onlyWithAge)
-			XCTAssertEqual(filter.onlyWithPicture, decodedFilter!.onlyWithPicture)
-		} else {
-			// Fallback on earlier versions
-		}
+		var filter = BrowseFilter(ageMin: 42, ageMax: 42, gender: [.males], onlyWithAge: true, onlyWithPicture: true)
+
+		let encoder = JSONEncoder()
+		let data = try encoder.encode(filter)
+
+		let decoder = JSONDecoder()
+		let decodedFilter = try decoder.decode(BrowseFilter.self, from: data)
+
+		XCTAssertNotNil(decodedFilter)
+		XCTAssertEqual(filter.ageMin, decodedFilter.ageMin)
+		XCTAssertEqual(filter.ageMax, decodedFilter.ageMax)
+		XCTAssertEqual(filter.gender, decodedFilter.gender)
+		XCTAssertEqual(filter.onlyWithAge, decodedFilter.onlyWithAge)
+		XCTAssertEqual(filter.onlyWithPicture, decodedFilter.onlyWithPicture)
 	}
 
 	func testPerformanceExample() throws {

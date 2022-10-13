@@ -26,6 +26,9 @@ final class BrowseViewController: UITableViewController {
 	/// Data source for `tableView`.
 	private var table: [[(PeerID, Date)]] = [[], []]
 
+	/// Currently applied filter.
+	private var filter = BrowseFilter()
+
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var placeholderCellActive: Bool {
@@ -66,9 +69,10 @@ final class BrowseViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
-		tabBarController?.tabBar.items?[0].badgeValue = nil
-		UIApplication.shared.applicationIconBadgeNumber = 0
-		
+		(try? BrowseFilter.getFilter()).map { filter = $0 }
+
+		tabBarController?.tabBar.items?[AppDelegate.BrowseTabBarIndex].badgeValue = nil
+
 		networkButton.layer.cornerRadius = networkButton.bounds.height / 2.0
 		networkButton.tintColor = AppTheme.tintColor
 		if #available(iOS 13, *) {
@@ -237,7 +241,7 @@ final class BrowseViewController: UITableViewController {
 	private func addToTable(_ peerID: PeerID) -> Int {
 		let model = PeerViewModelController.viewModel(of: peerID)
 		let pinState = PeereeIdentityViewModelController.viewModel(of: peerID).pinState
-		let section: TableSection = BrowseFilterSettings.shared.check(info: model.info, pinState: pinState) ? .inFilter : .outFilter
+		let section: TableSection = filter.check(info: model.info, pinState: pinState) ? .inFilter : .outFilter
 		table[section.rawValue].insert((model.peerID, model.lastSeen), at: 0)
 		return section.rawValue
 	}
@@ -301,7 +305,8 @@ final class BrowseViewController: UITableViewController {
 		networkButton.setNeedsLayout()
 		tableView.isScrollEnabled = nowOnline
 	}
-	
+
+	/// Moves a peer within (!) its current section to the appropriate position, based on its `lastSeen` value.
 	private func reload(peerID: PeerID) {
 		guard let indexPath = indexPath(of: peerID), let oldSection = TableSection(rawValue: indexPath.section) else { return }
 
@@ -355,7 +360,7 @@ final class BrowseViewController: UITableViewController {
 		clearViewCache()
 		for displayedModel in displayedModels {
 			let pinState = PeereeIdentityViewModelController.viewModel(of: displayedModel.peerID).pinState
-			let section: TableSection = BrowseFilterSettings.shared.check(info: displayedModel.info, pinState: pinState) ? .inFilter : .outFilter
+			let section: TableSection = filter.check(info: displayedModel.info, pinState: pinState) ? .inFilter : .outFilter
 			table[section.rawValue].append((displayedModel.peerID, displayedModel.lastSeen))
 		}
 		self.tableView?.reloadData()
@@ -378,13 +383,20 @@ final class BrowseViewController: UITableViewController {
 		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
 			self?.updateCache()
 		})
+		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addObserver { [weak self] _ in
+			self?.updateCache()
+		})
 
 		let reloadBlock: (PeerID, Notification) -> Void = { [weak self] (peerID, _) in self?.reload(peerID: peerID) }
-		notificationObservers.append(PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver(reloadBlock))
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoaded.addAnyPeerObserver(reloadBlock))
 
-		notificationObservers.append(BrowseFilterSettings.Notifications.filterChanged.addObserver { [weak self] _ in
-			self?.updateCache()
+		notificationObservers.append(BrowseFilter.NotificationName.filterChanged.addObserver { [weak self] notification in
+			guard let strongSelf = self else { return }
+
+			if let newFilter = notification.object as? BrowseFilter {
+				strongSelf.filter = newFilter
+			}
+			strongSelf.updateCache()
 		})
 	}
 }
@@ -402,20 +414,26 @@ final class OfflineTableViewCell: UITableViewCell {
 		case .alone:
 			headLabel.text = NSLocalizedString("Looking out…", comment: "Heading of the placeholder shown in browse view if no peers are around.")
 			subheadLabel.text = NSLocalizedString("No Peeree users around.", comment: "Subhead of the placeholder shown in browse view if no peers are around.")
+
+			if #available(iOS 11.0, *) {
+				guard ProcessInfo.processInfo.thermalState != .critical else {
+					vibrancyEffectView.effect = nil
+					blurEffectView.effect = nil
+					return
+				}
+			}
+
 			let blurEffect: UIBlurEffect
 			if #available(iOS 13.0, *) {
 				subheadLabel.textColor = UIColor.label
-				blurEffect = UIBlurEffect(style: .systemMaterial)
+				blurEffect = UIBlurEffect(style: .systemThinMaterial)
 			} else {
 				subheadLabel.textColor = UIColor.black
 				blurEffect = UIBlurEffect(style: .extraLight)
 			}
 			blurEffectView.effect = blurEffect
 			vibrancyEffectView.effect = UIVibrancyEffect(blurEffect: blurEffect)
-			
-			if #available(iOS 11.0, *) {
-				guard ProcessInfo.processInfo.thermalState != .critical else { return }
-			}
+
 			let emitterLayer = CAEmitterLayer()
 			
 			emitterLayer.emitterPosition = frame.center

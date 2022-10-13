@@ -89,7 +89,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 
 		registerForKeyboardNotifications()
 
-		chatTableView?.scrollToBottom(animated: true)
+		chatTableView?.scrollToBottom(animated: false)
 		messageTextView.isEditable = false
 
 		ServerChatFactory.getOrSetupInstance { instanceResult in
