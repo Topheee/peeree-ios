@@ -11,13 +11,13 @@
 /* Class = "UISegmentedControl"; 17w-pX-qWh.segmentTitles[3] = "Queers"; ObjectID = "17w-pX-qWh"; */
 "17w-pX-qWh.segmentTitles[3]" = "Diverse";
 
-/* Class = "UILabel"; accessibilityHint = "Name of the peer you pin matched"; ObjectID = "1Eb-LT-XnB"; */
+/* Class = "UILabel"; accessibilityHint = "Name of your pin match"; ObjectID = "1Eb-LT-XnB"; */
 "1Eb-LT-XnB.accessibilityHint" = "Name deines Pin Matches";
 
-/* Class = "UILabel"; accessibilityLabel = "Peer Name"; ObjectID = "1Eb-LT-XnB"; */
+/* Class = "UILabel"; accessibilityLabel = "Person Name"; ObjectID = "1Eb-LT-XnB"; */
 "1Eb-LT-XnB.accessibilityLabel" = "Name";
 
-/* Class = "UILabel"; text = "Peer Name"; ObjectID = "1Eb-LT-XnB"; */
+/* Class = "UILabel"; text = "Person Name"; ObjectID = "1Eb-LT-XnB"; */
 "1Eb-LT-XnB.text" = "Name";
 
 /* Class = "UILabel"; text = "You have a"; ObjectID = "244-rB-aaA"; */
@@ -116,7 +116,7 @@
 /* Class = "UILabel"; accessibilityHint = "Name of the person in hand writing like font"; ObjectID = "eGm-zA-15S"; */
 "eGm-zA-15S.accessibilityHint" = "Name der Person in angedeuteter Handschrift";
 
-/* Class = "UILabel"; text = "Unterschrift"; ObjectID = "eGm-zA-15S"; */
+/* Class = "UILabel"; text = "Signature"; ObjectID = "eGm-zA-15S"; */
 "eGm-zA-15S.text" = "Unterschrift";
 
 /* Class = "UIButton"; accessibilityHint = "Pin this person and mark him or her as interesting"; ObjectID = "HFc-7O-6xq"; */
@@ -152,7 +152,7 @@
 /* Class = "UITextField"; placeholder = "Birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.placeholder" = "Geburtstag";
 
-/* Class = "UILabel"; accessibilityHint = "Can the information be trusted"; ObjectID = "MSB-TZ-Xpf"; */
+/* Class = "UILabel"; accessibilityHint = "Can the peer's information be trusted"; ObjectID = "MSB-TZ-Xpf"; */
 "MSB-TZ-Xpf.accessibilityHint" = "Kann den Infos des Gegenübers vertraut werden";
 
 /* Class = "UILabel"; accessibilityLabel = "Verification Status"; ObjectID = "MSB-TZ-Xpf"; */

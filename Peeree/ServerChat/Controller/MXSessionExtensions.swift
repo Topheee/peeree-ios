@@ -13,7 +13,7 @@ extension MXSession {
 	// MARK: Methods
 
 	/// Logs outs the session as well as cleans up more local stuff.
-	func extensiveLogout(_ completion: @escaping (Error?) -> ()) {
+	func extensiveLogout(_ completion: @escaping (Swift.Error?) -> ()) {
 		logout { response in
 			if response.isFailure {
 				elog("Failed to log out successfully - still cleaning up session data.")

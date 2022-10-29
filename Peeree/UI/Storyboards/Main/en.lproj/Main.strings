@@ -80,8 +80,20 @@
 /* Class = "UILabel"; text = "Identity"; ObjectID = "7cg-KF-1BD"; */
 "7cg-KF-1BD.text" = "Identity";
 
+/* Class = "UITextView"; accessibilityHint = "Contains to-be-sent message"; ObjectID = "7Il-00-It7"; */
+"7Il-00-It7.accessibilityHint" = "Contains to-be-sent message";
+
+/* Class = "UITextView"; accessibilityLabel = "Message field"; ObjectID = "7Il-00-It7"; */
+"7Il-00-It7.accessibilityLabel" = "Message field";
+
 /* Class = "UIViewController"; title = "Me"; ObjectID = "8rJ-Kc-sve"; */
 "8rJ-Kc-sve.title" = "Me";
+
+/* Class = "UIView"; accessibilityHint = "Notify about selected genders"; ObjectID = "9at-7m-HHE"; */
+"9at-7m-HHE.accessibilityHint" = "Notify about selected genders";
+
+/* Class = "UIView"; accessibilityLabel = "Gender filter"; ObjectID = "9at-7m-HHE"; */
+"9at-7m-HHE.HHE.accessibilityLabel" = "Gender filter";
 
 /* Class = "UILabel"; text = "Tap to go online"; ObjectID = "9An-iq-LoL"; */
 "9An-iq-LoL.text" = "Tap to go online";
@@ -119,6 +131,18 @@
 /* Class = "UIButton"; normalTitle = "Button"; ObjectID = "HFc-7O-6xq"; */
 "HFc-7O-6xq.normalTitle" = "Pin";
 
+/* Class = "UILabel"; accessibilityLabel = "Last seen"; ObjectID = "IbQ-rS-HPJ"; */
+"IbQ-rS-HPJ.accessibilityLabel" = "Last seen";
+
+/* Class = "UILabel"; text = "now"; ObjectID = "IbQ-rS-HPJ"; */
+"IbQ-rS-HPJ.text" = "now";
+
+/* Class = "UIButton"; accessibilityHint = "Sends message"; ObjectID = "kJ7-ps-KKx"; */
+"kJ7-ps-KKx.accessibilityHint" = "Sends message";
+
+/* Class = "UIButton"; accessibilityLabel = "Send"; ObjectID = "kJ7-ps-KKx"; */
+"kJ7-ps-KKx.accessibilityLabel" = "Send";
+
 /* Class = "UITextField"; accessibilityHint = "Safes your birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.accessibilityHint" = "Safes your birthday";
 
@@ -128,8 +152,8 @@
 /* Class = "UITextField"; placeholder = "Birthday"; ObjectID = "KtY-qD-KuZ"; */
 "KtY-qD-KuZ.placeholder" = "Birthday";
 
-/* Class = "UILabel"; accessibilityHint = "Can the peers information be trusted"; ObjectID = "MSB-TZ-Xpf"; */
-"MSB-TZ-Xpf.accessibilityHint" = "Can the peers information be trusted";
+/* Class = "UILabel"; accessibilityHint = "Can the peer's information be trusted"; ObjectID = "MSB-TZ-Xpf"; */
+"MSB-TZ-Xpf.accessibilityHint" = "Can the peer's information be trusted";
 
 /* Class = "UILabel"; accessibilityLabel = "Verification Status"; ObjectID = "MSB-TZ-Xpf"; */
 "MSB-TZ-Xpf.accessibilityLabel" = "Verification Status";
@@ -167,7 +191,10 @@
 /* Class = "UIImageView"; accessibilityLabel = "Portrait"; ObjectID = "S6f-fD-kvO"; */
 "S6f-fD-kvO.accessibilityLabel" = "Portrait";
 
-/* Class = "UILabel"; text = "Message"; ObjectID = "TSY-tA-LTd"; */
+/* Class = "UITextView"; accessibilityLabel = "Message"; ObjectID = "TSY-tA-LTd"; */
+"TSY-tA-LTd.accessibilityLabel" = "Message";
+
+/* Class = "UITextView"; text = "Message"; ObjectID = "TSY-tA-LTd"; */
 "TSY-tA-LTd.text" = "Message";
 
 /* Class = "UIBarButtonItem"; title = "Dismiss"; ObjectID = "TrO-49-JEM"; */
@@ -199,6 +226,12 @@
 
 /* Class = "UIViewController"; title = "Person Detail"; ObjectID = "bgg-zV-1WC"; */
 "bgg-zV-1WC.title" = "Person Detail";
+
+/* Class = "UIView"; accessibilityHint = "Tap to expand biography"; ObjectID = "cqN-Sb-ZzT"; */
+"cqN-Sb-ZzT.accessibilityHint" = "Tap to expand biography";
+
+/* Class = "UIView"; accessibilityLabel = "Bio pane"; ObjectID = "cqN-Sb-ZzT"; */
+"cqN-Sb-ZzT.accessibilityLabel" = "Bio pane";
 
 /* Class = "UITableViewSection"; headerTitle = "Age"; ObjectID = "dfr-MX-xyY"; */
 "dfr-MX-xyY.headerTitle" = "Age";
@@ -239,6 +272,9 @@
 /* Class = "UINavigationItem"; title = "Your Profile"; ObjectID = "i5d-ig-BH3"; */
 "i5d-ig-BH3.title" = "Your Profile";
 
+/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
+"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
+
 /* Class = "UILabel"; text = "Peer ID"; ObjectID = "i9C-MG-2LW"; */
 "i9C-MG-2LW.text" = "Peer ID";
 
@@ -271,9 +307,6 @@
 
 /* Class = "UILabel"; text = "Peer Name"; ObjectID = "K43-43-CyP"; */
 "K43-43-CyP.text" = "Peer Name";
-
-/* Class = "UILabel"; accessibilityLabel = "Unique Peeree identifier"; ObjectID = "i9C-MG-2LW"; */
-"i9C-MG-2LW.accessibilityLabel" = "Unique Peeree identifier";
 
 /* Class = "UINavigationItem"; title = "Traits"; ObjectID = "jAB-Yb-sIj"; */
 "jAB-Yb-sIj.title" = "Traits";
@@ -317,13 +350,13 @@
 /* Class = "UILabel"; text = "∞"; ObjectID = "nxn-9p-M99"; */
 "nxn-9p-M99.text" = "∞";
 
-/* Class = "UILabel"; accessibilityLabel = "Peer Name"; ObjectID = "oo4-4n-i4a"; */
-"oo4-4n-i4a.accessibilityLabel" = "Peer Name";
+/* Class = "UILabel"; accessibilityLabel = "Person Name"; ObjectID = "oo4-4n-i4a"; */
+"oo4-4n-i4a.accessibilityLabel" = "Person Name";
 
 /* Class = "UILabel"; text = "Christopher \"Topher\" Kobusch"; ObjectID = "oo4-4n-i4a"; */
 "oo4-4n-i4a.text" = "Christopher \"Topher\" Kobusch";
 
-/* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "sCY-WJ-efU"; */
+/* Class = "UIBarButtonItem"; title = "Find"; ObjectID = "S8S-DB-afu"; */
 "S8S-DB-afu.title" = "Find";
 
 /* Class = "UITextField"; accessibilityHint = "Your publicly visible name"; ObjectID = "sNx-nf-ozM"; */
@@ -371,7 +404,7 @@
 /* Class = "UITextView"; accessibilityHint = "Your publicly visible biography"; ObjectID = "X6k-gy-LjE"; */
 "X6k-gy-LjE.accessibilityHint" = "Your publicly visible biography";
 
-/* Class = "UITextView"; accessibilityLabel = "Biography Field"; ObjectID = "X6k-gy-LjE"; */
+/* Class = "UITextView"; accessibilityLabel = "Biography"; ObjectID = "X6k-gy-LjE"; */
 "X6k-gy-LjE.accessibilityLabel" = "Biography";
 
 /* Class = "UITextView"; text = "Your Biography."; ObjectID = "X6k-gy-LjE"; */

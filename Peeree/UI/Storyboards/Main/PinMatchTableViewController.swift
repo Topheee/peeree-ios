@@ -92,6 +92,15 @@ final class PinMatchTableViewController: UITableViewController {
 		}
 	}
 
+	// MARK: UITableViewDelegate
+
+	@available(iOS 11.0, *)
+	override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+		guard !placeholderCellActive else { return nil }
+
+		return trailingSwipeActionsConfigurationFor(peerID: table[indexPath.row])
+	}
+
 	// MARK: UIScollViewDelegate
 
 	@available(iOS 11.0, *)
@@ -209,7 +218,7 @@ final class PinMatchTableViewController: UITableViewController {
 		if peerPath.row != 0 {
 			table.swapAt(0, peerPath.row)
 			tableView.moveRow(at: peerPath, to: topIndexPath)
-			tableView.reloadRows(at: [topIndexPath], with: .automatic)
+			tableView.reloadRows(at: [topIndexPath, peerPath], with: .automatic)
 		} else {
 			tableView.reloadRows(at: [topIndexPath], with: .automatic)
 		}

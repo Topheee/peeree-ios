@@ -199,27 +199,7 @@ final class BrowseViewController: UITableViewController {
 	override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
 		guard !placeholderCellActive else { return nil }
 
-		let peerID = self.table[indexPath.section][indexPath.row].0
-		let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
-
-		if idModel.pinState.isPinned {
-			let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (action, view, completion) in
-				AccountController.use({
-					$0.unpin(id: idModel.id)
-					DispatchQueue.main.async { completion(true) }
-				}, { DispatchQueue.main.async { completion(false) } })
-			}
-			return UISwipeActionsConfiguration(actions: [unpinAction])
-		} else {
-			let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
-				AccountController.use({ ac in
-					ac.pin(idModel.id)
-					DispatchQueue.main.async { completion(true) }
-				}, { DispatchQueue.main.async { completion(false) } })
-			}
-			pinAction.backgroundColor = AppTheme.tintColor
-			return UISwipeActionsConfiguration(actions: [pinAction])
-		}
+		return trailingSwipeActionsConfigurationFor(peerID: table[indexPath.section][indexPath.row].0)
 	}
 	
 	// MARK: UIScollViewDelegate

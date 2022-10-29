@@ -293,14 +293,22 @@ public class ServerChatFactory {
 					return
 				}
 
-				// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
-				credentials.homeServer = homeServerURL.absoluteString
+				self.prepare(credentials: credentials)
 
 				completion(.success(credentials))
 			}
 		}
 
 		passwordRawData.resetBytes(in: 0..<passwordRawData.count)
+	}
+
+	/// Set always same parameters on `credentials`.
+	private func prepare(credentials: MXCredentials) {
+		// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
+		credentials.homeServer = homeServerURL.absoluteString
+
+		// we currently only support one device
+		credentials.deviceId = userId
 	}
 
 	/// Log into server chat account, previously created with `createAccount()`.
@@ -342,6 +350,7 @@ public class ServerChatFactory {
 			}
 
 			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: self.globalRestClient.credentials)
+			self.prepare(credentials: credentials)
 
 			// we must remove old tokens before we can insert new ones
 			try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
@@ -372,6 +381,7 @@ public class ServerChatFactory {
 			let token = try secretFromKeychain(label: ServerChatAccessTokenKeychainKey)
 			let refreshToken = try secretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
 			let creds = MXCredentials(homeServer: homeServerURL.absoluteString, userId: userId, accessToken: token)
+			self.prepare(credentials: creds)
 			creds.refreshToken = refreshToken
 			setupInstance(with: creds, failure)
 		} catch let error {
