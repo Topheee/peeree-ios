@@ -77,10 +77,6 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
 			self.backButton.alpha = 1.0
 		}, completion: nil)
 	}
-	
-	override var prefersStatusBarHidden : Bool {
-		return true
-	}
 
 	// MARK: UITableViewDataSource
 

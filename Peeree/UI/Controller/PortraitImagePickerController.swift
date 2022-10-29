@@ -10,8 +10,12 @@ import UIKit
 import MobileCoreServices
 import Photos
 
+/// Informed party of ``PortraitImagePickerController``.
 protocol PortraitImagePickerControllerDelegate: AnyObject {
+	/// Return the view controller that should present the picker.
 	func viewControllerToPresentImagePicker() -> UIViewController
+
+	/// An image was successfully picked as portrait, or the portrait was deleted.
 	func picked(image: UIImage?)
 }
 
@@ -98,11 +102,20 @@ final class PortraitImagePickerController: NSObject, UIImagePickerControllerDele
 			self.delegate?.viewControllerToPresentImagePicker().dismiss(animated: true, completion: nil)
 		}
 	}
-	
+
+	/// Store `image` on disk and inform the delegate.
 	private func save(image: UIImage?) {
 		UserPeer.instance.modify(portrait: image?.cgImage) { error in
-			error.map { InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Saving Image Failed", comment: "Title of alert")) }
+			if let e = error {
+				self.pickingPortraitFailed(with: e)
+			} else {
+				DispatchQueue.main.async { self.delegate?.picked(image: image) }
+			}
 		}
-		delegate?.picked(image: image)
+	}
+
+	/// Something during the image picking process failed.
+	private func pickingPortraitFailed(with error: Error) {
+		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Saving Image Failed", comment: "Title of alert"))
 	}
 }

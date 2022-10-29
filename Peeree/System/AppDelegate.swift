@@ -96,6 +96,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			let notificationCenter = UNUserNotificationCenter.current()
 			notificationCenter.removeAllPendingNotificationRequests()
 			notificationCenter.removeAllDeliveredNotifications()
+
+			if #available(iOS 16.0, *) {
+				notificationCenter.setBadgeCount(0)
+			}
 		} else {
 			UIApplication.shared.cancelAllLocalNotifications()
 		}
@@ -128,8 +132,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-		ServerChatFactory.remoteNotificationsDeviceToken = deviceToken
 		ServerChatFactory.getOrSetupInstance(onlyLogin: true) { result in
+			ServerChatFactory.remoteNotificationsDeviceToken = deviceToken
 			switch result {
 			case .failure(let serverChatError):
 				switch serverChatError {

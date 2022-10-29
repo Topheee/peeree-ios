@@ -494,7 +494,7 @@
                                                                                 <rect key="frame" x="24" y="2" width="62.5" height="24"/>
                                                                                 <color key="backgroundColor" red="0.082352943720000002" green="0.5176470876" blue="0.36470589040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                                 <color key="tintColor" red="0.08235294118" green="0.51764705879999995" blue="0.36470588240000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                                <accessibility key="accessibilityConfiguration" label="Person Details"/>
+                                                                                <accessibility key="accessibilityConfiguration" label="Gender"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>

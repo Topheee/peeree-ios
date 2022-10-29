@@ -13,9 +13,6 @@ struct BrowseFilter: Codable {
 	/// Key in `UserDefaults`.
 	private static let PrefKey = "BrowseFilter"
 
-	/// Key in `UserDefaults`.
-	//private static let AgeMinKey = "ageMin", AgeMaxKey = "ageMax", GenderOptionsKey = "genderOptions", OnlyWithAgeKey = "WithAgeKey", OnlyWithPictureKey = "WithPictureKey"
-
 	/// Retrieves the stored filter from `UserDefaults`.
 	public static func getFilter() throws -> BrowseFilter {
 		return try unarchiveFromUserDefs(BrowseFilter.self, PrefKey) ?? BrowseFilter()
@@ -44,8 +41,8 @@ struct BrowseFilter: Codable {
 		static let all: GenderFilter = [.females, .males, .queers]
 	}
 	
-	/// Minimum age to be included; range from 10..100.
-	var ageMin: Float = 10.0
+	/// Minimum age to be included; range from 18..100.
+	var ageMin: Float = 18.0
 
 	/// Maximum age to be included; range from 10..100 or 0, where 0 means ∞.
 	var ageMax: Float = 0.0

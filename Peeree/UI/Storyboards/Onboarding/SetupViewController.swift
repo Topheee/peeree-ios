@@ -33,10 +33,6 @@ final class SetupViewController: UIViewController, UITextFieldDelegate, Portrait
 		}
 	}
 
-	override var prefersStatusBarHidden : Bool {
-		return true
-	}
-
 	// MARK: PortraitImagePickerControllerDelegate
 
 	func picked(image: UIImage?) {

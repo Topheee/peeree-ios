@@ -389,7 +389,19 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 #endif
 
 		peerIDLabel.text = model.peerID.uuidString
-		bioTextView.text = model.biography
+
+		bioTextView.text = model.biography != "" ? model.biography : NSLocalizedString("No Biography.", comment: "Placeholder for missing biography")
+
+		// make font italic if bio placeholder is shown
+		if let font = bioTextView.font {
+			let descriptor = font.fontDescriptor
+			let newSymbolicTraits = model.biography != "" ? descriptor.symbolicTraits.subtracting(UIFontDescriptor.SymbolicTraits.traitItalic) : descriptor.symbolicTraits.union(UIFontDescriptor.SymbolicTraits.traitItalic)
+			if let newDescriptor = descriptor.withSymbolicTraits(newSymbolicTraits) {
+				bioTextView.font = UIFont(descriptor: newDescriptor, size: 0.0)
+			}
+		}
+
+
 		hideOrShowPinRelatedViews()
 
 		title = info.nickname

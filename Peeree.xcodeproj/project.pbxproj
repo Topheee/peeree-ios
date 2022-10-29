@@ -18,6 +18,7 @@
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
 		9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
 		9D404617244370990068D22F /* GrowingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D404616244370990068D22F /* GrowingTextView.swift */; };
+		9D47CF4128F964F100A3123E /* PeereeFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */; };
 		9D49A6802843EFBB0087EEB5 /* MXSessionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D49A67F2843EFBB0087EEB5 /* MXSessionExtensions.swift */; };
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
@@ -134,6 +135,7 @@
 		9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseFilterSettingsTests.swift; sourceTree = "<group>"; };
 		9D400E611EBA2B9C0006480A /* AccountController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountController.swift; sourceTree = "<group>"; };
 		9D404616244370990068D22F /* GrowingTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowingTextView.swift; sourceTree = "<group>"; };
+		9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeereeFunctionsiOS.swift; path = Peeree/Helpers/PeereeFunctionsiOS.swift; sourceTree = "<group>"; };
 		9D49A67F2843EFBB0087EEB5 /* MXSessionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXSessionExtensions.swift; sourceTree = "<group>"; };
 		9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMatchTableViewController.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -473,6 +475,7 @@
 				9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */,
 				9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */,
 				9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */,
+				9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */,
 			);
 			name = Utility;
 			path = ..;
@@ -768,6 +771,7 @@
 				9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */,
 				9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */,
 				9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */,
+				9D47CF4128F964F100A3123E /* PeereeFunctionsiOS.swift in Sources */,
 				9D0CDD4D1D557F6C004EB3FB /* PeereeExtensions.swift in Sources */,
 				9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */,
 				9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */,
@@ -1013,7 +1017,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.5;
+				CURRENT_PROJECT_VERSION = 1.6.0;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -1024,7 +1028,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.5;
+				MARKETING_VERSION = 1.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1049,7 +1053,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.5.5;
+				CURRENT_PROJECT_VERSION = 1.6.0;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -1062,7 +1066,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.5.5;
+				MARKETING_VERSION = 1.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
