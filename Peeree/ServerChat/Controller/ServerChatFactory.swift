@@ -8,6 +8,7 @@
 
 import Foundation
 import MatrixSDK
+import KeychainWrapper
 
 /* All instance methods must be called on `ServerChatFactory.qQueue`. If they invoke a callback, that is always called on that queue as well. */
 

@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreBluetooth
+import KeychainWrapper
 
 /// Values of this type are intended to contain <code>CBCentral.identifier</code>'s only.
 typealias CentralID = UUID
