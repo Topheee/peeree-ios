@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import KeychainWrapper
 
 /// This class is intended for use on the main thread only!
 public final class PeereeIdentityViewModelController {

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import KeychainWrapper
 
 /// The JPEG compression quality when serializing portraits.
 let StandardPortraitCompressionQuality: CGFloat = 0.0

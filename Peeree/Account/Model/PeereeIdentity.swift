@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import KeychainWrapper
 
 /// The Peeree identity of a user in the social network.
 public struct PeereeIdentity: Codable {

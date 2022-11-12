@@ -23,14 +23,11 @@
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
 		9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */; };
 		9D51ED7F27A68BA800BF6C0A /* InAppNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */; };
-		9D536B4428EDA77100B7207D /* AsymmetricCrypto.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */; };
-		9D536B4828EDBA7300B7207D /* KeychainAccess.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */; };
 		9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */; };
 		9D536B5128F0674500B7207D /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5028F0674500B7207D /* DequeModule */; };
 		9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */; };
 		9D544F57280D9B51008E7CDF /* ServerChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F56280D9B51008E7CDF /* ServerChat.swift */; };
 		9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */; };
-		9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5A280DE677008E7CDF /* KeychainAccess.swift */; };
 		9D544F5D280F68C0008E7CDF /* PeereeIdentityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */; };
 		9D544F5F280F6922008E7CDF /* PeereeIdentityViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */; };
 		9D56535F279A1014003F31A2 /* UserPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D56535E279A1014003F31A2 /* UserPeer.swift */; };
@@ -40,6 +37,7 @@
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D7608C1285527A7007F52AD /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9D7608C0285527A7007F52AD /* MatrixSDK */; };
 		9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */; };
+		9D7FEAE2291B0B4600129703 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D7FEAE1291B0B4600129703 /* KeychainWrapper */; };
 		9D815B5527FF76C400B169E5 /* ServerChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D79074D27F3A08B00920D38 /* ServerChatModel.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
@@ -74,11 +72,9 @@
 		9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F724030480005EECB3 /* AccountAPI.swift */; };
 		9DB677FE24030480005EECB3 /* AuthenticationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB677F924030480005EECB3 /* AuthenticationAPI.swift */; };
 		9DC00AB02662ED6A00C1DA3C /* BrowseFilterSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */; };
-		9DC00AB32662EED900C1DA3C /* AsymmetricCryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */; };
 		9DC00AB52662F27500C1DA3C /* PeerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */; };
 		9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D38FB7B2631F4530066ABAD /* UserDefaultsMock.swift */; };
 		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
-		9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */; };
 		9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42C1EC46FD000A01AEF /* PeerID.swift */; };
@@ -140,13 +136,8 @@
 		9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinMatchTableViewController.swift; sourceTree = "<group>"; };
 		9D4D70A61DBA70C90065D23D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9D51ED7E27A68BA800BF6C0A /* InAppNotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppNotificationController.swift; sourceTree = "<group>"; };
-		9D536B4328EDA77100B7207D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
-		9D536B4528EDA77B00B7207D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AsymmetricCrypto.strings; sourceTree = "<group>"; };
-		9D536B4928EDBA7300B7207D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/KeychainAccess.strings; sourceTree = "<group>"; };
-		9D536B4B28EDBA7700B7207D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/KeychainAccess.strings; sourceTree = "<group>"; };
 		9D544F56280D9B51008E7CDF /* ServerChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChat.swift; sourceTree = "<group>"; };
 		9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatFactory.swift; sourceTree = "<group>"; };
-		9D544F5A280DE677008E7CDF /* KeychainAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainAccess.swift; sourceTree = "<group>"; };
 		9D544F5C280F68C0008E7CDF /* PeereeIdentityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentityViewModel.swift; sourceTree = "<group>"; };
 		9D544F5E280F6922008E7CDF /* PeereeIdentityViewModelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentityViewModelController.swift; sourceTree = "<group>"; };
 		9D56535E279A1014003F31A2 /* UserPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPeer.swift; sourceTree = "<group>"; };
@@ -195,12 +186,10 @@
 		9DB677F924030480005EECB3 /* AuthenticationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationAPI.swift; sourceTree = "<group>"; };
 		9DBC9F912676A4E900B68395 /* Peeree.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Peeree.entitlements; sourceTree = "<group>"; };
 		9DC00AA62662ED2200C1DA3C /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsymmetricCryptoTests.swift; sourceTree = "<group>"; };
 		9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
 		9DCB1445205E9F4F00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9DCB1447205EA0AF00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingDescriptionViewController.swift; sourceTree = "<group>"; };
-		9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsymmetricCrypto.swift; sourceTree = "<group>"; };
 		9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SynchronizedCollections.swift; path = Peeree/Helpers/SynchronizedCollections.swift; sourceTree = "<group>"; };
 		9DCE94631F30EDBA00F31330 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleMaskView.swift; sourceTree = "<group>"; };
@@ -237,6 +226,7 @@
 				9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */,
 				9D536B5128F0674500B7207D /* DequeModule in Frameworks */,
 				9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */,
+				9D7FEAE2291B0B4600129703 /* KeychainWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,7 +255,6 @@
 				9D38FB732631F38C0066ABAD /* Info.plist */,
 				9D38FB7B2631F4530066ABAD /* UserDefaultsMock.swift */,
 				9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */,
-				9DC00AB22662EED900C1DA3C /* AsymmetricCryptoTests.swift */,
 				9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */,
 			);
 			path = PeereeTests;
@@ -398,9 +387,7 @@
 			isa = PBXGroup;
 			children = (
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
-				9DCD96DE1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift */,
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
-				9D544F5A280DE677008E7CDF /* KeychainAccess.swift */,
 				9DE45F34280C0F870016D0DF /* Logging.swift */,
 				9DFE8A961F33769700264CFE /* NetworkReachability.swift */,
 				9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */,
@@ -519,14 +506,12 @@
 		9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */,
 				9DBC9F912676A4E900B68395 /* Peeree.entitlements */,
 				9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */,
 				9DDA3A4E1D77B6C600C2ADC8 /* InfoPlist */,
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D1AF3D1204AA2CF00B616AF /* Localizable.strings */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
-				9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */,
 			);
 			name = "Supporting Files";
 			path = ..;
@@ -621,6 +606,7 @@
 				9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */,
 				9D536B5028F0674500B7207D /* DequeModule */,
 				9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */,
+				9D7FEAE1291B0B4600129703 /* KeychainWrapper */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -689,6 +675,7 @@
 				9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */,
 				9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */,
 				9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */,
+				9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -709,9 +696,7 @@
 				9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
-				9D536B4428EDA77100B7207D /* AsymmetricCrypto.strings in Resources */,
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
-				9D536B4828EDBA7300B7207D /* KeychainAccess.strings in Resources */,
 				9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */,
 				9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
@@ -781,7 +766,6 @@
 				9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */,
 				9D7FE2A027975629000AE7C5 /* PersistedPeersController.swift in Sources */,
 				9D5D46EE280C6C73002174DB /* PeereeIdentity.swift in Sources */,
-				9DCD96DF1ED9FFDC00C5AC3C /* AsymmetricCrypto.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9DD61F621EAE33B6004EB56A /* APIs.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
@@ -793,7 +777,6 @@
 				9D8A59471B92FED800164C9F /* PersonDetailViewController.swift in Sources */,
 				9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */,
 				9DB677FC24030480005EECB3 /* AccountAPI.swift in Sources */,
-				9D544F5B280DE677008E7CDF /* KeychainAccess.swift in Sources */,
 				9D404617244370990068D22F /* GrowingTextView.swift in Sources */,
 				9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */,
 				9D544F59280D9DE4008E7CDF /* ServerChatFactory.swift in Sources */,
@@ -818,7 +801,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DC00AB52662F27500C1DA3C /* PeerInfoTests.swift in Sources */,
-				9DC00AB32662EED900C1DA3C /* AsymmetricCryptoTests.swift in Sources */,
 				9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */,
 				9DC00AB02662ED6A00C1DA3C /* BrowseFilterSettingsTests.swift in Sources */,
 			);
@@ -852,24 +834,6 @@
 				9DCB1445205E9F4F00BF38D1 /* en */,
 			);
 			name = FirstLaunch.storyboard;
-			sourceTree = "<group>";
-		};
-		9D536B4228EDA77100B7207D /* AsymmetricCrypto.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9D536B4328EDA77100B7207D /* en */,
-				9D536B4528EDA77B00B7207D /* de */,
-			);
-			name = AsymmetricCrypto.strings;
-			sourceTree = "<group>";
-		};
-		9D536B4A28EDBA7300B7207D /* KeychainAccess.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9D536B4928EDBA7300B7207D /* en */,
-				9D536B4B28EDBA7700B7207D /* de */,
-			);
-			name = KeychainAccess.strings;
 			sourceTree = "<group>";
 		};
 		9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */ = {
@@ -1205,6 +1169,14 @@
 				minimumVersion = 0.23.19;
 			};
 		};
+		9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Topheee/KeychainWrapper";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1227,6 +1199,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D7608BF285527A7007F52AD /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
+		};
+		9D7FEAE1291B0B4600129703 /* KeychainWrapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
+			productName = KeychainWrapper;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

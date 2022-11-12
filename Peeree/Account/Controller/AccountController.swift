@@ -9,6 +9,7 @@
 import Foundation
 import ImageIO
 import CoreServices
+import KeychainWrapper
 
 /// Informant of failures in the `AccountController`.
 public protocol AccountControllerDelegate {
@@ -80,8 +81,8 @@ public class AccountController: SecurityDataSource {
 		let keyPair: KeyPair
 		do {
 			// try to remove the old key, just to be sure
-			try? removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
-			try? removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
+			try? KeychainWrapper.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
+			try? KeychainWrapper.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
 
 			// this will add the pair to the keychain, from where it is read later by the constructor
 			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: true)
