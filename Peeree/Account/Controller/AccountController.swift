@@ -81,11 +81,11 @@ public class AccountController: SecurityDataSource {
 		let keyPair: KeyPair
 		do {
 			// try to remove the old key, just to be sure
-			try? KeychainWrapper.removeFromKeychain(tag: AccountController.PublicKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPublic, size: PeereeIdentity.KeySize)
-			try? KeychainWrapper.removeFromKeychain(tag: AccountController.PrivateKeyTag, keyType: PeereeIdentity.KeyType, keyClass: kSecAttrKeyClassPrivate, size: PeereeIdentity.KeySize)
+			try? KeychainWrapper.removePublicKeyFromKeychain(tag: Self.PublicKeyTag, algorithm: .ec, size: PeereeIdentity.KeySize)
+			try? KeychainWrapper.removePrivateKeyFromKeychain(tag: Self.PrivateKeyTag, algorithm: .ec, size: PeereeIdentity.KeySize)
 
 			// this will add the pair to the keychain, from where it is read later by the constructor
-			keyPair = try KeyPair(label: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: true)
+			keyPair = try KeyPair(privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize, persistent: true)
 
 			SwaggerClientAPI.dataSource = InitialSecurityDataSource(keyPair: keyPair)
 		} catch let error {
@@ -145,7 +145,7 @@ public class AccountController: SecurityDataSource {
 			throw createApplicationError(localizedDescription: NSLocalizedString("Unknown peer.", comment: "Requested information about an unknown peer."))
 		}
 
-		return PeereeIdentity(peerID: peerID, publicKey: try AsymmetricPublicKey(from: publicKeyData, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize))
+		return PeereeIdentity(peerID: peerID, publicKey: try AsymmetricPublicKey(from: publicKeyData, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize))
 	}
 
 	/// Returns whether we have a pin match with that specific PeerID. Note, that this does NOT imply we have a match with a concrete PeerInfo of that PeerID, as that PeerInfo may be a malicious peer
@@ -570,10 +570,8 @@ public class AccountController: SecurityDataSource {
 		}
 
 		do {
-			let ac = AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: try KeyPair(fromKeychainWith: AccountController.KeyLabel, privateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize))
-
-			return ac
-		} catch let error {
+			return AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: try KeyPair(fromKeychainWithPrivateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize))
+		} catch {
 			flog("cannot load our key from keychain: \(error)")
 			return nil
 		}

@@ -234,6 +234,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		}
 	}
 
+	func serverChatInternalErrorOccured(_ error: Error) {
+		elog("internal server chat error \(error)")
+	}
+
 	// MARK: Private Methods
 	
 	private func setupManualAppearance() {
