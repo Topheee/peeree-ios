@@ -75,7 +75,7 @@ public final class PeereeIdentityViewModelController {
 
 	/// Generates a fake crypto key; using it most likely crashes the app!
 	private static var bogusKey: AsymmetricPublicKey {
-		return try! KeyPair(label: "PeereeIdentityViewModelController", privateTag: Data(repeating: 42, count: 2), publicTag: Data(repeating: 42, count: 3), type: PeereeIdentity.KeyType, size: PeereeIdentity.KeySize, persistent: false).publicKey
+		return try! KeyPair(privateTag: Data(repeating: 42, count: 2), publicTag: Data(repeating: 42, count: 3), algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize, persistent: false).publicKey
 	}
 }
 

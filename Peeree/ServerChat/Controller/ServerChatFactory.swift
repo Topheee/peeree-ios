@@ -117,11 +117,11 @@ public class ServerChatFactory {
 					do { try self.removePasswordFromKeychain() } catch {
 						elog("deleting password failed: \(error)")
 					}
-					do { try removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey) } catch {
+					do { try removeGenericPasswordFromKeychain(account: self.keychainAccount, service: Self.AccessTokenKeychainService) } catch {
 						elog("deleting access token failed: \(error)")
 					}
-					do { try removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey) } catch {
-						elog("deleting refresh token failed: \(error)")
+					do { try removeGenericPasswordFromKeychain(account: self.keychainAccount, service: Self.RefreshTokenKeychainService) } catch {
+						dlog("deleting refresh token failed: \(error)")
 					}
 
 					self.closeServerChat()
@@ -140,6 +140,22 @@ public class ServerChatFactory {
 		globalRestClient.completionQueue = Self.dQueue
 	}
 
+	// MARK: Static Constants
+
+	/// Matrix refresh token service attribute in keychain.
+	private static let RefreshTokenKeychainService = "RefreshTokenKeychainService"
+
+	/// Matrix access token service attribute in keychain.
+	private static let AccessTokenKeychainService = "AccessTokenKeychainService"
+
+	/// Matrix deviceId service attribute in keychain.
+	private static let DeviceIDKeychainService = "DeviceIDKeychainService"
+
+	/// Matrix account password service attribute in keychain.
+	private static let ServerChatPasswordKeychainService = "ServerChatPasswordKeychainService"
+
+	/// Encoding used to store keychain values.
+	private static let KeychainEncoding = String.Encoding.utf8
 
 	// MARK: Static Variables
 
@@ -176,6 +192,9 @@ public class ServerChatFactory {
 
 	/// Matrix userId based on user's PeerID.
 	private var userId: String { return peerID.serverChatUserId }
+
+	/// Account used for all keychain operations.
+	private var keychainAccount: String { return peerID.uuidString }
 
 	// MARK: Methods
 
@@ -267,8 +286,7 @@ public class ServerChatFactory {
 
 		let registerParameters: [String: Any] = ["auth" : ["type" : kMXLoginFlowTypeDummy],
 												 "username" : username,
-												 "password" : passwordRawData.base64EncodedString(),
-												 "device_id" : userId]
+												 "password" : passwordRawData.base64EncodedString()]
 
 		globalRestClient.register(parameters: registerParameters) { registerResponse in
 			switch registerResponse.toResult() {
@@ -294,7 +312,15 @@ public class ServerChatFactory {
 					return
 				}
 
-				self.prepare(credentials: credentials)
+				do {
+					try self.storeCredentialsInKeychain(credentials)
+				} catch {
+					completion(.failure(.fatal(error)))
+					return
+				}
+
+				// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
+				credentials.homeServer = homeServerURL.absoluteString
 
 				completion(.success(credentials))
 			}
@@ -304,12 +330,12 @@ public class ServerChatFactory {
 	}
 
 	/// Set always same parameters on `credentials`.
-	private func prepare(credentials: MXCredentials) {
+	private func prepare(credentials: MXCredentials) throws {
 		// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
 		credentials.homeServer = homeServerURL.absoluteString
 
 		// we currently only support one device
-		credentials.deviceId = userId
+		credentials.deviceId = try genericPasswordFromKeychain(account: self.keychainAccount, service: Self.DeviceIDKeychainService, encoding: Self.KeychainEncoding)
 	}
 
 	/// Log into server chat account, previously created with `createAccount()`.
@@ -326,9 +352,7 @@ public class ServerChatFactory {
 											"identifier" : ["type" : kMXLoginIdentifierTypeUser, "user" : userId],
 											"password" : password,
 											// Patch: add the old login api parameters to make dummy login still working
-											"user" : userId,
-											// probably a bad idea for the far future to use the userId as the device_id here, but hell yeah
-											"device_id" : userId]) { response in
+											"user" : userId]) { response in
 			if let error = response.error as NSError?,
 			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
 			   mxErrCode == "M_INVALID_USERNAME" {
@@ -351,39 +375,47 @@ public class ServerChatFactory {
 			}
 
 			let credentials = MXCredentials(loginResponse: loginResponse, andDefaultCredentials: self.globalRestClient.credentials)
-			self.prepare(credentials: credentials)
 
-			// we must remove old tokens before we can insert new ones
-			try? removeSecretFromKeychain(label: ServerChatAccessTokenKeychainKey)
-			try? removeSecretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
+			do {
+				try self.storeCredentialsInKeychain(credentials)
+			} catch {
+				completion(.failure(.fatal(error)))
+				return
+			}
 
-			credentials.accessToken.map {
-				do {
-					try persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey)
-				} catch {
-					wlog("could not persist access token in keychain: \(error.localizedDescription)")
-				}
-			}
-			credentials.refreshToken.map {
-				do {
-					try persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey)
-				} catch {
-					wlog("could not persist refresh token in keychain: \(error.localizedDescription)")
-				}
-			}
+			// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
+			credentials.homeServer = homeServerURL.absoluteString
 
 			completion(.success(credentials))
+		}
+	}
+
+	/// Puts the access token and device ID into the keychain, and the refresh token as well (if available).
+	private func storeCredentialsInKeychain(_ credentials: MXCredentials) throws {
+		guard let accessToken = credentials.accessToken,
+			  let deviceId = credentials.deviceId else {
+			throw unexpectedNilError()
+		}
+
+		// possible old tokens are automatically overridden
+		try persistGenericPasswordInKeychain(accessToken, account: keychainAccount, service: Self.AccessTokenKeychainService, encoding: Self.KeychainEncoding)
+		try persistGenericPasswordInKeychain(deviceId, account: keychainAccount, service: Self.DeviceIDKeychainService, encoding: Self.KeychainEncoding)
+
+		// the refresh token might be missing
+		credentials.refreshToken.map {
+			try? persistGenericPasswordInKeychain($0, account: keychainAccount, service: Self.RefreshTokenKeychainService, encoding: Self.KeychainEncoding)
 		}
 	}
 
 	/// Tries to create a new session with a previous access token; prevents from creating new devices in Dendrite.
 	private func resumeSession(_ failure: @escaping (ServerChatError) -> Void) {
 		do {
-			let token = try secretFromKeychain(label: ServerChatAccessTokenKeychainKey)
-			let refreshToken = try secretFromKeychain(label: ServerChatRefreshTokenKeychainKey)
+			let token = try genericPasswordFromKeychain(account: keychainAccount, service:  Self.AccessTokenKeychainService, encoding: Self.KeychainEncoding)
 			let creds = MXCredentials(homeServer: homeServerURL.absoluteString, userId: userId, accessToken: token)
-			self.prepare(credentials: creds)
-			creds.refreshToken = refreshToken
+			try self.prepare(credentials: creds)
+			if let refreshToken = try? genericPasswordFromKeychain(account: keychainAccount, service: Self.RefreshTokenKeychainService, encoding: Self.KeychainEncoding) {
+				creds.refreshToken = refreshToken
+			}
 			setupInstance(with: creds, failure)
 		} catch let error {
 			failure(.fatal(error))
@@ -404,11 +436,12 @@ public class ServerChatFactory {
 				guard shouldPersist else { return }
 
 				// The credentials are passed by reference, so their token properties have changed by now.
-				credentials.accessToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatAccessTokenKeychainKey) }
-				credentials.refreshToken.map { try? persistSecretInKeychain(secret: $0, label: ServerChatRefreshTokenKeychainKey) }
+				credentials.accessToken.map { try? persistGenericPasswordInKeychain($0, account: self.keychainAccount, service:  Self.AccessTokenKeychainService, encoding: Self.KeychainEncoding) }
+				credentials.refreshToken.map { try? persistGenericPasswordInKeychain($0, account: self.keychainAccount, service: Self.RefreshTokenKeychainService, encoding: Self.KeychainEncoding) }
 			}
 		}, unauthenticatedHandler: { [weak self] mxError, isSoftLogout, isRefreshTokenAuth, completion in
 			// Block called when the rest client has become unauthenticated(E.g. refresh failed or server invalidated an access token).
+			// A client that receives such a response can try to refresh its access token, if it has a refresh token available. If it does not have a refresh token available, or refreshing fails with soft_logout: true, the client can acquire a new access token by specifying the device ID it is already using to the login API.
 
 			guard let strongSelf = self, !strongSelf.isDeletingAccount else { return }
 
@@ -464,16 +497,43 @@ public class ServerChatFactory {
 
 	/// Writes the `password` into the keychain as an internet password.
 	private func persistPasswordInKeychain(_ password: Data) throws {
-		try persistInternetPasswordInKeychain(account: userId, url: homeServerURL, password)
+		// while it is tempting to store the value as an internet password, the URL and especially it's port are part of the primary key
+		// since we belive this is subject to change in the future, we just store the password as a generic password
+		// note that previously the password was indeed stored as an internet password, although lots of the primary key attributes where not set
+		try persistGenericPasswordInKeychain(password, account: keychainAccount, service: Self.ServerChatPasswordKeychainService)
 	}
 
 	/// Retrieves our account's password from the keychain.
 	private func passwordFromKeychain() throws -> String {
-		return try internetPasswordFromKeychain(account: userId, url: homeServerURL)
+		do {
+			// try to retrieve the password the old way
+			let password = try internetPasswordFromKeychain(account: userId, url: homeServerURL)
+
+			// migrate it to new storage
+			do {
+				guard let pwData = password.data(using: Self.KeychainEncoding) else {
+					throw unexpectedNilError()
+				}
+
+				try persistPasswordInKeychain(pwData)
+				try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
+			} catch {
+				elog("password migration failed: \(error)")
+			}
+
+			return password
+		} catch {
+			// the new way
+			return try genericPasswordFromKeychain(account: keychainAccount, service: Self.ServerChatPasswordKeychainService, encoding: Self.KeychainEncoding)
+		}
 	}
 
 	/// force-delete local account information. Only use as a last resort!
 	private func removePasswordFromKeychain() throws {
-		try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
+		do {
+			try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
+		} catch {
+			try removeGenericPasswordFromKeychain(account: keychainAccount, service: Self.ServerChatPasswordKeychainService)
+		}
 	}
 }

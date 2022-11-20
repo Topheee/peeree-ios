@@ -49,4 +49,7 @@ public protocol ServerChatDelegate: AnyObject {
 	///
 	/// - Parameter error: Set if the server chat session became invalid.
 	func serverChatClosed(error: Error?)
+
+	/// An unexpected error occurred, mostly network-related; use for logging.
+	func serverChatInternalErrorOccured(_ error: Error)
 }

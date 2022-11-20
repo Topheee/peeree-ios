@@ -19,9 +19,6 @@ extension MXSession {
 				elog("Failed to log out successfully - still cleaning up session data.")
 			}
 			// *** roughly based on MXKAccount.closeSession(true) ***
-			// Force a reload of device keys at the next session start.
-			// This will fix potential UISIs other peoples receive for our messages.
-			self.crypto?.resetDeviceKeys()
 			self.scanManager?.deleteAllAntivirusScans()
 			self.aggregations?.resetData()
 			self.close()

@@ -15,6 +15,10 @@ public struct PeereeIdentity: Codable {
 
 	/// Keychain property
 	public static let KeyType = kSecAttrKeyTypeEC
+
+	/// Keychain property
+	public static let KeyAlgorithm = AsymmetricAlgorithm.ec
+
 	/// Keychain property
 	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
 
@@ -27,7 +31,7 @@ public struct PeereeIdentity: Codable {
 	/// Constructs a `PeereeIdentity` from a `PeerID` and the binary representation of a public key.
 	init(peerID: PeerID, publicKeyData: Data) throws {
 		self.peerID = peerID
-		self.publicKey = try AsymmetricPublicKey(from: publicKeyData, type: Self.KeyType, size: Self.KeySize)
+		self.publicKey = try AsymmetricPublicKey(from: publicKeyData, algorithm: Self.KeyAlgorithm, size: Self.KeySize)
 	}
 
 	// MARK: Constants

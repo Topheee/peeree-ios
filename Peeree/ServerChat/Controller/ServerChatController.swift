@@ -34,9 +34,6 @@ final class ServerChatController: ServerChat {
 		self.roomIdsListeningOn.removeAll()
 
 		// *** roughly based on MXKAccount.closeSession(true) ***
-		// Force a reload of device keys at the next session start.
-		// This will fix potential UISIs other peoples receive for our messages.
-		session.crypto?.resetDeviceKeys()
 		session.scanManager?.deleteAllAntivirusScans()
 		session.aggregations?.resetData()
 		session.close()
@@ -126,7 +123,7 @@ final class ServerChatController: ServerChat {
 		}
 
 		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
-			switch response.toResult() {
+			switch response {
 			case .failure(let error):
 				elog("setPusher() failed: \(error)")
 				self.delegate?.configurePusherFailed(error)
@@ -354,26 +351,62 @@ final class ServerChatController: ServerChat {
 
 	/// Tries to recover from certain errors (currently only `M_FORBIDDEN`); must be called from `dQueue`.
 	private func handle<T>(response: MXResponse<T>, in room: MXRoom, with peerID: PeerID, _ completion: @escaping (Result<T, ServerChatError>) -> Void) {
-		guard (response.error as? NSError)?.userInfo["errcode"] as? String == kMXErrCodeStringForbidden else {
-			completion(response.toResult().mapError { .sdk($0) })
+		guard let nsError = response.error as? NSError else {
+			completion(response.toResult().mapError { .fatal($0) })
 			return
 		}
 
-		self.forget(room: room) { error in
-			dlog("forgetting room after we got a forbidden error: \(error?.localizedDescription ?? "no error")")
-		}
+		if let matrixErrCode = nsError.userInfo["errcode"] as? String {
+			// this is a MXError
 
-		refreshPinStatus(of: peerID, force: true, {
-			self.dQueue.async {
-				// TODO: knock on room instead once that is supported by MatrixSDK
-				self.getOrCreateRoom(with: peerID) { createRoomResult in
-					dlog("creating new room after re-pin completed: \(createRoomResult)")
-					completion(response.toResult().mapError { .sdk($0) })
+			switch matrixErrCode {
+			case kMXErrCodeStringForbidden:
+				self.forget(room: room) { error in
+					dlog("forgetting room after we got a forbidden error: \(error?.localizedDescription ?? "no error")")
+
+					self.refreshPinStatus(of: peerID, force: true, {
+						self.dQueue.async {
+							// TODO: knock on room instead once that is supported by MatrixSDK
+							self.getOrCreateRoom(with: peerID) { createRoomResult in
+								dlog("creating new room after re-pin completed: \(createRoomResult)")
+								completion(response.toResult().mapError { .sdk($0) })
+							}
+						}
+					}, {
+						completion(.failure(.cannotChat(peerID, .unmatched)))
+					})
 				}
+			default:
+				completion(response.toResult().mapError { .sdk($0) })
 			}
-		}, {
-			completion(.failure(.cannotChat(peerID, .unmatched)))
-		})
+		} else {
+			// NSError
+
+			switch nsError.code {
+			case Int(MXEncryptingErrorUnknownDeviceCode.rawValue):
+				// we trust all devices by default - this should not be necessary in the future
+				guard let crypto = session.crypto, let unknownDevices = nsError.userInfo[MXEncryptingErrorUnknownDeviceDevicesKey] as? MXUsersDevicesMap<MXDeviceInfo> else {
+					completion(response.toResult().mapError { .fatal($0) })
+					return
+				}
+
+				unknownDevices.map.forEach { (userId: String, deviceMap: [String : MXDeviceInfo]) in
+					deviceMap.forEach { (deviceId: String, deviceInfo: MXDeviceInfo) in
+						crypto.setDeviceVerification(MXDeviceVerification.verified, forDevice: deviceId, ofUser: userId, success: {
+							dlog("trusted device \(deviceId) of user \(userId).")
+						}, failure: { deviceVerificationError in
+							elog("failed to trust device \(deviceId) of user \(userId): \(deviceVerificationError.localizedDescription).")
+							self.delegate?.serverChatInternalErrorOccured(deviceVerificationError)
+						})
+					}
+				}
+
+				completion(response.toResult().mapError { .fatal($0) })
+
+			default:
+				completion(response.toResult().mapError { .sdk($0) })
+			}
+		}
 	}
 
 	/// Join the Matrix room identified by `roomId`.
@@ -528,7 +561,10 @@ final class ServerChatController: ServerChat {
 				self.listenToEvents(in: invitedRoom.room, with: peerID)
 			} else {
 				self.reallyCreateRoom(with: peerID) { result in
-					result.error.map { elog("failed to really create room with \(peerID): \($0)")}
+					result.error.map {
+						elog("failed to really create room with \(peerID): \($0)")
+						self.delegate?.serverChatInternalErrorOccured($0)
+					}
 				}
 			}
 		}
@@ -578,8 +614,6 @@ final class ServerChatController: ServerChat {
 				completion(setStoreResponse.error ?? unexpectedNilError())
 				return
 			}
-			// as we do everything in the background, verifying each device does not give enough benefit here
-			self.session.crypto?.warnOnUnknowDevices = false
 
 			let filter = MXFilterJSONModel.syncFilter(withMessageLimit: 10)!
 			self.session.start(withSyncFilter: filter) { response in
@@ -705,8 +739,6 @@ extension MXResponse {
 			return .failure(error)
 		case .success(let value):
 			return .success(value)
-		@unknown default:
-			return .failure(unexpectedEnumValueError())
 		}
 	}
 }
