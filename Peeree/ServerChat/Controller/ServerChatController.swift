@@ -133,6 +133,14 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
+	/// Sends read receipts for all messages with `peerID`.
+	func markAllMessagesRead(of peerID: PeerID) {
+		session.getJoinedOrInvitedRoom(with: peerID.serverChatUserId, bothJoined: true) { room in
+			// unfortunately, the MatrixSDK does not support "private" read receipts at this point, but we need this for a correct application icon badge count on remote notification receipt
+			room?.markAllAsRead()
+		}
+	}
+
 	// MARK: - Private
 
 	// MARK: Static Constants
