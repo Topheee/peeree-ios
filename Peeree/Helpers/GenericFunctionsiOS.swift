@@ -199,14 +199,14 @@ extension UITextField {
 }
 
 extension UITableView {
+	/// Makes the last row visible.
 	func scrollToBottom(animated: Bool) {
-		var numberOfRows = 0
-		let nSections = self.numberOfSections
-		for section in 0..<nSections {
-			numberOfRows = numberOfRows + self.numberOfRows(inSection: section)
-		}
-		if (numberOfRows > 0) {
-			self.scrollToRow(at: IndexPath(row:(numberOfRows - 1), section: nSections-1), at: .bottom, animated: animated)
+		let lastSection = self.numberOfSections - 1
+		if (lastSection > -1) {
+			let lastRow = self.numberOfRows(inSection: lastSection) - 1
+			if (lastRow > -1) {
+				self.scrollToRow(at: IndexPath(row: lastRow, section: lastSection), at: .bottom, animated: animated)
+			}
 		}
 	}
 }

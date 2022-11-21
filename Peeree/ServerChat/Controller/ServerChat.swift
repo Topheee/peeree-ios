@@ -26,6 +26,9 @@ public protocol ServerChat {
 
 	/// Configure remote push notifications.
 	func configurePusher(deviceToken: Data)
+
+	/// Sends read receipts for all messages with `peerID`.
+	func markAllMessagesRead(of peerID: PeerID)
 }
 
 /// Server chat informed party.

@@ -103,6 +103,8 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 					error.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
 					guard error == nil else { return }
 
+					serverChat.markAllMessagesRead(of: self.peerID)
+
 					DispatchQueue.main.async {
 						self.messageTextView.isEditable = true
 						self.messageTextView.becomeFirstResponder()
@@ -116,6 +118,10 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		super.viewWillDisappear(animated)
 
 		messageTextView?.resignFirstResponder()
+
+		ServerChatFactory.getOrSetupInstance { instanceResult in
+			instanceResult.value?.markAllMessagesRead(of: self.peerID)
+		}
 	}
 
 	override func viewDidDisappear(_ animated: Bool) {
@@ -171,12 +177,9 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 			inset = 0.0
 		}
 
-		messageBottomConstraint.constant = 0.0 + (up ? keyboardFrame.size.height - inset : 0.0)
-		UIView.animateAlongKeyboard(notification: keyboardNotification, animations: {
+		messageBottomConstraint.constant = up ? keyboardFrame.size.height - inset : 0.0
+		UIView.animateAlongKeyboard(notification: keyboardNotification) {
 			self.view.layoutIfNeeded()
-		}, completion: nil)
-		if up {
-			chatTableView?.scrollToBottom(animated: true)
 		}
 	}
 
@@ -194,6 +197,13 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		notificationObservers.append(ServerChatNotificationName.readyToChat.addPeerObserver(for: peerID) { [weak self] _ in
 			self?.messageTextView?.isEditable = true
 			self?.messageTextView?.becomeFirstResponder()
+		})
+		notificationObservers.append(UIApplication.willResignActiveNotification.addObserver { [weak self] _ in
+			guard let strongSelf = self else { return }
+
+			ServerChatFactory.getOrSetupInstance { instanceResult in
+				instanceResult.value?.markAllMessagesRead(of: strongSelf.peerID)
+			}
 		})
 	}
 
