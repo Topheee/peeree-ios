@@ -20,20 +20,13 @@ final class SetupIdentityViewController: UIViewController {
 	@IBAction func updateLaunchButton(_ sender: Any) {
 		launchAppButton.layer.removeAllAnimations()
 		launchAppButton.transform = CGAffineTransform.identity
-		if termsSwitch.isOn {
-			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [.allowUserInteraction], animations: { () -> Void in
-				self.launchAppButton.alpha = 1.0
-			}, completion: { finished in
-				guard !UIAccessibility.isReduceMotionEnabled else { return }
-				UIView.animate(withDuration: 0.5, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 3.0, options: [.repeat, .autoreverse, .allowUserInteraction], animations: { () -> Void in
-					self.launchAppButton.transform = self.launchAppButton.transform.scaledBy(x: 0.97, y: 0.97)
-				}, completion: nil)
-			})
-		} else {
-			UIView.animate(withDuration: 1.0, delay: 0.1, usingSpringWithDamping: 1.0, initialSpringVelocity: 1.0, options: [], animations: { () -> Void in
-				self.launchAppButton.alpha = 0.0
-			}, completion: nil)
-		}
+		launchAppButton.isEnabled = termsSwitch.isOn
+
+		guard termsSwitch.isOn && !UIAccessibility.isReduceMotionEnabled else { return }
+
+		UIView.animate(withDuration: 0.67, delay: 1.2, usingSpringWithDamping: 1.0, initialSpringVelocity: 2.7, options: [.repeat, .autoreverse, .allowUserInteraction], animations: { () -> Void in
+			self.launchAppButton.transform = self.launchAppButton.transform.scaledBy(x: 0.96, y: 0.96)
+		}, completion: nil)
 	}
 
 	@IBAction func finishIntroduction(_ sender: AnyObject) {
@@ -47,7 +40,7 @@ final class SetupIdentityViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		launchAppButton.alpha = 0.0
+		launchAppButton.isEnabled = termsSwitch.isOn
 
 		let termsAgreement = NSLocalizedString("I agree to the ", comment: "Link button text in onboarding")
 		let terms = NSLocalizedString("Terms of Use", comment: "Colored link name in button text in onboarding")

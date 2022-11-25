@@ -172,13 +172,13 @@ extension AppDelegate {
 
 	@objc func toggleNetwork(_ sender: AnyObject) {
 		if PeeringController.shared.isBluetoothOn {
-			PeeringController.shared.peering = !PeerViewModelController.peering
+			PeeringController.shared.change(peering: !PeerViewModelController.peering)
 			AccountController.use { $0.refreshBlockedContent { error in
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
 			} }
 			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
 		} else {
-			UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
+			open(urlString: UIApplication.openSettingsURLString)
 		}
 	}
 }

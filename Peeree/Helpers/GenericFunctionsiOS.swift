@@ -12,6 +12,17 @@ import UIKit
 
 // MARK: - Extensions
 
+/// Tries to create an `URL` from `urlString` and open it.
+func open(urlString: String) {
+	guard let url = URL(string: urlString) else { return }
+
+	if #available(iOS 10.0, *) {
+		UIApplication.shared.open(url)
+	} else {
+		UIApplication.shared.openURL(url)
+	}
+}
+
 extension UIDevice {
 	var iPadOrMac: Bool {
 		if #available(iOS 14.0, *) {
@@ -128,6 +139,25 @@ extension UIAlertController {
 		presentInFrontMostViewController(true, completion: completion)
 
 //		self.view.tintColor = AppTheme.tintColor
+	}
+}
+
+// thanks to https://stackoverflow.com/a/59085919
+extension UILabel {
+	/// The number of lines this label would need.
+	func naturalLabelLines() -> Int {
+		// Call self.layoutIfNeeded() if your view is uses auto layout
+		guard let myText = self.text as? NSString else { return 0 }
+
+		let attributes = [NSAttributedString.Key.font : self.font]
+
+		let labelSize = myText.boundingRect(with: CGSize(width: self.bounds.width, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes as [NSAttributedString.Key : Any], context: nil)
+		return Int(ceil(CGFloat(labelSize.height) / self.font.lineHeight))
+	}
+
+	/// Checks whether this label does not display the full text.
+	func isTruncated() -> Bool {
+		return self.naturalLabelLines() > self.numberOfLines
 	}
 }
 

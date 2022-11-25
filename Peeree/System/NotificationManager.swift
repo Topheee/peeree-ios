@@ -55,10 +55,10 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 	
 	func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-		guard application.applicationState == .inactive else { return }
-		guard let peerIDData = notification.userInfo?[NotificationManager.PeerIDKey] as? Data else { return }
-		guard let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else { return }
-		
+		guard application.applicationState == .inactive,
+			  let peerIDString = notification.userInfo?[Self.PeerIDKey] as? String,
+			  let peerID = PeerID(uuidString: peerIDString) else { return }
+
 		AppDelegate.shared.showOrMessage(peerID: peerID)
 	}
 
@@ -69,8 +69,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		defer { completionHandler() }
 
 		let userInfo = response.notification.request.content.userInfo
-		guard let peerIDData = userInfo[NotificationManager.PeerIDKey] as? Data,
-			  let peerID = NSKeyedUnarchiver.unarchiveObject(with: peerIDData) as? PeerID else {
+		guard let peerIDString = userInfo[Self.PeerIDKey] as? String,
+			  let peerID = PeerID(uuidString: peerIDString) else {
 			elog("cannot find peerID in notification content.")
 			return
 		}
@@ -151,7 +151,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			content.title = title
 			content.body = body.replacingOccurrences(of: "%", with: "%%")
 			content.sound = UNNotificationSound.default
-			content.userInfo = [NotificationManager.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+			content.userInfo = [Self.PeerIDKey : peerID.uuidString]
 			content.categoryIdentifier = category.rawValue
 			content.threadIdentifier = peerID.uuidString
 
@@ -191,7 +191,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				let note = UILocalNotification()
 				note.alertTitle = title
 				note.alertBody = body
-				note.userInfo = [NotificationManager.PeerIDKey : NSKeyedArchiver.archivedData(withRootObject: peerID)]
+				note.userInfo = [Self.PeerIDKey : peerID.uuidString]
 				note.category = category.rawValue
 				UIApplication.shared.presentLocalNotificationNow(note)
 			}

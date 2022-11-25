@@ -60,15 +60,20 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
                     
                     var status = SecTrustSetAnchorCertificates(trust, [certificate] as CFArray)
                     guard status == errSecSuccess else { throw CertError.Anchor(status) }
-                    
-                    var result: SecTrustResultType = .otherError
-                    status = SecTrustEvaluate(trust, &result)
-                    guard status == errSecSuccess else { throw CertError.Evaluate(status) }
-                    
-                    guard result == .proceed || result == .unspecified else {
-                        NSLog("server certificate not trusted, result: \(result).")
-                        completionHandler(.rejectProtectionSpace, nil)
-                        return
+
+                    if #available(iOS 13, *) {
+                        var validationError: CFError?
+                        guard SecTrustEvaluateWithError(trust, &validationError) else { throw validationError ?? unexpectedNilError() }
+                    } else {
+                        var result: SecTrustResultType = .otherError
+                        status = SecTrustEvaluate(trust, &result)
+                        guard status == errSecSuccess else { throw CertError.Evaluate(status) }
+
+                        guard result == .proceed || result == .unspecified else {
+                            NSLog("server certificate not trusted, result: \(result).")
+                            completionHandler(.rejectProtectionSpace, nil)
+                            return
+                        }
                     }
                     
                     let credential = URLCredential(trust: trust)
@@ -115,7 +120,11 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
 //        these are set for each request: configuration.httpAdditionalHeaders = buildHeaders()
         configuration.httpShouldUsePipelining = false
         configuration.timeoutIntervalForRequest = 10.0
-        configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
+        if #available(iOS 13, *) {
+            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+        } else {
+            configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
+        }
         configuration.httpCookieAcceptPolicy = .never
         configuration.httpShouldSetCookies = false
         configuration.urlCache = nil

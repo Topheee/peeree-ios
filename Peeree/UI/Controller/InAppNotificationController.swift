@@ -87,7 +87,7 @@ final class InAppNotificationController {
 				}
 			case .offline:
 				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
-				notificationAction = { UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!) }
+				notificationAction = { open(urlString: UIApplication.openSettingsURLString) }
 			}
 		} else {
 			errorMessage = error.localizedDescription

@@ -10,6 +10,8 @@ import Foundation
 import MatrixSDK
 
 /// Internal implementaion of the `ServerChat` protocol.
+///
+/// Note: __All__ functions must be called on `dQueue`!
 final class ServerChatController: ServerChat {
 	// MARK: - Public and Internal
 
@@ -17,7 +19,7 @@ final class ServerChatController: ServerChat {
 	init(peerID: PeerID, restClient: MXRestClient, dQueue: DispatchQueue) {
 		self.peerID = peerID
 		self.dQueue = dQueue
-		session = MXSession(matrixRestClient: restClient)!
+		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!, queue: dQueue)
 	}
 
 	// MARK: Variables
@@ -71,16 +73,35 @@ final class ServerChatController: ServerChat {
 
 	/// Send a `message` to `peerID`.
 	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void) {
-		guard let directRooms = session.directRooms?[peerID.serverChatUserId]?.compactMap({ self.session.room(withRoomId: $0) }) else {
+		guard let directRooms = session.directRooms?[peerID.serverChatUserId]?.compactMap({
+			let room = self.session.room(withRoomId: $0)
+			return room?.summary?.membership == .join ? room : nil
+		}) else {
 			completion(.failure(.cannotChat(peerID, .notJoined)))
 			return
 		}
 
 		for room in directRooms {
-			guard room.summary?.membership == .join else { continue }
 			var event: MXEvent? = nil
 			room.sendTextMessage(message, localEcho: &event) { response in
-				self.handle(response: response, in: room, with: peerID, completion)
+				switch response {
+				case .success(_):
+					break
+				case .failure(let error):
+					self.recoverFrom(sdkError: error as NSError, in: room, with: peerID) { recoveryResult in
+						switch recoveryResult {
+						case .success(let shouldRetry):
+							guard shouldRetry else { return }
+
+							room.sendTextMessage(message, localEcho: &event) { retryResponse in
+								completion(retryResponse.toResult().mapError { .sdk($0) })
+							}
+
+						case .failure(let failure):
+							completion(.failure(failure))
+						}
+					}
+				}
 			}
 		}
 	}
@@ -160,7 +181,7 @@ final class ServerChatController: ServerChat {
 	private let dQueue: DispatchQueue
 
 	/// Matrix session.
-	private let session: MXSession
+	private let session: ThreadSafeCallbacksMatrixSession
 
 	// MARK: Variables
 
@@ -169,9 +190,6 @@ final class ServerChatController: ServerChat {
 
 	/// The rooms we already listen on for message events; must be used on `dQueue`.
 	private var roomIdsListeningOn = [String : PeerID]()
-
-	/// The rooms we are invited to and checking for pin match; must be used on `dQueue`.
-	private var pendingInvitedRoomIds = [PeerID : String]()
 
 	/// The timelines of rooms we are listening on; must be used on `dQueue`.
 	private var roomTimelines = [String : MXEventTimeline]()
@@ -191,7 +209,12 @@ final class ServerChatController: ServerChat {
 
 			// FUCK THIS SHIT: session.matrixRestClient.profile(forUser: peerUserId) crashes on my iPad with iOS 9.2
 			if #available(iOS 10, *) {
-				self.session.matrixRestClient.profile(forUser: peerID.serverChatUserId) { response in
+				guard let client = self.session.matrixRestClient else {
+					completion(.failure(.fatal(unexpectedNilError())))
+					return
+				}
+
+				client.profile(forUser: peerID.serverChatUserId) { response in
 					guard response.isSuccess else {
 						completion(.failure(.cannotChat(peerID, .noProfile)))
 						return
@@ -235,10 +258,14 @@ final class ServerChatController: ServerChat {
 
 	/// Listens to events in `room`; must be called on `dQueue`.
 	private func listenToEvents(in room: MXRoom, with peerID: PeerID) {
-		guard roomIdsListeningOn[room.roomId] == nil else { return }
-		roomIdsListeningOn[room.roomId] = peerID
+		guard let roomId = room.roomId else {
+			flog("fuck is this")
+			return
+		}
 
-		dlog("listenToEvents(in room: \(room.roomId ?? "<nil>"), with peerID: \(peerID)).")
+		dlog("listenToEvents(in room: \(roomId), with peerID: \(peerID)).")
+		guard roomIdsListeningOn[roomId] == nil else { return }
+		roomIdsListeningOn[roomId] = peerID
 
 		PeeringController.shared.getLastReads { lastReads in
 
@@ -358,13 +385,8 @@ final class ServerChatController: ServerChat {
 	}
 
 	/// Tries to recover from certain errors (currently only `M_FORBIDDEN`); must be called from `dQueue`.
-	private func handle<T>(response: MXResponse<T>, in room: MXRoom, with peerID: PeerID, _ completion: @escaping (Result<T, ServerChatError>) -> Void) {
-		guard let nsError = response.error as? NSError else {
-			completion(response.toResult().mapError { .fatal($0) })
-			return
-		}
-
-		if let matrixErrCode = nsError.userInfo["errcode"] as? String {
+	private func recoverFrom(sdkError: NSError, in room: MXRoom, with peerID: PeerID, _ completion: @escaping (Result<Bool, ServerChatError>) -> Void) {
+		if let matrixErrCode = sdkError.userInfo["errcode"] as? String {
 			// this is a MXError
 
 			switch matrixErrCode {
@@ -377,7 +399,7 @@ final class ServerChatController: ServerChat {
 							// TODO: knock on room instead once that is supported by MatrixSDK
 							self.getOrCreateRoom(with: peerID) { createRoomResult in
 								dlog("creating new room after re-pin completed: \(createRoomResult)")
-								completion(response.toResult().mapError { .sdk($0) })
+								completion(.success(true))
 							}
 						}
 					}, {
@@ -385,34 +407,30 @@ final class ServerChatController: ServerChat {
 					})
 				}
 			default:
-				completion(response.toResult().mapError { .sdk($0) })
+				completion(.failure(.sdk(sdkError)))
 			}
 		} else {
 			// NSError
 
-			switch nsError.code {
+			switch sdkError.code {
 			case Int(MXEncryptingErrorUnknownDeviceCode.rawValue):
-				// we trust all devices by default - this should not be necessary in the future
-				guard let crypto = session.crypto, let unknownDevices = nsError.userInfo[MXEncryptingErrorUnknownDeviceDevicesKey] as? MXUsersDevicesMap<MXDeviceInfo> else {
-					completion(response.toResult().mapError { .fatal($0) })
+				// we trust all devices by default - this is not the best security, but helps us right now
+				guard let crypto = session.crypto,
+						let unknownDevices = sdkError.userInfo[MXEncryptingErrorUnknownDeviceDevicesKey] as? MXUsersDevicesMap<MXDeviceInfo> else {
+					completion(.failure(.fatal(sdkError)))
 					return
 				}
 
-				unknownDevices.map.forEach { (userId: String, deviceMap: [String : MXDeviceInfo]) in
-					deviceMap.forEach { (deviceId: String, deviceInfo: MXDeviceInfo) in
-						crypto.setDeviceVerification(MXDeviceVerification.verified, forDevice: deviceId, ofUser: userId, success: {
-							dlog("trusted device \(deviceId) of user \(userId).")
-						}, failure: { deviceVerificationError in
-							elog("failed to trust device \(deviceId) of user \(userId): \(deviceVerificationError.localizedDescription).")
-							self.delegate?.serverChatInternalErrorOccured(deviceVerificationError)
-						})
+				crypto.trustAll(devices: unknownDevices) { error in
+					if let error = error {
+						completion(.failure(.sdk(error)))
+					} else {
+						completion(.success(true))
 					}
 				}
 
-				completion(response.toResult().mapError { .fatal($0) })
-
 			default:
-				completion(response.toResult().mapError { .sdk($0) })
+				completion(.failure(.sdk(sdkError)))
 			}
 		}
 	}
@@ -424,6 +442,11 @@ final class ServerChatController: ServerChat {
 			case .success(let room):
 				self.listenToEvents(in: room, with: peerID)
 			case .failure(let error):
+				guard (error as NSError).domain != kMXNSErrorDomain && (error as NSError).code != kMXRoomAlreadyJoinedErrorCode else {
+					dlog("tried again to join room \(roomId) for peerID \(peerID).")
+					return
+				}
+
 				elog("Cannot join room \(roomId): \(error)")
 				self.delegate?.cannotJoinRoom(error)
 			}
@@ -434,17 +457,14 @@ final class ServerChatController: ServerChat {
 	private func process(memberEvent event: MXEvent) {
 		switch event.eventType {
 		case .roomMember:
-			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content) else {
-				elog("Cannot construct MXRoomCreateContent from event content.")
-				return
-			}
-			guard let eventUserId = event.stateKey else {
-				// we are only interested in joins from other people
-				elog("No stateKey present in membership event.")
+			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content),
+				  let eventUserId = event.stateKey,
+				  let roomId = event.roomId else {
+				flog("Hard condition not met in membership event.")
 				return
 			}
 
-			dlog("processing server chat member event type \(memberContent.membership ?? "<nil>") in room \(event.roomId ?? "<nil>") from \(eventUserId).")
+			dlog("processing server chat member event type \(memberContent.membership ?? "<nil>") in room \(roomId) from \(eventUserId).")
 
 			switch memberContent.membership {
 			case kMXMembershipStringJoin:
@@ -464,13 +484,6 @@ final class ServerChatController: ServerChat {
 					return
 				}
 
-				guard self.pendingInvitedRoomIds[peerID] == nil else {
-					// for whatever reason we receive this event twice
-					return
-				}
-
-				self.pendingInvitedRoomIds[peerID] = event.roomId
-
 				// check whether we still have a pin match with this person
 				AccountController.use { ac in
 					guard ac.hasPinMatch(peerID) else {
@@ -482,9 +495,7 @@ final class ServerChatController: ServerChat {
 					}
 
 					self.dQueue.async {
-						guard self.pendingInvitedRoomIds.removeValue(forKey: peerID) != nil else { return }
-
-						self.join(roomId: event.roomId, with: peerID)
+						self.join(roomId: roomId, with: peerID)
 					}
 				}
 
@@ -523,7 +534,9 @@ final class ServerChatController: ServerChat {
 
 	/// Initial setup routine
 	private func handleInitialRooms() {
-		guard let directChatPeerIDs = session.directRooms?.keys.compactMap({ peerIDFrom(serverChatUserId: $0) }) else { return }
+		guard let directChatPeerIDs = session.directRooms?.compactMap({ (key, value) in
+			value.count > 0 ? peerIDFrom(serverChatUserId: key) : nil
+		}), directChatPeerIDs.count > 0 else { return }
 
 		AccountController.use { ac in
 			directChatPeerIDs.forEach { peerID in
@@ -616,7 +629,12 @@ final class ServerChatController: ServerChat {
 	func start(_ completion: @escaping (Error?) -> Void) {
 		observeNotifications()
 
-		let store = MXFileStore(credentials: session.credentials) // MXMemoryStore()
+		guard let sessionCreds = session.credentials else {
+			completion(unexpectedNilError())
+			return
+		}
+
+		let store = MXFileStore(credentials: sessionCreds)
 		session.setStore(store) { setStoreResponse in
 			guard setStoreResponse.isSuccess else {
 				completion(setStoreResponse.error ?? unexpectedNilError())
@@ -707,13 +725,15 @@ final class ServerChatController: ServerChat {
 
 			// Creates a room with `peerID` for chatting; also notifies them over the internet that we have a match.
 			strongSelf.dQueue.async {
-				if let pendingInvitedRoom = strongSelf.pendingInvitedRoomIds.removeValue(forKey: peerID) {
-					strongSelf.join(roomId: pendingInvitedRoom, with: peerID)
-					return
-				}
-
 				strongSelf.getOrCreateRoom(with: peerID) { result in
-					result.error.map { dlog("inviting \(peerID) failed: \($0)") }
+					switch result {
+					case .success(let success):
+						if success.summary?.membership == .invite {
+							strongSelf.join(roomId: success.roomId, with: peerID)
+						}
+					case .failure(let failure):
+						strongSelf.delegate?.serverChatInternalErrorOccured(failure)
+					}
 				}
 			}
 		})

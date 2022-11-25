@@ -90,23 +90,25 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	/// Receives general updates and errors of the `PeeringController`.
 	public var delegate: PeeringControllerDelegate? = nil
 
-	/// Queries or controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
-	public var peering: Bool {
-		get {
-			return remotePeerManager.isScanning
-		}
-		set {
-			guard newValue != remotePeerManager.isScanning else { return }
+	/// Queries whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
+	public func checkPeering(_ callback: @escaping (Bool) -> Void) {
+		remotePeerManager.checkIsScanning(callback)
+	}
+
+	/// Controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
+	public func change(peering newValue: Bool) {
+		remotePeerManager.checkIsScanning { isScanning in
+			guard newValue != isScanning else { return }
 
 			if newValue {
-				remotePeerManager.scan()
-				startAdvertising(restartOnly: false)
+				self.remotePeerManager.scan()
+				self.startAdvertising(restartOnly: false)
 			} else {
-				stopAdvertising()
-				remotePeerManager.stopScan()
+				self.stopAdvertising()
+				self.remotePeerManager.stopScan()
 			}
 
-			connectionChangedState(newValue)
+			self.connectionChangedState(newValue)
 		}
 	}
 
@@ -487,14 +489,13 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			}
 		})
 		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { _ in
-			guard self.peering else { return }
+			self.checkPeering { peering in
+				guard peering else { return }
 
-			AccountController.use { ac in
-				self.remotePeerManager.set(userPeerID: ac.peerID, keyPair: ac.keyPair)
-
-				// restart peering s.t. we also advertise and not only scan
-				self.peering = false
-				self.peering = true
+				AccountController.use { ac in
+					self.remotePeerManager.set(userPeerID: ac.peerID, keyPair: ac.keyPair)
+					self.startAdvertising(restartOnly: false)
+				}
 			}
 		})
 		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver { _ in
