@@ -22,36 +22,44 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		guard let firstViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.FirstViewControllerID),
-			  let secondViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.SecondViewControllerID),
-			  let thirdViewController = storyboard?.instantiateViewController(withIdentifier: FirstLaunchViewController.ThirdViewControllerID) else {
-			elog("Could not instantiate onboarding view controllers.")
-			dismiss(animated: true, completion: nil)
-			return
-		}
-
-		firstVC = firstViewController
-		secondVC = secondViewController
-		thirdVC = thirdViewController
-		
 		// Configure the page view controller and add it as a child view controller.
 		pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
 		pageViewController.delegate = self
 		pageViewController.dataSource = self
-		pageViewController.setViewControllers([firstViewController], direction: .forward, animated: false, completion: {done in })
 
-		let pageView = pageViewController.view
-		
+		guard let storyboard = storyboard, let pageView = pageViewController.view else {
+			flog("Could not get storyboard or page view.")
+			dismiss(animated: true, completion: nil)
+			return
+		}
+
+		let peerInfoVC = storyboard.instantiateViewController(withIdentifier: Self.SecondViewControllerID)
+
+		// must contain only one vc, otherwise it crashes
+		let pageViewControllers: [UIViewController]
+		if PeereeIdentityViewModelController.accountExists {
+			pageViewControllers = [peerInfoVC]
+			firstVC = peerInfoVC
+		} else {
+			let explanationVC = storyboard.instantiateViewController(withIdentifier: Self.FirstViewControllerID)
+			let identityVC = storyboard.instantiateViewController(withIdentifier: Self.ThirdViewControllerID)
+			firstVC = explanationVC
+			secondVC = peerInfoVC
+			thirdVC = identityVC
+			pageViewControllers = [explanationVC]
+		}
+		pageViewController.setViewControllers(pageViewControllers, direction: .forward, animated: false)
+
 		self.addChild(pageViewController)
-		self.view.addSubview(pageView!)
+		self.view.addSubview(pageView)
 		
 		// Set the page view controller's bounds using an inset rect so that self's view is visible around the edges of the pages.
 		var pageViewRect = self.view.bounds
 		if UIDevice.current.userInterfaceIdiom == .pad {
 			pageViewRect = pageViewRect.insetBy(dx: 40.0, dy: 40.0)
 		}
-		pageView?.frame = pageViewRect
-		
+		pageView.frame = pageViewRect
+
 		pageViewController.didMove(toParent: self)
 		
 		// Add the page view controller's gesture recognizers to the root view controller's view so that the gestures are started more easily.
@@ -89,7 +97,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 	}
 	
 	func presentationCount(for pageViewController: UIPageViewController) -> Int {
-		return 3
+		return PeereeIdentityViewModelController.accountExists ? 1 : 3
 	}
 	
 	func presentationIndex(for pageViewController: UIPageViewController) -> Int {

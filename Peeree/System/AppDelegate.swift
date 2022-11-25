@@ -68,7 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		let restoredCentralManagerIDs = launchOptions?[.bluetoothCentrals] as? [String]
 		let restoredPeripheralManagerIDs = launchOptions?[.bluetoothPeripherals] as? [String]
 		if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
-			PeeringController.shared.peering = true
+			PeeringController.shared.change(peering: true)
 		}
 
 		return true
@@ -112,12 +112,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
 		ServerChatFactory.close()
-		PeeringController.shared.peering = false
+		PeeringController.shared.change(peering: false)
 		UserDefaults.standard.synchronize()
 	}
 
 	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-		PeeringController.shared.peering = false
+		PeeringController.shared.change(peering: false)
 	}
 
 	/// MARK: Notifications
@@ -179,7 +179,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	}
 
 	func peeringControllerIsReadyToGoOnline() {
-		AccountController.use { _ in PeeringController.shared.peering = true }
+		AccountController.use { _ in PeeringController.shared.change(peering: true) }
 	}
 
 	func encodingPeersFailed(with error: Error) {

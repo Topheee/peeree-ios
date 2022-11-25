@@ -64,8 +64,8 @@ struct BrowseFilter: Codable {
 
 	/// Applies this filter and returns whether it fits.
 	func check(info: PeerInfo, pinState: PinState) -> Bool {
-		// always keep matched peers in filter
-		guard pinState != .pinMatch else { return true }
+		// always keep pinned or matched peers in filter
+		guard pinState == .unpinned || pinState == .unpinning else { return true }
 
 		let matchingGender = (gender.contains(.females) && info.gender == .female) ||
 			(gender.contains(.males) && info.gender == .male) ||

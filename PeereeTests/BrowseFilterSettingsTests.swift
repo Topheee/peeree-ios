@@ -22,7 +22,7 @@ class BrowseFilterSettingsTests: XCTestCase {
 	func testEncoding() throws {
 		// This is an example of a functional test case.
 		// Use XCTAssert and related functions to verify your tests produce the correct results.
-		var filter = BrowseFilter(ageMin: 42, ageMax: 42, gender: [.males], onlyWithAge: true, onlyWithPicture: true)
+		let filter = BrowseFilter(ageMin: 42, ageMax: 42, gender: [.males], onlyWithAge: true, onlyWithPicture: true)
 
 		let encoder = JSONEncoder()
 		let data = try encoder.encode(filter)

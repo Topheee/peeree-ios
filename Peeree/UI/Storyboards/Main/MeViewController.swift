@@ -52,7 +52,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	private func initiateDeleteAccount() {
 		let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
 		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
-			PeeringController.shared.peering = false
+			PeeringController.shared.change(peering: false)
 			self.deleteServerChatAccount()
 			AccountController.use { $0.deleteAccount(self.accountActionCompletionHandler) }
 		}))
@@ -85,11 +85,11 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	}
 	
 	@IBAction func browsePeereeURL(_ sender: Any) {
-		UIApplication.shared.openURL(URL(string: wwwHomeURL)!)
+		open(urlString: wwwHomeURL)
 	}
 
 	@IBAction func browsePrivacyPolicyURL(_ sender: Any) {
-		UIApplication.shared.openURL(URL(string: wwwPrivacyPolicyURL)!)
+		open(urlString: wwwPrivacyPolicyURL)
 	}
 
 	private func fillBirthdayInput(with date: Date) {
@@ -128,9 +128,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
-		navigationController?.isToolbarHidden = true
-
-		lockAndLoadView()
+		lockAndLoadView(displayOnboardingIfNecessary: true)
 		observeNotifications()
 	}
 
@@ -310,7 +308,8 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 	// MARK: Methods
 
-	private func loadUserPeerInfo(peerInfo: PeerInfo?, birthday: Date?, portrait: CGImage?, bio: String) {
+	/// Fills the view with the data from the parameters; optionally presenting the onboarding screen.
+	private func loadUserPeerInfo(peerInfo: PeerInfo?, birthday: Date?, portrait: CGImage?, bio: String, displayOnboardingIfNecessary showOnboarding: Bool) {
 		nameTextField.text = peerInfo?.nickname
 		genderControl.selectedSegmentIndex = PeerInfo.Gender.allCases.firstIndex(of: peerInfo?.gender ?? .queer) ?? 0
 		if let date = birthday {
@@ -330,24 +329,24 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		}
 
 		let userPeerDefined = peerInfo != nil
-		nameTextField.isEnabled = userPeerDefined
-		genderControl.isEnabled = userPeerDefined
 
-		if !userPeerDefined {
+		if !userPeerDefined && showOnboarding {
 			AppDelegate.presentOnboarding()
 		}
 	}
 
+	/// Wrapper around `UserPeer.instance.modifyInfo`.
 	private func modifyUserInfo(query: @escaping (inout PeerInfo) -> ()) {
+		let gender = PeerInfo.Gender.allCases[genderControl?.selectedSegmentIndex ?? 0]
+
+		let temporaryNick = NSLocalizedString("New Peereer", comment: "Placeholder for peer name.")
+		var nickname = nameTextField?.text ?? temporaryNick
+		if nickname == "" { nickname = temporaryNick }
+
 		UserPeer.instance.modifyInfo { info in
-			if var peerInfo = info {
-				query(&peerInfo)
-				info = peerInfo
-			} else {
-				DispatchQueue.main.async {
-					AppDelegate.presentOnboarding()
-				}
-			}
+			var peerInfo = info ?? PeerInfo(nickname: nickname, gender: gender, age: nil, hasPicture: false)
+			query(&peerInfo)
+			info = peerInfo
 		}
 	}
 
@@ -386,13 +385,13 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	}
 
 	/// Do not allow changes to the user's peer while peering; show onboarding if peer does not exist.
-	private func lockAndLoadView() {
+	private func lockAndLoadView(displayOnboardingIfNecessary showOnboarding: Bool) {
 		AccountController.use({ ac in
 			let email = ac.accountEmail
 			let peerID = ac.getPeerID()
 			let accountActionInProgress = AccountController.isCreatingAccount || ac.isDeletingAccount
 
-			UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
+			UserPeer.instance.read { peerInfo, birthday, picture, biography in
 				let userPeerDefined = peerInfo != nil
 
 				self.accountButton.setTitle(NSLocalizedString("Delete Identity", comment: "Caption of button"), for: .normal)
@@ -407,10 +406,10 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 				self.previewButton.isEnabled = userPeerDefined
 
-				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
+				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biography, displayOnboardingIfNecessary: showOnboarding)
 			}
 		}, {
-			UserPeer.instance.read { peerInfo, birthday, picture, biograhy in
+			UserPeer.instance.read { peerInfo, birthday, picture, biography in
 				// account does not exist
 				self.accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
 				self.accountButton.tintColor = AppTheme.tintColor
@@ -422,7 +421,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 				self.previewButton.isEnabled = false
 
-				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biograhy)
+				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biography, displayOnboardingIfNecessary: showOnboarding)
  			}
 		})
 	}
@@ -431,11 +430,12 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		registerForKeyboardNotifications()
 
 		let reloadBlock: (Notification) -> Void = { [weak self] _ in
-			self?.lockAndLoadView()
+			self?.lockAndLoadView(displayOnboardingIfNecessary: false)
 		}
 
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver(usingBlock: reloadBlock))
 		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver(usingBlock: reloadBlock))
 		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(UserPeer.NotificationName.changed.addObserver(usingBlock: reloadBlock))
 	}
 }

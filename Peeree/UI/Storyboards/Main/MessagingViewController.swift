@@ -19,6 +19,8 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 
 	private var notificationObservers: [NSObjectProtocol] = []
 
+	private var isFirstTimeOpened = true
+
 	private var chatTableView: UITableView? { return chatTableViewContainer.subviews.first as? UITableView }
 
 	// Action method when user presses "send"
@@ -87,8 +89,6 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		connectionChangedState(PeerViewModelController.peering)
 
 		registerForKeyboardNotifications()
-
-		chatTableView?.scrollToBottom(animated: false)
 		messageTextView.isEditable = false
 
 		ServerChatFactory.getOrSetupInstance { instanceResult in
@@ -180,6 +180,11 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		messageBottomConstraint.constant = up ? keyboardFrame.size.height - inset : 0.0
 		UIView.animateAlongKeyboard(notification: keyboardNotification) {
 			self.view.layoutIfNeeded()
+		}
+
+		if up {
+			chatTableView?.scrollToBottom(animated: isFirstTimeOpened)
+			isFirstTimeOpened = false
 		}
 	}
 
