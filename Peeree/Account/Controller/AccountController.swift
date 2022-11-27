@@ -21,6 +21,9 @@ public protocol AccountControllerDelegate {
 
 	/// The fallback process for `unauthorized` errors failed.
 	func sequenceNumberResetFailed(error: ErrorResponse)
+
+	/// When this occurs, the last request was not processed correctly.
+	func sequenceNumberReset()
 }
 
 /**
@@ -200,7 +203,7 @@ public class AccountController: SecurityDataSource {
 
 	/// Removes the pin from a person.
 	public func unpin(id: PeereeIdentity) {
-		guard isPinned(id) else { return }
+		guard !unpinningPeers.contains(id.peerID) && isPinned(id) else { return }
 		let peerID = id.peerID
 
 		unpinningPeers.insert(peerID)
@@ -349,9 +352,28 @@ public class AccountController: SecurityDataSource {
 			return
 		}
 
+		if var pendingRequests = updatePinStatusRequests[id.peerID] {
+			completion.map {
+				pendingRequests.append($0)
+				updatePinStatusRequests[id.peerID] = pendingRequests
+			}
+			return
+		} else {
+			updatePinStatusRequests[id.peerID] = [completion ?? {_ in }]
+		}
+
 		let pinPublicKey = id.publicKeyData.base64EncodedData()
 
 		PinsAPI.getPin(pinnedID: id.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
+			defer {
+				let pinState = self.pinState(of: id.peerID)
+				self.updatePinStatusRequests[id.peerID]?.forEach { callback in
+					callback(pinState)
+				}
+
+				self.updatePinStatusRequests[id.peerID] = nil
+			}
+
 			guard _error == nil else {
 				self.preprocessAuthenticatedRequestError(_error!)
 				return
@@ -368,8 +390,6 @@ public class AccountController: SecurityDataSource {
 				}
 
 				self.updateModels(of: [id])
-
-				completion?(self.pinState(of: id.peerID))
 			}
 		}
 	}
@@ -612,6 +632,9 @@ public class AccountController: SecurityDataSource {
 	/// Timestamp of last successful refresh of objectionable content.
 	private var lastObjectionableContentRefresh: Date
 
+	// In-flight `getPin` requests.
+	private var updatePinStatusRequests = [PeerID: [(PinState) -> Void]]()
+
 	/// Incrementing secret number we use to authenticate requests to the server.
 	private var sequenceNumber: Int32 {
 		didSet {
@@ -664,6 +687,7 @@ public class AccountController: SecurityDataSource {
 			}
 
 			self.sequenceNumber = sequenceNumberDataCipher
+			Self.delegate?.sequenceNumberReset()
 		}
 	}
 

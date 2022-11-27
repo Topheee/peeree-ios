@@ -44,6 +44,12 @@
 /* Class = "UILabel"; text = "100"; ObjectID = "4uV-1R-Ho8"; */
 "4uV-1R-Ho8.text" = "100";
 
+/* Class = "UISwitch"; accessibilityHint = "Filters out people with no picture set"; ObjectID = "4Y0-C9-k3C"; */
+"4Y0-C9-k3C.accessibilityHint" = "Filters out people with no picture set";
+
+/* Class = "UISwitch"; accessibilityLabel = "Picture available filter"; ObjectID = "4Y0-C9-k3C"; */
+"4Y0-C9-k3C.accessibilityLabel" = "Picture available filter";
+
 /* Class = "UILabel"; text = "Value"; ObjectID = "57R-R9-5LU"; */
 "57R-R9-5LU.text" = "Value";
 
@@ -131,6 +137,12 @@
 /* Class = "UIButton"; normalTitle = "Button"; ObjectID = "HFc-7O-6xq"; */
 "HFc-7O-6xq.normalTitle" = "Pin";
 
+/* Class = "UITableViewSection"; footerTitle = "Filter out people without a portrait."; ObjectID = "HjS-MX-NAJ"; */
+"HjS-MX-NAJ.footerTitle" = "Filter out people without a portrait.";
+
+/* Class = "UITableViewSection"; headerTitle = "Picture"; ObjectID = "HjS-MX-NAJ"; */
+"HjS-MX-NAJ.headerTitle" = "Picture";
+
 /* Class = "UILabel"; accessibilityLabel = "Last seen"; ObjectID = "IbQ-rS-HPJ"; */
 "IbQ-rS-HPJ.accessibilityLabel" = "Last seen";
 
@@ -202,9 +214,6 @@
 
 /* Class = "UILabel"; text = "Bio"; ObjectID = "u8x-xh-rZR"; */
 "u8x-xh-rZR.text" = "Bio";
-
-/* Class = "UITableViewSection"; headerTitle = "Picture"; ObjectID = "VhZ-Ja-vhb"; */
-"VhZ-Ja-vhb.headerTitle" = "Picture";
 
 /* Class = "UITableViewController"; title = "Chat"; ObjectID = "XqI-Aj-cpS"; */
 "XqI-Aj-cpS.title" = "Chat";
@@ -386,8 +395,11 @@
 /* Class = "UITextView"; accessibilityLabel = "Biography"; ObjectID = "UYZ-np-Imj"; */
 "UYZ-np-Imj.accessibilityLabel" = "Biography";
 
-/* Section Footer */
-"VhZ-Ja-vhb.footerTitle" = "Filter out people without a portrait.";
+/* Class = "UITableViewSection"; footerTitle = "You are never notified about filtered people, but you may still display them on Radar."; ObjectID = "VhZ-Ja-vhb"; */
+"VhZ-Ja-vhb.footerTitle" = "You are never notified about filtered people, but you may still display them on Radar.";
+
+/* Class = "UITableViewSection"; headerTitle = "Display"; ObjectID = "VhZ-Ja-vhb"; */
+"VhZ-Ja-vhb.headerTitle" = "Display";
 
 /* Class = "UINavigationItem"; prompt = "Name"; ObjectID = "Vvs-dp-GcW"; */
 "Vvs-dp-GcW.prompt" = "Name";
@@ -410,14 +422,17 @@
 /* Class = "UITextView"; text = "Your Biography."; ObjectID = "X6k-gy-LjE"; */
 "X6k-gy-LjE.text" = "Your Biography.";
 
-/* Class = "UISwitch"; accessibilityHint = "Filters out people with no picture set"; ObjectID = "xJk-Ke-rVF"; */
-"xJk-Ke-rVF.accessibilityHint" = "Filters out people with no picture set";
+/* Class = "UISwitch"; accessibilityHint = "Still display filtered people"; ObjectID = "xJk-Ke-rVF"; */
+"xJk-Ke-rVF.accessibilityHint" = "Still display filtered people";
 
-/* Class = "UISwitch"; accessibilityLabel = "Picture available filter"; ObjectID = "xJk-Ke-rVF"; */
-"xJk-Ke-rVF.accessibilityLabel" = "Picture available filter";
+/* Class = "UISwitch"; accessibilityLabel = "Display override"; ObjectID = "xJk-Ke-rVF"; */
+"xJk-Ke-rVF.accessibilityLabel" = "Display override";
 
 /* Class = "UITextField"; placeholder = "Message"; ObjectID = "yJd-y1-fP9"; */
 "yJd-y1-fP9.placeholder" = "Message";
+
+/* Class = "UILabel"; text = "Display filtered people"; ObjectID = "7Ydg-QF-ecu"; */
+"Ydg-QF-ecu.text" = "Display filtered people";
 
 /* Class = "UILabel"; text = "Your email is necessary to recover your identity on a new device."; ObjectID = "yg9-L6-t2V"; */
 "yg9-L6-t2V.text" = "Your email is necessary to recover your identity on a new device.";

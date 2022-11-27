@@ -1,0 +1,10 @@
+# Xcode
+## User settings
+xcuserdata/
+## Debug settings
+LLDBInitFile
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

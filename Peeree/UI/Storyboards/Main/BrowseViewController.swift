@@ -105,7 +105,7 @@ final class BrowseViewController: UITableViewController {
 	// MARK: UITableViewDataSource
 	
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return placeholderCellActive ? 1 : table.count
+		return placeholderCellActive ? 1 : (filter.displayFilteredPeople ? table.count : 1)
 	}
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

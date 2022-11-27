@@ -33,6 +33,8 @@ class ThreadSafeCallbacksMatrixSession {
 
 	var matrixRestClient: MXRestClient? { return session.matrixRestClient }
 
+	var store: MXStore? { return session.store }
+
 	func deactivateAccount(withAuthParameters: [String : Any], eraseAccount: Bool, completion: @escaping (MXResponse<Void>) -> Void) {
 		session.deactivateAccount(withAuthParameters: withAuthParameters, eraseAccount: eraseAccount) { response in
 			self.queue.async { completion(response) }
@@ -53,6 +55,12 @@ class ThreadSafeCallbacksMatrixSession {
 
 	func createRoom(parameters: MXRoomCreationParameters, completion: @escaping (MXResponse<MXRoom>) -> Void) {
 		session.createRoom(parameters: parameters) { response in
+			self.queue.async { completion(response) }
+		}
+	}
+
+	func leaveRoom(_ roomId: String, completion: @escaping (MXResponse<Void>) -> Void) {
+		session.leaveRoom(roomId) { response in
 			self.queue.async { completion(response) }
 		}
 	}

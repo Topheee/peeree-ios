@@ -349,38 +349,27 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
-	/// Removes all cached data related to `room` and closes (removes all listeners) it.
-	private func cleanup(room: MXRoom) {
-		room.close()
-		roomTimelines.removeValue(forKey: room.roomId)?.destroy()
-		roomIdsListeningOn.removeValue(forKey: room.roomId)
-	}
-
 	/// Tries to leave (and forget [once supported by the SDK]) `room`.
-	private func forget(room: MXRoom, completion: @escaping (Error?) -> Void) {
-		guard room.summary == nil || room.summary?.membership == .join || room.summary?.membership == .invite else { completion(nil); return }
-
-		room.leave { response in
+	private func forgetRoom(_ roomId: String, completion: @escaping (Error?) -> Void) {
+		session.leaveRoom(roomId) { response in
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
-			self.cleanup(room: room)
+			self.roomTimelines.removeValue(forKey: roomId)?.destroy()
+			self.roomIdsListeningOn.removeValue(forKey: roomId)
+
 			completion(response.error)
 		}
 	}
 
 	/// Tries to leave (and forget [once supported]) <code>rooms</code>, ignoring any errors
-	private func forget(rooms: [MXRoom], completion: @escaping () -> Void) {
-		var leftoverRooms = rooms // inefficient as hell: always creates a whole copy of the array
-		guard let room = leftoverRooms.popLast() else {
+	private func forgetRooms(_ roomIds: [String], completion: @escaping () -> Void) {
+		var leftoverRooms = roomIds // inefficient as hell: always creates a whole copy of the array
+		guard let roomId = leftoverRooms.popLast() else {
 			completion()
 			return
 		}
-		room.leave { response in
-			self.cleanup(room: room)
-			if let error = response.error {
-				elog("Failed leaving room: \(error.localizedDescription)")
-			}
-			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
-			self.forget(rooms: leftoverRooms, completion: completion)
+		forgetRoom(roomId) { error in
+			error.map { elog("Failed leaving room \(roomId): \($0.localizedDescription)") }
+			self.forgetRooms(leftoverRooms, completion: completion)
 		}
 	}
 
@@ -391,7 +380,7 @@ final class ServerChatController: ServerChat {
 
 			switch matrixErrCode {
 			case kMXErrCodeStringForbidden:
-				self.forget(room: room) { error in
+				self.forgetRoom(room.roomId) { error in
 					dlog("forgetting room after we got a forbidden error: \(error?.localizedDescription ?? "no error")")
 
 					self.refreshPinStatus(of: peerID, force: true, {
@@ -487,10 +476,8 @@ final class ServerChatController: ServerChat {
 				// check whether we still have a pin match with this person
 				AccountController.use { ac in
 					guard ac.hasPinMatch(peerID) else {
-						self.dQueue.async {
-							// this will trigger the AccountController.NotificationName.PinMatch notification, where we will then join the room
-							self.refreshPinStatus(of: peerID, force: true, nil)
-						}
+						// this will trigger the AccountController.NotificationName.PinMatch notification, where we will then join the room
+						ac.updatePinStatus(of: peerID, force: true)
 						return
 					}
 
@@ -506,12 +493,8 @@ final class ServerChatController: ServerChat {
 					dlog("Received our leave event.")
 					return
 				}
-				guard let room = self.session.room(withRoomId: event.roomId) else {
-					elog("No such room: \(event.roomId ?? "<nil>").")
-					return
-				}
 
-				self.forget(room: room) { _error in
+				self.forgetRoom(event.roomId) { _error in
 					dlog("Left empty room: \(String(describing: _error)).")
 				}
 
@@ -561,7 +544,7 @@ final class ServerChatController: ServerChat {
 				let theyIn = info.theirMembership == .join || info.theirMembership == .invite
 
 				if !theyIn {
-					self.forget(room: info.room) { error in
+					self.forgetRoom(info.room.roomId) { error in
 						error.map { elog("leaving room failed: \($0)")}
 					}
 				}
@@ -570,15 +553,15 @@ final class ServerChatController: ServerChat {
 			}
 
 			if let readyRoom = theyJoinedOrInvited.first(where: { $0.theirMembership == .join && $0.ourMembership == .join }) {
-				self.forget(rooms: theyJoinedOrInvited.compactMap { $0.room.roomId != readyRoom.room.roomId ? $0.room : nil }) {}
+				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != readyRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: readyRoom.room, with: peerID)
 			} else if let invitedRoom = theyJoinedOrInvited.first(where: { $0.ourMembership == .invite }) {
 				// it is very likely that they are joined here, since they needed to be when they invited us
 				self.join(roomId: invitedRoom.room.roomId, with: peerID)
-				self.forget(rooms: theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room : nil }) {}
+				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room.roomId : nil }) {}
 			} else if let invitedRoom = theyJoinedOrInvited.first(where: { $0.theirMembership == .invite }) {
 				// we chose the first room we invited them and drop the rest
-				self.forget(rooms: theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room : nil }) {}
+				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: invitedRoom.room, with: peerID)
 			} else {
 				self.reallyCreateRoom(with: peerID) { result in
@@ -672,10 +655,7 @@ final class ServerChatController: ServerChat {
 					// The only option I see is to leave the room and create a new one.
 
 					self.delegate?.decryptionError(decryptionError, peerID: peerID) {
-						guard let roomID = event.roomId,
-							let room = self.session.room(withRoomId: roomID) else { return }
-
-						self.forget(room: room) { forgetError in
+						self.forgetRoom(event.roomId) { forgetError in
 							forgetError.map { dlog("forgetting room with broken encryption failed: \($0)") }
 
 							self.getOrCreateRoom(with: peerID) { result in
@@ -701,14 +681,9 @@ final class ServerChatController: ServerChat {
 
 	/// Action when we unmatch someone.
 	private func forgetAllRooms(with peerID: PeerID) {
-		guard let directRooms = session.directRooms?[peerID.serverChatUserId] else { return }
-
-		let joinedOrInvitedDirectRooms: [MXRoom] = directRooms.compactMap {
-			guard let mxRoom = self.session.room(withRoomId:$0) else { return nil }
-			return mxRoom.summary?.membership != .leave ? mxRoom : nil
+		session.directRooms?[peerID.serverChatUserId].map {
+			forgetRooms($0) {}
 		}
-
-		forget(rooms: joinedOrInvitedDirectRooms) {}
 	}
 
 	/// Observes relevant notifications in `NotificationCenter`.

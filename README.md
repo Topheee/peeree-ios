@@ -7,9 +7,14 @@ This project contains the source code of the [Peeree](https://www.peeree.de/) iO
 For the *Peeree* target in the Xcode project's settings, change the developer profile to your own profile and change the `Bundle Identifier` as well.
 Simply open `Peeree.xcodeproj` using Xcode and hit `build`.
 
-## Dependencies
+## Debugging
+Create an `LLDBInitFile` at the root of this project and add the path to the cloned `matrix-ios-sdk` repository to the source map:
+```
+settings set target.source-map /Users/runner/work/MatrixSDK/MatrixSDK/matrix-ios-sdk/MatrixSDK /path/to/matrix-ios-sdk/MatrixSDK
+```
 
-- **CommonCrypto**: Wrapper framework for the CommonCrypto C library. Needed for SHA-2 hash generation.
+## External Dependencies
+
 - **Peeree Server**: The Peeree server acts as a proprietary trusted third party. Peeree uses its services via a RESTful API. 
 
 ## License

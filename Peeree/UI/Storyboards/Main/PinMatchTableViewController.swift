@@ -66,14 +66,13 @@ final class PinMatchTableViewController: UITableViewController {
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		if placeholderCellActive {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.PlaceholderPeerCellID) as! PlaceHolderTableViewCell
-			if PeerViewModelController.peering {
-				let accountExists = PeereeIdentityViewModelController.accountExists
-				cell.heading = accountExists ? NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.") : NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
-				cell.subhead = accountExists ? NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.") : NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
-			} else {
-				cell.heading = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
+			if PeereeIdentityViewModelController.accountExists {
+				cell.heading = NSLocalizedString("No Pin Matches Yet", comment: "Heading of placeholder cell in Pin Matches view.")
 				cell.subhead = NSLocalizedString("Go online and pin new people!", comment: "Subhead of placeholder cell in Pin Matches view.")
-				let gestureRecognizer = UITapGestureRecognizer(target: AppDelegate.shared, action: #selector(AppDelegate.toggleNetwork(_:)))
+			} else {
+				cell.heading = NSLocalizedString("Missing Peeree Identity", comment: "Heading of placeholder cell in Pin Matches view.")
+				cell.subhead = NSLocalizedString("Create an identity in your profile.", comment: "Subhead of placeholder cell in Pin Matches view.")
+				let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapPlaceholderCell(_:)))
 				cell.addGestureRecognizer(gestureRecognizer)
 			}
 			return cell
@@ -81,6 +80,14 @@ final class PinMatchTableViewController: UITableViewController {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!
 			fill(cell: cell, model: PeerViewModelController.viewModel(of: table[indexPath.row]))
 			return cell
+		}
+	}
+
+	@objc func tapPlaceholderCell(_ sender: Any) {
+		if PeereeIdentityViewModelController.accountExists {
+			PeeringController.shared.change(peering: true)
+		} else {
+			AppDelegate.presentOnboarding()
 		}
 	}
 
@@ -123,11 +130,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	/// Whether `tableView` should display only one cell containing a status info.
 	private var placeholderCellActive: Bool {
-#if SHOWCASE
 		return table.count == 0
-#else
-		return table.count == 0 || !PeerViewModelController.peering
-#endif
 	}
 
 	/// Reference holder to `NotificationCenter` observers.

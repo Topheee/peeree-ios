@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MessagingViewController: PeerViewController, UITextViewDelegate, ConnectionStateObserver {
+class MessagingViewController: PeerViewController, UITextViewDelegate {
 	// Button for executing the message send.
 	@IBOutlet private weak var sendMessageButton: UIButton!
 	@IBOutlet private weak var chatTableViewContainer: UIView!
@@ -86,8 +86,6 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 		}
 #endif
 
-		connectionChangedState(PeerViewModelController.peering)
-
 		registerForKeyboardNotifications()
 		messageTextView.isEditable = false
 
@@ -141,7 +139,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	// Dynamically enables/disables the send button based on user typing
 	func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
 		let length = (textView.text?.count ?? 0) - range.length + text.count;
-		self.sendMessageButton.isEnabled = PeerViewModelController.peering && length > 0
+		self.sendMessageButton.isEnabled = length > 0
 		return true
 	}
 
@@ -215,11 +213,5 @@ class MessagingViewController: PeerViewController, UITextViewDelegate, Connectio
 	/// Unwind us from the view hierarchy.
 	private func unwind() {
 		performSegue(withIdentifier: "unwindToPinMatchTableViewController", sender: nil)
-	}
-
-	// MARK: ConnectionStateObserver
-
-	func connectionChangedState(_ online: Bool) {
-		sendMessageButton.isEnabled = online && messageTextView.text != nil && messageTextView.text != ""
 	}
 }
