@@ -56,6 +56,9 @@ struct BrowseFilter: Codable {
 	/// Include only people who have configured a portrait picture.
 	var onlyWithPicture: Bool = false
 
+	/// Show people despite them being out-of-filter.
+	var displayFilteredPeople: Bool = false
+
 	/// Persists this filter.
 	func writeToDefaults() throws {
 		try archiveInUserDefs(self, forKey: BrowseFilter.PrefKey)

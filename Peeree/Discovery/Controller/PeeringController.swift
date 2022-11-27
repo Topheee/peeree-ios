@@ -531,7 +531,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				}
 			}
 		} else {
-			ServerChatFactory.close()
+			// we stay connected: ServerChatFactory.close()
 		}
 	}
 }

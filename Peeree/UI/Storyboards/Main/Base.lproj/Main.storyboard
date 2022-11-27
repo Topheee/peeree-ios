@@ -1465,10 +1465,44 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection headerTitle="Picture" footerTitle="Filter out people without a portrait" id="VhZ-Ja-vhb">
+                            <tableViewSection headerTitle="Picture" footerTitle="Filter out people without a portrait" id="HjS-MX-NAJ">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="leB-Ww-tcE">
+                                        <rect key="frame" x="0.0" y="396.5" width="320" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="leB-Ww-tcE" id="WoM-ie-Tz6">
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="4Y0-C9-k3C">
+                                                    <rect key="frame" x="247" y="6.5" width="51" height="31"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="Filters out people with no picture set" label="Picture available filter"/>
+                                                    <connections>
+                                                        <action selector="changeFilter:" destination="FVN-ta-Q5I" eventType="valueChanged" id="o4m-5q-o9z"/>
+                                                    </connections>
+                                                </switch>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Only with picture available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ab6-Ua-6e3">
+                                                    <rect key="frame" x="24" y="11.5" width="199" height="21"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="4Y0-C9-k3C" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ab6-Ua-6e3" secondAttribute="trailing" constant="8" id="1TD-kL-RzT"/>
+                                                <constraint firstItem="ab6-Ua-6e3" firstAttribute="centerY" secondItem="WoM-ie-Tz6" secondAttribute="centerY" id="WRU-4y-qDQ"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="4Y0-C9-k3C" secondAttribute="trailing" constant="8" id="YWT-xJ-0Tj"/>
+                                                <constraint firstItem="ab6-Ua-6e3" firstAttribute="leading" secondItem="WoM-ie-Tz6" secondAttribute="leadingMargin" constant="8" id="agG-Fh-QKg"/>
+                                                <constraint firstItem="4Y0-C9-k3C" firstAttribute="centerY" secondItem="WoM-ie-Tz6" secondAttribute="centerY" id="nhF-Xb-JL2"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="Display" footerTitle="You are never notified about filtered people, but you may still display them on Radar." id="VhZ-Ja-vhb">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ftg-Zm-Bcc">
-                                        <rect key="frame" x="0.0" y="396.5" width="320" height="44"/>
+                                        <rect key="frame" x="0.0" y="516" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ftg-Zm-Bcc" id="Fhb-Tr-cMy">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
@@ -1476,13 +1510,13 @@
                                             <subviews>
                                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="xJk-Ke-rVF">
                                                     <rect key="frame" x="247" y="6.5" width="51" height="31"/>
-                                                    <accessibility key="accessibilityConfiguration" hint="Filters out people with no picture set" label="Picture available filter"/>
+                                                    <accessibility key="accessibilityConfiguration" hint="Still display filtered people" label="Display override"/>
                                                     <connections>
-                                                        <action selector="changeFilter:" destination="FVN-ta-Q5I" eventType="valueChanged" id="NzO-h5-WiA"/>
+                                                        <action selector="changeFilter:" destination="FVN-ta-Q5I" eventType="valueChanged" id="Ni3-EB-wY2"/>
                                                     </connections>
                                                 </switch>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Only with picture available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydg-QF-ecu">
-                                                    <rect key="frame" x="24" y="11.5" width="199" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Display filtered people" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydg-QF-ecu">
+                                                    <rect key="frame" x="24" y="11.5" width="169.5" height="21"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -1514,8 +1548,9 @@
                         <outlet property="ageMinSlider" destination="kYd-92-VvC" id="eVv-4z-7qf"/>
                         <outlet property="ageMinTextLabel" destination="3tz-pY-BU1" id="NYX-Xk-fZd"/>
                         <outlet property="ageSwitch" destination="txc-3f-6Q0" id="8d9-q5-OUG"/>
+                        <outlet property="displayOverrideSwitch" destination="xJk-Ke-rVF" id="KS2-by-QBI"/>
                         <outlet property="genderSegments" destination="9at-7m-HHE" id="Kaj-UD-CBA"/>
-                        <outlet property="pictureSwitch" destination="xJk-Ke-rVF" id="JCJ-rF-paf"/>
+                        <outlet property="pictureSwitch" destination="4Y0-C9-k3C" id="CBb-fc-iXZ"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Pcm-Eb-gsq" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1676,8 +1711,8 @@
                                                     <outlet property="delegate" destination="ZaK-Ee-yIa" id="qoB-lA-Qwy"/>
                                                 </connections>
                                             </textView>
-                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
-                                                <rect key="frame" x="287" y="0.0" width="17" height="34"/>
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
+                                                <rect key="frame" x="287" y="0.0" width="17" height="38"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Sends message" label="Send"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                                 <state key="normal">

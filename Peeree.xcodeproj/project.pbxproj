@@ -76,6 +76,7 @@
 		9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D38FB7B2631F4530066ABAD /* UserDefaultsMock.swift */; };
 		9DCA59E12931372D008A4853 /* ThreadSafeMatrixWrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCA59E02931372D008A4853 /* ThreadSafeMatrixWrappers.swift */; };
 		9DCA59E329314772008A4853 /* MXCryptoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCA59E229314772008A4853 /* MXCryptoExtensions.swift */; };
+		9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */ = {isa = PBXBuildFile; fileRef = 9DCA59E42932173F008A4853 /* LLDBInitFile */; };
 		9DCB2F3A1D81F9170087CACB /* OnboardingDescriptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */; };
 		9DCD96E11EDA001E00C5AC3C /* SynchronizedCollections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */; };
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
@@ -191,6 +192,7 @@
 		9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
 		9DCA59E02931372D008A4853 /* ThreadSafeMatrixWrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeMatrixWrappers.swift; sourceTree = "<group>"; };
 		9DCA59E229314772008A4853 /* MXCryptoExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXCryptoExtensions.swift; sourceTree = "<group>"; };
+		9DCA59E42932173F008A4853 /* LLDBInitFile */ = {isa = PBXFileReference; lastKnownFileType = text; path = LLDBInitFile; sourceTree = "<group>"; };
 		9DCB1445205E9F4F00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/FirstLaunch.strings; sourceTree = "<group>"; };
 		9DCB1447205EA0AF00BF38D1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		9DCB2F391D81F9170087CACB /* OnboardingDescriptionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingDescriptionViewController.swift; sourceTree = "<group>"; };
@@ -477,6 +479,7 @@
 		9DA0F7AC1B5C3AB800F3BA87 = {
 			isa = PBXGroup;
 			children = (
+				9DCA59E42932173F008A4853 /* LLDBInitFile */,
 				9DDFC2E5245C6EAE00311054 /* LICENSE.txt */,
 				9DCE94631F30EDBA00F31330 /* README.md */,
 				9DA0F7B71B5C3AB800F3BA87 /* Peeree */,
@@ -706,6 +709,7 @@
 				9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */,
 				9D4D70A71DBA70C90065D23D /* LaunchScreen.storyboard in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
+				9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -989,7 +993,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.0;
+				CURRENT_PROJECT_VERSION = 1.6.1;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -1000,7 +1004,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1025,7 +1029,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.0;
+				CURRENT_PROJECT_VERSION = 1.6.1;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -1038,7 +1042,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

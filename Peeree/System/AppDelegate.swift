@@ -172,6 +172,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
 	}
 
+	func sequenceNumberReset() {
+		InAppNotificationController.display(title: NSLocalizedString("Request Failed", comment: "Error title"), message: NSLocalizedString("A request has failed, please try again.", comment: "Error body"))
+	}
+
 	// MARK: PeeringControllerDelegate
 
 	func advertisingStopped(with error: Error) {

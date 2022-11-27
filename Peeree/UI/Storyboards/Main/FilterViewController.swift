@@ -23,6 +23,7 @@ final class FilterViewController: UITableViewController {
 	@IBOutlet private weak var ageMinSlider: UISlider!
 	@IBOutlet private weak var pictureSwitch: UISwitch!
 	@IBOutlet private weak var ageSwitch: UISwitch!
+	@IBOutlet private weak var displayOverrideSwitch: UISwitch!
 
 	// MARK: Actions
 
@@ -81,6 +82,7 @@ final class FilterViewController: UITableViewController {
 
 		ageSwitch.isOn = filterSettings.onlyWithAge
 		pictureSwitch.isOn = filterSettings.onlyWithPicture
+		displayOverrideSwitch.isOn = filterSettings.displayFilteredPeople
 	}
 
 	// MARK: - Private
@@ -109,6 +111,8 @@ final class FilterViewController: UITableViewController {
 		filterSettings.gender = genderFilter
 		filterSettings.onlyWithAge = ageSwitch.isOn
 		filterSettings.onlyWithPicture = pictureSwitch.isOn
+		filterSettings.displayFilteredPeople = displayOverrideSwitch.isOn
+
 		do {
 			try filterSettings.writeToDefaults()
 		} catch {
