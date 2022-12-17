@@ -23,6 +23,9 @@ final class BrowseViewController: UITableViewController {
 	
 	static let ViewPeerSegueID = "ViewPeerSegue"
 
+	// Shortcut to `PeerViewModelController.shared`.
+	private let viewModel = PeerViewModelController.shared
+
 	/// Data source for `tableView`.
 	private var table: [[(PeerID, Date)]] = [[], []]
 
@@ -39,7 +42,7 @@ final class BrowseViewController: UITableViewController {
 #if SHOWCASE
 		return !peerAvailable
 #else
-		return !peerAvailable || !PeerViewModelController.peering
+		return !peerAvailable || !viewModel.peering
 #endif
 	}
 	
@@ -82,7 +85,7 @@ final class BrowseViewController: UITableViewController {
 			networkButton.backgroundColor = UIColor.white
 		}
 
-		connectionChangedState(PeerViewModelController.peering)
+		connectionChangedState(viewModel.peering)
 		observeNotifications()
 	}
 
@@ -133,7 +136,7 @@ final class BrowseViewController: UITableViewController {
 #if SHOWCASE
 			cell.setContent(mode: .alone)
 #else
-			cell.setContent(mode: PeerViewModelController.peering ? .alone : .offline)
+			cell.setContent(mode: viewModel.peering ? .alone : .offline)
 #endif
 
 			return cell
@@ -145,14 +148,12 @@ final class BrowseViewController: UITableViewController {
 		}
 
 		let peerID = table[indexPath.section][indexPath.row].0
-		let model = PeerViewModelController.viewModel(of: peerID)
+		let model = viewModel.viewModel(of: peerID)
 		cell.fill(with: model, PeereeIdentityViewModelController.viewModel(of: peerID))
 
 		// load the picture of the peer from disk once it is displayed
 		if model.picture == nil && model.info.hasPicture {
-			PeeringController.shared.interact(with: model.peerID) { interaction in
-				interaction.loadLocalPicture()
-			}
+			PeeringController.shared.loadPortraitFromDisk(of: peerID)
 		}
 
 		return cell
@@ -219,7 +220,7 @@ final class BrowseViewController: UITableViewController {
 
 	/// Adds `peerID` to `table` and returns the appropriate section.
 	private func addToTable(_ peerID: PeerID) -> Int {
-		let model = PeerViewModelController.viewModel(of: peerID)
+		let model = viewModel.viewModel(of: peerID)
 		let pinState = PeereeIdentityViewModelController.viewModel(of: peerID).pinState
 		let section: TableSection = filter.check(info: model.info, pinState: pinState) ? .inFilter : .outFilter
 		table[section.rawValue].insert((model.peerID, model.lastSeen), at: 0)
@@ -290,7 +291,7 @@ final class BrowseViewController: UITableViewController {
 	private func reload(peerID: PeerID) {
 		guard let indexPath = indexPath(of: peerID), let oldSection = TableSection(rawValue: indexPath.section) else { return }
 
-		let newModel = PeerViewModelController.viewModel(of: peerID)
+		let newModel = viewModel.viewModel(of: peerID)
 		if newModel.lastSeen == table[indexPath.section][indexPath.row].1 {
 			tableView.reloadRows(at: [indexPath], with: .automatic)
 		} else {
@@ -329,7 +330,7 @@ final class BrowseViewController: UITableViewController {
 		let cal = Calendar.current as NSCalendar
 		let userPeerID = PeereeIdentityViewModelController.userPeerID
 
-		var displayedModels = PeerViewModelController.viewModels.values.filter { model in
+		var displayedModels = viewModel.viewModels.values.filter { model in
 			let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: model.lastSeen, to: now, options: []).hour
 			let lastSeenAgo = lastSeenAgoCalc ?? BrowseViewController.MaxRememberedHours + 1
 			return lastSeenAgo < BrowseViewController.MaxRememberedHours && model.peerID != userPeerID
@@ -358,7 +359,7 @@ final class BrowseViewController: UITableViewController {
 		})
 		notificationObservers.append(PeeringController.Notifications.peerDisappeared.addAnyPeerObserver { [weak self] (peerID, _) in self?.peerDisappeared(peerID) })
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in
-			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeerViewModelController.peering)
+			self?.connectionChangedState((notification.userInfo?[PeeringController.NotificationInfoKey.connectionState.rawValue] as? NSNumber)?.boolValue ?? PeerViewModelController.shared.peering)
 		})
 		notificationObservers.append(PeeringController.Notifications.persistedPeersLoadedFromDisk.addObserver { [weak self] _ in
 			self?.updateCache()

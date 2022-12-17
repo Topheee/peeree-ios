@@ -25,8 +25,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 	private var activeField: (view: UIView, inputView: UIView?)? = nil
 	private var notificationObservers: [NSObjectProtocol] = []
 	private let portraitImagePicker = PortraitImagePickerController()
-	private var hasBio = false
-	
+
 	@IBAction func changeGender(_ sender: UISegmentedControl) {
 		let gender = PeerInfo.Gender.allCases[sender.selectedSegmentIndex]
 		modifyUserInfo { info in

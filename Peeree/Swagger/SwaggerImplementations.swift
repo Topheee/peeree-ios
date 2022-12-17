@@ -109,31 +109,30 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
     }
 }
 
+/**
+ May be overridden by a subclass if you want to control the session
+ configuration.
+ */
+private let sessionManager: URLSession = {
+    let configuration = URLSessionConfiguration.default
+    configuration.httpShouldUsePipelining = false
+    configuration.timeoutIntervalForRequest = 10.0
+    if #available(iOS 13, *) {
+        configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
+    } else {
+        configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
+    }
+    configuration.httpCookieAcceptPolicy = .never
+    configuration.httpShouldSetCookies = false
+    configuration.urlCache = nil
+    configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+    configuration.httpMaximumConnectionsPerHost = 1
+//    return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
+    return URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
+}()
+
+
 open class CustomRequestBuilder<T>: RequestBuilder<T> {
-
-    /**
-     May be overridden by a subclass if you want to control the session
-     configuration.
-     */
-    private lazy var sessionManager: URLSession = {
-        let configuration = URLSessionConfiguration.default
-//        these are set for each request: configuration.httpAdditionalHeaders = buildHeaders()
-        configuration.httpShouldUsePipelining = false
-        configuration.timeoutIntervalForRequest = 10.0
-        if #available(iOS 13, *) {
-            configuration.tlsMinimumSupportedProtocolVersion = .TLSv12
-        } else {
-            configuration.tlsMinimumSupportedProtocol = .tlsProtocol12
-        }
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.urlCache = nil
-        configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        configuration.httpMaximumConnectionsPerHost = 1
-//        return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-        return URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
-    }()
-
     /**
      May be overridden by a subclass if you want to control the Content-Type
      that is given to an uploaded form part.

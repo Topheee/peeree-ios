@@ -149,7 +149,7 @@ public struct PeerViewModel {
 		post(.messageSent)
 	}
 
-	/// Mass-append messages. Only fires Notifications.unreadMessageCountChanged. Does not produce notifications.
+	/// Mass-append messages. Only fires Notifications.unreadMessageCountChanged.
 	public mutating func catchUp(messages: [Transcript], unreadCount: Int) {
 		insert(messages: messages)
 		unreadMessages = unreadCount

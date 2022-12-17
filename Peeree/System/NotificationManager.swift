@@ -202,7 +202,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	private func received(message: String, from peerID: PeerID) {
-		let name = PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+		let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
 
 		let title: String
 		if #available(iOS 10.0, *) {
@@ -224,7 +224,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let model = PeerViewModelController.viewModels[peerID],
+		guard !again, let model = PeerViewModelController.shared.viewModels[peerID],
 			  let idModel = PeereeIdentityViewModelController.viewModels[peerID],
 			  filter.check(info: model.info, pinState: idModel.pinState) else { return }
 
@@ -255,7 +255,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		} else {
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString)
+			let alertBody = String(format: alertBodyFormat, PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString)
 			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch, displayInApp: true)
 		}
 	}

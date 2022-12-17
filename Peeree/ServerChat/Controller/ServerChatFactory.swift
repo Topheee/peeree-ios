@@ -26,6 +26,15 @@ public class ServerChatFactory {
 		}
 	}
 
+	/// Informed party about chats.
+	static var conversationDelegate: ServerChatConversationDelegate? = nil {
+		didSet {
+			use { factory in
+				factory?.serverChatController?.conversationDelegate = conversationDelegate
+			}
+		}
+	}
+
 	/// APNs device token.
 	static var remoteNotificationsDeviceToken: Data? = nil
 
@@ -460,11 +469,11 @@ public class ServerChatFactory {
 
 		restClient.completionQueue = Self.dQueue
 
-		let c = ServerChatController(peerID: peerID, restClient: restClient, dQueue: Self.dQueue)
+		let setupCallback: ([PeerID : Date]) -> () = { lastReads in
+			let c = ServerChatController(peerID: self.peerID, restClient: restClient, dQueue: Self.dQueue, lastReads: lastReads, conversationQueue: DispatchQueue.main)
 
-		c.start { _error in
-			Self.dQueue.async {
-				if let error = _error {
+			c.start { error in Self.dQueue.async {
+				if let error {
 					c.close()
 					if let cb = failure {
 						// let the callee handle the error
@@ -476,13 +485,21 @@ public class ServerChatFactory {
 				} else {
 					self.serverChatController = c
 					c.delegate = Self.delegate
+					c.conversationDelegate = Self.conversationDelegate
 
 					// configure the pusher if server chat account didn't exist when AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken() is called
 					Self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
 
 					self.reportCreatingInstance(result: .success(c))
 				}
-			}
+			} }
+		}
+
+		if let d = Self.delegate {
+			d.getLastReads(setupCallback)
+		} else {
+			wlog("no server chat delegate set in setupInstance().")
+			setupCallback([:])
 		}
 	}
 

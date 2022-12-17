@@ -24,7 +24,7 @@ open class SwaggerClientAPI {
     public static var credential: URLCredential?
     public static var customHeaders: [String:String] = [:]
     static var requestBuilderFactory: RequestBuilderFactory = CustomRequestBuilderFactory()
-    public static var apiResponseQueue: OperationQueue?
+    public static let apiResponseQueue = OperationQueue()
 }
 
 open class APIBase {

@@ -29,9 +29,6 @@ public protocol PeeringControllerDelegate {
 	/// Advertising the Bluetooth service stopped ungracefully.
 	func advertisingStopped(with error: Error)
 
-	/// An error during the server chat login or account creation failed.
-	func serverChatLoginFailed(with error: ServerChatError)
-
 	/// A serialization error occurred.
 	func encodingPeersFailed(with error: Error)
 
@@ -119,11 +116,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	// MARK: Methods
 
-	/// Entry point for interactions with a peer coming from the server chat module of the app.
-	func serverChatInteraction(with peerID: PeerID, completion: @escaping (ServerChatManager) -> ()) {
-		withManager(of: peerID, completion: completion)
-	}
-
 	/// Entry point for interactions with a peer coming from the main module of the app.
 	public func interact(with peerID: PeerID, completion: @escaping (PeerInteraction) -> ()) {
 		withManager(of: peerID, completion: completion)
@@ -196,7 +188,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
 
 			Self.updateViewModels(of: peer, lastSeen: now)
-			PeerViewModelController.modify(peerID: peer.id.peerID) { model in
+			self.viewModel.modify(peerID: peer.id.peerID) { model in
 				model.isAvailable = true
 			}
 			// make sure the notification is sent only after the view model is updated:
@@ -216,7 +208,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			let now = Date()
 			self.lastSeenDates[peerID] = now
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
-			PeerViewModelController.modify(peerID: peerID) { model in
+			self.viewModel.modify(peerID: peerID) { model in
 				model.isAvailable = false
 				model.lastSeen = now
 			}
@@ -280,7 +272,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	public func persistedBiosLoadedFromDisk(_ bios: [PeerID : String]) {
 		DispatchQueue.main.async {
 			for entry in bios {
-				PeerViewModelController.modify(peerID: entry.key) { model in
+				self.viewModel.modify(peerID: entry.key) { model in
 					model.biography = entry.value
 				}
 
@@ -295,7 +287,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		// fix unread message count if last reads where read after server chat went online
 		// PERFORMANCE: poor
 		DispatchQueue.main.async {
-			for (peerID, model) in PeerViewModelController.viewModels {
+			for (peerID, model) in self.viewModel.viewModels {
 				guard let lastReadDate = lastReads[peerID] else { continue }
 
 				var unreadCount = 0
@@ -305,7 +297,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 				guard unreadCount != model.unreadMessages else { continue }
 
-				PeerViewModelController.modify(peerID: peerID) { modifyModel in
+				self.viewModel.modify(peerID: peerID) { modifyModel in
 					modifyModel.unreadMessages = unreadCount
 				}
 			}
@@ -360,7 +352,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
 		let peerID = peer.id.peerID
 
-		PeerViewModelController.update(peerID, info: peer.info, lastSeen: lastSeen)
+		PeerViewModelController.shared.update(peerID, info: peer.info, lastSeen: lastSeen)
 
 		// This is a bit tricky. We can get the public key from both the AccountController and the PersistedPeersController.
 		// For now, we always use the one from the AccountController.
@@ -376,6 +368,9 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private let remotePeerManager = RemotePeerManager()
 
 	private let persistence = PersistedPeersController(filename: "peers.json", targetQueue: DispatchQueue(label: "de.peeree.PeeringController.persistence", qos: .utility))
+
+	// Shortcut to `PeerViewModelController.shared`.
+	private let viewModel = PeerViewModelController.shared
 
 	// MARK: Variables
 
@@ -503,7 +498,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 			// delete all cached pictures and finally the persisted PeerInfo records themselves
 			self.persistence.clear()
 			self.peerManagers.removeAll()
-			PeerViewModelController.clear()
+			self.viewModel.clear()
 		})
 
 		notificationObservers.append(UserPeer.NotificationName.changed.addObserver { _ in
@@ -513,25 +508,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Posts `connectionChangedState` notification and starts/stops the server chat module.
 	private func connectionChangedState(_ newState: Bool) {
-		DispatchQueue.main.async { PeerViewModelController.peering = newState }
+		DispatchQueue.main.async { self.viewModel.peering = newState }
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
-
-		if newState {
-			ServerChatFactory.getOrSetupInstance { result in
-				switch result {
-				case .failure(let error):
-					switch error {
-					case .identityMissing:
-						break
-					default:
-						self.delegate?.serverChatLoginFailed(with: error)
-					}
-				case .success(_):
-					break
-				}
-			}
-		} else {
-			// we stay connected: ServerChatFactory.close()
-		}
 	}
 }
