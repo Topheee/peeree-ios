@@ -14,19 +14,11 @@ import Foundation
  - Attention: All methods of this protocol must be called from the main thread!
  */
 public protocol PeerInteraction {
-	func loadLocalPicture()
 	func loadPicture(callback: @escaping (Progress?) -> ())
 	func loadBio(callback: @escaping (Progress?) -> ())
 	func verify()
 	func range(_ block: @escaping (PeerID, PeerDistance) -> Void)
 	func stopRanging()
-}
-
-/// Interface for interactions with a peer coming from the server chat module.
-protocol ServerChatManager {
-	func received(message: String, at: Date)
-	func didSend(message: String, at: Date)
-	func catchUp(messages: [Transcript], unreadCount: Int)
 }
 
 /// Representation of a chat message.

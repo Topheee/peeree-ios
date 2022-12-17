@@ -18,8 +18,8 @@ protocol PeerObserverContainer: AnyObject {
 
 /// Shortcuts for functions accepting a `PeerID`.
 extension PeerObserverContainer {
-	/// Shortcut for `PeerViewModelController.viewModel(of: peerID)`.
-	var model: PeerViewModel { return PeerViewModelController.viewModel(of: peerID) }
+	/// Shortcut for `PeerViewModelController.shared.viewModel(of: peerID)`.
+	var model: PeerViewModel { return PeerViewModelController.shared.viewModel(of: peerID) }
 
 	/// Shortcut for `PeereeIdentityViewModelController.viewModel(of: peerID)`.
 	var idModel: PeereeIdentityViewModel { return PeereeIdentityViewModelController.viewModel(of: peerID) }
@@ -29,9 +29,9 @@ extension PeerObserverContainer {
 		PeeringController.shared.interact(with: peerID, completion: completion)
 	}
 
-	/// Shortcut for `PeerViewModelController.modify(peerID: peerID, modifier: modifier)`.
+	/// Shortcut for `PeerViewModelController.shared.modify(peerID: peerID, modifier: modifier)`.
 	func modifyModel(_ modifier: (inout PeerViewModel) -> ()) {
-		PeerViewModelController.modify(peerID: peerID, modifier: modifier)
+		PeerViewModelController.shared.modify(peerID: peerID, modifier: modifier)
 	}
 }
 

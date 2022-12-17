@@ -16,15 +16,22 @@ final class ServerChatController: ServerChat {
 	// MARK: - Public and Internal
 
 	/// Creates a `ServerChatController`.
-	init(peerID: PeerID, restClient: MXRestClient, dQueue: DispatchQueue) {
+	init(peerID: PeerID, restClient: MXRestClient, dQueue: DispatchQueue, lastReads: [PeerID: Date], conversationQueue: DispatchQueue) {
 		self.peerID = peerID
 		self.dQueue = dQueue
+		self.lastReads = lastReads
+		self.conversationQueue = conversationQueue
 		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!, queue: dQueue)
 	}
 
 	// MARK: Variables
 
+	/// Delegate for whole server chat; same as ServerChatFactory.delegate.
+	// Prevents from source dependency on ServerChatFactory.
 	weak var delegate: ServerChatDelegate? = nil
+
+	/// The informed party for conversation events.
+	weak var conversationDelegate: ServerChatConversationDelegate? = nil
 
 	// MARK: Methods
 
@@ -183,6 +190,9 @@ final class ServerChatController: ServerChat {
 	/// Matrix session.
 	private let session: ThreadSafeCallbacksMatrixSession
 
+	/// Last read timestamps.
+	private let lastReads: [PeerID : Date]
+
 	// MARK: Variables
 
 	/// Matrix userId based on user's PeerID.
@@ -193,6 +203,9 @@ final class ServerChatController: ServerChat {
 
 	/// The timelines of rooms we are listening on; must be used on `dQueue`.
 	private var roomTimelines = [String : MXEventTimeline]()
+
+	/// On which queue are the methods of the `conversationDelegate` invoked.
+	private let conversationQueue: DispatchQueue
 
 	/// All references to NotificationCenter observers by this object.
 	private var notificationObservers: [Any] = []
@@ -267,8 +280,6 @@ final class ServerChatController: ServerChat {
 		guard roomIdsListeningOn[roomId] == nil else { return }
 		roomIdsListeningOn[roomId] = peerID
 
-		PeeringController.shared.getLastReads { lastReads in
-
 		// replay missed messages
 		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = self.userId
@@ -309,7 +320,8 @@ final class ServerChatController: ServerChat {
 
 			// we need to reset the replay attack check, as we kept getting errors like:
 			// [MXOlmDevice] decryptGroupMessage: Warning: Possible replay attack
-			self.session.resetReplayAttackCheck(inTimeline: timeline.timelineId)
+			// ATTENTION: this call can cause potential dead locks, since the 'This queue is used to get the key from the crypto store and decrypt the event. No more.' `MXLegacyCrypto.decryptionQueue` is not as perfectly decoupled as its description suggests.
+			//self.session.resetReplayAttackCheck(inTimeline: timeline.timelineId)
 
 #if os(iOS)
 			// decryptEvents() is somehow not available on macOS
@@ -339,13 +351,12 @@ final class ServerChatController: ServerChat {
 				catchUpDecryptedMessages.reverse()
 				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
 				if catchUpDecryptedMessages.count > 0 {
-					PeeringController.shared.serverChatInteraction(with: peerID) { manager in
-						manager.catchUp(messages: catchUpDecryptedMessages, unreadCount: unreadMessages)
+					self.conversationQueue.async {
+						self.conversationDelegate?.catchUp(messages: catchUpDecryptedMessages, unreadCount: unreadMessages, with: peerID)
 					}
 				}
 			}
 #endif
-		}
 		}
 	}
 
@@ -355,6 +366,13 @@ final class ServerChatController: ServerChat {
 			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
 			self.roomTimelines.removeValue(forKey: roomId)?.destroy()
 			self.roomIdsListeningOn.removeValue(forKey: roomId)
+
+			if let err = response.error as? NSError, MXError.isMXError(err),
+			   err.userInfo["errcode"] as? String == kMXErrCodeStringUnknown,
+			   err.userInfo["error"] as? String == "user \"\(self.peerID.serverChatUserId)\" is not joined to the room (membership is \"leave\")" {
+				// otherwise, this will keep on as a zombie
+				self.session.store?.deleteRoom(roomId)
+			}
 
 			completion(response.error)
 		}
@@ -541,9 +559,10 @@ final class ServerChatController: ServerChat {
 		session.directRoomInfos(with: peerID.serverChatUserId) { infos in
 			// always leave all rooms where the other one already left
 			let theyJoinedOrInvited = infos.filter { info in
-				let theyIn = info.theirMembership == .join || info.theirMembership == .invite
+				let theyIn = info.theirMembership == .join || info.theirMembership == .invite || info.theirMembership == .unknown
 
 				if !theyIn {
+					wlog("triaging room \(info.room.roomId ?? "<nil>") with peerID \(peerID).")
 					self.forgetRoom(info.room.roomId) { error in
 						error.map { elog("leaving room failed: \($0)")}
 					}
@@ -596,11 +615,11 @@ final class ServerChatController: ServerChat {
 		do {
 			let messageEvent = try MessageEventData(messageEvent: event)
 
-			PeeringController.shared.serverChatInteraction(with: peerID) { manager in
+			self.conversationQueue.async {
 				if event.sender == self.peerID.serverChatUserId {
-					manager.didSend(message: messageEvent.message, at: messageEvent.timestamp)
+					self.conversationDelegate?.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
 				} else {
-					manager.received(message: messageEvent.message, at: messageEvent.timestamp)
+					self.conversationDelegate?.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
 				}
 			}
 		} catch let error {

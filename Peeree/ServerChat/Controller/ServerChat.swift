@@ -36,6 +36,9 @@ public protocol ServerChatDelegate: AnyObject {
 
 	// MARK: Methods
 
+	/// Obtain timestamps of last full reads.
+	func getLastReads(_ completion: @escaping ([PeerID : Date]) -> ())
+
 	/// Configuring the Pusher on the server chat server failed.
 	func configurePusherFailed(_ error: Error)
 
@@ -55,4 +58,16 @@ public protocol ServerChatDelegate: AnyObject {
 
 	/// An unexpected error occurred, mostly network-related; use for logging.
 	func serverChatInternalErrorOccured(_ error: Error)
+}
+
+/// Interface for interactions with a peer coming from the server chat module.
+public protocol ServerChatConversationDelegate: AnyObject {
+	/// Received a new message.
+	func received(message: String, at: Date, from peerID: PeerID)
+
+	/// Sent a new message.
+	func didSend(message: String, at: Date, to peerID: PeerID)
+
+	/// Received and sent many new messages.
+	func catchUp(messages: [Transcript], unreadCount: Int, with peerID: PeerID)
 }

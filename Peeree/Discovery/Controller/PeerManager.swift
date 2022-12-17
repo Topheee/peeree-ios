@@ -16,7 +16,8 @@ public enum PeerDistance {
 }
 
 /// This class is the interface between the Bluetooth and the UI part of the application.
-class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
+class PeerManager: PeeringDelegate, PeerInteraction {
+
 	// MARK: - Public and Internal
 
 	init(peerID: PeerID, remotePeerManager: RemotePeerManager) {
@@ -39,10 +40,6 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 
 	public func stopRanging() {
 		rangeBlock = nil
-	}
-
-	public func loadLocalPicture() {
-		PeeringController.shared.loadPortraitFromDisk(of: peerID)
 	}
 
 	public func loadPicture(callback: @escaping (Progress?) -> ()) {
@@ -136,23 +133,9 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 		}
 	}
 
-	// MARK: ServerChatManager
-
 	func received(message: String, at: Date) {
 		publish { model in
 			model.received(message: message, at: at)
-		}
-	}
-
-	public func didSend(message: String, at: Date) {
-		publish { model in
-			model.didSend(message: message, at: at)
-		}
-	}
-
-	func catchUp(messages: [Transcript], unreadCount: Int) {
-		publish { model in
-			model.catchUp(messages: messages, unreadCount: unreadCount)
 		}
 	}
 
@@ -197,7 +180,7 @@ class PeerManager: PeeringDelegate, PeerInteraction, ServerChatManager {
 	/// publish changes to the model on the main thread
 	private func publish(completion: @escaping (inout PeerViewModel) -> ()) {
 		DispatchQueue.main.async {
-			PeerViewModelController.modify(peerID: self.peerID, modifier: completion)
+			PeerViewModelController.shared.modify(peerID: self.peerID, modifier: completion)
 		}
 	}
 }

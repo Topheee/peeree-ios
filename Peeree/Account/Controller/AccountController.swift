@@ -64,7 +64,7 @@ public class AccountController: SecurityDataSource {
 			if let i = instance {
 				getter(i)
 			} else if let ac = load() {
-				instance = ac
+				setInstance(ac)
 				getter(ac)
 			} else { unavailable?() }
 		}
@@ -107,7 +107,7 @@ public class AccountController: SecurityDataSource {
 			UserDefaults.standard.set(NSNumber(value: account.sequenceNumber), forKey: SequenceNumberKey)
 
 			let a = AccountController(peerID: account.peerID, sequenceNumber: account.sequenceNumber, keyPair: keyPair)
-			instance = a
+			setInstance(a)
 			reportCreatingInstance(result: .success(a))
 
 			NotificationName.accountCreated.postAsNotification(object: a, userInfo: [PeerID.NotificationInfoKey : account.peerID])
@@ -371,7 +371,7 @@ public class AccountController: SecurityDataSource {
 					callback(pinState)
 				}
 
-				self.updatePinStatusRequests[id.peerID] = nil
+				self.updatePinStatusRequests.removeValue(forKey: id.peerID)
 			}
 
 			guard _error == nil else {
@@ -481,12 +481,6 @@ public class AccountController: SecurityDataSource {
 		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
 		accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
 
-		opQueue.underlyingQueue = Self.dQueue
-
-		// side-effects (not the best style …)
-		SwaggerClientAPI.apiResponseQueue = opQueue
-		SwaggerClientAPI.dataSource = self
-
 		let models: [PeereeIdentityViewModel] = pinnedPeers.compactMap { (peerID, publicKeyData) in
 			guard let id = try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData) else { return nil }
 			return PeereeIdentityViewModel(id: id, pinState: self.pinState(of: peerID))
@@ -570,6 +564,13 @@ public class AccountController: SecurityDataSource {
 
 	// MARK: Static Functions
 
+	/// Establish the singleton instance.
+	private static func setInstance(_ ac: AccountController) {
+		instance = ac
+		SwaggerClientAPI.dataSource = ac
+		SwaggerClientAPI.apiResponseQueue.underlyingQueue = dQueue
+	}
+
 	/// Factory method for `AccountController`.
 	private static func load() -> AccountController? {
 		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
@@ -602,11 +603,6 @@ public class AccountController: SecurityDataSource {
 		creatingInstanceCallbacks.forEach { $0(result) }
 		creatingInstanceCallbacks.removeAll()
 	}
-
-	// MARK: Constants
-
-	/// Operation queue for work on this object.
-	private let opQueue = OperationQueue()
 
 	// MARK: Variables
 
@@ -749,7 +745,6 @@ public class AccountController: SecurityDataSource {
 			flog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}
 
-		SwaggerClientAPI.apiResponseQueue = nil
 		SwaggerClientAPI.dataSource = nil
 		DispatchQueue.main.async {
 			PeereeIdentityViewModelController.clear()

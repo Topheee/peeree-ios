@@ -115,7 +115,7 @@ final class InAppNotificationController {
 			case .fatal(let error):
 				display(title: localizedTitle, message: error.localizedDescription)
 			case .cannotChat(let peerID, let reason):
-				let name = PeerViewModelController.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+				let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
 
 				let format: String
 				switch reason {

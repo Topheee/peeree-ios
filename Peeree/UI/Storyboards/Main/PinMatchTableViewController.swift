@@ -78,7 +78,7 @@ final class PinMatchTableViewController: UITableViewController {
 			return cell
 		} else {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!
-			fill(cell: cell, model: PeerViewModelController.viewModel(of: table[indexPath.row]))
+			fill(cell: cell, model: PeerViewModelController.shared.viewModel(of: table[indexPath.row]))
 			return cell
 		}
 	}
@@ -143,7 +143,7 @@ final class PinMatchTableViewController: UITableViewController {
 #if SHOWCASE
 		table = PeerViewModelController.viewModels.values.map { $0.peerID }
 #else
-		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeerViewModelController.viewModels.values.compactMap { model in
+		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeerViewModelController.shared.viewModels.values.compactMap { model in
 			guard PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch else { return nil }
 			return (model.peerID, model.transcripts.last?.timestamp, model.lastSeen)
 		}
@@ -205,9 +205,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 		// load the picture of the peer from disk once it is displayed
 		if model.picture == nil && model.info.hasPicture {
-			PeeringController.shared.interact(with: model.peerID) { interaction in
-				interaction.loadLocalPicture()
-			}
+			PeeringController.shared.loadPortraitFromDisk(of: model.peerID)
 		}
 	}
 

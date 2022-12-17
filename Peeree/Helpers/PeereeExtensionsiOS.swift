@@ -124,7 +124,7 @@ extension AppDelegate {
 
 	/// Must be called on the main thread!
 	static func requestPin(of peerID: PeerID) {
-		let model = PeerViewModelController.viewModel(of: peerID)
+		let model = PeerViewModelController.shared.viewModel(of: peerID)
 		let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
 
 		if !model.verified {
@@ -172,7 +172,7 @@ extension AppDelegate {
 
 	@objc func toggleNetwork(_ sender: AnyObject) {
 		if PeeringController.shared.isBluetoothOn {
-			PeeringController.shared.change(peering: !PeerViewModelController.peering)
+			PeeringController.shared.change(peering: !PeerViewModelController.shared.peering)
 			AccountController.use { $0.refreshBlockedContent { error in
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
 			} }

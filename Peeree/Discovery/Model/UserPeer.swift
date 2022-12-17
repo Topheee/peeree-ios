@@ -230,8 +230,8 @@ public final class UserPeer {
 
 			DispatchQueue.main.async {
 				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey), pinState: .unpinned))
-				PeerViewModelController.update(peerID, info: info, lastSeen: Date())
-				PeerViewModelController.modify(peerID: peerID) { model in
+				PeerViewModelController.shared.update(peerID, info: info, lastSeen: Date())
+				PeerViewModelController.shared.modify(peerID: peerID) { model in
 					model.verified = true
 					model.isAvailable = true
 					model.biography = bio
