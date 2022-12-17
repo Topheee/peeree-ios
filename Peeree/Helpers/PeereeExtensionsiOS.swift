@@ -96,23 +96,23 @@ extension AppDelegate {
 		tabBarVC.selectedIndex = AppDelegate.BrowseTabBarIndex
 
 		// find possibly existing VCs displaying regarded PeerID
-		var _browseVC: BrowseViewController? = nil
-		var _personVC: PersonDetailViewController? = nil
+		var browseVC: BrowseViewController? = nil
+		var personVC: PersonDetailViewController? = nil
 		for vc in browseNavVC.viewControllers {
 			if vc is BrowseViewController {
-				_browseVC = vc as? BrowseViewController
+				browseVC = vc as? BrowseViewController
 			} else if let somePersonVC = vc as? PersonDetailViewController {
 				if somePersonVC.peerID == peerID {
-					_personVC = somePersonVC
+					personVC = somePersonVC
 				}
 			} else if let someBeaconVC = vc as? BeaconViewController {
 				guard someBeaconVC.peerID != peerID else { return }
 			}
 		}
 
-		if let personVC = _personVC {
+		if let personVC {
 			personVC.performSegue(withIdentifier: PersonDetailViewController.beaconSegueID, sender: nil)
-		} else if let browseVC = _browseVC {
+		} else if let browseVC {
 			guard let personVC = browseVC.storyboard?.instantiateViewController(withIdentifier: PersonDetailViewController.storyboardID) as? PersonDetailViewController,
 				let findVC = browseVC.storyboard?.instantiateViewController(withIdentifier: BeaconViewController.storyboardID) as? BeaconViewController else { return }
 			personVC.peerID = peerID

@@ -179,8 +179,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 //				content.attachments = [attachment]
 //			}
 
-			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (_error) in
-				if let error = _error {
+			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (error) in
+				if let error {
 					elog("Scheduling local notification failed: \(error.localizedDescription)")
 				}
 			}
