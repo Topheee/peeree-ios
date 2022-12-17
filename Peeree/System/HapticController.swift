@@ -28,8 +28,8 @@ class HapticController {
 						HapticController.hapticEngine = nil
 					}
 					engine.resetHandler = { wlog("The haptic engine reset.") }
-					engine.notifyWhenPlayersFinished { (_error) -> CHHapticEngine.FinishedAction in
-						if let error = _error {
+					engine.notifyWhenPlayersFinished { (error) -> CHHapticEngine.FinishedAction in
+						if let error {
 							elog("Haptic player finished with error: \(error.localizedDescription)")
 						}
 						return .stopEngine

@@ -96,10 +96,10 @@ public class AccountController: SecurityDataSource {
 			return
 		}
 
-		AccountAPI.putAccount(email: email) { (_account, _error) in
-			guard let account = _account else {
+		AccountAPI.putAccount(email: email) { (account, error) in
+			guard let account else {
 				let desc = NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")
-				reportCreatingInstance(result: .failure(_error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])))
+				reportCreatingInstance(result: .failure(error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])))
 				return
 			}
 
@@ -175,10 +175,10 @@ public class AccountController: SecurityDataSource {
 		pinningPeers.insert(peerID)
 		updateModels(of: [id])
 
-		PinsAPI.putPin(pinnedID: peerID, pinnedKey: id.publicKeyData.base64EncodedData()) { (_isPinMatch, _error) in
+		PinsAPI.putPin(pinnedID: peerID, pinnedKey: id.publicKeyData.base64EncodedData()) { (isPinMatch, error) in
 			self.pinningPeers.remove(peerID)
 
-			if let error = _error {
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 				// possible HTTP errors:
 				// 409: non-matching public key
@@ -191,7 +191,7 @@ public class AccountController: SecurityDataSource {
 					Self.delegate?.pin(of: peerID, failedWith: error)
 				}
 				self.post(.pinFailed, peerID)
-			} else if let isPinMatch = _isPinMatch {
+			} else if let isPinMatch {
 				self.pin(id: id, isPinMatch: isPinMatch)
 			} else {
 				self.post(.pinFailed, peerID)
@@ -209,10 +209,10 @@ public class AccountController: SecurityDataSource {
 		unpinningPeers.insert(peerID)
 		updateModels(of: [id])
 
-		PinsAPI.deletePin(pinnedID: peerID) { (_, _error) in
+		PinsAPI.deletePin(pinnedID: peerID) { (_, error) in
 			self.unpinningPeers.remove(peerID)
 
-			if let error = _error {
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 				self.post(.unpinFailed, peerID)
 			} else {
@@ -247,8 +247,8 @@ public class AccountController: SecurityDataSource {
 			return
 		}
 		
-		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: model.peerID, hash: hashString) { (_, _error) in
-			if let error = _error {
+		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: model.peerID, hash: hashString) { (_, error) in
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
 			} else {
@@ -270,11 +270,11 @@ public class AccountController: SecurityDataSource {
 	public func refreshBlockedContent(_ errorCallback: @escaping (Error) -> Void) {
 		guard self.lastObjectionableContentRefresh.addingTimeInterval(AccountController.ObjectionableContentRefreshThreshold) < Date() else { return }
 
-		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (_hexHashes, _error) in
-			if let error = _error {
+		ContentfilterAPI.getContentFilterPortraitHashes(startDate: self.lastObjectionableContentRefresh) { (hexHashes, error) in
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
-			} else if let hexHashes = _hexHashes {
+			} else if let hexHashes {
 				let hashesAsData = Set<Data>(hexHashes.compactMap { Data(hexString: $0) })
 
 				let nsPendingObjectionableImageHashes: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PendingObjectionableImageHashesKey)
@@ -364,7 +364,7 @@ public class AccountController: SecurityDataSource {
 
 		let pinPublicKey = id.publicKeyData.base64EncodedData()
 
-		PinsAPI.getPin(pinnedID: id.peerID, pinnedKey: pinPublicKey) { (_pinStatus, _error) in
+		PinsAPI.getPin(pinnedID: id.peerID, pinnedKey: pinPublicKey) { (pinStatus, error) in
 			defer {
 				let pinState = self.pinState(of: id.peerID)
 				self.updatePinStatusRequests[id.peerID]?.forEach { callback in
@@ -374,12 +374,12 @@ public class AccountController: SecurityDataSource {
 				self.updatePinStatusRequests.removeValue(forKey: id.peerID)
 			}
 
-			guard _error == nil else {
-				self.preprocessAuthenticatedRequestError(_error!)
+			if let error {
+				self.preprocessAuthenticatedRequestError(error)
 				return
 			}
 
-			if let pinStatus = _pinStatus {
+			if let pinStatus {
 				switch pinStatus {
 				case 0:
 					self.pin(id: id, isPinMatch: false)
@@ -400,9 +400,9 @@ public class AccountController: SecurityDataSource {
 		isDeletingAccount = true
 		let oldPeerID = peerID
 
-		AccountAPI.deleteAccount { (_, _error) in
-			var reportedError = _error
-			if let error = _error {
+		AccountAPI.deleteAccount { (_, error) in
+			var reportedError = error
+			if let error {
 				switch error {
 				case .httpError(403, let messageData):
 					elog("Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
@@ -427,25 +427,25 @@ public class AccountController: SecurityDataSource {
 	/// Changes the email address of the account or removes it if `email` is the empty string.
 	public func update(email: String, _ completion: @escaping (Error?) -> Void) {
 		guard email != "" else { deleteEmail(completion); return }
-		AccountAPI.putAccountEmail(email: email) { (_, _error) in
-			if let error = _error {
+		AccountAPI.putAccountEmail(email: email) { (_, error) in
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 			} else {
 				self.accountEmail = email
 			}
-			completion(_error)
+			completion(error)
 		}
 	}
 
 	/// Removes the email address from the account.
 	public func deleteEmail(_ completion: @escaping (Error?) -> Void) {
-		AccountAPI.deleteAccountEmail { (_, _error) in
-			if let error = _error {
+		AccountAPI.deleteAccountEmail { (_, error) in
+			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 			} else {
 				self.accountEmail = nil
 			}
-			completion(_error)
+			completion(error)
 		}
 	}
 	
@@ -673,9 +673,9 @@ public class AccountController: SecurityDataSource {
 	/// Request a new sequence number, since we may have run out of sync with the server.
 	private func resetSequenceNumber() {
 		wlog("resetting sequence number")
-		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (_sequenceNumberDataCipher, _error) in
-			guard let sequenceNumberDataCipher = _sequenceNumberDataCipher else {
-				if let error = _error {
+		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (sequenceNumberDataCipher, error) in
+			guard let sequenceNumberDataCipher else {
+				if let error {
 					elog("resetting sequence number failed: \(error.localizedDescription)")
 					Self.delegate?.sequenceNumberResetFailed(error: error)
 				}

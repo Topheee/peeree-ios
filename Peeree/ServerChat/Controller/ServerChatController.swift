@@ -309,8 +309,8 @@ final class ServerChatController: ServerChat {
 		}
 		catchUpMissedMessages.reverse()
 
-		room.liveTimeline { _timeline in
-			guard let timeline = _timeline else {
+		room.liveTimeline { timeline in
+			guard let timeline else {
 				elog("No timeline retrieved.")
 				self.roomIdsListeningOn.removeValue(forKey: room.roomId)
 				return
@@ -325,8 +325,8 @@ final class ServerChatController: ServerChat {
 
 #if os(iOS)
 			// decryptEvents() is somehow not available on macOS
-			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { _failedEvents in
-				if let failedEvents = _failedEvents, failedEvents.count > 0 {
+			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { failedEvents in
+				if let failedEvents, failedEvents.count > 0 {
 					for failedEvent in failedEvents {
 						wlog("Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
 					}
