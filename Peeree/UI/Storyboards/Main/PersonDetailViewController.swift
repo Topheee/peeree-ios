@@ -290,6 +290,10 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 
+		gradientView.animateGradient = idModel.pinState == .pinMatch
+
+		guard peerID != PeereeIdentityViewModelController.userPeerID else { return }
+
 		let loadPicture = model.cgPicture == nil && model.info.hasPicture
 		let loadBio = model.biography == ""
 
@@ -310,8 +314,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 				}
 			}
 		}
-
-		gradientView.animateGradient = idModel.pinState == .pinMatch
 	}
 
 	override func viewWillDisappear(_ animated: Bool) {

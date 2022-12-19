@@ -596,7 +596,7 @@ final class ServerChatController: ServerChat {
 	/// Refreshes the pin status with the Peeree server, forgets all rooms with `peerID` if we do not have a pin match, and calls `pinMatchedAction` or `noPinMatchAction` depending on the pin status.
 	private func refreshPinStatus(of peerID: PeerID, force: Bool, _ pinMatchedAction: (() -> Void)?, _ noPinMatchAction: (() -> Void)? = nil) {
 		AccountController.use { ac in
-			ac.updatePinStatus(of: peerID, force: true) { pinState in
+			ac.updatePinStatus(of: peerID, force: force) { pinState in
 				guard pinState == .pinMatch else {
 					self.forgetAllRooms(with: peerID)
 					noPinMatchAction?()

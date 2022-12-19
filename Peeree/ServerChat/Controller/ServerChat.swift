@@ -11,13 +11,6 @@ import MatrixSDK
 
 /// Communications through a matrix session (`MXSession`); only access directly through `ServerChatFactory.chat()` to be on the right dispatch queue!
 public protocol ServerChat {
-
-	// MARK: Variables
-
-	var delegate: ServerChatDelegate? { get set }
-
-	// MARK: Methods
-
 	/// Checks whether `peerID` can receive or messages.
 	func canChat(with peerID: PeerID, _ completion: @escaping (ServerChatError?) -> Void)
 
@@ -33,9 +26,6 @@ public protocol ServerChat {
 
 /// Server chat informed party.
 public protocol ServerChatDelegate: AnyObject {
-
-	// MARK: Methods
-
 	/// Obtain timestamps of last full reads.
 	func getLastReads(_ completion: @escaping ([PeerID : Date]) -> ())
 

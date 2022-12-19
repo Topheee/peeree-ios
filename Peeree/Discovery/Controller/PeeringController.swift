@@ -35,8 +35,8 @@ public protocol PeeringControllerDelegate {
 	/// A serialization error occurred.
 	func decodingPeersFailed(with error: Error)
 
-	/// All data was loaded.
-	func peeringControllerIsReadyToGoOnline()
+	/// If `isAvailable`, you might call `PeeringController.shared.change(peering: true)`.
+	func bluetoothNetwork(isAvailable: Bool)
 }
 
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about stored peers.
@@ -73,6 +73,8 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	// MARK: Static Constants
 
 	/// The singleton instance of this class.
+	///
+	/// > Note: Accessing this lazily instantiates the object (as is done with all static constants). Avoid automatic access at very first launch to not trigger the Bluetooth permission dialog too early.
 	public static let shared = PeeringController()
 
 	// MARK: Static Variables
@@ -80,9 +82,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	// MARK: Constants
 
 	// MARK: Variables
-
-	/// Hardware query.
-	public var isBluetoothOn: Bool { return remotePeerManager.isBluetoothOn }
 
 	/// Receives general updates and errors of the `PeeringController`.
 	public var delegate: PeeringControllerDelegate? = nil
@@ -167,8 +166,11 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	// MARK: RemotePeerManagerDelegate
 
-	func remotePeerManagerIsReady() {
-		delegate?.peeringControllerIsReadyToGoOnline()
+	func remotePeerManager(isReady: Bool) {
+		DispatchQueue.main.async {
+			self.viewModel.isBluetoothOn = isReady
+			self.delegate?.bluetoothNetwork(isAvailable: isReady)
+		}
 	}
 
 	func scanningStopped() {
