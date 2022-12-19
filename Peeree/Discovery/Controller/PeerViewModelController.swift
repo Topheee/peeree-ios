@@ -15,6 +15,7 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 
 	// MARK: Static Variables
 
+	/// The singleton instance.
 	public static let shared = PeerViewModelController()
 
 	/// All information available for a PeerID.
@@ -22,6 +23,9 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 
 	/// The `PeeringController.peering` state for the main thread.
 	public var peering: Bool = false
+
+	/// The last known state of the Bluetooth network.
+	public var isBluetoothOn = false
 
 	// MARK: Static Methods
 

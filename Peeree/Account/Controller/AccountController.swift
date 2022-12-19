@@ -568,14 +568,13 @@ public class AccountController: SecurityDataSource {
 	private static func setInstance(_ ac: AccountController) {
 		instance = ac
 		SwaggerClientAPI.dataSource = ac
-		SwaggerClientAPI.apiResponseQueue.underlyingQueue = dQueue
 	}
 
 	/// Factory method for `AccountController`.
 	private static func load() -> AccountController? {
 		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
 		guard let peerID = UUID(uuidString: str) else {
-			wlog("our peer ID is not a UUID, deleting!")
+			flog("our peer ID is not a UUID, deleting!")
 			UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
 			return nil
 		}

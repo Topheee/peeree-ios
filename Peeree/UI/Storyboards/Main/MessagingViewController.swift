@@ -181,7 +181,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 		}
 
 		if up {
-			chatTableView?.scrollToBottom(animated: isFirstTimeOpened)
+			chatTableView?.scrollToBottom(animated: !isFirstTimeOpened)
 			isFirstTimeOpened = false
 		}
 	}

@@ -170,8 +170,12 @@ extension AppDelegate {
 		storyboard.instantiateInitialViewController()?.presentInFrontMostViewController(true, completion: nil)
 	}
 
-	@objc func toggleNetwork(_ sender: AnyObject) {
-		if PeeringController.shared.isBluetoothOn {
+	/// Toggle the bluetooth network between _on_ and _off_.
+	func togglePeering() {
+		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
+		PeeringController.shared.delegate = self
+
+		if PeerViewModelController.shared.isBluetoothOn {
 			PeeringController.shared.change(peering: !PeerViewModelController.shared.peering)
 			AccountController.use { $0.refreshBlockedContent { error in
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))

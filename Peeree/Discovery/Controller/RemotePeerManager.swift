@@ -14,10 +14,11 @@ import KeychainWrapper
 ///
 /// > Note: All methods are called from the manager's internal dispatch queue.
 protocol RemotePeerManagerDelegate: AnyObject {
-	/// Bluetooth is up and we have permission to access it.
+	/// Bluetooth network state change indicator.
 	///
-	/// You may call ``RemotePeerManager/scan()`` now.
-	func remotePeerManagerIsReady()
+	/// - Parameter isReady: If `true`, Bluetooth is up and we have permission to access it, otherwise `false`.
+	/// You may call ``RemotePeerManager/scan()``, if `isReady`.
+	func remotePeerManager(isReady: Bool)
 
 	/// The scan process stopped.
 	///
@@ -172,8 +173,6 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 			}
 		}
 	}
-	
-	var isBluetoothOn: Bool { return centralManager.state == .poweredOn }
 
 	/// Whether the underlying `CBCentralManager` is scanning for peripherals; must be called on `dQueue`.
 	private var isScanning: Bool {
@@ -350,10 +349,11 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 				peripheral.readValue(for: characteristics[1])
 				userPeerID.map { peripheral.writeValue($0.encode(), for: characteristics[2], type: .withResponse) }
 			}
-			delegate?.remotePeerManagerIsReady()
 		default:
 			break
 		}
+
+		delegate?.remotePeerManager(isReady: central.state == .poweredOn)
 	}
 	
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {

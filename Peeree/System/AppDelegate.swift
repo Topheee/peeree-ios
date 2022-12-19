@@ -44,20 +44,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+		// not cool to do this here, but the whole architecture seems to be sub-optimal there
+		SwaggerClientAPI.apiResponseQueue.underlyingQueue = AccountController.dQueue
+
 		// Observe singletons
 		ServerChatFactory.delegate = self
 		AccountController.delegate = self
-		PeeringController.shared.delegate = self
 
 		// Global configuration
 		setupAppearance()
 		configureServerChat()
 
 		notificationManager.initialize()
-		
-		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
-			self.setupManualAppearance()
-		}
+
 		_ = PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver { (peerID, _) in
 			guard PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinned else { return }
 			if #available(iOS 13.0, *) { HapticController.playHapticPin() }
@@ -68,7 +67,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		let restoredCentralManagerIDs = launchOptions?[.bluetoothCentrals] as? [String]
 		let restoredPeripheralManagerIDs = launchOptions?[.bluetoothPeripherals] as? [String]
 		if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
-			PeeringController.shared.change(peering: true)
+			PeeringController.shared.delegate = self
+		}
+
+		AccountController.use { _ in
+			// This will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
+			PeeringController.shared.delegate = self
+
+			ServerChatFactory.conversationDelegate = PeerViewModelController.shared
+			ServerChatFactory.getOrSetupInstance { result in
+				switch result {
+				case .failure(let error):
+					switch error {
+					case .identityMissing:
+						break
+					default:
+						InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
+					}
+				case .success(_):
+					break
+				}
+			}
 		}
 
 		return true
@@ -182,25 +201,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Bluetooth Publish Failed", comment: "Error title"))
 	}
 
-	func peeringControllerIsReadyToGoOnline() {
-		AccountController.use { _ in
-			PeeringController.shared.change(peering: true)
-
-			ServerChatFactory.conversationDelegate = PeerViewModelController.shared
-			ServerChatFactory.getOrSetupInstance { result in
-				switch result {
-				case .failure(let error):
-					switch error {
-					case .identityMissing:
-						break
-					default:
-						InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
-					}
-				case .success(_):
-					break
-				}
-			}
-		}
+	func bluetoothNetwork(isAvailable: Bool) {
+		PeeringController.shared.change(peering: isAvailable)
 	}
 
 	func encodingPeersFailed(with error: Error) {
@@ -266,7 +268,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 	private func setupManualAppearance() {
 		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (AppTheme.tintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? AppTheme.tintColor) : AppTheme.tintColor
 	}
-	
+
+	/// Customize global UI flags.
 	private func setupAppearance() {
 		setupManualAppearance()
 
@@ -289,5 +292,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		UIActivityIndicatorView.appearance().color = AppTheme.tintColor
 		UIPageControl.appearance().pageIndicatorTintColor = AppTheme.tintColor.withAlphaComponent(0.65)
 		UIPageControl.appearance().currentPageIndicatorTintColor = AppTheme.tintColor
+
+		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
+			self.setupManualAppearance()
+		}
 	}
 }

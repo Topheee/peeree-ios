@@ -52,7 +52,7 @@ final class BrowseViewController: UITableViewController {
 #if SHOWCASE
 		updateCache()
 #else
-		AppDelegate.shared.toggleNetwork(sender)
+		AppDelegate.shared.togglePeering()
 #endif
 	}
 	
@@ -124,7 +124,7 @@ final class BrowseViewController: UITableViewController {
 				assertionFailure("well that didn't work out so well")
 				return UITableViewCell()
 			}
-			let gestureRecognizer = UITapGestureRecognizer(target: AppDelegate.shared, action: #selector(AppDelegate.toggleNetwork(_:)))
+			let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleNetwork(_:)))
 			cell.addGestureRecognizer(gestureRecognizer)
 			
 			if #available(iOS 11.0, *) {
@@ -437,7 +437,7 @@ final class OfflineTableViewCell: UITableViewCell {
 			self.backgroundView = backgroundView
 		case .offline:
 			headLabel.text = NSLocalizedString("Offline Mode", comment: "Heading of the offline mode placeholder shown in browse view.")
-			if PeeringController.shared.isBluetoothOn {
+			if PeerViewModelController.shared.isBluetoothOn {
 				subheadLabel.text = NSLocalizedString("Tap to go online", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is on.")
 			} else {
 				subheadLabel.text = NSLocalizedString("Turn on Bluetooth to go online.", comment: "Subhead of the offline mode placeholder shown in browse view when Bluetooth is off.")

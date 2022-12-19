@@ -85,7 +85,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	@objc func tapPlaceholderCell(_ sender: Any) {
 		if PeereeIdentityViewModelController.accountExists {
-			PeeringController.shared.change(peering: true)
+			AppDelegate.shared.togglePeering()
 		} else {
 			AppDelegate.presentOnboarding()
 		}

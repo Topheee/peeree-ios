@@ -993,7 +993,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.1;
+				CURRENT_PROJECT_VERSION = 1.6.2;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -1004,7 +1004,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.1;
+				MARKETING_VERSION = 1.6.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1029,7 +1029,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.1;
+				CURRENT_PROJECT_VERSION = 1.6.2;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -1042,7 +1042,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.1;
+				MARKETING_VERSION = 1.6.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
