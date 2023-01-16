@@ -16,6 +16,12 @@ extension PeerViewModel {
 		}
 	}
 
+	/// Creates a new picture by putting a mask over a part of the original portrait, s.t. only a a round inner circle remains.
+	///
+	/// Use this method to obtain a circle cut of the portrait, by providing a square `cropRect`.
+	/// - Parameter cropRect: the part of the portrait that should be rounded.
+	/// - Parameter backgroundColor: the color of the mask.
+	/// > Note: The image remains opaque. This provides better rendering performance.
 	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
 		return portraitOrPlaceholder.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}
@@ -33,7 +39,12 @@ extension AppDelegate {
 		AccountController.createAccount { result in
 			switch result {
 			case .success(_):
-				break
+				ServerChatFactory.getOrSetupInstance { chatResult in
+					chatResult.error.map {
+						InAppNotificationController.display(serverChatError: $0, localizedTitle: NSLocalizedString("Chat Server Account Creation Failed", comment: "Error message title"))
+					}
+				}
+
 			case .failure(let error):
 				guard displayError else { return }
 				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))

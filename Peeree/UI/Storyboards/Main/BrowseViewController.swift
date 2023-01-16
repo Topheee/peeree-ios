@@ -35,14 +35,12 @@ final class BrowseViewController: UITableViewController {
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var placeholderCellActive: Bool {
-		var peerAvailable = false
-		for peerArray in table {
-			peerAvailable = peerAvailable || peerArray.count > 0
-		}
+		let relevantPeerAvailable = table[TableSection.inFilter.rawValue].count > 0
+		let filteredPeerAvailable = table[TableSection.outFilter.rawValue].count > 0
 #if SHOWCASE
-		return !peerAvailable
+		return !relevantPeerAvailable
 #else
-		return !peerAvailable || !viewModel.peering
+		return !(viewModel.peering && (relevantPeerAvailable || (filteredPeerAvailable && filter.displayFilteredPeople)))
 #endif
 	}
 	
