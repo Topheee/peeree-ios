@@ -82,6 +82,7 @@
 		9DD049451C5FC80800A91C71 /* CircleMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD049441C5FC80800A91C71 /* CircleMaskView.swift */; };
 		9DD1B42E1EC46FD000A01AEF /* PeerID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42C1EC46FD000A01AEF /* PeerID.swift */; };
 		9DD1B42F1EC46FD000A01AEF /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */; };
+		9DD584EF296B6C1B0024D7E0 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9DD584EE296B6C1B0024D7E0 /* Settings.bundle */; };
 		9DD61F5F1EAE33B6004EB56A /* SwaggerImplementations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */; };
 		9DD61F601EAE33B6004EB56A /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F541EAE33B6004EB56A /* APIHelper.swift */; };
 		9DD61F621EAE33B6004EB56A /* APIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD61F571EAE33B6004EB56A /* APIs.swift */; };
@@ -201,6 +202,7 @@
 		9DD049441C5FC80800A91C71 /* CircleMaskView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircleMaskView.swift; sourceTree = "<group>"; };
 		9DD1B42C1EC46FD000A01AEF /* PeerID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerID.swift; sourceTree = "<group>"; };
 		9DD1B42D1EC46FD000A01AEF /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
+		9DD584EE296B6C1B0024D7E0 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		9DD61F531EAE33B6004EB56A /* SwaggerImplementations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwaggerImplementations.swift; sourceTree = "<group>"; };
 		9DD61F541EAE33B6004EB56A /* APIHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIHelper.swift; sourceTree = "<group>"; };
 		9DD61F571EAE33B6004EB56A /* APIs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIs.swift; sourceTree = "<group>"; };
@@ -521,6 +523,7 @@
 				9DE965D91D69FC4200D5155B /* Frameworks */,
 				9D1AF3D1204AA2CF00B616AF /* Localizable.strings */,
 				9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */,
+				9DD584EE296B6C1B0024D7E0 /* Settings.bundle */,
 			);
 			name = "Supporting Files";
 			path = ..;
@@ -703,6 +706,7 @@
 			files = (
 				9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */,
 				9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */,
+				9DD584EF296B6C1B0024D7E0 /* Settings.bundle in Resources */,
 				9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */,
 				9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */,
 				9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */,
