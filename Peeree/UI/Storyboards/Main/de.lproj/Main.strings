@@ -104,6 +104,9 @@
 /* Class = "UILabel"; text = "Tap to go online"; ObjectID = "9An-iq-LoL"; */
 "9An-iq-LoL.text" = "Tippe, um online zu gehen";
 
+/* Class = "UILabel"; text = "Only with picture available"; ObjectID = "ab6-Ua-6e3"; */
+"ab6-Ua-6e3.text" = "Nur mit Bild angegeben";
+
 /* Class = "UILabel"; text = "Character Trait"; ObjectID = "BII-l4-Grc"; */
 "BII-l4-Grc.text" = "Charaktereigenschaft";
 
@@ -223,9 +226,6 @@
 
 /* Class = "UIBarButtonItem"; title = "Send"; ObjectID = "YPz-t9-los"; */
 "YPz-t9-los.title" = "Senden";
-
-/* Class = "UILabel"; text = "Only with picture available"; ObjectID = "Ydg-QF-ecu"; */
-"Ydg-QF-ecu.text" = "Nur mit Bild angegeben";
 
 /* Class = "UIButton"; accessibilityHint = "Selects your portrait picture"; ObjectID = "b8E-hE-Mnd"; */
 "b8E-hE-Mnd.accessibilityHint" = "Wählt dein Portrait-Bild";

@@ -57,7 +57,7 @@
                                                                 <constraint firstAttribute="trailingMargin" secondItem="geS-Ue-hzN" secondAttribute="trailing" id="N6F-n0-Wc2"/>
                                                                 <constraint firstItem="9An-iq-LoL" firstAttribute="leading" secondItem="JIA-NB-GXn" secondAttribute="leadingMargin" id="NJ9-Ts-4xW"/>
                                                                 <constraint firstItem="geS-Ue-hzN" firstAttribute="leading" secondItem="JIA-NB-GXn" secondAttribute="leadingMargin" id="QAC-9x-vI4"/>
-                                                                <constraint firstItem="9An-iq-LoL" firstAttribute="baseline" secondItem="geS-Ue-hzN" secondAttribute="firstBaseline" constant="20" symbolType="layoutAnchor" id="bmo-r6-8a4"/>
+                                                                <constraint firstItem="9An-iq-LoL" firstAttribute="baseline" secondItem="geS-Ue-hzN" secondAttribute="firstBaseline" constant="24" symbolType="layoutAnchor" id="bmo-r6-8a4"/>
                                                                 <constraint firstAttribute="trailingMargin" secondItem="9An-iq-LoL" secondAttribute="trailing" id="jxA-s6-no4"/>
                                                                 <constraint firstItem="geS-Ue-hzN" firstAttribute="centerY" secondItem="JIA-NB-GXn" secondAttribute="centerY" constant="-8" id="wCB-8v-qdA"/>
                                                             </constraints>
@@ -1483,6 +1483,9 @@
                                                 </switch>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Only with picture available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ab6-Ua-6e3">
                                                     <rect key="frame" x="24" y="11.5" width="199" height="21"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -1517,6 +1520,9 @@
                                                 </switch>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Display filtered people" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydg-QF-ecu">
                                                     <rect key="frame" x="24" y="11.5" width="169.5" height="21"/>
+                                                    <accessibility key="accessibilityConfiguration">
+                                                        <accessibilityTraits key="traits" staticText="YES" notEnabled="YES"/>
+                                                    </accessibility>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>

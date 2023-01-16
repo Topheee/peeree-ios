@@ -50,6 +50,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		// Observe singletons
 		ServerChatFactory.delegate = self
 		AccountController.delegate = self
+		ServerChatFactory.conversationDelegate = PeerViewModelController.shared
 
 		// Global configuration
 		setupAppearance()
@@ -70,11 +71,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 			PeeringController.shared.delegate = self
 		}
 
+		// start Bluetooth and server chat, but only if account exists
 		AccountController.use { _ in
 			// This will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
 			PeeringController.shared.delegate = self
 
-			ServerChatFactory.conversationDelegate = PeerViewModelController.shared
 			ServerChatFactory.getOrSetupInstance { result in
 				switch result {
 				case .failure(let error):
