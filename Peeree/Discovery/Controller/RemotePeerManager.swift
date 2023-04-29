@@ -438,7 +438,7 @@ final class RemotePeerManager: NSObject, CBCentralManagerDelegate, CBPeripheralD
 
 		var found = false
 		let charUUIDs = characteristics.map { $0.uuid.uuidString.left(8) }
-		ilog("Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
+		dlog("Discovered characteristics \(charUUIDs.joined(separator: ", ")) of service \(service.uuid.uuidString.left(8)) on peripheral \(peripheral.identifier.uuidString.left(8))")
 		for characteristic in characteristics {
 			switch characteristic.uuid {
 			case CBUUID.LocalPeerIDCharacteristicID:

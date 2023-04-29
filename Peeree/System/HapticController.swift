@@ -22,16 +22,17 @@ class HapticController {
 					return engine
 				} else {
 					let engine = try CHHapticEngine()
-					engine.isAutoShutdownEnabled = true
+					engine.isAutoShutdownEnabled = false
 					engine.stoppedHandler = { reason in
 						ilog("The haptic engine stopped: \(reason.rawValue)")
-						HapticController.hapticEngine = nil
+						hapticsQueue.async { HapticController.hapticEngine = nil }
 					}
 					engine.resetHandler = { wlog("The haptic engine reset.") }
 					engine.notifyWhenPlayersFinished { (error) -> CHHapticEngine.FinishedAction in
 						if let error {
 							elog("Haptic player finished with error: \(error.localizedDescription)")
 						}
+						hapticsQueue.async { HapticController.hapticEngine = nil }
 						return .stopEngine
 					}
 					try engine.start()

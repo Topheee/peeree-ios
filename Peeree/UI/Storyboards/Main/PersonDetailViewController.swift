@@ -339,7 +339,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	func progressDidCancel(_ progress: Progress) {
 		if progress === pictureProgressManager?.progress {
 			pictureProgressManager = nil
-		} else if progress === pictureProgressManager?.progress {
+		} else if progress === bioProgressManager?.progress {
 			bioProgressManager = nil
 		}
 	}

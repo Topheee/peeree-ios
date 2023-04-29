@@ -363,14 +363,18 @@ public class ServerChatFactory {
 											// Patch: add the old login api parameters to make dummy login still working
 											"user" : userId]) { response in
 			if let error = response.error as NSError?,
-			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String,
-			   mxErrCode == "M_INVALID_USERNAME" {
-				elog("Our account seems to be deleted. Removing local password to be able to re-register.")
-				do {
-					try self.removePasswordFromKeychain()
-				} catch let pwError {
-					wlog("Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
+			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
+				if mxErrCode == kMXErrCodeStringInvalidUsername {
+					elog("Our account seems to be deleted. Removing local password to be able to re-register.")
+					do {
+						try self.removePasswordFromKeychain()
+					} catch let pwError {
+						wlog("Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
+					}
 				}
+
+				completion(.failure(.sdk(error)))
+				return
 			}
 
 			guard let json = response.value else {
@@ -456,6 +460,16 @@ public class ServerChatFactory {
 
 			if let error = mxError {
 				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
+				if !isSoftLogout && !isRefreshTokenAuth && error.errcode == kMXErrCodeStringUnknownToken {
+					// Our token was removed, probably due to an upgrade of the Matrix server.
+					// We need to remove it, s.t. password auth is again used to log in.
+					do { try removeGenericPasswordFromKeychain(account: strongSelf.keychainAccount, service: Self.AccessTokenKeychainService) } catch {
+						elog("deleting access token after it became invalid failed: \(error)")
+					}
+					do { try removeGenericPasswordFromKeychain(account: strongSelf.keychainAccount, service: Self.RefreshTokenKeychainService) } catch {
+						dlog("deleting refresh token after it became invalid failed: \(error)")
+					}
+				}
 			} else {
 				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
 			}
