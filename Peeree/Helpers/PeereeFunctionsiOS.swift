@@ -9,6 +9,7 @@
 import UIKit
 
 /// Generates generic actions on peers, notably pin and unpin.
+@MainActor
 func trailingSwipeActionsConfigurationFor(peerID: PeerID) -> UISwipeActionsConfiguration {
 	let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
 

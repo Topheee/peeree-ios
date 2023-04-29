@@ -1,0 +1,12 @@
+# By default, SwiftLint uses a set of insensible default rules you can adjust:
+disabled_rules: # rule identifiers turned on by default to exclude from running
+  - file_length
+  - function_body_length
+  - line_length
+  - type_body_length
+  - identifier_name
+  - force_cast
+  - force_try
+  - large_tuple
+  - cyclomatic_complexity
+  - vertical_whitespace

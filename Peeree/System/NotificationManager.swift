@@ -9,6 +9,7 @@
 import UIKit
 import CoreServices
 
+@MainActor
 class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	private enum NotificationCategory: String {
 		case peerAppeared, pinMatch, message, none

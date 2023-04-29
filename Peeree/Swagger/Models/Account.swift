@@ -15,7 +15,7 @@ public struct Account: Codable {
 
     /** Random sequence number encrypted with the public key of the user.  */
     public var sequenceNumber: Int32
-    public init(peerID: PeerID, sequenceNumber: Int32) { 
+    public init(peerID: PeerID, sequenceNumber: Int32) {
         self.peerID = peerID
         self.sequenceNumber = sequenceNumber
     }

@@ -13,6 +13,7 @@ import UIKit
 // MARK: - Extensions
 
 /// Tries to create an `URL` from `urlString` and open it.
+@MainActor
 func open(urlString: String) {
 	guard let url = URL(string: urlString) else { return }
 
@@ -65,6 +66,7 @@ extension UIImage {
 		return UIImage(cgImage: imageRef, scale: scale, orientation: imageOrientation)
 	}
 
+	@MainActor
 	func roundedCropped(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
 		let minImageEdgeLength = min(size.height, size.width)
 		guard let croppedImage = cropped(to: CGRect(x: (size.width - minImageEdgeLength) / 2, y: (size.height - minImageEdgeLength) / 2, width: minImageEdgeLength, height: minImageEdgeLength)) else { return nil }

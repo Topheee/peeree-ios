@@ -62,7 +62,7 @@ final class OnboardingDescriptionViewController: UIViewController, UITableViewDa
 			guard let imageView = view as? UIImageView else { continue }
 			imageView.image = headingsAndContent[index].2
 			imageView.alpha = 0.3
-			index = index + 1
+			index += 1
 		}
 		tableView.contentInset = UIEdgeInsets(top: headerView.frame.height, left: 0.0, bottom: backButton.superview!.frame.height, right: 0.0)
 		tableView.scrollIndicatorInsets = tableView.contentInset

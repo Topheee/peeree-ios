@@ -22,6 +22,7 @@ extension PeerViewModel {
 	/// - Parameter cropRect: the part of the portrait that should be rounded.
 	/// - Parameter backgroundColor: the color of the mask.
 	/// > Note: The image remains opaque. This provides better rendering performance.
+	@MainActor
 	public func createRoundedPicture(cropRect: CGRect, backgroundColor: UIColor) -> UIImage? {
 		return portraitOrPlaceholder.roundedCropped(cropRect: cropRect, backgroundColor: backgroundColor)
 	}

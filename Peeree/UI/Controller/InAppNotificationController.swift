@@ -29,6 +29,7 @@ final class InAppNotificationController {
 		private let notificationAction: (() -> Void)
 
 		/// Executes `notificationAction`.
+		@MainActor
 		@objc func handleTap(sender: UITapGestureRecognizer) {
 			if sender.state == .ended {
 				notificationAction()
@@ -66,6 +67,7 @@ final class InAppNotificationController {
 	}
 
 	/// Shows a 'toast' explaining `openapiError`; use this function for Errors from `AccountController`.
+	@MainActor
 	static func display(openapiError error: Error, localizedTitle: String, furtherDescription: String? = nil) {
 		var notificationAction: (() -> Void)? = nil
 		var errorMessage: String
@@ -77,7 +79,7 @@ final class InAppNotificationController {
 			case .httpError(let code, _):
 				errorMessage = String(format: httpErrorMessage, code)
 				if code == 403 {
-					errorMessage = errorMessage + NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
+					errorMessage += NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
 				}
 			case .sessionTaskError(let code, _, let theError):
 				if (theError as NSError).code == NSURLErrorCannotConnectToHost {

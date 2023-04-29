@@ -126,8 +126,8 @@ final class ServerChatController: ServerChat {
 //					"mutable-content": 1,
 					"alert": [
 						"loc-key": "MSG_FROM_USER",
-						"loc-args": []
-					]
+						"loc-args": [] as [String]
+					] as [String : Any]
 				]
 			]
 		]
@@ -351,8 +351,10 @@ final class ServerChatController: ServerChat {
 				catchUpDecryptedMessages.reverse()
 				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
 				if catchUpDecryptedMessages.count > 0 {
+					let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
+					let sentUnreadMessages = unreadMessages
 					self.conversationQueue.async {
-						self.conversationDelegate?.catchUp(messages: catchUpDecryptedMessages, unreadCount: unreadMessages, with: peerID)
+						self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, unreadCount: sentUnreadMessages, with: peerID)
 					}
 				}
 			}
