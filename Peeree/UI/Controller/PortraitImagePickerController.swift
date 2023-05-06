@@ -9,6 +9,7 @@
 import UIKit
 import MobileCoreServices
 import Photos
+import PeereeDiscovery
 
 /// Informed party of ``PortraitImagePickerController``.
 protocol PortraitImagePickerControllerDelegate: AnyObject {

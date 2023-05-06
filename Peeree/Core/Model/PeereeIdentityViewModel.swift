@@ -14,7 +14,7 @@ public enum PinState {
 	case unpinned, pinning, pinned, unpinning, pinMatch
 
 	/// Checks whether we have a pin match, are currently unpinning (but effectively still having a pin) or simply have an (unmatched) pin.
-	var isPinned: Bool { return self == .pinned || self == .pinMatch || self == .unpinning }
+	public var isPinned: Bool { return self == .pinned || self == .pinMatch || self == .unpinning }
 }
 
 /// Objectionable content classification requirement from App Store.
@@ -42,5 +42,10 @@ public struct PeereeIdentityViewModel {
 		didSet {
 			NotificationName.pinStateUpdated.post(for: id.peerID)
 		}
+	}
+
+	public init(id: PeereeIdentity, pinState: PinState = .unpinned) {
+		self.id = id
+		self.pinState = pinState
 	}
 }

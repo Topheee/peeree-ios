@@ -9,6 +9,7 @@
 import UIKit
 import CoreBluetooth
 import CoreLocation
+import PeereeDiscovery
 
 final class BeaconViewController: PeerViewController {
 	static private let waveColor: CGColor = AppTheme.tintColor.cgColor

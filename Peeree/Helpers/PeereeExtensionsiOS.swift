@@ -8,6 +8,9 @@
 
 import UIKit
 import SafariServices
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 extension PeerViewModel {
 	var picture: UIImage? {
@@ -41,7 +44,7 @@ extension AppDelegate {
 			switch result {
 			case .success(_):
 				ServerChatFactory.getOrSetupInstance { chatResult in
-					chatResult.error.map {
+					chatResult.mError.map {
 						InAppNotificationController.display(serverChatError: $0, localizedTitle: NSLocalizedString("Chat Server Account Creation Failed", comment: "Error message title"))
 					}
 				}
@@ -184,17 +187,25 @@ extension AppDelegate {
 
 	/// Toggle the bluetooth network between _on_ and _off_.
 	func togglePeering() {
-		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
-		PeeringController.shared.delegate = self
+		let pc = PeeringController.shared
+		DispatchQueue.main.async {
+			/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
+			guard pc.dataSource != nil else {
+				// first time accessing Bluetooth
+				// PeerViewModelController.shared.isBluetoothOn is `false` in all cases here!
+				// Setting these will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
+				pc.dataSource = Mediator.shared
+				pc.delegate = Mediator.shared
 
-		if PeerViewModelController.shared.isBluetoothOn {
-			PeeringController.shared.change(peering: !PeerViewModelController.shared.peering)
-			AccountController.use { $0.refreshBlockedContent { error in
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
-			} }
-			if #available(iOS 13.0, *) { HapticController.playHapticClick() }
-		} else {
-			open(urlString: UIApplication.openSettingsURLString)
+				return
+			}
+
+			if PeerViewModelController.shared.isBluetoothOn {
+				pc.change(peering: !PeerViewModelController.shared.peering)
+				if #available(iOS 13.0, *) { HapticController.playHapticClick() }
+			} else {
+				open(urlString: UIApplication.openSettingsURLString)
+			}
 		}
 	}
 }

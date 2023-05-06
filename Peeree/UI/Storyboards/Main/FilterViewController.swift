@@ -8,6 +8,8 @@
 
 import UIKit
 import MultiSelectSegmentedControl
+import PeereeCore
+import PeereeDiscovery
 
 final class FilterViewController: UITableViewController {
 	// MARK: - Interface Builder

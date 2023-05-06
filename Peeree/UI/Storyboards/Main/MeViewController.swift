@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 /// Displays and edits the users peer info data, as well as their Peeree identity.
 final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate, PortraitImagePickerControllerDelegate {

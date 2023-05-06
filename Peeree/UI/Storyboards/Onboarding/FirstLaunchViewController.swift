@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeCore
 
 final class FirstLaunchViewController: UIViewController, UIPageViewControllerDelegate, UIPageViewControllerDataSource {
 	private static let FirstViewControllerID = "FirstViewController"

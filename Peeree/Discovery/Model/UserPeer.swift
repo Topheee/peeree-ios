@@ -8,6 +8,12 @@
 
 import Foundation
 import CoreGraphics
+import PeereeCore
+
+/// Informed party.
+public protocol UserPeerDelegate {
+	func syncToViewModel(info: PeerInfo, bio: String, pic: CGImage?)
+}
 
 /// Holds and persists the peer information of the user.
 public final class UserPeer {
@@ -38,6 +44,9 @@ public final class UserPeer {
 	// MARK: Constants
 
 	// MARK: Variables
+
+	/// Informed party.
+	public var delegate: UserPeerDelegate?
 
 	// MARK: Methods
 
@@ -79,7 +88,7 @@ public final class UserPeer {
 				if let pic = portrait {
 					try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: StandardPortraitCompressionQuality)
 				} else {
-					try self.deletePicture()
+					try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
 				}
 
 				self.cgPicture = portrait
@@ -134,7 +143,6 @@ public final class UserPeer {
 		// if the user leveled up we need to update it in our PeerInfo as well (this is not very accurate but suffices for now)
 		syncAge()
 
-		observeNotifications()
 		queue.async { self.syncToViewModel() }
 	}
 
@@ -170,17 +178,9 @@ public final class UserPeer {
 		UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
 		UserDefaults.standard.removeObject(forKey: UserPeer.BiographyKey)
 		do {
-			try deletePicture()
+			try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
 		} catch let error {
 			elog("could not delete UserPeer portrait: \(error.localizedDescription)")
-		}
-	}
-
-	/// Deletes the file with the user's picture from disk.
-	private func deletePicture() throws {
-		let fileManager = FileManager.default
-		if fileManager.fileExists(atPath: UserPeer.pictureResourceURL.path) {
-			try fileManager.removeItem(at: UserPeer.pictureResourceURL)
 		}
 	}
 
@@ -219,30 +219,7 @@ public final class UserPeer {
 	private func syncToViewModel() {
 		guard let info = self.peerInfo else { return }
 
-		// we must access our properties on `queue`
-		let bio = self.biography
-		let pic = self.cgPicture
-
-		AccountController.use { ac in
-			// we must access AccountController properties on its `dQueue`
-			let keyPair = ac.keyPair
-			let peerID = ac.peerID
-
-			DispatchQueue.main.async {
-				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey), pinState: .unpinned))
-				PeerViewModelController.shared.update(peerID, info: info, lastSeen: Date())
-				PeerViewModelController.shared.modify(peerID: peerID) { model in
-					model.verified = true
-					model.isAvailable = true
-					model.biography = bio
-					if let portrait = pic {
-						model.loaded(portrait: portrait, hash: Data())
-					} else {
-						model.deletePortrait()
-					}
-				}
-			}
-		}
+		delegate?.syncToViewModel(info: info, bio: biography, pic: cgPicture)
 	}
 
 	/// Calls `query` on `queue` and `syncToViewModel()` afterwards.
@@ -251,13 +228,6 @@ public final class UserPeer {
 			query()
 			self.syncToViewModel()
 			NotificationName.changed.postAsNotification(object: self)
-		}
-	}
-
-	/// Adds observer blocks for certain notifications.
-	private func observeNotifications() {
-		_ = AccountController.NotificationName.accountCreated.addObserver { _ in
-			self.queue.async { self.syncToViewModel() }
 		}
 	}
 }

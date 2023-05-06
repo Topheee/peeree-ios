@@ -8,30 +8,28 @@
 
 import Foundation
 import MatrixSDK
+import PeereeCore
 
 /// Internal implementaion of the `ServerChat` protocol.
 ///
 /// Note: __All__ functions must be called on `dQueue`!
-final class ServerChatController: ServerChat {
+final class ServerChatController: ServerChat, PersistedServerChatDataControllerDelegate {
 	// MARK: - Public and Internal
 
 	/// Creates a `ServerChatController`.
-	init(peerID: PeerID, restClient: MXRestClient, dQueue: DispatchQueue, lastReads: [PeerID: Date], conversationQueue: DispatchQueue) {
+	init(peerID: PeerID, restClient: MXRestClient, dataSource: ServerChatDataSource, dQueue: DispatchQueue, conversationQueue: DispatchQueue) {
 		self.peerID = peerID
+		self.dataSource = dataSource
 		self.dQueue = dQueue
-		self.lastReads = lastReads
 		self.conversationQueue = conversationQueue
 		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!, queue: dQueue)
+		persistence.delegate = self
 	}
 
 	// MARK: Variables
 
-	/// Delegate for whole server chat; same as ServerChatFactory.delegate.
-	// Prevents from source dependency on ServerChatFactory.
-	weak var delegate: ServerChatDelegate? = nil
-
-	/// The informed party for conversation events.
-	weak var conversationDelegate: ServerChatConversationDelegate? = nil
+	/// Information provider for external dependencies.
+	let dataSource: ServerChatDataSource
 
 	// MARK: Methods
 
@@ -80,10 +78,8 @@ final class ServerChatController: ServerChat {
 
 	/// Send a `message` to `peerID`.
 	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void) {
-		guard let directRooms = session.directRooms?[peerID.serverChatUserId]?.compactMap({
-			let room = self.session.room(withRoomId: $0)
-			return room?.summary?.membership == .join ? room : nil
-		}) else {
+		let directRooms = session.directRooms(with: peerID.serverChatUserId)
+		guard !directRooms.isEmpty else {
 			completion(.failure(.cannotChat(peerID, .notJoined)))
 			return
 		}
@@ -101,7 +97,7 @@ final class ServerChatController: ServerChat {
 							guard shouldRetry else { return }
 
 							room.sendTextMessage(message, localEcho: &event) { retryResponse in
-								completion(retryResponse.toResult().mapError { .sdk($0) })
+								completion(retryResponse.mapError { .sdk($0) })
 							}
 
 						case .failure(let failure):
@@ -109,6 +105,16 @@ final class ServerChatController: ServerChat {
 						}
 					}
 				}
+			}
+		}
+	}
+
+	func paginateUp(peerID: PeerID, count: Int) {
+		session.directRooms(with: peerID.serverChatUserId).compactMap { roomTimelines[$0.roomId] }.forEach { timeline in
+			guard timeline.canPaginate(.backwards) else { return }
+
+			timeline.paginate(UInt(count), direction: .backwards, onlyFromStore: false) { response in
+				if let error = response.error { elog("Pagination failed: \(error)") }
 			}
 		}
 	}
@@ -154,7 +160,7 @@ final class ServerChatController: ServerChat {
 			switch response {
 			case .failure(let error):
 				elog("setPusher() failed: \(error)")
-				self.delegate?.configurePusherFailed(error)
+				self.dataSource.delegate?.configurePusherFailed(error)
 			case .success():
 				dlog("setPusher() was successful.")
 			}
@@ -167,6 +173,62 @@ final class ServerChatController: ServerChat {
 			// unfortunately, the MatrixSDK does not support "private" read receipts at this point, but we need this for a correct application icon badge count on remote notification receipt
 			room?.markAllAsRead()
 		}
+	}
+
+	public func set(lastRead date: Date, of peerID: PeerID) {
+		lastReads[peerID] = date
+		persistence.set(lastRead: date, of: peerID)
+	}
+
+	/// Create chat room with `peerID`.
+	func initiateChat(with peerID: PeerID) {
+		// Creates a room with `peerID` for chatting; also notifies them over the internet that we have a match.
+		self.getOrCreateRoom(with: peerID) { result in
+			switch result {
+			case .success(let success):
+				if success.summary?.membership == .invite {
+					self.join(roomId: success.roomId, with: peerID)
+				}
+			case .failure(let failure):
+				self.dataSource.delegate?.serverChatInternalErrorOccured(failure)
+			}
+		}
+	}
+
+	/// Leave all chat rooms with `peerID`.
+	func leaveChat(with peerID: PeerID) {
+		forgetAllRooms(with: peerID)
+	}
+
+	// MARK: PersistedServerChatDataControllerDelegate
+
+	func persistedLastReadsLoadedFromDisk(_ lastReads: [PeereeCore.PeerID : Date]) {
+		// fix unread message count if last reads where read after server chat went online
+		// PERFORMANCE: poor
+		DispatchQueue.main.async {
+			for (peerID, model) in ServerChatViewModelController.shared.viewModels {
+				guard let lastReadDate = lastReads[peerID] else { continue }
+
+				var unreadCount = 0
+				for transcript in model.transcripts {
+					if transcript.timestamp > lastReadDate { unreadCount += 1 }
+				}
+
+				guard unreadCount != model.unreadMessages else { continue }
+
+				ServerChatViewModelController.shared.modify(peerID: peerID) { modifyModel in
+					modifyModel.unreadMessages = unreadCount
+				}
+			}
+		}
+	}
+
+	func encodingFailed(with error: Error) {
+		dataSource.delegate?.encodingPersistedChatDataFailed(with: error)
+	}
+
+	func decodingFailed(with error: Error) {
+		dataSource.delegate?.decodingPersistedChatDataFailed(with: error)
 	}
 
 	// MARK: - Private
@@ -190,8 +252,10 @@ final class ServerChatController: ServerChat {
 	/// Matrix session.
 	private let session: ThreadSafeCallbacksMatrixSession
 
+	private let persistence = PersistedServerChatDataController(filename: "serverchats.json", targetQueue: DispatchQueue(label: "de.peeree.ServerChatController.persistence", qos: .utility))
+
 	/// Last read timestamps.
-	private let lastReads: [PeerID : Date]
+	private var lastReads: [PeerID : Date] = [:]
 
 	// MARK: Variables
 
@@ -354,7 +418,7 @@ final class ServerChatController: ServerChat {
 					let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
 					let sentUnreadMessages = unreadMessages
 					self.conversationQueue.async {
-						self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, unreadCount: sentUnreadMessages, with: peerID)
+						self.dataSource.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, unreadCount: sentUnreadMessages, with: peerID)
 					}
 				}
 			}
@@ -365,7 +429,6 @@ final class ServerChatController: ServerChat {
 	/// Tries to leave (and forget [once supported by the SDK]) `room`.
 	private func forgetRoom(_ roomId: String, completion: @escaping (Error?) -> Void) {
 		session.leaveRoom(roomId) { response in
-			// TODO implement [forget](https://matrix.org/docs/spec/client_server/r0.6.1#id294) API call once it is available in matrix-ios-sdk
 			self.roomTimelines.removeValue(forKey: roomId)?.destroy()
 			self.roomIdsListeningOn.removeValue(forKey: roomId)
 
@@ -457,7 +520,7 @@ final class ServerChatController: ServerChat {
 				}
 
 				elog("Cannot join room \(roomId): \(error)")
-				self.delegate?.cannotJoinRoom(error)
+				self.dataSource.delegate?.cannotJoinRoom(error)
 			}
 		}
 	}
@@ -494,13 +557,14 @@ final class ServerChatController: ServerChat {
 				}
 
 				// check whether we still have a pin match with this person
-				AccountController.use { ac in
-					guard ac.hasPinMatch(peerID) else {
+				dataSource.hasPinMatch(with: [peerID], forceCheck: false) { checkedPeerID, result in
+					guard result else {
 						// this will trigger the AccountController.NotificationName.PinMatch notification, where we will then join the room
-						ac.updatePinStatus(of: peerID, force: true)
+						self.dataSource.hasPinMatch(with: [peerID], forceCheck: true) { _,_ in }
 						return
 					}
 
+					assert(checkedPeerID == peerID)
 					self.dQueue.async {
 						self.join(roomId: roomId, with: peerID)
 					}
@@ -541,17 +605,12 @@ final class ServerChatController: ServerChat {
 			value.count > 0 ? peerIDFrom(serverChatUserId: key) : nil
 		}), directChatPeerIDs.count > 0 else { return }
 
-		AccountController.use { ac in
-			directChatPeerIDs.forEach { peerID in
-				ac.updatePinStatus(of: peerID, force: false) { pinState in
-					guard pinState == .pinMatch else {
-						self.forgetAllRooms(with: peerID)
-						return
-					}
-
-					// this may cause us to be throttled down, since we potentially start many requests in parallel here
-					self.fixRooms(with: peerID)
-				}
+		dataSource.hasPinMatch(with: directChatPeerIDs, forceCheck: false) { peerID, result in
+			if result {
+				// this may cause us to be throttled down, since we potentially start many requests in parallel here
+				self.fixRooms(with: peerID)
+			} else {
+				self.forgetAllRooms(with: peerID)
 			}
 		}
 	}
@@ -588,7 +647,7 @@ final class ServerChatController: ServerChat {
 				self.reallyCreateRoom(with: peerID) { result in
 					result.error.map {
 						elog("failed to really create room with \(peerID): \($0)")
-						self.delegate?.serverChatInternalErrorOccured($0)
+						self.dataSource.delegate?.serverChatInternalErrorOccured($0)
 					}
 				}
 			}
@@ -597,15 +656,13 @@ final class ServerChatController: ServerChat {
 
 	/// Refreshes the pin status with the Peeree server, forgets all rooms with `peerID` if we do not have a pin match, and calls `pinMatchedAction` or `noPinMatchAction` depending on the pin status.
 	private func refreshPinStatus(of peerID: PeerID, force: Bool, _ pinMatchedAction: (() -> Void)?, _ noPinMatchAction: (() -> Void)? = nil) {
-		AccountController.use { ac in
-			ac.updatePinStatus(of: peerID, force: force) { pinState in
-				guard pinState == .pinMatch else {
-					self.forgetAllRooms(with: peerID)
-					noPinMatchAction?()
-					return
-				}
-
+		dataSource.hasPinMatch(with: [peerID], forceCheck: force) { checkedPeerID, result in
+			assert(checkedPeerID == peerID)
+			if result {
 				pinMatchedAction?()
+			} else {
+				self.forgetAllRooms(with: peerID)
+				noPinMatchAction?()
 			}
 		}
 	}
@@ -619,9 +676,9 @@ final class ServerChatController: ServerChat {
 
 			self.conversationQueue.async {
 				if event.sender == self.peerID.serverChatUserId {
-					self.conversationDelegate?.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
+					self.dataSource.conversationDelegate?.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
 				} else {
-					self.conversationDelegate?.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
+					self.dataSource.conversationDelegate?.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
 				}
 			}
 		} catch let error {
@@ -638,8 +695,11 @@ final class ServerChatController: ServerChat {
 			return
 		}
 
+		persistence.readLastReads { lastReads in
+			self.lastReads = lastReads
+
 		let store = MXFileStore(credentials: sessionCreds)
-		session.setStore(store) { setStoreResponse in
+		self.session.setStore(store) { setStoreResponse in
 			guard setStoreResponse.isSuccess else {
 				completion(setStoreResponse.error ?? unexpectedNilError())
 				return
@@ -675,7 +735,7 @@ final class ServerChatController: ServerChat {
 
 					// The only option I see is to leave the room and create a new one.
 
-					self.delegate?.decryptionError(decryptionError, peerID: peerID) {
+					self.dataSource.delegate?.decryptionError(decryptionError, peerID: peerID) {
 						self.forgetRoom(event.roomId) { forgetError in
 							forgetError.map { dlog("forgetting room with broken encryption failed: \($0)") }
 
@@ -697,7 +757,7 @@ final class ServerChatController: ServerChat {
 				}
 				completion(response.error)
 			}
-		}
+		} }
 	}
 
 	/// Action when we unmatch someone.
@@ -709,31 +769,6 @@ final class ServerChatController: ServerChat {
 
 	/// Observes relevant notifications in `NotificationCenter`.
 	private func observeNotifications() {
-		let pinStateChangeHandler: (PeerID, Notification) -> Void = { [weak self] peerID, _ in
-			self?.forgetAllRooms(with: peerID)
-		}
-
-		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver(pinStateChangeHandler))
-		notificationObservers.append(AccountController.NotificationName.unmatch.addAnyPeerObserver(pinStateChangeHandler))
-
-		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { [weak self] peerID, _ in
-			guard let strongSelf = self else { return }
-
-			// Creates a room with `peerID` for chatting; also notifies them over the internet that we have a match.
-			strongSelf.dQueue.async {
-				strongSelf.getOrCreateRoom(with: peerID) { result in
-					switch result {
-					case .success(let success):
-						if success.summary?.membership == .invite {
-							strongSelf.join(roomId: success.roomId, with: peerID)
-						}
-					case .failure(let failure):
-						strongSelf.delegate?.serverChatInternalErrorOccured(failure)
-					}
-				}
-			}
-		})
-
 		// mxRoomSummaryDidChange fires very often, but at some point the room contains a directUserId
 		// mxRoomInitialSync does not fire that often and contains the directUserId only for the receiver. But that is okay, since the initiator of the room knows it anyway
 		notificationObservers.append(NotificationCenter.default.addObserver(forName: .mxRoomInitialSync, object: nil, queue: nil) { [weak self] notification in
@@ -752,17 +787,5 @@ final class ServerChatController: ServerChat {
 				strongSelf.listenToEvents(in: room, with: peerID)
 			}
 		})
-	}
-}
-
-extension MXResponse {
-	/// Result removes the dependency to MatrixSDK, resulting in only this file (ServerChatController.swift) depending on it
-	func toResult() -> Result<T, Error> {
-		switch self {
-		case .failure(let error):
-			return .failure(error)
-		case .success(let value):
-			return .success(value)
-		}
 	}
 }

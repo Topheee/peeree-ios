@@ -105,6 +105,13 @@ class ThreadSafeCallbacksMatrixSession {
 
 	// MARK: Peeree Extensions
 
+	func directRooms(with userId: String) -> [MXRoom] {
+		return session.directRooms?[userId]?.compactMap {
+			let room = self.session.room(withRoomId: $0)
+			return room?.summary?.membership == .join ? room : nil
+		} ?? []
+	}
+
 	func directRoomInfos(with: String,  completion: @escaping ([DirectRoomInfo]) -> Void) {
 		session.directRoomInfos(with: with) { infos in
 			self.queue.async { completion(infos) }

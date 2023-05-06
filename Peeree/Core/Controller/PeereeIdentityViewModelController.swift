@@ -79,9 +79,7 @@ public final class PeereeIdentityViewModelController {
 	}
 }
 
-extension PeerViewModel {
-	/// Objectionable content classification required by the App Store.
-	public var pictureClassification: ContentClassification {
-		return pictureHash.map { PeereeIdentityViewModelController.classify(imageHash: $0) } ?? .none
-	}
+extension PeerID {
+	/// Whether this is the ``PeerID`` of the local user.
+	public var isLocalPeer: Bool { return self == PeereeIdentityViewModelController.userPeerID }
 }

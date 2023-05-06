@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeDiscovery
 
 final class PersonDetailViewController: PeerViewController, ProgressManagerDelegate, UITextViewDelegate {
 	private static let bioAnimationDuration: TimeInterval = 0.45

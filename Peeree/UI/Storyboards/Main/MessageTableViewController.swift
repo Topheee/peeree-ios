@@ -8,6 +8,7 @@
 //
 
 import UIKit
+import PeereeServerChat
 
 class MessageTableViewController: PeerTableViewController, PeerMessagingObserver {
 	override func viewWillAppear(_ animated: Bool) {
@@ -40,7 +41,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 #if SHOWCASE
 		return 2
 #else
-		return model.transcripts.count
+		return chatModel.transcripts.count
 #endif
 	}
 
@@ -58,7 +59,7 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 			cell.set(transcript: Transcript(direction: .receive, message: NSLocalizedString("Sure, meet me there!", comment: "Showcase text message"), timestamp: Date()))
 		}
 #else
-		cell.set(transcript: model.transcripts[indexPath.row])
+		cell.set(transcript: chatModel.transcripts[indexPath.row])
 #endif
 		return cell
 	}
@@ -89,7 +90,13 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 
 	/// Declare all messages in this thread as being read.
 	private func markRead() {
-		modifyModel { model in model.unreadMessages = 0 }
-		PeeringController.shared.set(lastRead: Date(), of: peerID)
+		ServerChatViewModelController.shared.modify(peerID: peerID) { serverChatModel in
+			serverChatModel.unreadMessages = 0
+		}
+
+		let peerID = self.peerID
+		ServerChatFactory.chat { sc in
+			sc?.set(lastRead: Date(), of: peerID)
+		}
 	}
 }

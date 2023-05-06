@@ -9,25 +9,3 @@ import Foundation
 
 /** Unique identifier representing a specific user.  RFC 4122 version 4 universally unique identifier (UUID), encoded as in \&quot;E621E1F8-C36C-495A-93FC-0C247A3E6E5F\&quot;.  */
 public typealias PeerID = UUID
-
-extension PeerID {
-	/// Key in the `userInfo` dictionary of `Notification`.
-	static let NotificationInfoKey = "peerID"
-
-	private static let uuidEncoding = String.Encoding.ascii
-
-	/// Whether this is the ``PeerID`` of the local user.
-	public var isLocalPeer: Bool { return self == PeereeIdentityViewModelController.userPeerID }
-
-	init?(data: Data) {
-		guard let string = String(data: data, encoding: PeerID.uuidEncoding) else {
-			assertionFailure()
-			return nil
-		}
-		self.init(uuidString: string)
-	}
-
-	func encode() -> Data {
-		return uuidString.data(using: PeerID.uuidEncoding)!
-	}
-}

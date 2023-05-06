@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 class MessagingViewController: PeerViewController, UITextViewDelegate {
 	// Button for executing the message send.
@@ -37,7 +40,7 @@ class MessagingViewController: PeerViewController, UITextViewDelegate {
 				InAppNotificationController.display(serverChatError: error, localizedTitle: title)
 			case .success(let serverChat):
 				serverChat.send(message: message, to: self.peerID) { result in
-					result.error.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
+					result.mError.map { InAppNotificationController.display(serverChatError: $0, localizedTitle: title) }
 				}
 			}
 		}

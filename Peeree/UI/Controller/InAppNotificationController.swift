@@ -8,6 +8,10 @@
 
 import UIKit
 import NotificationBannerSwift
+import PeereeCore
+import PeereeServerChat
+import PeereeServerAPI
+import PeereeDiscovery
 
 /// Display custom notifications only in-app, sometimes called 'toasts'.
 final class InAppNotificationController {

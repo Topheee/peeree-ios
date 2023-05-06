@@ -23,13 +23,13 @@ public struct PeereeIdentity: Codable {
 	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
 
 	/// Constructs a `PeereeIdentity` from its parts.
-	init(peerID: PeerID, publicKey: AsymmetricPublicKey) {
+	public init(peerID: PeerID, publicKey: AsymmetricPublicKey) {
 		self.peerID = peerID
 		self.publicKey = publicKey
 	}
 
 	/// Constructs a `PeereeIdentity` from a `PeerID` and the binary representation of a public key.
-	init(peerID: PeerID, publicKeyData: Data) throws {
+	public init(peerID: PeerID, publicKeyData: Data) throws {
 		self.peerID = peerID
 		self.publicKey = try AsymmetricPublicKey(from: publicKeyData, algorithm: Self.KeyAlgorithm, size: Self.KeySize)
 	}
@@ -44,14 +44,14 @@ public struct PeereeIdentity: Codable {
 	// MARK: Variables
 
 	/// The binary representation of `publicKey`.
-	var publicKeyData: Data { return try! publicKey.externalRepresentation() }
+	public var publicKeyData: Data { return try! publicKey.externalRepresentation() }
 
 	/// The binary representation of `peerID`.
-	var idData: Data { return peerID.encode() }
+	public var idData: Data { return peerID.encode() }
 }
 
 extension PeereeIdentity: Equatable {
-	static public func ==(lhs: PeereeIdentity, rhs: PeereeIdentity) -> Bool {
+	public static func ==(lhs: PeereeIdentity, rhs: PeereeIdentity) -> Bool {
 		return lhs.peerID == rhs.peerID && lhs.publicKeyData == rhs.publicKeyData
 	}
 }

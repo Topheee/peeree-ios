@@ -9,6 +9,7 @@
 import CoreGraphics
 import CoreBluetooth
 import KeychainWrapper
+import PeereeCore
 
 /// The informed party of a ``RemotePeerManager``, which handles the 'client' part of the Bluetooth communication
 ///

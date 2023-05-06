@@ -7,6 +7,10 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeServerChat
+import PeereeServerAPI
+import PeereeDiscovery
 
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
 let wwwPrivacyPolicyURL = NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")
@@ -25,7 +29,7 @@ struct VisualTheme {
 let AppTheme = VisualTheme()
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate, PeeringControllerDelegate, ServerChatDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
 	static let BrowseTabBarIndex = 0
 	static let PinMatchesTabBarIndex = 1
 	static let MeTabBarIndex = 2
@@ -48,13 +52,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		SwaggerClientAPI.apiResponseQueue.underlyingQueue = AccountController.dQueue
 
 		// Observe singletons
-		ServerChatFactory.delegate = self
-		AccountController.delegate = self
-		ServerChatFactory.conversationDelegate = PeerViewModelController.shared
+		AccountController.delegate = Mediator.shared
+		ServerChatFactory.dataSource = Mediator.shared
+		UserPeer.instance.delegate = Mediator.shared
 
 		// Global configuration
 		setupAppearance()
-		configureServerChat()
 
 		notificationManager.initialize()
 
@@ -68,13 +71,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 		let restoredCentralManagerIDs = launchOptions?[.bluetoothCentrals] as? [String]
 		let restoredPeripheralManagerIDs = launchOptions?[.bluetoothPeripherals] as? [String]
 		if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
-			PeeringController.shared.delegate = self
+			self.togglePeering()
 		}
 
 		// start Bluetooth and server chat, but only if account exists
-		AccountController.use { _ in
-			// This will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
-			PeeringController.shared.delegate = self
+		AccountController.use { ac in
+			self.togglePeering()
+
+			ac.refreshBlockedContent { error in
+				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
+			}
 
 			ServerChatFactory.getOrSetupInstance { result in
 				switch result {
@@ -172,96 +178,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AccountControllerDelegate
 
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
 		completionHandler(.newData)
-	}
-
-	// MARK: AccountControllerDelegate
-	func pin(of peerID: PeerID, failedWith error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Pin Failed", comment: "Title of in-app error notification"))
-	}
-	
-	func publicKeyMismatch(of peerID: PeerID) {
-		DispatchQueue.main.async {
-			let name = PeerViewModelController.shared.viewModel(of: peerID).info.nickname
-			let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), name)
-			let error = createApplicationError(localizedDescription: message)
-			InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"))
-		}
-	}
-	
-	func sequenceNumberResetFailed(error: ErrorResponse) {
-		InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
-	}
-
-	func sequenceNumberReset() {
-		InAppNotificationController.display(title: NSLocalizedString("Request Failed", comment: "Error title"), message: NSLocalizedString("A request has failed, please try again.", comment: "Error body"))
-	}
-
-	// MARK: PeeringControllerDelegate
-
-	func advertisingStopped(with error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Bluetooth Publish Failed", comment: "Error title"))
-	}
-
-	func bluetoothNetwork(isAvailable: Bool) {
-		PeeringController.shared.change(peering: isAvailable)
-	}
-
-	func encodingPeersFailed(with error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Encoding Recent Peers Failed", comment: "Low-level error"))
-	}
-
-	func decodingPeersFailed(with error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Decoding Recent Peers Failed", comment: "Low-level error"))
-	}
-
-	// MARK: ServerChatControllerDelegate
-
-	func getLastReads(_ completion: @escaping ([PeerID : Date]) -> ()) {
-		PeeringController.shared.getLastReads(completion: completion)
-	}
-
-	func configurePusherFailed(_ error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
-	}
-
-	func cannotJoinRoom(_ error: Error) {
-		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
-	}
-
-	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void) {
-		DispatchQueue.main.async {
-			let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
-
-			let alertTitle = NSLocalizedString("Broken Chatroom", comment: "Title of broken room alert")
-			let alertBody = String(format: NSLocalizedString("broken_chatroom_content", comment: "Content of broken room alert."), name, error.localizedDescription)
-			let recreateRoomButtonTitle = NSLocalizedString("Re-create room", comment: "Caption of button.")
-
-			let alertController = UIAlertController(title: alertTitle, message: alertBody, preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
-			let createAction = UIAlertAction(title: recreateRoomButtonTitle, style: .`default`) { (_) in
-				recreateRoom()
-			}
-			alertController.addAction(createAction)
-			alertController.addCancelAction()
-			alertController.preferredAction = createAction
-			alertController.present()
-		}
-	}
-
-	func serverChatCertificateIsInvalid() {
-		let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
-		InAppNotificationController.display(serverChatError: .fatal(error), localizedTitle: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))
-	}
-
-	func serverChatClosed(error: Error?) {
-		PeerViewModelController.shared.clearTranscripts()
-
-		error.map {
-			InAppNotificationController.display(error: $0, localizedTitle: NSLocalizedString("Connection to Chat Server Lost", comment: "Error message title"))
-		}
-	}
-
-	func serverChatInternalErrorOccured(_ error: Error) {
-		elog("internal server chat error \(error)")
 	}
 
 	// MARK: Private Methods

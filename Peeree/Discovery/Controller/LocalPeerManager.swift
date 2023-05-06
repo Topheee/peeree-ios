@@ -9,6 +9,7 @@
 import Foundation
 import CoreBluetooth
 import KeychainWrapper
+import PeereeCore
 
 /// Values of this type are intended to contain <code>CBCentral.identifier</code>'s only.
 typealias CentralID = UUID
@@ -32,8 +33,8 @@ protocol LocalPeerManagerDelegate: AnyObject {
 	/// Another peer claims we have a pin match with them.
 	func receivedPinMatchIndication(from peerID: PeerID)
 
-	/// Another peer sent us a message.
-	func received(message: String, from peerID: PeerID)
+	/// Check the validity of the `signature` for the `nonce`.
+	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ())
 }
 
 /// The LocalPeerManager serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
@@ -236,7 +237,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		var _peer: (PeerID, UUID)? = nil
 		var _pin: (PeerID, Bool)? = nil
 		var _nonce: (CBCentral, Data)? = nil
-		var _message: (PeerID, String)? = nil
 		
 		for request in requests {
 			dlog("Did receive write on \(request.characteristic.uuid.uuidString.left(8)) from central \(request.central.identifier)")
@@ -246,24 +246,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				error = .unlikelyError
 				break
 			}
-			if request.characteristic.uuid == CBUUID.MessageCharacteristicID {
-				guard let message = String(dataPrefixedEncoding: data) else {
-					error = .insufficientResources
-					break
-				}
-				var peerID: PeerID
-				if let _peerID = authenticatedPinMatchedCentrals[request.central.identifier] {
-					peerID = _peerID
-				} else if let _peerID = _availableCentrals[request.central.identifier] {
-					// we allow fall back to accept messages from unauthenticated centrals here, since they aren't displayed in the UI anyway
-					// and I got this behavior way too often that messages were sent before the mututal authentication took place
-					peerID = _peerID
-				} else {
-					error = .insufficientResources
-					break
-				}
-				_message = (peerID, message)
-			} else if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
+
+			if request.characteristic.uuid == CBUUID.RemoteUUIDCharacteristicID {
 				var peerIDData = data
 				if data.count < 36 {
 					// we assume that the data is always of the form "eeb9e7f2-5442-42cc-ac91-e25e10a8d6ee"
@@ -301,32 +285,15 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					break
 				}
 
-				// TODO report CBAttError
-				AccountController.use { ac in
-					// it is important that we use the same error code in both the "not a pin match" and "signature verification failed" cases, to prevent from the timing attack
-					// we should not use CBATTError.insufficientAuthentication as then the iPhone begins a pairing process
-					let authFailedError = CBATTError.insufficientAuthorization
-
-					// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
-					do {
-						let id = try ac.id(of: peerID)
-						try id.publicKey.verify(message: nonce, signature: data)
-
-						// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
-						guard ac.hasPinMatch(peerID) else {
-							error = authFailedError // not a pin match
-							wlog("the peer \(peerID) which did not pin match us tried to authenticate to us.")
-							return
-						}
-
-						self.dQueue.async {
-							self.authenticatedPinMatchedCentrals[request.central.identifier] = peerID
-						}
-					} catch let exc {
-						elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
-						self.delegate?.authenticationFromPeerFailed(peerID, with: exc)
-						error = authFailedError // signature verification failed
+				// note that we do not return the result of the verification process to the remote party
+				delegate?.verify(peerID, nonce: nonce, signature: data) { verified in
+					guard verified else {
+						wlog("the peer \(peerID) which did not pin match us tried to authenticate to us.")
 						return
+					}
+
+					self.dQueue.async {
+						self.authenticatedPinMatchedCentrals[request.central.identifier] = peerID
 					}
 				}
 			} else {
@@ -344,10 +311,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			}
 			if let (central, nonce) = _nonce {
 				nonces[central.identifier] = nonce
-			}
-			if let (peerID, message) = _message {
-				// attack scenario: Eve sends us a message with Bob's PeerID => we do not validate the PeerID and thus she can fake messages from other peers
-				delegate?.received(message: message, from: peerID)
 			}
 		}
 		peripheral.respond(to: requests.first!, withResult: error)
@@ -394,8 +357,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
 		let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
 		// value: String.data(prefixedEncoding:)
-		let messageCharacteristic = CBMutableCharacteristic(type: CBUUID.MessageCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-		// value: String.data(prefixedEncoding:)
 		let biographyCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographyCharacteristicID, properties: [.indicate], value: nil, permissions: [])
 
 		// provide signature characteristics
@@ -421,7 +382,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		let biographySignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographySignatureCharacteristicID, properties: [.read], value: biographySignature, permissions: [.readable])
 
 		let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-		peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, messageCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
+		peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
 
 		return peereeService
 	}

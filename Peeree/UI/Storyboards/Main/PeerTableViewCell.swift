@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeDiscovery
 
 final class PeerTableViewCell: UITableViewCell {
 	@IBOutlet private weak var portraitImageView: RoundedImageView!

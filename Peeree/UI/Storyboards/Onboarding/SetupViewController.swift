@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeDiscovery
 
 final class SetupViewController: UIViewController, UITextFieldDelegate, PortraitImagePickerControllerDelegate {
 	@IBOutlet private weak var picButton: UIButton!

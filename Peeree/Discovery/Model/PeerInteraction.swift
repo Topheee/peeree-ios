@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PeereeCore
 
 /**
  Interface for interactions with a peer from the UI thread.
@@ -19,15 +20,5 @@ public protocol PeerInteraction {
 	func verify()
 	func range(_ block: @escaping (PeerID, PeerDistance) -> Void)
 	func stopRanging()
-}
-
-/// Representation of a chat message.
-public struct Transcript {
-	enum Direction {
-		case send, receive
-	}
-
-	let direction: Direction
-	let message: String
-	let timestamp: Date
+	func indicatePinMatch()
 }

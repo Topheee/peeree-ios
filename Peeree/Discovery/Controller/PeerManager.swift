@@ -9,6 +9,7 @@
 import Foundation
 import CoreBluetooth
 import CoreGraphics
+import PeereeCore
 
 /// An approximisation of the distance to the peer's phone.
 public enum PeerDistance {
@@ -128,15 +129,11 @@ class PeerManager: PeeringDelegate, PeerInteraction {
 		receivedUnverifiedPinMatchIndication = false
 		remotePeerManager.authenticate(peerID)
 
+		/* dead code anyway:
 		AccountController.use { ac in
 			ac.updatePinStatus(of: self.peerID, force: false)
 		}
-	}
-
-	func received(message: String, at: Date) {
-		publish { model in
-			model.received(message: message, at: at)
-		}
+		 */
 	}
 
 	// MARK: - Private

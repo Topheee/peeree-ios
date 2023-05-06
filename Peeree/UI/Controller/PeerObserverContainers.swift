@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 /// A class containing a <code>PeerObserver</code>.
 protocol PeerObserverContainer: AnyObject {
@@ -20,6 +23,9 @@ protocol PeerObserverContainer: AnyObject {
 extension PeerObserverContainer {
 	/// Shortcut for `PeerViewModelController.shared.viewModel(of: peerID)`.
 	var model: PeerViewModel { return PeerViewModelController.shared.viewModel(of: peerID) }
+
+	/// Shortcut for `PeerViewModelController.shared.viewModel(of: peerID)`.
+	var chatModel: ServerChatViewModel { return ServerChatViewModelController.shared.viewModel(of: peerID) }
 
 	/// Shortcut for `PeereeIdentityViewModelController.viewModel(of: peerID)`.
 	var idModel: PeereeIdentityViewModel { return PeereeIdentityViewModelController.viewModel(of: peerID) }
@@ -71,16 +77,16 @@ public class PeerObserver {
 		didSet {
 			guard (oldValue == nil && messagingObserver != nil) || (oldValue != nil && messagingObserver == nil) else { return }
 			if oldValue == nil {
-				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageQueued.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(ServerChatViewModel.NotificationName.messageQueued.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageQueued()
 				})
-				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageReceived.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(ServerChatViewModel.NotificationName.messageReceived.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageReceived()
 				})
-				messagingNotificationObservers.append(PeerViewModel.NotificationName.messageSent.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(ServerChatViewModel.NotificationName.messageSent.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.messageSent()
 				})
-				messagingNotificationObservers.append(PeerViewModel.NotificationName.unreadMessageCountChanged.addPeerObserver(for: peerID) { _ in
+				messagingNotificationObservers.append(ServerChatViewModel.NotificationName.unreadMessageCountChanged.addPeerObserver(for: peerID) { _ in
 					self.messagingObserver?.unreadMessageCountChanged()
 				})
 			} else if messagingObserver == nil {

@@ -8,6 +8,7 @@
 
 import Foundation
 import MatrixSDK
+import PeereeCore
 
 // MARK: Functions
 
@@ -38,17 +39,6 @@ func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 		  let colonIndex = userId.firstIndex(of: ":") else { return nil }
 
 	return PeerID(uuidString: String(userId[userId.index(after: atIndex)..<colonIndex]))
-}
-
-/// Must be called as soon as possible.
-func configureServerChat() {
-	let options = MXSDKOptions.sharedInstance()
-	options.enableCryptoWhenStartingMXSession = true
-	options.disableIdenticonUseForUserAvatar = true
-	options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
-	options.applicationGroupIdentifier = messagingAppGroup
-	// it currently works without this so let's keep it that way: options.authEnableRefreshTokens = true
-	options.wellknownDomainUrl = "https://\(serverChatDomain)"
 }
 
 // MARK: Types

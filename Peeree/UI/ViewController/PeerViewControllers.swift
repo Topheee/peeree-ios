@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeCore
 
 /// Adapter for <code>PeerObserverContainer</code>.
 class PeerViewController: UIViewController, PeerObserverContainer {

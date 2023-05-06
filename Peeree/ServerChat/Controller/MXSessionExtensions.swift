@@ -7,6 +7,7 @@
 //
 
 import MatrixSDK
+import PeereeCore
 
 extension MXSession {
 
@@ -126,7 +127,7 @@ extension MXSession {
 		}
 
 		room.members { membersResponse in
-			guard let _members = membersResponse.value, let members = _members,
+			guard let _members = membersResponse.mValue, let members = _members,
 				  let theirMember = members.members.first(where: { $0.userId == peerUserId}) else {
 				flog("We are not a member of room \(room).")
 				self.testRoom(idx: idx + 1, of: rooms, with: peerUserId, bothJoined: bothJoined, completion)

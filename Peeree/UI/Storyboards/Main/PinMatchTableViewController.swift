@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 /// Displays list of pin matched peers and the last messages in their conversations.
 final class PinMatchTableViewController: UITableViewController {
@@ -78,7 +81,7 @@ final class PinMatchTableViewController: UITableViewController {
 			return cell
 		} else {
 			let cell = tableView.dequeueReusableCell(withIdentifier: PinMatchTableViewController.MatchedPeerCellID)!
-			fill(cell: cell, model: PeerViewModelController.shared.viewModel(of: table[indexPath.row]))
+			fill(cell: cell, model: PeerViewModelController.shared.viewModel(of: table[indexPath.row]), chatModel: ServerChatViewModelController.shared.viewModel(of: table[indexPath.row]))
 			return cell
 		}
 	}
@@ -143,9 +146,11 @@ final class PinMatchTableViewController: UITableViewController {
 #if SHOWCASE
 		table = PeerViewModelController.viewModels.values.map { $0.peerID }
 #else
-		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeerViewModelController.shared.viewModels.values.compactMap { model in
-			guard PeereeIdentityViewModelController.viewModels[model.peerID]?.pinState == .pinMatch else { return nil }
-			return (model.peerID, model.transcripts.last?.timestamp, model.lastSeen)
+		var pinMatchedPeerViewModels: [(peerID: PeerID, lastMessage: Date?, lastSeen: Date)] = PeereeIdentityViewModelController.viewModels.values.compactMap { idModel in
+			guard idModel.pinState == .pinMatch else { return nil }
+			let lastSeen = PeerViewModelController.shared.viewModels[idModel.peerID]?.lastSeen ?? Date()
+			let chatModel = ServerChatViewModelController.shared.viewModels[idModel.peerID]
+			return (idModel.peerID, chatModel?.transcripts.last?.timestamp, lastSeen)
 		}
 
 		pinMatchedPeerViewModels.sort { a, b in
@@ -170,16 +175,16 @@ final class PinMatchTableViewController: UITableViewController {
 		self.tableView?.reloadData()
 	}
 
-	private func fill(cell: UITableViewCell, model: PeerViewModel) {
+	private func fill(cell: UITableViewCell, model: PeerViewModel, chatModel: ServerChatViewModel) {
 		cell.textLabel?.highlightedTextColor = AppTheme.tintColor
 		cell.textLabel?.text = model.info.nickname
-		let unreadMessages = model.unreadMessages
+		let unreadMessages = chatModel.unreadMessages
 		let format = NSLocalizedString("%u messages.", comment: "")
 		let unreadMessageCountText = String(format: format, unreadMessages)
 		if unreadMessages > 0 {
-			cell.detailTextLabel?.text = "📫 (\(model.unreadMessages)) \(model.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📫 (\(chatModel.unreadMessages)) \(chatModel.transcripts.last?.message ?? unreadMessageCountText)"
 		} else {
-			cell.detailTextLabel?.text = "📭 \(model.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📭 \(chatModel.transcripts.last?.message ?? unreadMessageCountText)"
 		}
 		guard let imageView = cell.imageView else { assertionFailure(); return }
 		imageView.image = model.portraitOrPlaceholder
@@ -264,7 +269,7 @@ final class PinMatchTableViewController: UITableViewController {
 
 	/// Observes relevant notifications in `NotificationCenter`.
 	private func observeNotifications() {
-		for notificationType: PeerViewModel.NotificationName in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
+		for notificationType: ServerChatViewModel.NotificationName in [.unreadMessageCountChanged, .messageReceived, .messageSent] {
 			notificationObservers.append(notificationType.addAnyPeerObserver { [weak self] peerID, _  in
 				self?.messageReceivedSentOrRead(from: peerID)
 			})

@@ -10,6 +10,9 @@ import Foundation
 import ImageIO
 import CoreServices
 import KeychainWrapper
+import PeereeCore
+import PeereeServerAPI
+import PeereeDiscovery
 
 /// Informant of failures in the `AccountController`.
 public protocol AccountControllerDelegate {
@@ -477,7 +480,7 @@ public class AccountController: SecurityDataSource {
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(AccountController.PinnedByPeersKey)
 		pinnedByPeers = nsPinnedBy as? Set<PeerID> ?? Set()
 		let nsPinned: NSDictionary? = unarchiveObjectFromUserDefs(AccountController.PinnedPeersKey)
-		pinnedPeers = nsPinned as? [PeerID : Data] ?? [PeerID : Data]()
+		pinnedPeers = nsPinned as? [PeerID : Data] ?? [PeereeCore.PeerID : Data]()
 		lastObjectionableContentRefresh = Date(timeIntervalSinceReferenceDate: UserDefaults.standard.double(forKey: AccountController.ObjectionableContentRefreshKey))
 		accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
 
@@ -628,7 +631,7 @@ public class AccountController: SecurityDataSource {
 	private var lastObjectionableContentRefresh: Date
 
 	// In-flight `getPin` requests.
-	private var updatePinStatusRequests = [PeerID: [(PinState) -> Void]]()
+	private var updatePinStatusRequests = [PeereeCore.PeerID: [(PinState) -> Void]]()
 
 	/// Incrementing secret number we use to authenticate requests to the server.
 	private var sequenceNumber: Int32 {

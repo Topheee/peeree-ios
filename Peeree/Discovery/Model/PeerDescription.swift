@@ -8,6 +8,7 @@
 
 import Foundation
 import KeychainWrapper
+import PeereeCore
 
 /// The JPEG compression quality when serializing portraits.
 let StandardPortraitCompressionQuality: CGFloat = 0.0

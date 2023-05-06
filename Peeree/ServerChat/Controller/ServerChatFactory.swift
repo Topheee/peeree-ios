@@ -9,34 +9,32 @@
 import Foundation
 import MatrixSDK
 import KeychainWrapper
+import PeereeCore
 
-/* All instance methods must be called on `ServerChatFactory.qQueue`. If they invoke a callback, that is always called on that queue as well. */
+/// Must be called as soon as possible.
+private func configureServerChat() {
+	let options = MXSDKOptions.sharedInstance()
+	options.enableCryptoWhenStartingMXSession = true
+	options.disableIdenticonUseForUserAvatar = true
+	options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
+	options.applicationGroupIdentifier = messagingAppGroup
+	// it currently works without this so let's keep it that way: options.authEnableRefreshTokens = true
+	options.wellknownDomainUrl = "https://\(serverChatDomain)"
+}
+
+/* All instance methods must be called on `ServerChatFactory.qQueue`. If they invoke a callback, that is always called on that queue as well.
+ * Similarly, all static variables must be accessed from that queue. Use `use()` to get on the queue. */
 
 /// Manages the server chat account and creates sessions (`ServerChat` instances).
 public class ServerChatFactory {
 
 	// MARK: Static Variables
 
-	/// Informed party.
-	static var delegate: ServerChatDelegate? = nil {
-		didSet {
-			use { factory in
-				factory?.serverChatController?.delegate = delegate
-			}
-		}
-	}
-
-	/// Informed party about chats.
-	static var conversationDelegate: ServerChatConversationDelegate? = nil {
-		didSet {
-			use { factory in
-				factory?.serverChatController?.conversationDelegate = conversationDelegate
-			}
-		}
-	}
+	// Information provider; only change while being logged-out.
+	public static var dataSource: ServerChatDataSource? = nil
 
 	/// APNs device token.
-	static var remoteNotificationsDeviceToken: Data? = nil
+	public static var remoteNotificationsDeviceToken: Data? = nil
 
 	// MARK: Static Functions
 
@@ -61,18 +59,34 @@ public class ServerChatFactory {
 		}
 	}
 
-	/// Retrieves a `ServerChatFactory` for the user.
+	/// Retrieves a `ServerChatFactory` for the user; `getter` will always be called on `ServerChatFactory.dQueue`.
 	public static func use(_ getter: @escaping (ServerChatFactory?) -> Void) {
-		AccountController.use({ ac in
-			guard let i = instance, i.peerID == ac.peerID else {
-				let newInstance = ServerChatFactory(peerID: ac.peerID)
-				instance = newInstance
-				getter(newInstance)
+		dQueue.async {
+			if let i = instance {
+				getter(i)
 				return
 			}
 
-			getter(i)
-		}, { getter(nil) })
+			guard let dataSource else {
+				getter(nil)
+				return
+			}
+
+			dataSource.ourPeerID { ourPeerID in
+				dQueue.async {
+					guard let ourPeerID else {
+						getter(nil)
+						return
+					}
+
+					configureServerChat()
+
+					let newInstance = ServerChatFactory(peerID: ourPeerID, ds: dataSource)
+					instance = newInstance
+					getter(newInstance)
+				}
+			}
+		}
 	}
 
 	// MARK: Methods
@@ -144,8 +158,9 @@ public class ServerChatFactory {
 	// MARK: - Private
 
 	/// Creates a factory instance.
-	private init(peerID: PeerID) {
+	private init(peerID: PeerID, ds: ServerChatDataSource) {
 		self.peerID = peerID
+		self.ds = ds
 		globalRestClient.completionQueue = Self.dQueue
 	}
 
@@ -171,13 +186,16 @@ public class ServerChatFactory {
 	/// Singleton instance.
 	private static var instance: ServerChatFactory? = nil
 
-	/// DispatchQueue for all actions on a `ServerChatFactory`; uses the `AccountController` queue for efficiency, not for logic dependence.
-	private static var dQueue: DispatchQueue { return AccountController.dQueue }
+	/// DispatchQueue for all actions on a `ServerChatFactory`.
+	private static let dQueue: DispatchQueue = DispatchQueue(label: "de.peeree.ServerChat", qos: .default)
 
 	// MARK: Constants
 
 	/// PeerID of the user.
 	private let peerID: PeerID
+
+	// Information provider; copied from the static variable.
+	private let ds: ServerChatDataSource
 
 	/// We need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
 	private let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
@@ -212,7 +230,7 @@ public class ServerChatFactory {
 		serverChatController?.close()
 		serverChatController = nil
 
-		Self.delegate?.serverChatClosed(error: error)
+		ds.delegate?.serverChatClosed(error: error)
 	}
 
 	/// Login, create account or get readily configured `ServerChatController`.
@@ -298,7 +316,7 @@ public class ServerChatFactory {
 												 "password" : passwordRawData.base64EncodedString()]
 
 		globalRestClient.register(parameters: registerParameters) { registerResponse in
-			switch registerResponse.toResult() {
+			switch registerResponse {
 			case .failure(let error):
 				do {
 					try self.removePasswordFromKeychain()
@@ -439,7 +457,7 @@ public class ServerChatFactory {
 	private func setupInstance(with credentials: MXCredentials, _ failure: ((ServerChatError) -> Void)? = nil) {
 		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
 			flog("server chat certificate is not trusted.")
-			Self.delegate?.serverChatCertificateIsInvalid()
+			self.ds.delegate?.serverChatCertificateIsInvalid()
 			return false
 		}, persistentTokenDataHandler: { callback in
 			dlog("server chat persistentTokenDataHandler was called.")
@@ -483,10 +501,10 @@ public class ServerChatFactory {
 
 		restClient.completionQueue = Self.dQueue
 
-		let setupCallback: ([PeerID : Date]) -> () = { lastReads in
-			let c = ServerChatController(peerID: self.peerID, restClient: restClient, dQueue: Self.dQueue, lastReads: lastReads, conversationQueue: DispatchQueue.main)
+		let c = ServerChatController(peerID: self.peerID, restClient: restClient, dataSource: self.ds, dQueue: Self.dQueue, conversationQueue: DispatchQueue.main)
 
-			c.start { error in Self.dQueue.async {
+		c.start { error in
+			Self.dQueue.async {
 				if let error {
 					c.close()
 					if let cb = failure {
@@ -498,22 +516,13 @@ public class ServerChatFactory {
 					}
 				} else {
 					self.serverChatController = c
-					c.delegate = Self.delegate
-					c.conversationDelegate = Self.conversationDelegate
 
 					// configure the pusher if server chat account didn't exist when AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken() is called
 					Self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
 
 					self.reportCreatingInstance(result: .success(c))
 				}
-			} }
-		}
-
-		if let d = Self.delegate {
-			d.getLastReads(setupCallback)
-		} else {
-			wlog("no server chat delegate set in setupInstance().")
-			setupCallback([:])
+			}
 		}
 	}
 

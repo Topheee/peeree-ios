@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import PeereeCore
+import PeereeDiscovery
 
 /// Encapsulates values on which the remote peers are filtered before they are presented to the user.
 struct BrowseFilter: Codable {

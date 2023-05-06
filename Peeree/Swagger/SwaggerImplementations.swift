@@ -63,7 +63,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
 
                     if #available(iOS 13, *) {
                         var validationError: CFError?
-                        guard SecTrustEvaluateWithError(trust, &validationError) else { throw validationError ?? unexpectedNilError() }
+						guard SecTrustEvaluateWithError(trust, &validationError) else { throw validationError ?? CertError.NoTrust }
                     } else {
                         var result: SecTrustResultType = .otherError
                         status = SecTrustEvaluate(trust, &result)
@@ -105,7 +105,7 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
     }
     
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        elog("session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
+        NSLog("[ERR] session \(session) became invalid with error \(error?.localizedDescription ?? "<unknown>")")
     }
 }
 
@@ -221,7 +221,6 @@ open class CustomRequestBuilder<T>: RequestBuilder<T> {
                             // https://github.com/swagger-api/swagger-parser/pull/34
                             completion(Response(response: httpResponse, body: ("" as! T)), nil)
                         } else {
-                            elog("parsing server response failed (\(error))")
                             completion(nil, ErrorResponse.parseError(data))
                         }
                     }

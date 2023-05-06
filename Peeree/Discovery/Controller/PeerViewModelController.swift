@@ -7,9 +7,10 @@
 //
 
 import Foundation
+import PeereeCore
 
 /// This class is intended for use on the main thread only!
-public final class PeerViewModelController: ServerChatConversationDelegate {
+public final class PeerViewModelController {
 
 	// MARK: - Public and Internal
 
@@ -31,8 +32,8 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 
 	/// Update or set the view model of `Peer`.
 	public func update(_ peerID: PeerID, info: PeerInfo, lastSeen: Date) {
-		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].info = info
-		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].lastSeen = lastSeen
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].info = info
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].lastSeen = lastSeen
 	}
 
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
@@ -41,7 +42,7 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		return viewModels[peerID, default: clos()]
@@ -53,7 +54,7 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(peerID: peerID, info: info, biography: "", transcripts: [], unreadMessages: 0, verified: false, lastSeen: Date.distantPast, cgPicture: nil)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		modifier(&viewModels[peerID, default: clos()])
@@ -67,26 +68,5 @@ public final class PeerViewModelController: ServerChatConversationDelegate {
 	/// Removes all view models.
 	public func clear() {
 		viewModels.removeAll()
-	}
-
-	/// Clears all cached transcripts.
-	public func clearTranscripts() {
-		viewModels.keys.forEach { peerID in
-			viewModels[peerID]?.clearTranscripts()
-		}
-	}
-
-	// MARK: ServerChatConversationDelegate
-
-	public func received(message: String, at: Date, from peerID: PeerID) {
-		viewModels[peerID]?.received(message: message, at: at)
-	}
-
-	public func didSend(message: String, at: Date, to peerID: PeerID) {
-		viewModels[peerID]?.didSend(message: message, at: at)
-	}
-
-	public func catchUp(messages: [Transcript], unreadCount: Int, with peerID: PeerID) {
-		viewModels[peerID]?.catchUp(messages: messages, unreadCount: unreadCount)
 	}
 }

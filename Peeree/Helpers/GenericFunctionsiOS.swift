@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeCore
 
 // MARK: - Functions
 

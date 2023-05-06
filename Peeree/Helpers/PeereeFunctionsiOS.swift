@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeCore
 
 /// Generates generic actions on peers, notably pin and unpin.
 @MainActor
@@ -14,7 +15,7 @@ func trailingSwipeActionsConfigurationFor(peerID: PeerID) -> UISwipeActionsConfi
 	let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
 
 	if idModel.pinState.isPinned {
-		let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (action, view, completion) in
+		let unpinAction = UIContextualAction(style: .destructive, title: NSLocalizedString("Unpin", comment: "The user wants to unpin a person")) { (_, _, completion) in
 			AccountController.use({
 				$0.unpin(id: idModel.id)
 				DispatchQueue.main.async { completion(true) }
@@ -22,7 +23,7 @@ func trailingSwipeActionsConfigurationFor(peerID: PeerID) -> UISwipeActionsConfi
 		}
 		return UISwipeActionsConfiguration(actions: [unpinAction])
 	} else {
-		let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (action, view, completion) in
+		let pinAction = UIContextualAction(style: .normal, title: NSLocalizedString("Pin", comment: "The user wants to pin a person")) { (_, _, completion) in
 			AccountController.use({ ac in
 				ac.pin(idModel.id)
 				DispatchQueue.main.async { completion(true) }

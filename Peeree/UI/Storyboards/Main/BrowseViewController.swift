@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import PeereeCore
+import PeereeDiscovery
 
 final class BrowseViewController: UITableViewController {
 	@IBOutlet private weak var networkButton: UIButton!

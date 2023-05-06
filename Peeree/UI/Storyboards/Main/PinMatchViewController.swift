@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeCore
 
 class PinMatchViewController: PeerViewController {
 	@IBOutlet private weak var portraitView: UIImageView!

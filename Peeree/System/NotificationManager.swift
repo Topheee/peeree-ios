@@ -8,6 +8,9 @@
 
 import UIKit
 import CoreServices
+import PeereeCore
+import PeereeServerChat
+import PeereeDiscovery
 
 @MainActor
 class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
@@ -321,8 +324,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			self.pinMatchOccured(peerID)
 		}
 
-		_ = PeerViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
-			guard let message = notification.userInfo?[PeerViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
+		_ = ServerChatViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
+			guard let message = notification.userInfo?[ServerChatViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
 
 			self.received(message: message, from: peerID)
 		}

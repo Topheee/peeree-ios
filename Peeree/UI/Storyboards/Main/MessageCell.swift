@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import PeereeServerChat
 
 /// Custom cell for chat messages.
 class MessageCell: UITableViewCell {

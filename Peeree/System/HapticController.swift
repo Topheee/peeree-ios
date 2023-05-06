@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreHaptics
+import PeereeCore
 
 /// use this class from main thread only!
 @available(iOS 13.0, *)

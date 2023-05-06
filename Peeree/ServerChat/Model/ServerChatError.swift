@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PeereeCore
 
 /// Causes for `ServerChatError.cannotChat` error.
 public enum ServerChatCannotChatReason {
