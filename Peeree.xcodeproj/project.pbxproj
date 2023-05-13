@@ -13,7 +13,6 @@
 		9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D2ECEF92618CD5800E8EB40 /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2ECEF82618CD5800E8EB40 /* PeerTableViewCell.swift */; };
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
-		9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
 		9D404617244370990068D22F /* GrowingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D404616244370990068D22F /* GrowingTextView.swift */; };
 		9D47CF4128F964F100A3123E /* PeereeFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */; };
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
@@ -32,6 +31,10 @@
 		9D8A594D1B9395F500164C9F /* BasicInfoViewContoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A594C1B9395F500164C9F /* BasicInfoViewContoller.swift */; };
 		9D8A96CA25F50BFC00E98F1F /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */; };
 		9D90435527A06D0600C29BFA /* PeerViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D90435427A06D0600C29BFA /* PeerViewControllers.swift */; };
+		9D9248DC2A0F8F4500EDD320 /* PeereeServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D9248DB2A0F8F4500EDD320 /* PeereeServer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9D9248DF2A0F8F4500EDD320 /* PeereeServer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D9248D92A0F8F4500EDD320 /* PeereeServer.framework */; };
+		9D9248E02A0F8F4500EDD320 /* PeereeServer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9D9248D92A0F8F4500EDD320 /* PeereeServer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9D9248E42A0F8F5300EDD320 /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
 		9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94021026188BBD00F78027 /* MessagingViewController.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
@@ -129,6 +132,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9D9248DD2A0F8F4500EDD320 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9D9248D82A0F8F4500EDD320;
+			remoteInfo = PeereeServer;
+		};
 		9DC00AAB2662ED2300C1DA3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
@@ -189,6 +199,7 @@
 			files = (
 				9DD33C0229FFA9BF0046165E /* PeereeDiscovery.framework in Embed Frameworks */,
 				9DD33BAD29FEA9470046165E /* PeereeServerAPI.framework in Embed Frameworks */,
+				9D9248E02A0F8F4500EDD320 /* PeereeServer.framework in Embed Frameworks */,
 				9DD33BD429FEACA70046165E /* PeereeServerChat.framework in Embed Frameworks */,
 				9DD33C3529FFC5210046165E /* PeereeCore.framework in Embed Frameworks */,
 			);
@@ -244,6 +255,8 @@
 		9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		9D90435427A06D0600C29BFA /* PeerViewControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerViewControllers.swift; sourceTree = "<group>"; };
 		9D91E0452405B131002BD814 /* JSONValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		9D9248D92A0F8F4500EDD320 /* PeereeServer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PeereeServer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D9248DB2A0F8F4500EDD320 /* PeereeServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PeereeServer.h; sourceTree = "<group>"; };
 		9D94021026188BBD00F78027 /* MessagingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingViewController.swift; sourceTree = "<group>"; };
 		9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManager.swift; sourceTree = "<group>"; };
 		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerManager.swift; sourceTree = "<group>"; };
@@ -325,6 +338,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9D9248D62A0F8F4500EDD320 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B21B5C3AB800F3BA87 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -336,6 +356,7 @@
 				9DD33BF529FF27410046165E /* DequeModule in Frameworks */,
 				9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */,
 				9DD33C3429FFC5210046165E /* PeereeCore.framework in Frameworks */,
+				9D9248DF2A0F8F4500EDD320 /* PeereeServer.framework in Frameworks */,
 				9DD33BD329FEACA70046165E /* PeereeServerChat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -428,7 +449,6 @@
 			isa = PBXGroup;
 			children = (
 				9D5D46EB280C6C34002174DB /* Controller */,
-				9D5D46EC280C6C49002174DB /* Model */,
 			);
 			path = Account;
 			sourceTree = "<group>";
@@ -439,13 +459,6 @@
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
 			);
 			path = Controller;
-			sourceTree = "<group>";
-		};
-		9D5D46EC280C6C49002174DB /* Model */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Model;
 			sourceTree = "<group>";
 		};
 		9D5D46EF280C6CBD002174DB /* Discovery */ = {
@@ -625,6 +638,14 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		9D9248DA2A0F8F4500EDD320 /* PeereeServer */ = {
+			isa = PBXGroup;
+			children = (
+				9D9248DB2A0F8F4500EDD320 /* PeereeServer.h */,
+			);
+			path = PeereeServer;
+			sourceTree = "<group>";
+		};
 		9DA0F7AC1B5C3AB800F3BA87 = {
 			isa = PBXGroup;
 			children = (
@@ -636,6 +657,7 @@
 				9D2A76B81DC63E9D004E6386 /* PeereeUITests */,
 				9D38FB702631F38C0066ABAD /* PeereeTests */,
 				9DD33C2E29FFC5210046165E /* PeereeCoreTests */,
+				9D9248DA2A0F8F4500EDD320 /* PeereeServer */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
 				9DD33C4D2A0063880046165E /* Frameworks */,
 			);
@@ -651,6 +673,7 @@
 				9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */,
 				9DD33C1F29FFC5200046165E /* PeereeCore.framework */,
 				9DD33C2829FFC5200046165E /* PeereeCoreTests.xctest */,
+				9D9248D92A0F8F4500EDD320 /* PeereeServer.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -801,6 +824,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		9D9248D42A0F8F4500EDD320 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D9248DC2A0F8F4500EDD320 /* PeereeServer.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DD33BA129FEA9470046165E /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -835,6 +866,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		9D9248D82A0F8F4500EDD320 /* PeereeServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9D9248E12A0F8F4500EDD320 /* Build configuration list for PBXNativeTarget "PeereeServer" */;
+			buildPhases = (
+				9D9248D42A0F8F4500EDD320 /* Headers */,
+				9D9248D52A0F8F4500EDD320 /* Sources */,
+				9D9248D62A0F8F4500EDD320 /* Frameworks */,
+				9D9248D72A0F8F4500EDD320 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PeereeServer;
+			productName = PeereeServer;
+			productReference = 9D9248D92A0F8F4500EDD320 /* PeereeServer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		9DA0F7B41B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9DA0F7D61B5C3AB900F3BA87 /* Build configuration list for PBXNativeTarget "Peeree" */;
@@ -852,6 +901,7 @@
 				9DD33BD229FEACA70046165E /* PBXTargetDependency */,
 				9DD33C0029FFA9BF0046165E /* PBXTargetDependency */,
 				9DD33C3329FFC5210046165E /* PBXTargetDependency */,
+				9D9248DE2A0F8F4500EDD320 /* PBXTargetDependency */,
 			);
 			name = Peeree;
 			packageProductDependencies = (
@@ -994,6 +1044,9 @@
 				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
+					9D9248D82A0F8F4500EDD320 = {
+						CreatedOnToolsVersion = 14.3;
+					};
 					9DA0F7B41B5C3AB800F3BA87 = {
 						CreatedOnToolsVersion = 6.3.2;
 						DevelopmentTeam = 86J6LQ96WM;
@@ -1057,11 +1110,19 @@
 				9DD33BFA29FFA9BF0046165E /* PeereeDiscovery */,
 				9DD33C1E29FFC5200046165E /* PeereeCore */,
 				9DD33C2729FFC5200046165E /* PeereeCoreTests */,
+				9D9248D82A0F8F4500EDD320 /* PeereeServer */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9D9248D72A0F8F4500EDD320 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B31B5C3AB800F3BA87 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1144,6 +1205,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9D9248D52A0F8F4500EDD320 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D9248E42A0F8F5300EDD320 /* AccountController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B11B5C3AB800F3BA87 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1169,7 +1238,6 @@
 				9D47CF4128F964F100A3123E /* PeereeFunctionsiOS.swift in Sources */,
 				9DD33BE629FF127B0046165E /* Mediator.swift in Sources */,
 				9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */,
-				9D400E621EBA2B9C0006480A /* AccountController.swift in Sources */,
 				9DDE47C71BA59C5D00DB6EEE /* BrowseFilterSettings.swift in Sources */,
 				9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */,
 				9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */,
@@ -1283,6 +1351,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9D9248DE2A0F8F4500EDD320 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9D9248D82A0F8F4500EDD320 /* PeereeServer */;
+			targetProxy = 9D9248DD2A0F8F4500EDD320 /* PBXContainerItemProxy */;
+		};
 		9DC00AAC2662ED2300C1DA3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
@@ -1371,6 +1444,104 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		9D9248E22A0F8F4500EDD320 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Kobusch. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++20";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = de.kobusch.christopher.PeereeServer;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		9D9248E32A0F8F4500EDD320 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Kobusch. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++20";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = de.kobusch.christopher.PeereeServer;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		9DA0F7D41B5C3AB900F3BA87 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1490,7 +1661,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.3;
+				CURRENT_PROJECT_VERSION = 1.6.4;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				INFOPLIST_FILE = Peeree/Info.plist;
@@ -1501,7 +1672,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.3;
+				MARKETING_VERSION = 1.6.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1529,7 +1700,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.6.3;
+				CURRENT_PROJECT_VERSION = 1.6.4;
 				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
 				GCC_OPTIMIZATION_LEVEL = fast;
@@ -1542,7 +1713,7 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.6.3;
+				MARKETING_VERSION = 1.6.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2074,6 +2245,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9D9248E12A0F8F4500EDD320 /* Build configuration list for PBXNativeTarget "PeereeServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D9248E22A0F8F4500EDD320 /* Debug */,
+				9D9248E32A0F8F4500EDD320 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9DA0F7B01B5C3AB800F3BA87 /* Build configuration list for PBXProject "Peeree" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2186,7 +2366,7 @@
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = exactVersion;
-				version = 0.26.17;
+				version = 0.26.18;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

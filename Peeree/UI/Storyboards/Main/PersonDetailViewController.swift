@@ -9,6 +9,7 @@
 import UIKit
 import PeereeCore
 import PeereeDiscovery
+import PeereeServer
 
 final class PersonDetailViewController: PeerViewController, ProgressManagerDelegate, UITextViewDelegate {
 	private static let bioAnimationDuration: TimeInterval = 0.45
@@ -68,16 +69,20 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		}
 		unpinAction.isEnabled = !model.peerID.isLocalPeer && idModel.pinState.isPinned
 		alertController.addAction(unpinAction)
-		let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
-			let mdl = self.model
-			AccountController.use { ac in
-				ac.report(model: mdl) { (error) in
-					InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
+
+		// Report Action
+		if let portrait = model.cgPicture, let hash = model.pictureHash {
+			let peerID = self.peerID
+			let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
+				AccountController.use { ac in
+					ac.report(peerID: peerID, portrait: portrait, portraitHash: hash) { (error) in
+						InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
+					}
 				}
 			}
+			reportAction.isEnabled = !model.peerID.isLocalPeer && model.info.hasPicture && model.cgPicture != nil && model.pictureClassification == .none
+			alertController.addAction(reportAction)
 		}
-		reportAction.isEnabled = !model.peerID.isLocalPeer && model.info.hasPicture && model.cgPicture != nil && model.pictureClassification == .none
-		alertController.addAction(reportAction)
 		
 		alertController.present()
 	}

@@ -109,12 +109,15 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		}
 	}
 
-	func paginateUp(peerID: PeerID, count: Int) {
+	func paginateUp(peerID: PeerID, count: Int, _ completion: @escaping (Error?) -> ()) {
 		session.directRooms(with: peerID.serverChatUserId).compactMap { roomTimelines[$0.roomId] }.forEach { timeline in
-			guard timeline.canPaginate(.backwards) else { return }
+			guard timeline.canPaginate(.backwards) else {
+				completion(createApplicationError(localizedDescription: "Cannot paginate timeline up"))
+				return
+			}
 
 			timeline.paginate(UInt(count), direction: .backwards, onlyFromStore: false) { response in
-				if let error = response.error { elog("Pagination failed: \(error)") }
+				completion(response.error)
 			}
 		}
 	}

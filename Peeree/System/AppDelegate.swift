@@ -9,7 +9,7 @@
 import UIKit
 import PeereeCore
 import PeereeServerChat
-import PeereeServerAPI
+import PeereeServer
 import PeereeDiscovery
 
 let wwwHomeURL = NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")
@@ -48,8 +48,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		// not cool to do this here, but the whole architecture seems to be sub-optimal there
-		SwaggerClientAPI.apiResponseQueue.underlyingQueue = AccountController.dQueue
+		AccountController.initialize()
 
 		// Observe singletons
 		AccountController.delegate = Mediator.shared

@@ -12,18 +12,17 @@ import CoreServices
 import KeychainWrapper
 import PeereeCore
 import PeereeServerAPI
-import PeereeDiscovery
 
 /// Informant of failures in the `AccountController`.
 public protocol AccountControllerDelegate {
 	/// The request to pin `peerID` failed with `error`.
-	func pin(of peerID: PeerID, failedWith error: Error)
+	func pin(of peerID: PeereeCore.PeerID, failedWith error: Error)
 
 	/// A requested action on `peerID` failed due to the server assuming a different public key than us; this may imply an attack on the user.
-	func publicKeyMismatch(of peerID: PeerID)
+	func publicKeyMismatch(of peerID: PeereeCore.PeerID)
 
 	/// The fallback process for `unauthorized` errors failed.
-	func sequenceNumberResetFailed(error: ErrorResponse)
+	func sequenceNumberResetFailed(error: Error)
 
 	/// When this occurs, the last request was not processed correctly.
 	func sequenceNumberReset()
@@ -55,11 +54,16 @@ public class AccountController: SecurityDataSource {
 	public static var delegate: AccountControllerDelegate?
 
 	/// Call from `dQueue` only!
-	static var isCreatingAccount: Bool {
+	public static var isCreatingAccount: Bool {
 		return !creatingInstanceCallbacks.isEmpty
 	}
 
 	// MARK: Static Functions
+
+	/// Call this as soon as possible.
+	public static func initialize() {
+		SwaggerClientAPI.apiResponseQueue.underlyingQueue = AccountController.dQueue
+	}
 
 	/// Retrieves the singleton on its `DispatchQueue`; call all methods on `AccountController` only directly from `getter`!
 	public static func use(_ getter: @escaping (AccountController) -> Void, _ unavailable: (() -> Void)? = nil) {
@@ -120,16 +124,16 @@ public class AccountController: SecurityDataSource {
 	// MARK: Variables
 
 	/// The crown juwels of the user and the second part of the user's identity.
-	let keyPair: KeyPair
+	public let keyPair: KeyPair
 
 	/// The identifier of the user on our social network.
-	let peerID: PeerID
+	public let peerID: PeerID
 
 	/// The user's unique identity on our social network.
-	var identity: PeereeIdentity { return PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey) }
+	public var identity: PeereeIdentity { return PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey) }
 
 	/// The email address associated with this account; if any.
-	private (set) var accountEmail: String? {
+	public private (set) var accountEmail: String? {
 		didSet {
 			if accountEmail != nil && accountEmail! != "" {
 				UserDefaults.standard.set(accountEmail, forKey: AccountController.EmailKey)
@@ -140,13 +144,13 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Whether the account deletion process is running.
-	private (set) var isDeletingAccount = false
+	public private (set) var isDeletingAccount = false
 
 	/// Retrieves the full known public key of `peerID`, if available.
-	public func publicKey(of peerID: PeerID) -> Data? { return pinnedPeers[peerID] }
+	public func publicKey(of peerID: PeereeCore.PeerID) -> Data? { return pinnedPeers[peerID] }
 
 	/// Retrieves the full known identity of `peerID`.
-	public func id(of peerID: PeerID) throws -> PeereeIdentity {
+	public func id(of peerID: PeereeCore.PeerID) throws -> PeereeIdentity {
 		guard let publicKeyData = pinnedPeers[peerID] else {
 			throw createApplicationError(localizedDescription: NSLocalizedString("Unknown peer.", comment: "Requested information about an unknown peer."))
 		}
@@ -155,7 +159,7 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Returns whether we have a pin match with that specific PeerID. Note, that this does NOT imply we have a match with a concrete PeerInfo of that PeerID, as that PeerInfo may be a malicious peer
-	public func hasPinMatch(_ peerID: PeerID) -> Bool {
+	public func hasPinMatch(_ peerID: PeereeCore.PeerID) -> Bool {
 		// it is enough to check whether we are pinned by peerID, as we only know that if we matched
 		return pinnedByPeers.contains(peerID)
 	}
@@ -166,7 +170,7 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Checks whether the pinning process is (already) running for `peerID`.
-	public func isPinning(_ peerID: PeerID) -> Bool {
+	public func isPinning(_ peerID: PeereeCore.PeerID) -> Bool {
 		return pinningPeers.contains(peerID)
 	}
 
@@ -227,43 +231,31 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Reports the picture of a person as inappropriate.
-	public func report(model: PeerViewModel, _ errorCallback: @escaping (Error) -> Void) {
-		guard let portrait = model.cgPicture, let hash = model.pictureHash else { return }
-		
-		let hashString = hash.hexString()
+	public func report(peerID: PeereeCore.PeerID, portrait: CGImage, portraitHash: Data, _ errorCallback: @escaping (Error) -> Void) {
+		let hashString = portraitHash.hexString()
 		let jpgData: Data
 
 		do {
-			#if os(iOS)
-			if let data = model.picture?.jpegData(compressionQuality: AccountController.UploadCompressionQuality) {
-				jpgData = data
-				let str = jpgData[jpgData.startIndex...jpgData.startIndex.advanced(by: 20)].hexString()
-				ilog("sending \(str)")
-			} else {
-				jpgData = try portrait.jpgData(compressionQuality: AccountController.UploadCompressionQuality)
-			}
-			#else
 			jpgData = try portrait.jpgData(compressionQuality: AccountController.UploadCompressionQuality)
-			#endif
 		} catch let error {
 			errorCallback(error)
 			return
 		}
-		
-		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: model.peerID, hash: hashString) { (_, error) in
+
+		ContentfilterAPI.putContentFilterPortraitReport(body: jpgData as Data, reportedPeerID: peerID, hash: hashString) { (_, error) in
 			if let error {
 				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
 			} else {
 				DispatchQueue.main.async {
-					PeereeIdentityViewModelController.pendingObjectionableImageHashes[hash] = Date()
+					PeereeIdentityViewModelController.pendingObjectionableImageHashes[portraitHash] = Date()
 
 					let save = PeereeIdentityViewModelController.pendingObjectionableImageHashes
 					Self.dQueue.async {
 						archiveObjectInUserDefs(save as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
 					}
 
-					self.post(.peerReported, model.peerID)
+					self.post(.peerReported, peerID)
 				}
 			}
 		}

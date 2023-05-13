@@ -19,7 +19,7 @@ public protocol ServerChat {
 	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void)
 
 	/// Load old messages.
-	func paginateUp(peerID: PeerID, count: Int)
+	func paginateUp(peerID: PeerID, count: Int, _ completion: @escaping (Error?) -> ())
 
 	/// Configure remote push notifications.
 	func configurePusher(deviceToken: Data)

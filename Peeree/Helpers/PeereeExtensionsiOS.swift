@@ -9,6 +9,7 @@
 import UIKit
 import SafariServices
 import PeereeCore
+import PeereeServer
 import PeereeServerChat
 import PeereeDiscovery
 

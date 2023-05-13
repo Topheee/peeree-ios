@@ -10,6 +10,7 @@ import UIKit
 import CoreServices
 import PeereeCore
 import PeereeServerChat
+import PeereeServer
 import PeereeDiscovery
 
 @MainActor

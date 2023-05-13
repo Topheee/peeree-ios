@@ -8,6 +8,7 @@
 
 import UIKit
 import PeereeCore
+import PeereeServer
 
 /// Generates generic actions on peers, notably pin and unpin.
 @MainActor

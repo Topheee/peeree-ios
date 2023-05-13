@@ -11,7 +11,7 @@ import PeereeCore
 import PeereeServerChat
 import PeereeDiscovery
 import KeychainWrapper
-import PeereeServerAPI
+import PeereeServer
 
 extension PeerViewModel {
 	/// Objectionable content classification required by the App Store.
@@ -256,7 +256,7 @@ extension Mediator: AccountControllerDelegate {
 	}
 
 	@MainActor
-	func sequenceNumberResetFailed(error: ErrorResponse) {
+	func sequenceNumberResetFailed(error: Error) {
 		InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
 	}
 

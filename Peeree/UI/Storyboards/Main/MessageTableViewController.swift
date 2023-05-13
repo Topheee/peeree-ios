@@ -64,6 +64,23 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		return cell
 	}
 
+	// MARK: UITableViewDelegate
+
+	override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+		let text = chatModel.transcripts[indexPath.row].message
+		return text.height(forConstrainedWidth: tableView.bounds.width, font: messageFont)
+	}
+
+	override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+		guard !isPaginating && indexPath.row == 0 else { return }
+
+		self.isPaginating = true
+
+		ServerChatFactory.chat { $0?.paginateUp(peerID: self.peerID, count: 20) { error in
+			DispatchQueue.main.async { self.isPaginating = false }
+		} }
+	}
+
 	// MARK: - PeerMessagingObserver
 
 	func messageQueued() {
@@ -75,6 +92,10 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	}
 	func messageSent() { appendTranscript() }
 	func unreadMessageCountChanged() { /* ignored */ }
+
+	private let messageFont = UIFont.preferredFont(forTextStyle: .body)
+
+	private var isPaginating = false
 
 	// MARK: - Private Methods
 	

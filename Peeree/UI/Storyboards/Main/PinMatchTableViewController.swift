@@ -8,6 +8,7 @@
 
 import UIKit
 import PeereeCore
+import PeereeServer
 import PeereeServerChat
 import PeereeDiscovery
 
