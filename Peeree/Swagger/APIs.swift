@@ -17,8 +17,9 @@ open class SwaggerClientAPI {
     public static var dataSource: SecurityDataSource?
     
     public static let `protocol` = "https"
-    public static let testHost = "<your-ip>:9443"
-    public static let host = "rest.peeree.de:39517" //testHost //"rest.peeree.de:9443"
+    public static var unsafeTLS = false
+    public static let testHost = "localhost:10443"
+    public static var host = "rest.peeree.de:39517" //testHost //"rest.peeree.de:9443"
     public static let basePath = "\(`protocol`)://\(host)/v1"
     public static let baseURL = URL(string: basePath)!
     public static var credential: URLCredential?

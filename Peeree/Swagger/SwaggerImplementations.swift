@@ -82,18 +82,19 @@ final class CredentialAcceptor : NSObject, URLSessionDelegate {
                     completionHandler(.useCredential, credential)
                     
                 } catch {
-                    let certError = error as! CertError
-                    
-                    switch certError {
-                    case .DataIO(let ioError):
-                        NSLog("reading certificate failed: \(ioError.localizedDescription)")
-                    case .Anchor(let status):
-                        NSLog("setting anchor cert failed with code \(status).")
-                    case .Evaluate(let status):
-                        NSLog("evaluating trust failed with code \(status).")
-                    default:
-                        NSLog("Aborting URL connection: \(error.localizedDescription)")
-                    }
+					if let certError = error as? CertError {
+						switch certError {
+						case .DataIO(let ioError):
+							NSLog("reading certificate failed: \(ioError.localizedDescription)")
+						case .Anchor(let status):
+							NSLog("setting anchor cert failed with code \(status).")
+						case .Evaluate(let status):
+							NSLog("evaluating trust failed with code \(status).")
+						default:
+							NSLog("Aborting URL connection: \(error.localizedDescription)")
+						}
+					}
+
                     challenge.sender?.cancel(challenge)
                     // Inform the user that something failed
                     completionHandler(.cancelAuthenticationChallenge, nil)
@@ -127,8 +128,7 @@ private let sessionManager: URLSession = {
     configuration.urlCache = nil
     configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
     configuration.httpMaximumConnectionsPerHost = 1
-//    return URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil)
-    return URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
+    return SwaggerClientAPI.unsafeTLS ? URLSession(configuration: configuration, delegate: CredentialAcceptor.shared, delegateQueue: nil) : URLSession(configuration: configuration, delegate: nil, delegateQueue: SwaggerClientAPI.apiResponseQueue)
 }()
 
 

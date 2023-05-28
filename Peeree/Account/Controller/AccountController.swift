@@ -61,7 +61,8 @@ public class AccountController: SecurityDataSource {
 	// MARK: Static Functions
 
 	/// Call this as soon as possible.
-	public static func initialize() {
+	public static func initialize(test: Bool = false) {
+		SwaggerClientAPI.host = test ? "localhost:10443" : "rest.peeree.de:39517"
 		SwaggerClientAPI.apiResponseQueue.underlyingQueue = AccountController.dQueue
 	}
 

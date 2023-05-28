@@ -1,0 +1,87 @@
+name: Bug Report
+description: Create a bug report
+labels:
+  - 'kind: bug'
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thanks for taking the time to fill out this bug report!
+        
+        Make sure you give it a short and specific **title** so that the report
+        is searchable and uniquely identifiable.
+        
+        Note that this form is for bug reports only. Please
+        [open a discussion](https://github.com/PeereeApp/peeree-ios/discussions/new)
+        for questions, feature requests, or support requests
+  - type: textarea
+    id: summary
+    attributes:
+      label: Description
+      description: >
+        Please provide an abstract description of the issue to the developers,
+        and why you consider it to be a bug. Please include any specific links
+        to the documentation, JSON specification, or code.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: >
+        How do you trigger the bug? Please walk us through step by step. Be as
+        specific as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Expected vs. actual results
+      description: >
+        Please describe what you expected to happen after the steps above and
+        what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Optional excerpt from where you believe the bug surfaces
+      description: >
+        If possible, provide a the code section that triggers
+        the bug. Please do not paste screenshots here.
+      render: Swift
+  - type: textarea
+    id: output
+    attributes:
+      label: Error messages
+      description: >
+        Please provide any kind of error output (compilation errors, exception
+        messages, stack traces, etc.) which can help to diagnose the error.
+  - type: input
+    id: compiler
+    attributes:
+      label: Xcode and operating system
+      description: >
+        On which operating systems and Xcode versions have you observed the issue?
+        Include as many relevant details about the environment you experienced
+        the bug in.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: >
+        Which version of the app did you use? If it is a released version,
+        please enter the version number (e.g., 3.11.2). Otherwise, please enter
+        the commit hash.
+    validations:
+      required: true
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Validation
+      description: >
+        Please check these additional steps:
+      options:
+        - label: The bug also occurs if the latest version from the [`master`](https://github.com/PeereeApp/peeree-ios/tree/master) branch is used.

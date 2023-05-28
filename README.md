@@ -8,10 +8,14 @@ For the *Peeree* target in the Xcode project's settings, change the developer pr
 Simply open `Peeree.xcodeproj` using Xcode and hit `build`.
 
 ## Debugging
-Create an `LLDBInitFile` at the root of this project and add the path to the cloned `matrix-ios-sdk` repository to the source map:
+Create an `LLDBInitFile` at the root of this project and add the path to the cloned [matrix-ios-sdk](https://github.com/matrix-org/matrix-ios-sdk) repository to the source map:
 ```
 settings set target.source-map /Users/runner/work/MatrixSDK/MatrixSDK/matrix-ios-sdk/MatrixSDK /path/to/matrix-ios-sdk/MatrixSDK
 ```
+
+## Execute Unit Tests
+
+The unit tests are still in the making. Plus, since the server implementation is private, all unit tests in `PeereeServerAPITests.swift` won't run on your system. Adding a mock server is in planning.
 
 ## External Dependencies
 
@@ -23,4 +27,4 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-Copyright © 2021 Christopher Kobusch. All rights reserved.
+Copyright © 2023 Christopher Kobusch. All rights reserved.
