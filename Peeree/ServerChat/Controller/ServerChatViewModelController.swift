@@ -61,7 +61,7 @@ public final class ServerChatViewModelController: ServerChatConversationDelegate
 		modify(peerID: peerID) { $0.didSend(message: message, at: at) }
 	}
 
-	public func catchUp(messages: [Transcript], unreadCount: Int, with peerID: PeerID) {
-		modify(peerID: peerID) { $0.catchUp(messages: messages, unreadCount: unreadCount) }
+	public func catchUp(messages: [Transcript], sorted: Bool, unreadCount: Int, with peerID: PeerID) {
+		modify(peerID: peerID) { $0.catchUp(messages: messages, sorted: sorted, unreadCount: unreadCount) }
 	}
 }

@@ -72,6 +72,8 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			self.discoveryOperations.removeAll()
 			self.identifyOperations.removeAll()
 
+			self.encounteredPeripherals.removeAll()
+
 			self.centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
 		}
 	}
@@ -82,6 +84,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			guard self.isScanning else { return }
 
 			self.knownPeripheralIDs.removeAll()
+			self.completedPeerDiscoveries.removeAll()
 
 			self.centralManager.stopScan()
 			// We may NOT do `self.encounteredPeripherals.removeAll()` here, as this deallocates the CBPeripheral and thus didDisconnect is never invoked (and the central manager does not even recognize that we disconnected internally)!

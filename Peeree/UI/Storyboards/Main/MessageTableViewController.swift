@@ -8,9 +8,18 @@
 //
 
 import UIKit
+
+import PeereeCore
 import PeereeServerChat
 
 class MessageTableViewController: PeerTableViewController, PeerMessagingObserver {
+	override func viewDidLoad() {
+		super.viewDidLoad()
+
+		headerDateFormatter.timeStyle = .none
+		headerDateFormatter.dateStyle = .full
+	}
+
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
@@ -34,32 +43,41 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	// MARK: - Table view data source
 
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return 1
+		return chatModel.transcriptDays.count
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 #if SHOWCASE
 		return 2
 #else
-		return chatModel.transcripts.count
+		return chatModel.transcripts[chatModel.transcriptDays[section]]?.count ?? 0
 #endif
 	}
 
+	private let headerDateFormatter = DateFormatter()
+
+	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+		let day = chatModel.transcriptDays[section]
+		return headerDateFormatter.string(from: Calendar.current.date(from: day.dateComponents) ?? Date())
+	}
+
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		guard let cell = tableView.dequeueReusableCell(withIdentifier: "Message Cell", for: indexPath) as? MessageCell else {
+		guard let transcript = self.chatModel.transcript(at: indexPath) else {
 			assertionFailure("well that didn't message out so well")
 			return UITableViewCell()
 		}
 
+		let cell = tableView.dequeueReusableCell(withIdentifier: transcript.direction == .send ? "SendMessageCell" : "ReceiveMessageCell", for: indexPath)
+
 #if SHOWCASE
 		switch indexPath.row {
 		case 0:
-			cell.set(transcript: Transcript(direction: .send, message: NSLocalizedString("Hey, I really like your moves! Wanna take a break together at the bar?", comment: "Showcase text message"), timestamp: Date()))
+			(cell as? MessageCell)?.set(transcript: Transcript(direction: .send, message: NSLocalizedString("Hey, I really like your moves! Wanna take a break together at the bar?", comment: "Showcase text message"), timestamp: Date()))
 		default:
-			cell.set(transcript: Transcript(direction: .receive, message: NSLocalizedString("Sure, meet me there!", comment: "Showcase text message"), timestamp: Date()))
+			(cell as? MessageCell)?.set(transcript: Transcript(direction: .receive, message: NSLocalizedString("Sure, meet me there!", comment: "Showcase text message"), timestamp: Date()))
 		}
 #else
-		cell.set(transcript: chatModel.transcripts[indexPath.row])
+		(cell as? MessageCell)?.set(transcript: transcript)
 #endif
 		return cell
 	}
@@ -67,18 +85,14 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 	// MARK: UITableViewDelegate
 
 	override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-		let text = chatModel.transcripts[indexPath.row].message
+		let text = self.chatModel.transcript(at: indexPath)?.message ?? ""
 		return text.height(forConstrainedWidth: tableView.bounds.width, font: messageFont)
 	}
 
-	override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-		guard !isPaginating && indexPath.row == 0 else { return }
+	override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+		guard scrollView.contentOffset == CGPointZero else { return }
 
-		self.isPaginating = true
-
-		ServerChatFactory.chat { $0?.paginateUp(peerID: self.peerID, count: 20) { error in
-			DispatchQueue.main.async { self.isPaginating = false }
-		} }
+		ServerChatFactory.chat { $0?.fetchMessagesFromStore(peerID: self.peerID, count: 20) }
 	}
 
 	// MARK: - PeerMessagingObserver
@@ -91,22 +105,20 @@ class MessageTableViewController: PeerTableViewController, PeerMessagingObserver
 		appendTranscript()
 	}
 	func messageSent() { appendTranscript() }
-	func unreadMessageCountChanged() { /* ignored */ }
+	func unreadMessageCountChanged() { appendTranscript(scroll: false) }
 
 	private let messageFont = UIFont.preferredFont(forTextStyle: .body)
-
-	private var isPaginating = false
 
 	// MARK: - Private Methods
 	
 	// Helper method for inserting a sent/received message into the data source and reload the view.
 	// Make sure you call this on the main thread
-	private func appendTranscript() {
+	private func appendTranscript(scroll: Bool = true) {
 		markRead()
 		self.tableView.reloadData()
 
 		// Scroll to the bottom so we focus on the latest message
-		self.tableView.scrollToBottom(animated: true)
+		if scroll { self.tableView.scrollToBottom(animated: true) }
 	}
 
 	/// Declare all messages in this thread as being read.

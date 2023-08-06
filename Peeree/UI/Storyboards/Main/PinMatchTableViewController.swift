@@ -151,7 +151,7 @@ final class PinMatchTableViewController: UITableViewController {
 			guard idModel.pinState == .pinMatch else { return nil }
 			let lastSeen = PeerViewModelController.shared.viewModels[idModel.peerID]?.lastSeen ?? Date()
 			let chatModel = ServerChatViewModelController.shared.viewModels[idModel.peerID]
-			return (idModel.peerID, chatModel?.transcripts.last?.timestamp, lastSeen)
+			return (idModel.peerID, chatModel?.lastMessage?.timestamp, lastSeen)
 		}
 
 		pinMatchedPeerViewModels.sort { a, b in
@@ -183,9 +183,9 @@ final class PinMatchTableViewController: UITableViewController {
 		let format = NSLocalizedString("%u messages.", comment: "")
 		let unreadMessageCountText = String(format: format, unreadMessages)
 		if unreadMessages > 0 {
-			cell.detailTextLabel?.text = "📫 (\(chatModel.unreadMessages)) \(chatModel.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📫 (\(chatModel.unreadMessages)) \(chatModel.lastMessage?.message ?? unreadMessageCountText)"
 		} else {
-			cell.detailTextLabel?.text = "📭 \(chatModel.transcripts.last?.message ?? unreadMessageCountText)"
+			cell.detailTextLabel?.text = "📭 \(chatModel.lastMessage?.message ?? unreadMessageCountText)"
 		}
 		guard let imageView = cell.imageView else { assertionFailure(); return }
 		imageView.image = model.portraitOrPlaceholder

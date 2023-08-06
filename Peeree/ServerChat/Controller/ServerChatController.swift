@@ -109,15 +109,46 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		}
 	}
 
+	func fetchMessagesFromStore(peerID: PeerID, count: Int) {
+		self.dQueue.async {
+			self.session.directRooms(with: peerID.serverChatUserId).forEach { room in
+				self.loadEventsFromDisk(count, in: room, with: peerID)
+			}
+		}
+	}
+
+	/// Ongoing paginations per `PeerID`; use only from dQueue.
+	private var paginations = Set<PeerID>()
+
+	/// DOES NOT WORK!
 	func paginateUp(peerID: PeerID, count: Int, _ completion: @escaping (Error?) -> ()) {
-		session.directRooms(with: peerID.serverChatUserId).compactMap { roomTimelines[$0.roomId] }.forEach { timeline in
-			guard timeline.canPaginate(.backwards) else {
-				completion(createApplicationError(localizedDescription: "Cannot paginate timeline up"))
+		self.dQueue.async {
+
+			// pagination fails with 'M_INVALID_PARAM': Invalid from parameter: malformed sync token
+			guard !self.paginations.contains(peerID) else {
+				completion(createApplicationError(localizedDescription: "already paginating"))
 				return
 			}
 
-			timeline.paginate(UInt(count), direction: .backwards, onlyFromStore: false) { response in
-				completion(response.error)
+			let timelines = self.session.directRooms(with: peerID.serverChatUserId).compactMap { self.roomTimelines[$0.roomId] }
+
+			guard !timelines.isEmpty else {
+				completion(createApplicationError(localizedDescription: "no room timeline found"))
+				return
+			}
+
+			self.paginations.insert(peerID)
+
+			timelines.forEach { timeline in
+				guard timeline.canPaginate(.backwards) else {
+					completion(createApplicationError(localizedDescription: "Cannot paginate timeline up"))
+					return
+				}
+
+				timeline.paginate(UInt(count), direction: .backwards, onlyFromStore: false) { response in
+					self.paginations.remove(peerID)
+					completion(response.error)
+				}
 			}
 		}
 	}
@@ -212,9 +243,34 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			for (peerID, model) in ServerChatViewModelController.shared.viewModels {
 				guard let lastReadDate = lastReads[peerID] else { continue }
 
+				let lastReadDay = DayDateComponents(from: lastReadDate)
+
 				var unreadCount = 0
-				for transcript in model.transcripts {
-					if transcript.timestamp > lastReadDate { unreadCount += 1 }
+				var index = model.transcriptDays.endIndex - 1
+				while index >= model.transcriptDays.startIndex {
+					if lastReadDay < model.transcriptDays[index] {
+						unreadCount += model.transcripts[model.transcriptDays[index]]?.count ?? 0
+					} else if lastReadDay == model.transcriptDays[index] {
+						let messages = model.transcripts[model.transcriptDays[index]] ?? []
+
+						var messageIndex = messages.endIndex - 1
+						while messageIndex >= messages.startIndex {
+							if lastReadDate < messages[messageIndex].timestamp {
+								unreadCount += 1
+							} else {
+								break
+							}
+
+							messageIndex -= 1
+						}
+
+						break
+
+					} else {
+						break
+					}
+
+					index -= 1
 				}
 
 				guard unreadCount != model.unreadMessages else { continue }
@@ -336,29 +392,34 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		}
 	}
 
-	/// Listens to events in `room`; must be called on `dQueue`.
-	private func listenToEvents(in room: MXRoom, with peerID: PeerID) {
-		guard let roomId = room.roomId else {
-			flog("fuck is this")
-			return
+	private var storedMessagesEnumerators = [String : MXEventsEnumerator]()
+
+	/// Call only from dQueue!
+	private func loadEventsFromDisk(_ eventCount: Int, in room: MXRoom, with peerID: PeerID) {
+		guard let roomID = room.roomId, let timelineID = self.roomTimelines[roomID]?.timelineId else { return }
+
+		let enumerator: MXEventsEnumerator
+		if let existingEnumerator = storedMessagesEnumerators[roomID] {
+			enumerator = existingEnumerator
+		} else {
+			guard let newEnumerator = room.enumeratorForStoredMessages else { return }
+			enumerator = newEnumerator
+			storedMessagesEnumerators[roomID] = newEnumerator
 		}
 
-		dlog("listenToEvents(in room: \(roomId), with peerID: \(peerID)).")
-		guard roomIdsListeningOn[roomId] == nil else { return }
-		roomIdsListeningOn[roomId] = peerID
-
-		// replay missed messages
-		let enumerator = room.enumeratorForStoredMessages
 		let ourUserId = self.userId
 		let lastReadDate = lastReads[peerID] ?? Date.distantPast
 
-		// these are all messages that have been sent while we where offline
+		// Unencrypted stored messages.
 		var catchUpMissedMessages = [Transcript]()
+		// Encrypted stored messages.
 		var encryptedEvents = [MXEvent]()
 		var unreadMessages = 0
 
-		// we cannot reserve capacity in catchUpMessages here, since enumerator.remaining may be infinite
-		while let event = enumerator?.nextEvent {
+		catchUpMissedMessages.reserveCapacity(eventCount)
+		encryptedEvents.reserveCapacity(eventCount)
+
+		while let event = enumerator.nextEvent {
 			switch event.eventType {
 			case .roomMessage:
 				do {
@@ -373,8 +434,60 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			default:
 				break
 			}
+
+			if encryptedEvents.count > eventCount || catchUpMissedMessages.count > eventCount { break }
 		}
+
 		catchUpMissedMessages.reverse()
+
+//#if os(iOS)
+		// decryptEvents() is somehow not available on macOS
+		self.session.decryptEvents(encryptedEvents, inTimeline: timelineID) { failedEvents in
+			if let failedEvents, failedEvents.count > 0 {
+				for failedEvent in failedEvents {
+					wlog("Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
+				}
+			}
+
+			// these are all messages that we have seen earlier already, but we need to decryt them again apparently
+			var catchUpDecryptedMessages = [Transcript]()
+			for event in encryptedEvents {
+				switch event.eventType {
+				case .roomMessage:
+					do {
+						let messageEvent = try MessageEventData(messageEvent: event)
+						catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
+						if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
+					} catch let error {
+						elog("\(error)")
+					}
+				default:
+					break
+				}
+			}
+			catchUpDecryptedMessages.reverse()
+			catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
+			if catchUpDecryptedMessages.count > 0 {
+				let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
+				let sentUnreadMessages = unreadMessages
+				self.conversationQueue.async {
+					self.dataSource.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: true, unreadCount: sentUnreadMessages, with: peerID)
+				}
+			}
+		}
+//#endif
+	}
+
+	/// Listens to events in `room`; must be called on `dQueue`.
+	private func listenToEvents(in room: MXRoom, with peerID: PeerID) {
+		guard let roomId = room.roomId else {
+			flog("fuck is this")
+			return
+		}
+
+		dlog("listenToEvents(in room: \(roomId), with peerID: \(peerID)).")
+		guard roomIdsListeningOn[roomId] == nil else { return }
+		roomIdsListeningOn[roomId] = peerID
 
 		room.liveTimeline { timeline in
 			guard let timeline else {
@@ -385,47 +498,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 			self.roomTimelines[room.roomId] = timeline
 
-			// we need to reset the replay attack check, as we kept getting errors like:
-			// [MXOlmDevice] decryptGroupMessage: Warning: Possible replay attack
-			// ATTENTION: this call can cause potential dead locks, since the 'This queue is used to get the key from the crypto store and decrypt the event. No more.' `MXLegacyCrypto.decryptionQueue` is not as perfectly decoupled as its description suggests.
-			//self.session.resetReplayAttackCheck(inTimeline: timeline.timelineId)
-
-#if os(iOS)
-			// decryptEvents() is somehow not available on macOS
-			self.session.decryptEvents(encryptedEvents, inTimeline: timeline.timelineId) { failedEvents in
-				if let failedEvents, failedEvents.count > 0 {
-					for failedEvent in failedEvents {
-						wlog("Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
-					}
-				}
-
-				// these are all messages that we have seen earlier already, but we need to decryt them again apparently
-				var catchUpDecryptedMessages = [Transcript]()
-				for event in encryptedEvents {
-					switch event.eventType {
-					case .roomMessage:
-						do {
-							let messageEvent = try MessageEventData(messageEvent: event)
-							catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
-							if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
-						} catch let error {
-							elog("\(error)")
-						}
-					default:
-						break
-					}
-				}
-				catchUpDecryptedMessages.reverse()
-				catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
-				if catchUpDecryptedMessages.count > 0 {
-					let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
-					let sentUnreadMessages = unreadMessages
-					self.conversationQueue.async {
-						self.dataSource.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, unreadCount: sentUnreadMessages, with: peerID)
-					}
-				}
-			}
-#endif
+			self.loadEventsFromDisk(10, in: room, with: peerID)
 		}
 	}
 

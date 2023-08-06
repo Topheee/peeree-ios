@@ -18,6 +18,9 @@ public protocol ServerChat {
 	/// Send a message to recipient identified by `peerID`.
 	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void)
 
+	/// Load old, offline available messages.
+	func fetchMessagesFromStore(peerID: PeerID, count: Int)
+
 	/// Load old messages.
 	func paginateUp(peerID: PeerID, count: Int, _ completion: @escaping (Error?) -> ())
 
@@ -90,7 +93,7 @@ public protocol ServerChatConversationDelegate: AnyObject {
 	func didSend(message: String, at: Date, to peerID: PeerID)
 
 	/// Received and sent many new messages.
-	func catchUp(messages: [Transcript], unreadCount: Int, with peerID: PeerID)
+	func catchUp(messages: [Transcript], sorted: Bool, unreadCount: Int, with peerID: PeerID)
 }
 
 /// Representation of a chat message.

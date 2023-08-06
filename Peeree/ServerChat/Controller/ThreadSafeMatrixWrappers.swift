@@ -71,10 +71,6 @@ class ThreadSafeCallbacksMatrixSession {
 		}
 	}
 
-	func resetReplayAttackCheck(inTimeline: String) {
-		session.resetReplayAttackCheck(inTimeline: inTimeline)
-	}
-
 	func setStore(_ store: MXStore, completion: @escaping (MXResponse<Void>) -> Void) {
 		session.setStore(store) { response in
 			self.queue.async { completion(response) }

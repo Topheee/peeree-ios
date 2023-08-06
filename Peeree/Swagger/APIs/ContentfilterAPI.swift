@@ -48,7 +48,7 @@ open class ContentfilterAPI {
 
         let requestBuilder: RequestBuilder<[String]>.Type = SwaggerClientAPI.requestBuilderFactory.getBuilder()
 
-        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false)
+        return requestBuilder.init(method: .GET, url: url.url!, parameters: parameters, isBody: false, isValidated: false)
     }
     
     /**

@@ -361,6 +361,26 @@ extension SecKey {
 	}
 }
 
+extension Collection where Element: Comparable {
+	/// Returns whether the element was found, the index of the element, or the index where it needs to be inserted.
+	public func binarySearch(_ element: Element) -> (Bool, Index) {
+		var low = startIndex
+		var high = endIndex
+		while low < high {
+			let mid = index(low, offsetBy: distance(from: low, to: high)/2)
+			if self[mid] == element {
+				return (true, mid)
+			} else if self[mid] < element {
+				low = index(after: mid)
+			} else {
+				high = mid
+			}
+		}
+
+		return (false, low)
+	}
+}
+
 
 import ImageIO
 import CoreServices

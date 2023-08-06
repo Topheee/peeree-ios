@@ -9,32 +9,54 @@
 import UIKit
 import PeereeServerChat
 
+private let timestampFormatter: DateFormatter = {
+	let formatter = DateFormatter()
+	formatter.dateStyle = .none
+	formatter.timeStyle = .short
+	return formatter
+}()
+
+@MainActor
+protocol MessageCell {
+	func set(transcript: Transcript)
+}
+
 /// Custom cell for chat messages.
-class MessageCell: UITableViewCell {
-	
-	// Background image
-	@IBOutlet private weak var balloonView: UIImageView!
-	// Message text string
+final class SendMessageCell: UITableViewCell, MessageCell {
+	/// Message text string.
 	@IBOutlet private weak var messageLabel: UITextView!
-	// these NSLayoutConstraints must not be `weak` because they get deallocated when inactive
-	@IBOutlet private var ballonLeadingEqual: NSLayoutConstraint!
-	@IBOutlet private var ballonTrailingEqual: NSLayoutConstraint!
-	@IBOutlet private var ballonLeadingGreaterOrEqual: NSLayoutConstraint!
-	@IBOutlet private var ballonTrailingGreaterOrEqual: NSLayoutConstraint!
-	@IBOutlet private var messageLeading: NSLayoutConstraint!
-	@IBOutlet private var messageTrailing: NSLayoutConstraint!
-	
+
+	/// Time string.
+	@IBOutlet private weak var timeLabel: UILabel!
+
 	/// Fills the cell with the contents of <code>transcript</code>.
 	func set(transcript: Transcript) {
-		let sent = transcript.direction == .send
-		messageLabel.text = transcript.message
-		ballonLeadingEqual.isActive = !sent
-		ballonTrailingEqual.isActive = sent
-		ballonLeadingGreaterOrEqual.isActive = sent
-		ballonTrailingGreaterOrEqual.isActive = !sent
-		messageLeading?.constant = sent ? 8.0 : 16.0
-		messageTrailing?.constant = sent ? 16.0 : 8.0
+		messageLabel?.text = transcript.message
 		messageLabel?.setNeedsLayout()
-		balloonView?.isHighlighted = !sent
+		if #available(iOS 15.0, *) {
+			timeLabel?.text = transcript.timestamp.formatted(date: .omitted, time: .shortened)
+		} else {
+			timeLabel?.text = timestampFormatter.string(from: transcript.timestamp)
+		}
+	}
+}
+
+/// Custom cell for chat messages.
+final class ReceiveMessageCell: UITableViewCell, MessageCell {
+	/// Message text string.
+	@IBOutlet private weak var messageLabel: UITextView!
+
+	/// Time string.
+	@IBOutlet private weak var timeLabel: UILabel!
+
+	/// Fills the cell with the contents of <code>transcript</code>.
+	func set(transcript: Transcript) {
+		messageLabel?.text = transcript.message
+		messageLabel?.setNeedsLayout()
+		if #available(iOS 15.0, *) {
+			timeLabel?.text = transcript.timestamp.formatted(date: .omitted, time: .shortened)
+		} else {
+			timeLabel?.text = timestampFormatter.string(from: transcript.timestamp)
+		}
 	}
 }
