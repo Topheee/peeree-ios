@@ -62,7 +62,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 		_ = PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver { (peerID, _) in
 			guard PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinned else { return }
-			if #available(iOS 13.0, *) { HapticController.playHapticPin() }
+			if #available(iOS 13.0, *) { HapticController.shared.playHapticPin() }
 		}
 
 		// reinstantiate CBManagers if there where some

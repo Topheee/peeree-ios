@@ -30,11 +30,6 @@ extension PeerObserverContainer {
 	/// Shortcut for `PeereeIdentityViewModelController.viewModel(of: peerID)`.
 	var idModel: PeereeIdentityViewModel { return PeereeIdentityViewModelController.viewModel(of: peerID) }
 
-	/// Shortcut for `PeeringController.shared.interact(with: peerID, completion: completion)`.
-	func interactWithPeer(completion: @escaping (PeerInteraction) -> ()) {
-		PeeringController.shared.interact(with: peerID, completion: completion)
-	}
-
 	/// Shortcut for `PeerViewModelController.shared.modify(peerID: peerID, modifier: modifier)`.
 	func modifyModel(_ modifier: (inout PeerViewModel) -> ()) {
 		PeerViewModelController.shared.modify(peerID: peerID, modifier: modifier)

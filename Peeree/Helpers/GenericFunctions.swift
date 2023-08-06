@@ -220,20 +220,18 @@ extension String {
 		default:
 			encoding = .utf8
 		}
-		// NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
-		// PERFORMANCE: let size = MemoryLayout<UInt32>.size + nickname.lengthOfBytes(using: encoding)
-		var encodingRawValue = UInt32(encoding.rawValue)
-		var data = Data(bytesNoCopy: &encodingRawValue, count: MemoryLayout<UInt32>.size, deallocator: Data.Deallocator.none)
-		
+
 		guard let payload = self.data(using: encoding) else { return nil }
-		data.append(payload)
-		return data
+
+		// NOTE: MemoryLayout<String.Encoding.RawValue>.size would be depending on architecture (64 or 32 bits)
+		var encodingRawValue = UInt32(encoding.rawValue)
+		let data = Data(bytesNoCopy: &encodingRawValue, count: MemoryLayout<UInt32>.size, deallocator: Data.Deallocator.none)
+		return data + payload
 	}
 	
 	/// takes data encoded with <code>data(prefixedEncoding:)</code> and constructs a string with the serialized encoding
 	public init?(dataPrefixedEncoding data: Data) {
-		// NOTE: all the sizes where MemoryLayout<String.Encoding.RawValue>.size, but that is depending on architecture (64 or 32 bits), so we choose 32 bits (4 bytes) fixed
-		// PEFORMANCE
+		// NOTE: MemoryLayout<String.Encoding.RawValue>.size would be depending on architecture (64 or 32 bits)
 		let encodingData = data.subdata(in: 0..<MemoryLayout<UInt32>.size)
 		
 		var encodingRawValue: UInt32 = UInt32(String.Encoding.utf8.rawValue)

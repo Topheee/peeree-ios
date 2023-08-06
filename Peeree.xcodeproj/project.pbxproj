@@ -10,9 +10,14 @@
 		9D1AF3CF204AA2CF00B616AF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9D1AF3D1204AA2CF00B616AF /* Localizable.strings */; };
 		9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923241B91D05F00B5B622 /* FirstLaunchViewController.swift */; };
 		9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2923261B91E50B00B5B622 /* SetupViewController.swift */; };
+		9D2CDF602A718CC500255995 /* BLEPeripheralOperations in Frameworks */ = {isa = PBXBuildFile; productRef = 9D2CDF5F2A718CC500255995 /* BLEPeripheralOperations */; };
 		9D2E7F2E1D02120700D5D957 /* PortraitImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2E7F2D1D02120700D5D957 /* PortraitImagePickerController.swift */; };
 		9D2ECEF92618CD5800E8EB40 /* PeerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2ECEF82618CD5800E8EB40 /* PeerTableViewCell.swift */; };
 		9D33E8F01D418839001CECAB /* FirstLaunch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D33E8F21D418839001CECAB /* FirstLaunch.storyboard */; };
+		9D3AEE392A718E5800436696 /* KeyValueTreeCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 9D3AEE382A718E5800436696 /* KeyValueTreeCoding */; };
+		9D3AEE3B2A718E7900436696 /* BLEPeripheralOperations in Frameworks */ = {isa = PBXBuildFile; productRef = 9D3AEE3A2A718E7900436696 /* BLEPeripheralOperations */; };
+		9D3AEE3D2A718E7900436696 /* KeyValueTreeCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 9D3AEE3C2A718E7900436696 /* KeyValueTreeCoding */; };
+		9D3AEE402A718F0600436696 /* KeyValueTree in Frameworks */ = {isa = PBXBuildFile; productRef = 9D3AEE3F2A718F0600436696 /* KeyValueTree */; };
 		9D404617244370990068D22F /* GrowingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D404616244370990068D22F /* GrowingTextView.swift */; };
 		9D47CF4128F964F100A3123E /* PeereeFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */; };
 		9D4C824E265ACB16006F472B /* PinMatchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4C824D265ACB16006F472B /* PinMatchTableViewController.swift */; };
@@ -22,6 +27,7 @@
 		9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
+		9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
@@ -44,6 +50,9 @@
 		9D9249342A10F63300EDD320 /* PeereeServerAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9249332A10F63300EDD320 /* PeereeServerAPITests.swift */; };
 		9D92493B2A10FDAB00EDD320 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D92493A2A10FDAB00EDD320 /* KeychainWrapper */; };
 		9D94021126188BBD00F78027 /* MessagingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94021026188BBD00F78027 /* MessagingViewController.swift */; };
+		9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */; };
+		9D9F39EB2A34C7FA003115D3 /* DiscoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F39EA2A34C7FA003115D3 /* DiscoveryManager.swift */; };
+		9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
@@ -95,12 +104,9 @@
 		9DD33C0129FFA9BF0046165E /* PeereeDiscovery.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */; };
 		9DD33C0229FFA9BF0046165E /* PeereeDiscovery.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9DD33C0629FFA9F90046165E /* LocalPeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */; };
-		9DD33C0829FFA9F90046165E /* PeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9BC64F1E1C633600D031C5 /* PeerManager.swift */; };
-		9DD33C0929FFA9F90046165E /* RemotePeerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */; };
 		9DD33C0A29FFA9F90046165E /* PeerViewModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */; };
 		9DD33C0B29FFA9F90046165E /* PersistedPeersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */; };
 		9DD33C0C29FFA9FF0046165E /* DiscoveryExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD33BE229FF029D0046165E /* DiscoveryExtensions.swift */; };
-		9DD33C0D29FFA9FF0046165E /* PeerInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */; };
 		9DD33C0E29FFA9FF0046165E /* PeerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA36A81279CA02100BF7875 /* PeerViewModel.swift */; };
 		9DD33C0F29FFA9FF0046165E /* PeerDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A593A1B92F2B600164C9F /* PeerDescription.swift */; };
 		9DD33C1029FFA9FF0046165E /* UserPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D56535E279A1014003F31A2 /* UserPeer.swift */; };
@@ -136,6 +142,7 @@
 		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
 		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
 		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
+		9DF2D9CE2A7C2E4A00C71507 /* KeyValueTree in Frameworks */ = {isa = PBXBuildFile; productRef = 9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */; };
 		9DFF60F1269236A200FEA957 /* PeerObserverContainers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFF60F0269236A200FEA957 /* PeerObserverContainers.swift */; };
 /* End PBXBuildFile section */
 
@@ -258,6 +265,7 @@
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		9D79074D27F3A08B00920D38 /* ServerChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatModel.swift; sourceTree = "<group>"; };
+		9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryState.swift; sourceTree = "<group>"; };
 		9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistedPeersController.swift; sourceTree = "<group>"; };
 		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
@@ -275,8 +283,8 @@
 		9D9249312A10F63300EDD320 /* PeereeServerAPITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeServerAPITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D9249332A10F63300EDD320 /* PeereeServerAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeServerAPITests.swift; sourceTree = "<group>"; };
 		9D94021026188BBD00F78027 /* MessagingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingViewController.swift; sourceTree = "<group>"; };
+		9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerIdentificationOperationManager.swift; sourceTree = "<group>"; };
 		9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManager.swift; sourceTree = "<group>"; };
-		9D9BC64F1E1C633600D031C5 /* PeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerManager.swift; sourceTree = "<group>"; };
 		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeeringController.swift; sourceTree = "<group>"; };
 		9D9CA0E21CF7399900C2885D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		9D9D5A5724045F690063532F /* ContentfilterAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentfilterAPI.swift; sourceTree = "<group>"; };
@@ -284,14 +292,14 @@
 		9D9D5A6A240469C70063532F /* JSONEncodableEncoding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONEncodableEncoding.swift; sourceTree = "<group>"; };
 		9D9D5A6D24046CA00063532F /* CodableHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodableHelper.swift; sourceTree = "<group>"; };
 		9D9D5A6F24046CCF0063532F /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		9D9F39EA2A34C7FA003115D3 /* DiscoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryManager.swift; sourceTree = "<group>"; };
+		9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryOperationManager.swift; sourceTree = "<group>"; };
 		9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peeree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInteraction.swift; sourceTree = "<group>"; };
 		9DA36A81279CA02100BF7875 /* PeerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerViewModel.swift; sourceTree = "<group>"; };
 		9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerViewModelController.swift; sourceTree = "<group>"; };
-		9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotePeerManager.swift; sourceTree = "<group>"; };
 		9DAD8F951ECF512F00363016 /* PinPoints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinPoints.swift; sourceTree = "<group>"; };
 		9DB3499D25F3D2CF00FF2D56 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		9DB349A025F3D2F500FF2D56 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
@@ -385,8 +393,11 @@
 				9DD33BF529FF27410046165E /* DequeModule in Frameworks */,
 				9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */,
 				9DD33C3429FFC5210046165E /* PeereeCore.framework in Frameworks */,
+				9D3AEE402A718F0600436696 /* KeyValueTree in Frameworks */,
+				9D3AEE392A718E5800436696 /* KeyValueTreeCoding in Frameworks */,
 				9D9248DF2A0F8F4500EDD320 /* PeereeServer.framework in Frameworks */,
 				9DD33BD329FEACA70046165E /* PeereeServerChat.framework in Frameworks */,
+				9D2CDF602A718CC500255995 /* BLEPeripheralOperations in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,8 +431,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D3AEE3D2A718E7900436696 /* KeyValueTreeCoding in Frameworks */,
 				9D9249212A0FB69800EDD320 /* KeychainWrapper in Frameworks */,
+				9DF2D9CE2A7C2E4A00C71507 /* KeyValueTree in Frameworks */,
 				9DD33C3F29FFC61C0046165E /* PeereeCore.framework in Frameworks */,
+				9D3AEE3B2A718E7900436696 /* BLEPeripheralOperations in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,10 +521,11 @@
 			children = (
 				9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */,
 				9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */,
-				9D9BC64F1E1C633600D031C5 /* PeerManager.swift */,
 				9DA36A83279D5CA400BF7875 /* PeerViewModelController.swift */,
-				9DAAC35B1BD6B7C50039611F /* RemotePeerManager.swift */,
 				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
+				9D9F39EA2A34C7FA003115D3 /* DiscoveryManager.swift */,
+				9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */,
+				9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -519,10 +534,10 @@
 			isa = PBXGroup;
 			children = (
 				9D8A593A1B92F2B600164C9F /* PeerDescription.swift */,
-				9DA36A7D279C44A200BF7875 /* PeerInteraction.swift */,
 				9DA36A81279CA02100BF7875 /* PeerViewModel.swift */,
 				9D56535E279A1014003F31A2 /* UserPeer.swift */,
 				9DD33BE229FF029D0046165E /* DiscoveryExtensions.swift */,
+				9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -975,6 +990,9 @@
 				9DD33BF429FF27410046165E /* DequeModule */,
 				9DD33C4E2A0063880046165E /* MatrixSDK */,
 				9D9249242A0FB6C400EDD320 /* KeychainWrapper */,
+				9D2CDF5F2A718CC500255995 /* BLEPeripheralOperations */,
+				9D3AEE382A718E5800436696 /* KeyValueTreeCoding */,
+				9D3AEE3F2A718F0600436696 /* KeyValueTree */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -1055,6 +1073,9 @@
 			name = PeereeDiscovery;
 			packageProductDependencies = (
 				9D9249202A0FB69800EDD320 /* KeychainWrapper */,
+				9D3AEE3A2A718E7900436696 /* BLEPeripheralOperations */,
+				9D3AEE3C2A718E7900436696 /* KeyValueTreeCoding */,
+				9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */,
 			);
 			productName = PeereeDiscovery;
 			productReference = 9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */;
@@ -1170,6 +1191,9 @@
 				9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */,
 				9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */,
 				9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */,
+				9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */,
+				9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */,
+				9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -1402,14 +1426,15 @@
 				9DD33C0F29FFA9FF0046165E /* PeerDescription.swift in Sources */,
 				9DD33C0C29FFA9FF0046165E /* DiscoveryExtensions.swift in Sources */,
 				9DD33C0E29FFA9FF0046165E /* PeerViewModel.swift in Sources */,
-				9DD33C0829FFA9F90046165E /* PeerManager.swift in Sources */,
-				9DD33C0929FFA9F90046165E /* RemotePeerManager.swift in Sources */,
+				9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */,
+				9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */,
 				9DD33C1629FFBF400046165E /* PeeringController.swift in Sources */,
+				9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */,
 				9DD33C1029FFA9FF0046165E /* UserPeer.swift in Sources */,
 				9DD33C1329FFAA4C0046165E /* SynchronizedCollections.swift in Sources */,
-				9DD33C0D29FFA9FF0046165E /* PeerInteraction.swift in Sources */,
 				9DD33C0B29FFA9F90046165E /* PersistedPeersController.swift in Sources */,
 				9DD33C0A29FFA9F90046165E /* PeerViewModelController.swift in Sources */,
+				9D9F39EB2A34C7FA003115D3 /* DiscoveryManager.swift in Sources */,
 				9DD33C0629FFA9F90046165E /* LocalPeerManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2525,6 +2550,30 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://codeberg.org/Topheee/BLEPeripheralOperations.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://codeberg.org/Topheee/KeyValueTreeCoding.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://codeberg.org/Topheee/KeyValueTree.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Daltron/NotificationBanner";
@@ -2562,12 +2611,37 @@
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = exactVersion;
-				version = 0.26.10;
+				version = 0.26.17;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9D2CDF5F2A718CC500255995 /* BLEPeripheralOperations */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */;
+			productName = BLEPeripheralOperations;
+		};
+		9D3AEE382A718E5800436696 /* KeyValueTreeCoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */;
+			productName = KeyValueTreeCoding;
+		};
+		9D3AEE3A2A718E7900436696 /* BLEPeripheralOperations */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */;
+			productName = BLEPeripheralOperations;
+		};
+		9D3AEE3C2A718E7900436696 /* KeyValueTreeCoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */;
+			productName = KeyValueTreeCoding;
+		};
+		9D3AEE3F2A718F0600436696 /* KeyValueTree */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */;
+			productName = KeyValueTree;
+		};
 		9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9D536B4C28EDBCFB00B7207D /* XCRemoteSwiftPackageReference "NotificationBanner" */;
@@ -2627,6 +2701,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
+		};
+		9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */;
+			productName = KeyValueTree;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

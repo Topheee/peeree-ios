@@ -137,18 +137,14 @@ final class BeaconViewController: PeerViewController {
 	}
 	
 	private func startBeacon() {
-		interactWithPeer { interaction in
-			interaction.range { [weak self] (_, distance) in
-				DispatchQueue.main.async {
-					self?.updateDistance(distance, animated: true)
-				}
+		PeeringController.shared.range(peerID) { [weak self] (_, distance) in
+			DispatchQueue.main.async {
+				self?.updateDistance(distance, animated: true)
 			}
 		}
 	}
 	
 	private func stopBeacon() {
-		interactWithPeer { interaction in
-			interaction.stopRanging()
-		}
+		PeeringController.shared.stopRanging()
 	}
 }

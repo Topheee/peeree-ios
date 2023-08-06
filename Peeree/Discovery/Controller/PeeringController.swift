@@ -11,17 +11,9 @@ import CoreGraphics
 import KeychainWrapper
 import PeereeCore
 
-/// Handles all events specific to a single `PeerID`.
-protocol PeeringDelegate {
-	func loaded(biography: String)
-	func loaded(picture: CGImage, hash: Data)
-	func didRange(rssi: NSNumber?, error: Error?)
-	func failedVerification(error: Error)
-	func didVerify()
-	func didRemoteVerify()
-	func receivedPinMatchIndication()
-
-	func indicatePinMatch()
+/// An approximisation of the distance to the peer's phone.
+public enum PeerDistance {
+	case unknown, close, nearby, far
 }
 
 /// Main information provider for the PeereeDiscovery module.
@@ -52,7 +44,7 @@ public protocol PeeringControllerDelegate {
 }
 
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about stored peers.
-public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManagerDelegate, PersistedPeersControllerDelegate {
+public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManagerDelegate, PersistedPeersControllerDelegate {
 	// MARK: - Public and Internal
 
 	// MARK: Classes, Structs, Enums
@@ -104,20 +96,20 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Queries whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
 	public func checkPeering(_ callback: @escaping (Bool) -> Void) {
-		remotePeerManager.checkIsScanning(callback)
+		discoveryManager.checkIsScanning(callback)
 	}
 
 	/// Controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
 	public func change(peering newValue: Bool) {
-		remotePeerManager.checkIsScanning { isScanning in
+		discoveryManager.checkIsScanning { isScanning in
 			guard newValue != isScanning else { return }
 
 			if newValue {
-				self.remotePeerManager.scan()
+				self.discoveryManager.scan()
 				self.startAdvertising(restartOnly: false)
 			} else {
 				self.stopAdvertising()
-				self.remotePeerManager.stopScan()
+				self.discoveryManager.stopScan()
 			}
 
 			self.connectionChangedState(newValue)
@@ -131,21 +123,33 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Stop all peering activity.
 	public func teardown() {
-		remotePeerManager.set(userPeerID: nil, keyPair: nil)
+		discoveryManager.set(userPeerID: nil, keyPair: nil)
 		// delete all cached pictures and finally the persisted PeerInfo records themselves
 		persistence.clear()
-		peerManagers.removeAll()
-		viewModel.clear()
-	}
-
-	/// Entry point for interactions with a peer coming from the main module of the app.
-	public func interact(with peerID: PeerID, completion: @escaping (PeerInteraction) -> ()) {
-		withManager(of: peerID, completion: completion)
+		DispatchQueue.main.async { self.viewModel.clear() }
 	}
 
 	/// Starts the disk read process of loading the image of `peerID` from disk.
 	public func loadPortraitFromDisk(of peerID: PeerID) {
 		persistence.loadPortrait(of: peerID)
+	}
+
+	/// Load Bio and optionally the portrait of a peer.
+	public func loadAdditionalInfo(of peerID: PeerID, loadPortrait: Bool) {
+		discoveryManager.loadAdditionalInfo(of: peerID, loadPortrait: loadPortrait)
+	}
+
+	/// Begin periodically measuring the distance to a peer.
+	public func range(_ peerID: PeerID, _ block: @escaping (PeerID, PeerDistance) -> Void) {
+		rangeBlock = block
+		rangePeerID = peerID
+		discoveryManager.range(peerID)
+	}
+
+	/// Stop the measurement.
+	public func stopRanging() {
+		rangeBlock = nil
+		rangePeerID = nil
 	}
 
 	// MARK: LocalPeerManagerDelegate
@@ -166,18 +170,31 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	}
 
 	func receivedPinMatchIndication(from peerID: PeerID) {
-		manage(peerID) { manager in
-			manager.receivedPinMatchIndication()
-		}
+		// ignored
 	}
 
 	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ()) {
 		dataSource?.verify(peerID, nonce: nonce, signature: signature, result)
 	}
 
-	// MARK: RemotePeerManagerDelegate
+	// MARK: DiscoveryManagerDelegate
 
-	func remotePeerManager(isReady: Bool) {
+	func beganLoadingPortrait(_ progress: Progress, of peerID: PeereeCore.PeerID) {
+		publish(to: peerID) { model in
+			model.pictureProgress = progress
+		}
+	}
+
+	func peerDiscoveryFinished(peerLastChangedDate: Date, of peerID: PeereeCore.PeerID) {
+		self.discoveryManager.discoveryCompleted(of: peerID, lastChanged: peerLastChangedDate)
+		self.discoveryManager.closeConnection(with: peerID)
+	}
+
+	func peerDiscoveryFailed(_ error: Error) {
+		wlog("peer discovery failed: \(error)")
+	}
+
+	func discoveryManager(isReady: Bool) {
 		DispatchQueue.main.async {
 			self.viewModel.isBluetoothOn = isReady
 			self.delegate?.bluetoothNetwork(isAvailable: isReady)
@@ -186,31 +203,21 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	func scanningStopped() {
 		stopAdvertising()
-		peerManagers.removeAll()
 		connectionChangedState(false)
 	}
 
-	func peerAppeared(_ peer: Peer, again: Bool) {
-		persistence.addPeers {
-			return Set<Peer>([peer])
-		}
-
+	func peerAppearedAgain(_ peerID: PeerID) {
 		DispatchQueue.main.async {
 			let now = Date()
-			self.lastSeenDates[peer.id.peerID] = now
+			self.lastSeenDates[peerID] = now
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
 
-			Self.updateViewModels(of: peer, lastSeen: now)
-			self.viewModel.modify(peerID: peer.id.peerID) { model in
+			self.viewModel.modify(peerID: peerID) { model in
 				model.isAvailable = true
 			}
-			// make sure the notification is sent only after the view model is updated:
-			Notifications.peerAppeared.post(peer.id.peerID, again: again)
-		}
 
-		manage(peer.id.peerID) { manager in
-			// always send pin match indication on new connect to be absolutely sure that the other really got that
-			manager.indicatePinMatch()
+			// make sure the notification is sent only after the view model is updated:
+			Notifications.peerAppeared.post(peerID, again: true)
 		}
 	}
 
@@ -229,44 +236,66 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
-	func loaded(picture: CGImage, of peer: Peer, hash: Data) {
-		persistence.writeBlob(of: peer.id.peerID) { blob in
+	func loaded(info: PeerInfo, of identity: PeereeIdentity) {
+		let peer = Peer(id: identity, info: info)
+
+		persistence.addPeers {
+			return Set<Peer>([peer])
+		}
+
+		DispatchQueue.main.async {
+			let now = Date()
+			self.lastSeenDates[identity.peerID] = now
+			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
+			Self.updateViewModels(of: peer, lastSeen: now)
+
+			self.viewModel.modify(peerID: identity.peerID) { model in
+				model.isAvailable = true
+			}
+
+			Notifications.peerAppeared.post(identity.peerID, again: false)
+		}
+	}
+
+	func loaded(picture: CGImage, of peerID: PeereeCore.PeerID, hash: Data) {
+		persistence.writeBlob(of: peerID) { blob in
 			blob.portrait = picture
 		}
 
-		obtained(picture, hash: hash, of: peer.id.peerID)
+		obtained(picture, hash: hash, of: peerID)
 	}
 
-	func loaded(biography: String, of peer: Peer) {
-		persistence.writeBlob(of: peer.id.peerID) { blob in
+	func loaded(biography: String, of peerID: PeereeCore.PeerID) {
+		persistence.writeBlob(of: peerID) { blob in
 			blob.biography = biography
 		}
-		manage(peer.id.peerID) { manager in
-			manager.loaded(biography: biography)
+
+		publish(to: peerID) { model in
+			model.biography = biography
 		}
 	}
 
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
-		manage(peerID) { manager in
-			manager.didRange(rssi: rssi, error: error)
+		guard error == nil else {
+			elog("Error updating range: \(error!.localizedDescription)")
+			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
+			return
+		}
+		switch rssi!.intValue {
+		case -60 ... Int.max:
+			rerange(timeInterval: 3.0, tolerance: 1.0, distance: .close)
+		case -80 ... -60:
+			rerange(timeInterval: 4.0, tolerance: 1.5, distance: .nearby)
+		case -100 ... -80:
+			rerange(timeInterval: 5.0, tolerance: 2.0, distance: .far)
+		default:
+			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 		}
 	}
 
-	func failedVerification(of peerID: PeerID, error: Error) {
-		manage(peerID) { manager in
-			manager.failedVerification(error: error)
-		}
-	}
-
-	func didVerify(_ peerID: PeerID) {
-		manage(peerID) { manager in
-			manager.didVerify()
-		}
-	}
-
-	func didRemoteVerify(_ peerID: PeerID) {
-		manage(peerID) { manager in
-			manager.didRemoteVerify()
+	func verified(_ peereeIdentity: PeereeCore.PeereeIdentity) {
+		publish(to: peereeIdentity.peerID) { model in
+			model.verified = true
 		}
 	}
 
@@ -311,7 +340,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	// MARK: - Private
 
 	private init() {
-		remotePeerManager.delegate = self
+		discoveryManager.delegate = self
 		persistence.delegate = self
 
 		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(PeeringController.LastSeenKey)
@@ -357,7 +386,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 
 	/// Responsible for advertising the user's data; access only on `UserPeer`'s queue, e.g. through `UserPeer.read(on: nil)`.
 	private var localPeerManager: LocalPeerManager? = nil
-	private let remotePeerManager = RemotePeerManager()
+	private let discoveryManager = DiscoveryManager()
 
 	private let persistence = PersistedPeersController(filename: "peers.json", targetQueue: DispatchQueue(label: "de.peeree.PeeringController.persistence", qos: .utility))
 
@@ -365,9 +394,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private let viewModel = PeerViewModelController.shared
 
 	// MARK: Variables
-
-	/// PeerManagers are the central interaction point with other peers.
-	private var peerManagers = SynchronizedDictionary<PeerID, PeerManager>(queueLabel: "com.peeree.peerManagers", qos: .userInitiated)
 
 	/// when was a specific PeerID last encountered via Bluetooth. Only access from main thread!
 	private var lastSeenDates: [PeerID : Date] = [:]
@@ -381,7 +407,7 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	public func startAdvertising(restartOnly: Bool) {
 		dataSource?.getIdentity { identity, keyPair in
 			// these values MAY arrive a little late, but that is very unlikely
-			self.remotePeerManager.set(userPeerID: identity.peerID, keyPair: keyPair)
+			self.discoveryManager.set(userPeerID: identity.peerID, keyPair: keyPair)
 
 			UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
 				guard (!restartOnly || self.localPeerManager != nil), let info = peerInfo else { return }
@@ -405,28 +431,17 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 		}
 	}
 
-	/// Interact with the `PeeringDelegate` interface of a `PeerManager` on their queue.
-	private func manage(_ peerID: PeerID, completion: @escaping (PeeringDelegate) -> ()) {
-		withManager(of: peerID, completion: completion)
-	}
-
-	/// Do not use this method directly. Use either interact() or manage()
-	private func withManager(of peerID: PeerID, completion: @escaping (PeerManager) -> ()) {
-		peerManagers.accessAsync { managers in
-			if let manager = managers[peerID] {
-				completion(manager)
-			} else {
-				let manager = PeerManager(peerID: peerID, remotePeerManager: self.remotePeerManager)
-				managers[peerID] = manager
-				completion(manager)
-			}
+	/// publish changes to the model on the main thread
+	private func publish(to peerID: PeerID, completion: @escaping (inout PeerViewModel) -> ()) {
+		DispatchQueue.main.async {
+			PeerViewModelController.shared.modify(peerID: peerID, modifier: completion)
 		}
 	}
 
 	/// Performs additional logic when a picture was received, e.g. objectionable content checks.
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
-		self.manage(peerID) { manager in
-			manager.loaded(picture: picture, hash: hash)
+		self.publish(to: peerID) { model in
+			model.loaded(portrait: picture, hash: hash)
 		}
 	}
 
@@ -454,12 +469,6 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 				return lastSeenAgo > PeeringController.MaxRememberedHours
 			}
 
-			self.peerManagers.accessAsync { mgrs in
-				for peerID in removePeerIDs {
-					mgrs.removeValue(forKey: peerID)
-				}
-			}
-
 			self.persistence.removePeers(allPeers.filter { peer in
 				removePeerIDs.contains(peer.id.peerID)
 			})
@@ -477,5 +486,36 @@ public final class PeeringController : LocalPeerManagerDelegate, RemotePeerManag
 	private func connectionChangedState(_ newState: Bool) {
 		DispatchQueue.main.async { self.viewModel.peering = newState }
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
+	}
+
+	/// The current callback for distance measurement.
+	private var rangeBlock: ((PeerID, PeerDistance) -> Void)? = nil
+
+	/// The current measured PeerID.
+	private var rangePeerID: PeerID?
+
+	/// Time to re-range.
+	@objc func callRange(_ timer: Timer) {
+		guard let peerID = timer.userInfo as? PeerID else { return }
+		self.discoveryManager.range(peerID)
+	}
+
+	/// Measure distance again.
+	private func rerange(timeInterval: TimeInterval, tolerance: TimeInterval, distance: PeerDistance) {
+		guard let rangeBlock = self.rangeBlock, let peerID = self.rangePeerID else { return }
+
+		let timer: Timer
+		if #available(iOS 10.0, *) {
+			timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
+				self.discoveryManager.range(peerID)
+			}
+		} else {
+			timer = Timer(timeInterval: timeInterval, target: self, selector: #selector(callRange(_:)), userInfo: peerID, repeats: false)
+		}
+		timer.tolerance = tolerance
+
+		RunLoop.main.add(timer, forMode: RunLoop.Mode.default)
+
+		rangeBlock(peerID, distance)
 	}
 }

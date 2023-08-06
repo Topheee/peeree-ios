@@ -146,9 +146,7 @@ extension AppDelegate {
 		if !model.verified {
 			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 			let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
-				PeeringController.shared.interact(with: peerID) { interaction in
-					interaction.verify()
-				}
+				// TODO: restart or continue operations
 			}
 			alertController.addAction(retryVerifyAction)
 			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.info.nickname)
@@ -203,7 +201,7 @@ extension AppDelegate {
 
 			if PeerViewModelController.shared.isBluetoothOn {
 				pc.change(peering: !PeerViewModelController.shared.peering)
-				if #available(iOS 13.0, *) { HapticController.playHapticClick() }
+				if #available(iOS 13.0, *) { HapticController.shared.playHapticClick() }
 			} else {
 				open(urlString: UIApplication.openSettingsURLString)
 			}

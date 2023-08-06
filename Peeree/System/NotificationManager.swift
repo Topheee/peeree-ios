@@ -233,10 +233,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			  let idModel = PeereeIdentityViewModelController.viewModels[peerID],
 			  filter.check(info: model.info, pinState: idModel.pinState) else { return }
 
-		PeeringController.shared.interact(with: peerID) { interaction in
-			interaction.loadBio { _ in }
-			interaction.loadPicture { _ in }
-		}
+		PeeringController.shared.loadAdditionalInfo(of: peerID, loadPortrait: true)
 
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
 		var notBrowsing = true

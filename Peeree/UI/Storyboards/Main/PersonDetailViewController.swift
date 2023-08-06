@@ -59,7 +59,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	private var notificationObservers: [NSObjectProtocol] = []
 	
 	private var pictureProgressManager: ProgressManager?
-	private var bioProgressManager: ProgressManager?
 
 	@IBAction func reportPeer(_ sender: Any) {
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
@@ -292,6 +291,13 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		notificationObservers.append(PeerViewModel.NotificationName.biographyLoaded.addObserver(usingBlock: { (notification) in
 			simpleStateUpdate(notification)
 		}))
+
+		notificationObservers.append(PeerViewModel.NotificationName.pictureLoadBegan.addObserver(usingBlock: { [weak self] (_) in
+			guard let strongSelf = self else { return }
+			strongSelf.model.pictureProgress.map {
+				strongSelf.pictureProgressManager = ProgressManager(progress: $0, delegate: strongSelf, queue: DispatchQueue.main)
+			}
+		}))
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -304,22 +310,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		let loadPicture = model.cgPicture == nil && model.info.hasPicture
 		let loadBio = model.biography == ""
 
-		interactWithPeer { interaction in
-			if loadBio {
-				interaction.loadBio { bioProgress in
-					DispatchQueue.main.async {
-						bioProgress.map { self.bioProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
-					}
-				}
-			}
-			if loadPicture {
-				interaction.loadPicture { pictureProgress in
-					DispatchQueue.main.async {
-						self.portraitImageView.loadProgress = pictureProgress
-						pictureProgress.map { self.pictureProgressManager = ProgressManager(progress: $0, delegate: self, queue: DispatchQueue.main) }
-					}
-				}
-			}
+		if loadBio || loadPicture {
+			PeeringController.shared.loadAdditionalInfo(of: peerID, loadPortrait: loadPicture)
 		}
 	}
 
@@ -346,8 +338,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	func progressDidCancel(_ progress: Progress) {
 		if progress === pictureProgressManager?.progress {
 			pictureProgressManager = nil
-		} else if progress === bioProgressManager?.progress {
-			bioProgressManager = nil
 		}
 	}
 	
@@ -359,8 +349,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		if progress.completedUnitCount == progress.totalUnitCount {
 			if progress === pictureProgressManager?.progress {
 				pictureProgressManager = nil
-			} else if progress === bioProgressManager?.progress {
-				bioProgressManager = nil
 			}
 			updateState()
 		}

@@ -19,7 +19,7 @@ public struct PeerViewModel {
 	/// Names of notifications sent by `PeerViewModel`.
 	public enum NotificationName: String {
 		case verified, verificationFailed
-		case pictureLoaded, biographyLoaded
+		case pictureLoadBegan, pictureLoaded, biographyLoaded
 
 		func post(_ peerID: PeerID) {
 			postAsNotification(object: nil, userInfo: [PeerID.NotificationInfoKey : peerID])
@@ -68,6 +68,13 @@ public struct PeerViewModel {
 	/// SHA-256 hash of the image used for objectionable content classification.
 	public private (set) var pictureHash: Data? = nil
 
+	/// The progress of portait transmission, if any.
+	public var pictureProgress: Progress? {
+		didSet {
+			if pictureProgress != nil { self.post(.pictureLoadBegan) }
+		}
+	}
+
 	/// User-friendly textual representation of the `lastSeen` property.
 	public var lastSeenText: String {
 		let now = Date()
@@ -88,6 +95,7 @@ public struct PeerViewModel {
 	public mutating func loaded(portrait: CGImage, hash: Data) {
 		cgPicture = portrait
 		pictureHash = hash
+		pictureProgress = nil
 
 		post(.pictureLoaded)
 	}

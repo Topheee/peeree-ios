@@ -55,9 +55,6 @@ final class Mediator {
 			ServerChatFactory.chat { sc in
 				sc?.initiateChat(with: peerID)
 			}
-			PeeringController.shared.interact(with: peerID) { interaction in
-				interaction.indicatePinMatch()
-			}
 		})
 	}
 

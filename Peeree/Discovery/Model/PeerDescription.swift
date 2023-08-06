@@ -168,23 +168,6 @@ public struct PeerInfo: Codable {
 	public static let MaxEmailSize = 126
 	/// 1 non-extended BLE packet length would be 27. Since most devices seem to support extended packets, we chose something higher and cap it on the phy level
 	public static let MaxNicknameSize = 184
-	
-//	public struct AuthenticationStatus: OptionSet {
-//		public let rawValue: Int
-//
-//		/// we authenticated ourself to the peer
-//		public static let to	= AuthenticationStatus(rawValue: 1 << 0)
-//		/// the peer authenticated himself to us
-//		public static let from  = AuthenticationStatus(rawValue: 1 << 1)
-//
-//		public static let full: AuthenticationStatus = [.to, .from]
-//
-//		public init(rawValue: Int) {
-//			self.rawValue = rawValue
-//		}
-//	}
-
-//	var authenticationStatus: AuthenticationStatus = []
 
 	// MARK: Variables
 	

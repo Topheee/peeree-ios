@@ -12,32 +12,34 @@ import PeereeCore
 
 /// use this class from main thread only!
 @available(iOS 13.0, *)
-class HapticController {
-	private static var hapticsQueue = DispatchQueue(label: "de.peeree.haptics", qos: .utility)
-	private static var hapticEngine: CHHapticEngine? = nil
-	
-	private static func withHapticEngine(completion: @escaping (Result<CHHapticEngine, Error>) -> Void) {
+final class HapticController {
+	static let shared = HapticController()
+
+	private var hapticsQueue = DispatchQueue(label: "de.peeree.haptics", qos: .utility)
+	private var hapticEngine: CHHapticEngine? = nil
+
+	private func withHapticEngine(_ completion: @escaping (Result<CHHapticEngine, Error>) -> Void) {
 		hapticsQueue.async {
 			let result = Result { () -> CHHapticEngine in
-				if let engine = hapticEngine {
+				if let engine = self.hapticEngine {
 					return engine
 				} else {
 					let engine = try CHHapticEngine()
 					engine.isAutoShutdownEnabled = false
 					engine.stoppedHandler = { reason in
 						ilog("The haptic engine stopped: \(reason.rawValue)")
-						hapticsQueue.async { HapticController.hapticEngine = nil }
+						self.hapticsQueue.async { self.hapticEngine = nil }
 					}
 					engine.resetHandler = { wlog("The haptic engine reset.") }
 					engine.notifyWhenPlayersFinished { (error) -> CHHapticEngine.FinishedAction in
 						if let error {
 							elog("Haptic player finished with error: \(error.localizedDescription)")
 						}
-						hapticsQueue.async { HapticController.hapticEngine = nil }
+						//self.hapticsQueue.async { HapticController.hapticEngine = nil }
 						return .stopEngine
 					}
 					try engine.start()
-					hapticEngine = engine
+					self.hapticEngine = engine
 					return engine
 				}
 			}
@@ -46,10 +48,10 @@ class HapticController {
 	}
 	
 	/// plays the haptic feedback when pinning a person
-	static func playHapticPin() {
+	func playHapticPin() {
 		guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 
-		HapticController.withHapticEngine { result in
+		self.withHapticEngine { result in
 			do {
 				let engine = try result.get()
 
@@ -67,10 +69,10 @@ class HapticController {
 	}
 	
 	/// plays the haptic feedback when pinning a person
-	static func playHapticClick() {
+	func playHapticClick() {
 		guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 
-		HapticController.withHapticEngine { result in
+		self.withHapticEngine { result in
 			do {
 				let engine = try result.get()
 

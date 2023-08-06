@@ -149,7 +149,7 @@ final class BrowseViewController: UITableViewController {
 
 		let peerID = table[indexPath.section][indexPath.row].0
 		let model = viewModel.viewModel(of: peerID)
-		cell.fill(with: model, PeereeIdentityViewModelController.viewModel(of: peerID))
+		cell.fill(with: model, pinState: PeereeIdentityViewModelController.viewModels[peerID]?.pinState ?? .unpinned)
 
 		// load the picture of the peer from disk once it is displayed
 		if model.picture == nil && model.info.hasPicture {
@@ -221,7 +221,7 @@ final class BrowseViewController: UITableViewController {
 	/// Adds `peerID` to `table` and returns the appropriate section.
 	private func addToTable(_ peerID: PeerID) -> Int {
 		let model = viewModel.viewModel(of: peerID)
-		let pinState = PeereeIdentityViewModelController.viewModel(of: peerID).pinState
+		let pinState = PeereeIdentityViewModelController.viewModels[peerID]?.pinState ?? .unpinned
 		let section: TableSection = filter.check(info: model.info, pinState: pinState) ? .inFilter : .outFilter
 		table[section.rawValue].insert((model.peerID, model.lastSeen), at: 0)
 		return section.rawValue
@@ -340,7 +340,7 @@ final class BrowseViewController: UITableViewController {
 
 		clearViewCache()
 		for displayedModel in displayedModels {
-			let pinState = PeereeIdentityViewModelController.viewModel(of: displayedModel.peerID).pinState
+			let pinState = PeereeIdentityViewModelController.viewModels[displayedModel.peerID]?.pinState ?? .unpinned
 			let section: TableSection = filter.check(info: displayedModel.info, pinState: pinState) ? .inFilter : .outFilter
 			table[section.rawValue].append((displayedModel.peerID, displayedModel.lastSeen))
 		}
