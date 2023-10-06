@@ -57,6 +57,7 @@
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
 		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
 		9DB3916A2049F6E100543F74 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3916C2049F6E100543F74 /* Main.storyboard */; };
+		9DBC63992ABF5723000A5EBD /* EncryptionKeyManager.swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DBC63982ABF5723000A5EBD /* EncryptionKeyManager.swift.swift */; };
 		9DC00AB02662ED6A00C1DA3C /* BrowseFilterSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D38FB822631F6E00066ABAD /* BrowseFilterSettingsTests.swift */; };
 		9DC00AB6266393B100C1DA3C /* UserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D38FB7B2631F4530066ABAD /* UserDefaultsMock.swift */; };
 		9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */ = {isa = PBXBuildFile; fileRef = 9DCA59E42932173F008A4853 /* LLDBInitFile */; };
@@ -308,6 +309,7 @@
 		9DB677F724030480005EECB3 /* AccountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAPI.swift; sourceTree = "<group>"; };
 		9DB677F824030480005EECB3 /* PinsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinsAPI.swift; sourceTree = "<group>"; };
 		9DB677F924030480005EECB3 /* AuthenticationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationAPI.swift; sourceTree = "<group>"; };
+		9DBC63982ABF5723000A5EBD /* EncryptionKeyManager.swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionKeyManager.swift.swift; sourceTree = "<group>"; };
 		9DBC9F912676A4E900B68395 /* Peeree.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Peeree.entitlements; sourceTree = "<group>"; };
 		9DC00AA62662ED2200C1DA3C /* PeereeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
@@ -654,6 +656,7 @@
 				9DCA59E02931372D008A4853 /* ThreadSafeMatrixWrappers.swift */,
 				9DCA59E229314772008A4853 /* MXCryptoExtensions.swift */,
 				9DD33C4B29FFDD820046165E /* PersistedServerChatDataController.swift */,
+				9DBC63982ABF5723000A5EBD /* EncryptionKeyManager.swift.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -1407,6 +1410,7 @@
 			files = (
 				9DD33BD829FEAEE30046165E /* ServerChatModel.swift in Sources */,
 				9DD33BDF29FEAEEA0046165E /* ServerChatFactory.swift in Sources */,
+				9DBC63992ABF5723000A5EBD /* EncryptionKeyManager.swift.swift in Sources */,
 				9DD33BDB29FEAEEA0046165E /* MXCryptoExtensions.swift in Sources */,
 				9DD33BDC29FEAEEA0046165E /* ServerChatController.swift in Sources */,
 				9DD33BD929FEAEE30046165E /* ServerChatError.swift in Sources */,
@@ -2611,7 +2615,7 @@
 			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = exactVersion;
-				version = 0.26.17;
+				version = 0.27.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

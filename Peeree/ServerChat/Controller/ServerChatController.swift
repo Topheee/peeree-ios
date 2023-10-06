@@ -678,7 +678,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	/// Initial setup routine
 	private func handleInitialRooms() {
 		guard let directChatPeerIDs = session.directRooms?.compactMap({ (key, value) in
-			value.count > 0 ? peerIDFrom(serverChatUserId: key) : nil
+			// This is a stupid hotfix, but somehow the left rooms are not deleted, even if we instruct it.
+			value.reduce(false) { partialResult, roomId in
+				partialResult || session.roomSummary(withRoomId: roomId)?.membership == .join
+			} ? peerIDFrom(serverChatUserId: key) : nil
 		}), directChatPeerIDs.count > 0 else { return }
 
 		dataSource.hasPinMatch(with: directChatPeerIDs, forceCheck: false) { peerID, result in

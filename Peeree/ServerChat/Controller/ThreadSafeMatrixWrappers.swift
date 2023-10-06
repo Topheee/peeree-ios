@@ -99,6 +99,10 @@ class ThreadSafeCallbacksMatrixSession {
 		return session.room(withRoomId: withRoomId)
 	}
 
+	func roomSummary(withRoomId: String) -> MXRoomSummary! {
+		return session.roomSummary(withRoomId: withRoomId)
+	}
+
 	// MARK: Peeree Extensions
 
 	func directRooms(with userId: String) -> [MXRoom] {

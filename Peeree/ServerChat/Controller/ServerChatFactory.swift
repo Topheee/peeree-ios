@@ -11,15 +11,34 @@ import MatrixSDK
 import KeychainWrapper
 import PeereeCore
 
+private class CryptDelegate: MXCryptoV2MigrationDelegate {
+	static let shared = CryptDelegate()
+
+	init() {
+		needsVerificationUpgrade = true
+	}
+
+	var needsVerificationUpgrade: Bool {
+		didSet {
+			dlog("needsVerificationUpgrade set to \(needsVerificationUpgrade).")
+		}
+	}
+}
+
 /// Must be called as soon as possible.
 private func configureServerChat() {
 	let options = MXSDKOptions.sharedInstance()
 	options.enableCryptoWhenStartingMXSession = true
 	options.disableIdenticonUseForUserAvatar = true
 	options.enableKeyBackupWhenStartingMXCrypto = false // does not work with Dendrite apparently
+	options.enableThreads = false
+	options.authEnableRefreshTokens = false
 	options.applicationGroupIdentifier = messagingAppGroup
 	// it currently works without this so let's keep it that way: options.authEnableRefreshTokens = true
 	options.wellknownDomainUrl = "https://\(serverChatDomain)"
+	options.cryptoMigrationDelegate = CryptDelegate.shared
+
+	MXKeyProvider.sharedInstance().delegate = EncryptionKeyManager.shared
 }
 
 /* All instance methods must be called on `ServerChatFactory.qQueue`. If they invoke a callback, that is always called on that queue as well.
