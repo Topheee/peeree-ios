@@ -191,7 +191,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	func peerDiscoveryFailed(_ error: Error) {
-		wlog("peer discovery failed: \(error)")
+		wlog(Self.LogTag, "peer discovery failed: \(error)")
 	}
 
 	func discoveryManager(isReady: Bool) {
@@ -277,7 +277,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	func didRange(_ peerID: PeerID, rssi: NSNumber?, error: Error?) {
 		guard error == nil else {
-			elog("Error updating range: \(error!.localizedDescription)")
+			elog(Self.LogTag, "Error updating range: \(error!.localizedDescription)")
 			rerange(timeInterval: 7.0, tolerance: 2.5, distance: .unknown)
 			return
 		}
@@ -363,6 +363,9 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	// MARK: Classes, Structs, Enums
 
 	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "PeeringController"
 
 	private static let LastSeenKey = "RecentPeersController.LastSeenKey"
 	private static let MaxRememberedHours = 48

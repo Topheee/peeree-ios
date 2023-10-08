@@ -10,28 +10,28 @@ import Foundation
 import OSLog
 
 /// Debug-level logging of `message`.
-public func dlog(_ message: @autoclosure () -> String) {
+public func dlog(_ tag: String, _ message: @autoclosure () -> String) {
 #if DEBUG
-	os_log("%@", log: .default, type: .debug, "[DBG] \(message())")
+	os_log("[DBG] [%@] %@", log: .default, type: .debug, tag, message())
 #endif
 }
 
 /// Info-level logging of `message`.
-public func ilog(_ message: String) {
-	os_log("%@", log: .default, type: .info, "[INF] \(message)")
+public func ilog(_ tag: String, _ message: String) {
+	os_log("[INF] [%@] %@", log: .default, type: .info, tag, message)
 }
 
 /// Warning-level logging of `message`.
-public func wlog(_ message: String) {
-	os_log("%@", log: .default, type: .default, "[WRN] \(message)")
+public func wlog(_ tag: String, _ message: String) {
+	os_log("[WRN] [%@] %@", log: .default, type: .default, tag, message)
 }
 
 /// Error-level logging of `message`.
-public func elog(_ message: String) {
-	os_log("%@", log: .default, type: .error, "[ERR] \(message)\n\(Thread.callStackSymbols)")
+public func elog(_ tag: String, _ message: String) {
+	os_log("[ERR] [%@] %@\n%@", log: .default, type: .error, tag, message, Thread.callStackSymbols)
 }
 
 /// Fault-level logging of `message`.
-public func flog(_ message: String) {
-	os_log("%@", log: .default, type: .fault, "[FAL] \(message)\n\(Thread.callStackSymbols)")
+public func flog(_ tag: String, _ message: String) {
+	os_log("[FAL] [%@] %@\n%@", log: .default, type: .fault, tag, message, Thread.callStackSymbols)
 }

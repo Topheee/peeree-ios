@@ -130,7 +130,7 @@ extension UIAlertController {
 		// we set default values for the mandatory properties of the UIPopoverPresentationController
 		guard let vc = UIViewController.frontMostViewController(), let v = vc.view,
 				let ppc = self.popoverPresentationController else {
-			elog("No view (controller), or popover controller to present in.")
+			assertionFailure("No view (controller), or popover controller to present in.")
 			return
 		}
 		if let bbi = barButtonItem {

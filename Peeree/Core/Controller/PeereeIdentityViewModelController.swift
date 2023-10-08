@@ -45,7 +45,7 @@ public final class PeereeIdentityViewModelController {
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
 	public static func viewModel(of peerID: PeerID) -> PeereeIdentityViewModel {
 		let clos: () -> PeereeIdentityViewModel = {
-			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Account application part.")
+			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Account application part.")
 
 			return PeereeIdentityViewModel(id: PeereeIdentity(peerID: peerID, publicKey: bogusKey))
 		}
@@ -70,6 +70,9 @@ public final class PeereeIdentityViewModelController {
 	}
 
 	// MARK: - Private
+
+	// Log tag.
+	private static let LogTag = "PeereeIdentityViewModelController" 
 
 	// MARK: Static Variables
 

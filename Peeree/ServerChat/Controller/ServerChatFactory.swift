@@ -20,9 +20,12 @@ private class CryptDelegate: MXCryptoV2MigrationDelegate {
 
 	var needsVerificationUpgrade: Bool {
 		didSet {
-			dlog("needsVerificationUpgrade set to \(needsVerificationUpgrade).")
+			dlog(Self.LogTag, "needsVerificationUpgrade set to \(needsVerificationUpgrade).")
 		}
 	}
+
+	// Log tag.
+	private static let LogTag = "CryptDelegate"
 }
 
 /// Must be called as soon as possible.
@@ -135,13 +138,13 @@ public class ServerChatFactory {
 		setup(onlyLogin: true) { loginResult in
 			switch loginResult {
 			case .failure(let error):
-				wlog("cannot login for account deletion: \(error)")
+				wlog(Self.LogTag, "cannot login for account deletion: \(error)")
 				// do not escalate the error, as we may not have an account at all
 				completion(nil)
 
 			case .success(let sc):
 				guard let scc = sc as? ServerChatController else {
-					flog("cannot cast ServerChat to ServerChatController")
+					flog(Self.LogTag, "cannot cast ServerChat to ServerChatController")
 					completion(.fatal(unexpectedNilError()))
 					return
 				}
@@ -157,13 +160,13 @@ public class ServerChatFactory {
 					}
 
 					do { try self.removePasswordFromKeychain() } catch {
-						elog("deleting password failed: \(error)")
+						elog(Self.LogTag, "deleting password failed: \(error)")
 					}
 					do { try removeGenericPasswordFromKeychain(account: self.keychainAccount, service: Self.AccessTokenKeychainService) } catch {
-						elog("deleting access token failed: \(error)")
+						elog(Self.LogTag, "deleting access token failed: \(error)")
 					}
 					do { try removeGenericPasswordFromKeychain(account: self.keychainAccount, service: Self.RefreshTokenKeychainService) } catch {
-						dlog("deleting refresh token failed: \(error)")
+						dlog(Self.LogTag, "deleting refresh token failed: \(error)")
 					}
 
 					self.closeServerChat()
@@ -184,6 +187,9 @@ public class ServerChatFactory {
 	}
 
 	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "ServerChatFactory"
 
 	/// Matrix refresh token service attribute in keychain.
 	private static let RefreshTokenKeychainService = "RefreshTokenKeychainService"
@@ -218,7 +224,7 @@ public class ServerChatFactory {
 
 	/// We need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
 	private let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
-		flog("matrix certificate rejected: \(String(describing: _data))")
+		flog(ServerChatFactory.LogTag, "matrix certificate rejected: \(String(describing: _data))")
 		return false
 	}
 
@@ -323,7 +329,7 @@ public class ServerChatFactory {
 			do {
 				try removePasswordFromKeychain()
 			} catch let removeError {
-				wlog("Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
+				wlog(Self.LogTag, "Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
 			}
 
 			completion(.failure(.fatal(error)))
@@ -340,7 +346,7 @@ public class ServerChatFactory {
 				do {
 					try self.removePasswordFromKeychain()
 				} catch {
-					elog("Could not remove password from keychain after failed registration: \(error.localizedDescription)")
+					elog(Self.LogTag, "Could not remove password from keychain after failed registration: \(error.localizedDescription)")
 				}
 				completion(.failure(.sdk(error)))
 
@@ -402,11 +408,11 @@ public class ServerChatFactory {
 			if let error = response.error as NSError?,
 			   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
 				if mxErrCode == kMXErrCodeStringInvalidUsername {
-					elog("Our account seems to be deleted. Removing local password to be able to re-register.")
+					elog(Self.LogTag, "Our account seems to be deleted. Removing local password to be able to re-register.")
 					do {
 						try self.removePasswordFromKeychain()
 					} catch let pwError {
-						wlog("Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
+						wlog(Self.LogTag, "Removing local password failed, not an issue if not existant: \(pwError.localizedDescription)")
 					}
 				}
 
@@ -415,7 +421,7 @@ public class ServerChatFactory {
 			}
 
 			guard let json = response.value else {
-				elog("Login response is nil.")
+				elog(Self.LogTag, "Login response is nil.")
 				completion(.failure(.fatal(unexpectedNilError())))
 				return
 			}
@@ -475,11 +481,11 @@ public class ServerChatFactory {
 	/// Sets the `serverChatController` singleton and starts the server chat session.
 	private func setupInstance(with credentials: MXCredentials, _ failure: ((ServerChatError) -> Void)? = nil) {
 		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
-			flog("server chat certificate is not trusted.")
+			flog(Self.LogTag, "server chat certificate is not trusted.")
 			self.ds.delegate?.serverChatCertificateIsInvalid()
 			return false
 		}, persistentTokenDataHandler: { callback in
-			dlog("server chat persistentTokenDataHandler was called.")
+			dlog(Self.LogTag, "server chat persistentTokenDataHandler was called.")
 			// Block called when the rest client needs to check the persisted refresh token data is valid and optionally persist new refresh data to disk if it is not.
 			callback?([credentials]) { shouldPersist in
 				// credentials (access and refresh token) changed during refresh
@@ -496,19 +502,19 @@ public class ServerChatFactory {
 			guard let strongSelf = self, !strongSelf.isDeletingAccount else { return }
 
 			if let error = mxError {
-				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
+				flog(Self.LogTag, "server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth)) \(error.errcode ?? "<nil>"): \(error.error ?? "<nil>")")
 				if !isSoftLogout && !isRefreshTokenAuth && error.errcode == kMXErrCodeStringUnknownToken {
 					// Our token was removed, probably due to an upgrade of the Matrix server.
 					// We need to remove it, s.t. password auth is again used to log in.
 					do { try removeGenericPasswordFromKeychain(account: strongSelf.keychainAccount, service: Self.AccessTokenKeychainService) } catch {
-						elog("deleting access token after it became invalid failed: \(error)")
+						elog(Self.LogTag, "deleting access token after it became invalid failed: \(error)")
 					}
 					do { try removeGenericPasswordFromKeychain(account: strongSelf.keychainAccount, service: Self.RefreshTokenKeychainService) } catch {
-						dlog("deleting refresh token after it became invalid failed: \(error)")
+						dlog(Self.LogTag, "deleting refresh token after it became invalid failed: \(error)")
 					}
 				}
 			} else {
-				flog("server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
+				flog(Self.LogTag, "server chat session became unauthenticated (soft logout: \(isSoftLogout), refresh token: \(isRefreshTokenAuth))")
 			}
 
 			Self.dQueue.async {
@@ -577,7 +583,7 @@ public class ServerChatFactory {
 				try persistPasswordInKeychain(pwData)
 				try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
 			} catch {
-				elog("password migration failed: \(error)")
+				elog(Self.LogTag, "password migration failed: \(error)")
 			}
 
 			return password

@@ -132,7 +132,7 @@ public final class UserPeer {
 		do {
 			peerInfo = try unarchiveFromUserDefs(PeerInfo.self, UserPeer.PrefKey)
 		} catch let error {
-			elog("could not persist UserPeer: \(error.localizedDescription)")
+			elog(Self.LogTag, "could not load UserPeer info: \(error.localizedDescription)")
 		}
 
 		if peerInfo?.hasPicture ?? false,
@@ -149,6 +149,9 @@ public final class UserPeer {
 	// MARK: Classes, Structs, Enums
 
 	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "UserPeer"
 
 	private static let PrefKey = "UserPeer"
 	private static let PortraitFileName = "UserPortrait.jpg"
@@ -180,7 +183,7 @@ public final class UserPeer {
 		do {
 			try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
 		} catch let error {
-			elog("could not delete UserPeer portrait: \(error.localizedDescription)")
+			elog(Self.LogTag, "could not delete UserPeer portrait: \(error.localizedDescription)")
 		}
 	}
 
@@ -211,7 +214,7 @@ public final class UserPeer {
 		do {
 			try archiveInUserDefs(info, forKey: UserPeer.PrefKey)
 		} catch let error {
-			elog("could not persist UserPeer: \(error.localizedDescription)")
+			flog(Self.LogTag, "could not persist UserPeer: \(error.localizedDescription)")
 		}
 	}
 

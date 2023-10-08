@@ -53,7 +53,6 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		centralManager = nil
 		super.init()
 		centralManager = CBCentralManager(delegate: self, queue: dQueue, options: [CBCentralManagerOptionShowPowerAlertKey : 1])
-//		#endif
 	}
 
 	/// Whether the underlying `CBCentralManager` is scanning for peripherals.
@@ -120,7 +119,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			do {
 				try self.discoveryOperations[peerID]?.beginLoadAdditionalInfo(on: peripheral, loadPortrait: loadPortrait)
 			} catch {
-				elog("error when loading add. info: \(error)")
+				elog(Self.LogTag, "error when loading add. info: \(error)")
 			}
 		}
 	}
@@ -162,12 +161,12 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	}
 
 	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		wlog("Failed to connect to \(peripheral) (\(error?.localizedDescription ?? "")).")
+		wlog(Self.LogTag, "Failed to connect to \(peripheral) (\(error?.localizedDescription ?? "")).")
 		disconnect(peripheral)
 	}
 
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-		//dlog("Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
+		//dlog(Self.LogTag, "Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
 
 		guard !self.knownPeripheralIDs.contains(peripheral.identifier) else {
 			return
@@ -183,7 +182,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	}
 
 	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-		dlog("Connected peripheral \(peripheral)")
+		dlog(Self.LogTag, "Connected peripheral \(peripheral)")
 		let opManager: PeerIdentificationOperationManager
 		if let opm = self.identifyOperations[peripheral] {
 			opManager = opm
@@ -197,7 +196,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	}
 
 	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-		dlog("Disconnected peripheral \(peripheral) \(error?.localizedDescription ?? "")")
+		dlog(Self.LogTag, "Disconnected peripheral \(peripheral) \(error?.localizedDescription ?? "")")
 		// error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
 
 		self.identifyOperations.removeValue(forKey: peripheral)
@@ -243,15 +242,18 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	func peerIdentificationFailed(_ error: Error, of peripheral: CBPeripheral) {
 		if let pError = error as? PeripheralOperationUnrecoverableError {
 			if case .cancelled = pError { } else {
-				elog("peer identification failed \(pError)")
+				elog(Self.LogTag, "peer identification failed \(pError)")
 			}
 		} else {
-			elog("peer identification failed \(error)")
+			elog(Self.LogTag, "peer identification failed \(error)")
 		}
 		self.disconnect(peripheral)
 	}
 
 	// MARK: - Private
+
+	// Log tag.
+	private static let LogTag = "DiscoveryManager"
 
 	/// Central queue for discovery operations.
 	private let dQueue = DispatchQueue(label: "com.peeree.DiscoveryManager", qos: .default, attributes: [])

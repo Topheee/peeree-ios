@@ -49,7 +49,7 @@ final class InAppNotificationController {
 	/// Show a globally visible in-app notification, similar to a 'toast'.
 	static func display(title: String, message: String, isNegative: Bool = true, _ notificationAction: (() -> Void)? = nil) {
 		if isNegative {
-			wlog("Displaying in-app warning '\(title)': \(message)")
+			dlog(Self.LogTag, "Displaying in-app warning '\(title)': \(message)")
 		}
 
 		DispatchQueue.main.async {
@@ -146,6 +146,9 @@ final class InAppNotificationController {
 	static func display(error: Error, localizedTitle: String) {
 		display(title: localizedTitle, message: error.localizedDescription)
 	}
+
+	// Log tag.
+	private static let LogTag = "InAppNotificationController"
 
 	private static let NotificationDuration: TimeInterval = 5.76
 

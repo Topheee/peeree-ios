@@ -15,16 +15,6 @@ import PeereeDiscovery
 
 @MainActor
 class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
-	private enum NotificationCategory: String {
-		case peerAppeared, pinMatch, message, none
-	}
-	private enum NotificationActions: String {
-		case peerAppearedPin, pinMatchMessage, messageReply
-	}
-
-	private static let PeerIDKey = "PeerIDKey"
-
-	private static let PortraitAttachmentIdentifier = "PortraitAttachmentIdentifier"
 
 	/// Prepares local and remote notification handling.
 	func initialize() {
@@ -76,7 +66,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		let userInfo = response.notification.request.content.userInfo
 		guard let peerIDString = userInfo[Self.PeerIDKey] as? String,
 			  let peerID = PeerID(uuidString: peerIDString) else {
-			elog("cannot find peerID in notification content.")
+			elog(Self.LogTag, "cannot find peerID in notification content.")
 			return
 		}
 		guard let action = NotificationActions(rawValue: response.actionIdentifier) else {
@@ -86,7 +76,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			case UNNotificationDismissActionIdentifier:
 				return
 			default:
-				elog("unknown notification action \(response.actionIdentifier).")
+				elog(Self.LogTag, "unknown notification action \(response.actionIdentifier).")
 				return
 			}
 			return
@@ -99,7 +89,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 			ServerChatFactory.getOrSetupInstance { instanceResult in
 				instanceResult.value?.send(message: textResponse.userText, to: peerID) { messageResult in
-					messageResult.error.map { elog("failed to send message from notification: \($0.localizedDescription)") }
+					messageResult.error.map { elog(Self.LogTag, "failed to send message from notification: \($0.localizedDescription)") }
 				}
 			}
 		case .peerAppearedPin:
@@ -138,6 +128,22 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	// - MARK: Private
+
+	private enum NotificationCategory: String {
+		case peerAppeared, pinMatch, message, none
+	}
+	private enum NotificationActions: String {
+		case peerAppearedPin, pinMatchMessage, messageReply
+	}
+
+	// MARK: Constants
+
+	// Log tag.
+	private static let LogTag = "AppDelegate"
+
+	private static let PeerIDKey = "PeerIDKey"
+
+	private static let PortraitAttachmentIdentifier = "PortraitAttachmentIdentifier"
 
 	// MARK: Variables
 
@@ -186,7 +192,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (error) in
 				if let error {
-					elog("Scheduling local notification failed: \(error.localizedDescription)")
+					elog(Self.LogTag, "Scheduling local notification failed: \(error.localizedDescription)")
 				}
 			}
 		} else {
@@ -284,7 +290,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
 					// Enable or disable features based on authorization.
 					guard error == nil else {
-						elog("Error requesting user notification authorization: \(error!.localizedDescription)")
+						elog(Self.LogTag, "Error requesting user notification authorization: \(error!.localizedDescription)")
 						return
 					}
 				}

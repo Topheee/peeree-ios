@@ -62,7 +62,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 			// it seems we need to log out after we deleted the account
 			self.logout { _error in
-				_error.map { elog("Logout after account deletion failed: \($0.localizedDescription)") }
+				_error.map { elog(Self.LogTag, "Logout after account deletion failed: \($0.localizedDescription)") }
 				// do not escalate the error of the logout, as it doesn't mean we didn't successfully deactivated the account
 				completion(nil)
 			}
@@ -193,10 +193,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		mx.setPusher(pushKey: b64Token, kind: .http, appId: appID, appDisplayName: displayName, deviceDisplayName: userId, profileTag: profileTag, lang: language, data: pushData, append: false) { response in
 			switch response {
 			case .failure(let error):
-				elog("setPusher() failed: \(error)")
+				elog(Self.LogTag, "setPusher() failed: \(error)")
 				self.dataSource.delegate?.configurePusherFailed(error)
 			case .success():
-				dlog("setPusher() was successful.")
+				dlog(Self.LogTag, "setPusher() was successful.")
 			}
 		}
 	}
@@ -293,6 +293,9 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	// MARK: - Private
 
 	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "ServerChatController"
 
 	/// Used for APNs.
 	private static let ProfileTagAllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -427,7 +430,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
 					if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 				} catch let error {
-					elog("\(error)")
+					elog(Self.LogTag, "\(error)")
 				}
 			case .roomEncrypted:
 				encryptedEvents.append(event)
@@ -445,7 +448,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		self.session.decryptEvents(encryptedEvents, inTimeline: timelineID) { failedEvents in
 			if let failedEvents, failedEvents.count > 0 {
 				for failedEvent in failedEvents {
-					wlog("Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
+					wlog(Self.LogTag, "Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
 				}
 			}
 
@@ -459,7 +462,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 						catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
 						if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 					} catch let error {
-						elog("\(error)")
+						elog(Self.LogTag, "\(error)")
 					}
 				default:
 					break
@@ -481,17 +484,17 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	/// Listens to events in `room`; must be called on `dQueue`.
 	private func listenToEvents(in room: MXRoom, with peerID: PeerID) {
 		guard let roomId = room.roomId else {
-			flog("fuck is this")
+			flog(Self.LogTag, "fuck is this")
 			return
 		}
 
-		dlog("listenToEvents(in room: \(roomId), with peerID: \(peerID)).")
+		dlog(Self.LogTag, "listenToEvents(in room: \(roomId), with peerID: \(peerID)).")
 		guard roomIdsListeningOn[roomId] == nil else { return }
 		roomIdsListeningOn[roomId] = peerID
 
 		room.liveTimeline { timeline in
 			guard let timeline else {
-				elog("No timeline retrieved.")
+				elog(Self.LogTag, "No timeline retrieved.")
 				self.roomIdsListeningOn.removeValue(forKey: room.roomId)
 				return
 			}
@@ -527,7 +530,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			return
 		}
 		forgetRoom(roomId) { error in
-			error.map { elog("Failed leaving room \(roomId): \($0.localizedDescription)") }
+			error.map { elog(Self.LogTag, "Failed leaving room \(roomId): \($0.localizedDescription)") }
 			self.forgetRooms(leftoverRooms, completion: completion)
 		}
 	}
@@ -540,13 +543,13 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			switch matrixErrCode {
 			case kMXErrCodeStringForbidden:
 				self.forgetRoom(room.roomId) { error in
-					dlog("forgetting room after we got a forbidden error: \(error?.localizedDescription ?? "no error")")
+					dlog(Self.LogTag, "forgetting room after we got a forbidden error: \(error?.localizedDescription ?? "no error")")
 
 					self.refreshPinStatus(of: peerID, force: true, {
 						self.dQueue.async {
 							// TODO: knock on room instead once that is supported by MatrixSDK
 							self.getOrCreateRoom(with: peerID) { createRoomResult in
-								dlog("creating new room after re-pin completed: \(createRoomResult)")
+								dlog(Self.LogTag, "creating new room after re-pin completed: \(createRoomResult)")
 								completion(.success(true))
 							}
 						}
@@ -591,11 +594,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				self.listenToEvents(in: room, with: peerID)
 			case .failure(let error):
 				guard (error as NSError).domain != kMXNSErrorDomain && (error as NSError).code != kMXRoomAlreadyJoinedErrorCode else {
-					dlog("tried again to join room \(roomId) for peerID \(peerID).")
+					dlog(Self.LogTag, "tried again to join room \(roomId) for peerID \(peerID).")
 					return
 				}
 
-				elog("Cannot join room \(roomId): \(error)")
+				elog(Self.LogTag, "Cannot join room \(roomId): \(error)")
 				self.dataSource.delegate?.cannotJoinRoom(error)
 			}
 		}
@@ -608,11 +611,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			guard let memberContent = MXRoomMemberEventContent(fromJSON: event.content),
 				  let eventUserId = event.stateKey,
 				  let roomId = event.roomId else {
-				flog("Hard condition not met in membership event.")
+				flog(Self.LogTag, "Hard condition not met in membership event.")
 				return
 			}
 
-			dlog("processing server chat member event type \(memberContent.membership ?? "<nil>") in room \(roomId) from \(eventUserId).")
+			dlog(Self.LogTag, "processing server chat member event type \(memberContent.membership ?? "<nil>") in room \(roomId) from \(eventUserId).")
 
 			switch memberContent.membership {
 			case kMXMembershipStringJoin:
@@ -622,13 +625,13 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			case kMXMembershipStringInvite:
 				guard eventUserId == self.userId else {
 					// we are only interested in invites for us
-					dlog("Received invite event for other user.")
+					dlog(Self.LogTag, "Received invite event for other user.")
 					return
 				}
 
 				// check whether we actually have a pin match with this person
 				guard let peerID = peerIDFrom(serverChatUserId: event.sender) else {
-					elog("Cannot construct PeerID from userId \(event.sender ?? "<nil>").")
+					elog(Self.LogTag, "Cannot construct PeerID from userId \(event.sender ?? "<nil>").")
 					return
 				}
 
@@ -650,16 +653,16 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				guard eventUserId != self.userId else {
 					// we are only interested in leaves from other people
 					// ATTENTION: we seem to also receive this event, when we first get to know of this room - i.e., when we are invited, we first get the event that we left (or that we are in the state "leave"). Kind of strange, but yeah.
-					dlog("Received our leave event.")
+					dlog(Self.LogTag, "Received our leave event.")
 					return
 				}
 
 				self.forgetRoom(event.roomId) { _error in
-					dlog("Left empty room: \(String(describing: _error)).")
+					dlog(Self.LogTag, "Left empty room: \(String(describing: _error)).")
 				}
 
 				guard let peerID = peerIDFrom(serverChatUserId: eventUserId) else {
-					elog("cannot construct PeerID from room directUserId \(eventUserId).")
+					elog(Self.LogTag, "cannot construct PeerID from room directUserId \(eventUserId).")
 					return
 				}
 
@@ -667,10 +670,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				refreshPinStatus(of: peerID, force: true, nil)
 
 			default:
-				wlog("Unexpected room membership \(memberContent.membership ?? "<nil>").")
+				wlog(Self.LogTag, "Unexpected room membership \(memberContent.membership ?? "<nil>").")
 			}
 		default:
-			wlog("Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
+			wlog(Self.LogTag, "Received global event we didn't listen for: \(event.type ?? "<unknown event type>").")
 			break
 		}
 	}
@@ -702,9 +705,9 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				let theyIn = info.theirMembership == .join || info.theirMembership == .invite || info.theirMembership == .unknown
 
 				if !theyIn {
-					wlog("triaging room \(info.room.roomId ?? "<nil>") with peerID \(peerID).")
+					wlog(Self.LogTag, "triaging room \(info.room.roomId ?? "<nil>") with peerID \(peerID).")
 					self.forgetRoom(info.room.roomId) { error in
-						error.map { elog("leaving room failed: \($0)")}
+						error.map { elog(Self.LogTag, "leaving room failed: \($0)")}
 					}
 				}
 
@@ -725,7 +728,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			} else {
 				self.reallyCreateRoom(with: peerID) { result in
 					result.error.map {
-						elog("failed to really create room with \(peerID): \($0)")
+						elog(Self.LogTag, "failed to really create room with \(peerID): \($0)")
 						self.dataSource.delegate?.serverChatInternalErrorOccured($0)
 					}
 				}
@@ -761,7 +764,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				}
 			}
 		} catch let error {
-			elog("\(error)")
+			elog(Self.LogTag, "\(error)")
 		}
 	}
 
@@ -794,7 +797,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				self.handleInitialRooms()
 
 				_ = self.session.listenToEvents { event, direction, customObject in
-					dlog("event \(event.eventId ?? "<nil>") in room \(event.roomId ?? "<nil>")")
+					dlog(Self.LogTag, "event \(event.eventId ?? "<nil>") in room \(event.roomId ?? "<nil>")")
 
 					guard let decryptionError = event.decryptionError as? NSError,
 						  let peerID = peerIDFrom(serverChatUserId: event.sender) else { return }
@@ -816,10 +819,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 					self.dataSource.delegate?.decryptionError(decryptionError, peerID: peerID) {
 						self.forgetRoom(event.roomId) { forgetError in
-							forgetError.map { dlog("forgetting room with broken encryption failed: \($0)") }
+							forgetError.map { dlog(Self.LogTag, "forgetting room with broken encryption failed: \($0)") }
 
 							self.getOrCreateRoom(with: peerID) { result in
-								dlog("replaced room with broken encryption with result \(result)")
+								dlog(Self.LogTag, "replaced room with broken encryption with result \(result)")
 							}
 						}
 					}
@@ -855,11 +858,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 			strongSelf.dQueue.async {
 				guard let userId = room.directUserId else {
-					elog("Found non-direct room \(room.roomId ?? "<nil>").")
+					elog(Self.LogTag, "Found non-direct room \(room.roomId ?? "<nil>").")
 					return
 				}
 				guard let peerID = peerIDFrom(serverChatUserId: userId) else {
-					elog("Found room with non-PeerID \(userId).")
+					elog(Self.LogTag, "Found room with non-PeerID \(userId).")
 					return
 				}
 

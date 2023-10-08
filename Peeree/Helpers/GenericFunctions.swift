@@ -353,7 +353,7 @@ extension SecKey {
 		guard status != errSecSuccess else { return }
 
 		let msg = errorMessage(describing: status)
-		dlog("OSStatus \(status) check failed: \(msg)")
+		NSLog("SecKey.Extension: OSStatus \(status) check failed: \(msg)")
 		let userInfo: [String : Any] = [NSLocalizedDescriptionKey : localizedError,
 								 NSLocalizedFailureReasonErrorKey : msg,
 									   NSLocalizedFailureErrorKey : makeOSStatusError(from: status)]

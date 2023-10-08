@@ -141,7 +141,7 @@ public final class PersistedPeersController {
 			guard let provider = CGDataProvider(url: url as CFURL) else { return }
 			guard let image = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent),
 				  let data = provider.data as Data? else {
-				elog("getting image or data from CGDataProvider failed.")
+				elog(Self.LogTag, "getting image or data from CGDataProvider failed.")
 				return
 			}
 
@@ -155,9 +155,12 @@ public final class PersistedPeersController {
 	// MARK: - Private
 
 	// MARK: Static Constants
-	
+
+	// Log tag.
+	private static let LogTag = "PersistedPeersController"
+
 	/// File system access queue.
-	private static let persistenceQueue = DispatchQueue(label: "de.peeree.PersistedPeersController", qos: .background)
+	private static let persistenceQueue = DispatchQueue(label: PersistedPeersController.LogTag, qos: .background)
 
 	// MARK: Constants
 	

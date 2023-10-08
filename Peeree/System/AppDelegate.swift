@@ -152,7 +152,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	}
 
 	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-		elog("Remote notifications are unavailable: \(error.localizedDescription)")
+		elog(Self.LogTag, "Remote notifications are unavailable: \(error.localizedDescription)")
 		InAppNotificationController.display(error: error, localizedTitle: "Notification Registration Failed")
 	}
 
@@ -179,8 +179,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 		completionHandler(.newData)
 	}
 
-	// MARK: Private Methods
-	
+	// MARK: - Private
+
+	// Log tag.
+	private static let LogTag = "AppDelegate"
+
+	// MARK: Methods
+
 	private func setupManualAppearance() {
 		UISwitch.appearance().onTintColor = UIAccessibility.isInvertColorsEnabled ? (AppTheme.tintColor.cgColor.inverted().map { UIColor(cgColor: $0) } ?? AppTheme.tintColor) : AppTheme.tintColor
 	}

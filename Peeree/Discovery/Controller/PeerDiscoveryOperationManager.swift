@@ -87,11 +87,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	weak var delegate: PeerDiscoveryOperationManagerDelegate?
 
 	/// Current state including information necessary to process further steps.
-	private(set) var state: PeerDiscoveryState {
-		didSet {
-			dlog("\(self.peerID) changed discovery state to \(self.state)")
-		}
-	}
+	private(set) var state: PeerDiscoveryState
 
 	/// Create an the operation manager. Start it by using `beginDiscovery()`.
 	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue) {
@@ -150,7 +146,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	// MARK: PeripheralOperationManagerDelegate
 
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-		dlog("Did read RSSI \(RSSI) of peripheral \(peripheral).")
 		delegate?.didRange(self.peerID, rssi: RSSI, error: error)
 	}
 

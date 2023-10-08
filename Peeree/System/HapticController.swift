@@ -15,6 +15,9 @@ import PeereeCore
 final class HapticController {
 	static let shared = HapticController()
 
+	// Log tag.
+	private static let LogTag = "HapticController"
+
 	private var hapticsQueue = DispatchQueue(label: "de.peeree.haptics", qos: .utility)
 	private var hapticEngine: CHHapticEngine? = nil
 
@@ -27,13 +30,13 @@ final class HapticController {
 					let engine = try CHHapticEngine()
 					engine.isAutoShutdownEnabled = false
 					engine.stoppedHandler = { reason in
-						ilog("The haptic engine stopped: \(reason.rawValue)")
+						ilog(Self.LogTag, "The haptic engine stopped: \(reason.rawValue)")
 						self.hapticsQueue.async { self.hapticEngine = nil }
 					}
-					engine.resetHandler = { wlog("The haptic engine reset.") }
+					engine.resetHandler = { wlog(Self.LogTag, "The haptic engine reset.") }
 					engine.notifyWhenPlayersFinished { (error) -> CHHapticEngine.FinishedAction in
 						if let error {
-							elog("Haptic player finished with error: \(error.localizedDescription)")
+							elog(Self.LogTag, "Haptic player finished with error: \(error.localizedDescription)")
 						}
 						//self.hapticsQueue.async { HapticController.hapticEngine = nil }
 						return .stopEngine
@@ -63,7 +66,7 @@ final class HapticController {
 
 				try player.start(atTime: 0)
 			} catch let error {
-				elog("Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
+				elog(Self.LogTag, "Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
 			}
 		}
 	}
@@ -83,7 +86,7 @@ final class HapticController {
 
 				try player.start(atTime: 0)
 			} catch let error {
-				elog("Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
+				elog(Self.LogTag, "Haptic Engine Error: \(error). See CHHapticErrorCode for details.")
 			}
 		}
 	}

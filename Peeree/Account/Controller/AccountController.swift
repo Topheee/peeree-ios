@@ -401,7 +401,7 @@ public class AccountController: SecurityDataSource {
 			if let error {
 				switch error {
 				case .httpError(403, let messageData):
-					elog("Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
+					elog(Self.LogTag, "Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
 					reportedError = nil
 				default:
 					self.preprocessAuthenticatedRequestError(error)
@@ -457,7 +457,7 @@ public class AccountController: SecurityDataSource {
 		do {
 			return try computeSignature()
 		} catch let error {
-			flog("Cannot compute signature: \(error)")
+			flog(Self.LogTag, "Cannot compute signature: \(error)")
 			return ""
 		}
 	}
@@ -508,13 +508,16 @@ public class AccountController: SecurityDataSource {
 			do {
 				return try keyPair.externalPublicKey().base64EncodedString()
 			} catch let error {
-				flog("exporting public key failed: \(error)")
+				flog(AccountController.LogTag, "exporting public key failed: \(error)")
 				return ""
 			}
 		}
 	}
 
 	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "Account"
 
 	/// User defaults key for pinned peers dictionary
 	private static let PinnedPeersKey = "PinnedPeers"
@@ -570,7 +573,7 @@ public class AccountController: SecurityDataSource {
 	private static func load() -> AccountController? {
 		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
 		guard let peerID = UUID(uuidString: str) else {
-			flog("our peer ID is not a UUID, deleting!")
+			flog(Self.LogTag, "our peer ID is not a UUID, deleting!")
 			UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
 			return nil
 		}
@@ -580,7 +583,7 @@ public class AccountController: SecurityDataSource {
 		if let sn = (UserDefaults.standard.object(forKey: Self.SequenceNumberKey) as? NSNumber)?.int32Value {
 			sequenceNumber = sn
 		} else {
-			wlog("Sequence Number is nil")
+			wlog(Self.LogTag, "Sequence Number is nil")
 			// we set it to 0 s. t. it can be reset later by our normal reset process
 			sequenceNumber = 0
 		}
@@ -588,7 +591,7 @@ public class AccountController: SecurityDataSource {
 		do {
 			return AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: try KeyPair(fromKeychainWithPrivateTag: AccountController.PrivateKeyTag, publicTag: AccountController.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize))
 		} catch {
-			flog("cannot load our key from keychain: \(error)")
+			flog(Self.LogTag, "cannot load our key from keychain: \(error)")
 			return nil
 		}
 	}
@@ -667,11 +670,11 @@ public class AccountController: SecurityDataSource {
 
 	/// Request a new sequence number, since we may have run out of sync with the server.
 	private func resetSequenceNumber() {
-		wlog("resetting sequence number")
+		wlog(Self.LogTag, "resetting sequence number")
 		AuthenticationAPI.deleteAccountSecuritySequenceNumber { (sequenceNumberDataCipher, error) in
 			guard let sequenceNumberDataCipher else {
 				if let error {
-					elog("resetting sequence number failed: \(error.localizedDescription)")
+					elog(Self.LogTag, "resetting sequence number failed: \(error.localizedDescription)")
 					Self.delegate?.sequenceNumberResetFailed(error: error)
 				}
 				return
@@ -686,13 +689,13 @@ public class AccountController: SecurityDataSource {
 	private func preprocessAuthenticatedRequestError(_ errorResponse: ErrorResponse) {
 		switch errorResponse {
 		case .httpError(403, let messageData):
-			elog("Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
+			elog(Self.LogTag, "Unauthorized: \(messageData.map { String(data: $0, encoding: .utf8) ?? "(decode failed) code 403." } ?? "code 403.")")
 			self.resetSequenceNumber()
 		case .parseError(_):
-			elog("Response could not be parsed.")
+			elog(Self.LogTag, "Response could not be parsed.")
 			break
 		case .sessionTaskError(let statusCode, _, let error):
-			elog("Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
+			elog(Self.LogTag, "Network error \(statusCode ?? -1) occurred: \(error.localizedDescription)")
 			if (error as NSError).domain == NSURLErrorDomain {
 				// we did not even reach the server, so we have to decrement our sequenceNumber again
 				sequenceNumber = sequenceNumber.subtractingReportingOverflow(AccountController.SequenceNumberIncrement).partialValue
@@ -737,7 +740,7 @@ public class AccountController: SecurityDataSource {
 		do {
 			try keyPair.removeFromKeychain()
 		} catch let error {
-			flog("Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
+			flog(Self.LogTag, "Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
 		}
 
 		SwaggerClientAPI.dataSource = nil
@@ -759,7 +762,7 @@ extension AccountController {
 		do {
 			updatePinStatus(of: try self.id(of: peerID), force: force, completion)
 		} catch let error {
-			elog("Unknown PeerID \(peerID) in updatePinStatus(): \(error)")
+			elog(Self.LogTag, "Unknown PeerID \(peerID) in updatePinStatus(): \(error)")
 			completion?(.unpinned)
 		}
 	}

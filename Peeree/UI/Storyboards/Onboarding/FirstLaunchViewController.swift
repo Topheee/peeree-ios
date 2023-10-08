@@ -29,7 +29,7 @@ final class FirstLaunchViewController: UIViewController, UIPageViewControllerDel
 		pageViewController.dataSource = self
 
 		guard let storyboard = storyboard, let pageView = pageViewController.view else {
-			flog("Could not get storyboard or page view.")
+			assertionFailure("Could not get storyboard or page view.")
 			dismiss(animated: true, completion: nil)
 			return
 		}

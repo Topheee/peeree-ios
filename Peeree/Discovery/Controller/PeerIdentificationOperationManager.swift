@@ -114,7 +114,6 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 
 				delegate?.foundPeer(identificationData.peerID, lastChangedDate: identificationData.lastChanged, of: peripheral)
 			} catch {
-				elog("parsing identification data from model \(model) failed: \(error).")
 				self.delegate?.peerIdentificationFailed(error, of: peripheral)
 			}
 

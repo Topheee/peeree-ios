@@ -22,6 +22,10 @@ extension PeerViewModel {
 
 /// This singleton ties all Peeree modules together.
 final class Mediator {
+
+	// Log tag.
+	private static let LogTag = "Mediator"
+
 	/// Singleton instance.
 	public static let shared = Mediator()
 
@@ -122,7 +126,7 @@ extension Mediator: ServerChatDelegate {
 	}
 
 	func serverChatInternalErrorOccured(_ error: Error) {
-		elog("internal server chat error \(error)")
+		elog(Self.LogTag, "internal server chat error \(error)")
 	}
 }
 
@@ -182,7 +186,7 @@ extension Mediator: PeeringControllerDataSource {
 				// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
 				result(ac.hasPinMatch(peerID))
 			} catch let exc {
-				elog("A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
+				elog(Self.LogTag, "A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
 				result(false)
 			}
 		}

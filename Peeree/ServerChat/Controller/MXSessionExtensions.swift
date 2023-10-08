@@ -9,6 +9,9 @@
 import MatrixSDK
 import PeereeCore
 
+// Log tag.
+fileprivate let LogTag = "MXSession.Extension"
+
 extension MXSession {
 
 	// MARK: Methods
@@ -17,7 +20,7 @@ extension MXSession {
 	func extensiveLogout(_ completion: @escaping (Swift.Error?) -> ()) {
 		logout { response in
 			if response.isFailure {
-				elog("Failed to log out successfully - still cleaning up session data.")
+				elog(LogTag, "Failed to log out successfully - still cleaning up session data.")
 			}
 			// *** roughly based on MXKAccount.closeSession(true) ***
 			self.scanManager?.deleteAllAntivirusScans()
@@ -45,13 +48,13 @@ extension MXSession {
 			switch response {
 			case .success(let members):
 				guard let members = members?.members else {
-					elog("members is nil")
+					elog(LogTag, "members is nil")
 					break
 				}
 
 				guard let theirMember = members.first(where: { $0.userId == userId}),
 					  let ourMember = members.first(where: { $0.userId == self.myUserId}) else {
-					elog("Cannot find our or their member.")
+					elog(LogTag, "Cannot find our or their member.")
 					break
 				}
 
@@ -59,7 +62,7 @@ extension MXSession {
 				self.directRoomInfosRecursive(with: userId, directJoinedRooms: directJoinedRooms, idx: idx + 1, infos: infos + [new], completion)
 
 			case .failure(let error):
-				elog("Couldn't fetch members for room \(directJoinedRooms[idx].roomId ?? "<nil>"): \(error)")
+				elog(LogTag, "Couldn't fetch members for room \(directJoinedRooms[idx].roomId ?? "<nil>"): \(error)")
 				self.directRoomInfosRecursive(with: userId, directJoinedRooms: directJoinedRooms, idx: idx + 1, infos: infos, completion)
 			}
 
@@ -129,7 +132,7 @@ extension MXSession {
 		room.members { membersResponse in
 			guard let _members = membersResponse.mValue, let members = _members,
 				  let theirMember = members.members.first(where: { $0.userId == peerUserId}) else {
-				flog("We are not a member of room \(room).")
+				flog(LogTag, "We are not a member of room \(room).")
 				self.testRoom(idx: idx + 1, of: rooms, with: peerUserId, bothJoined: bothJoined, completion)
 				return
 			}

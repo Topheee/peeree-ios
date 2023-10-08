@@ -12,6 +12,9 @@ import PeereeCore
 /// This class is intended for use on the main thread only!
 public final class PeerViewModelController {
 
+	// Log tag.
+	private static let LogTag = "PeerViewModelController"
+
 	// MARK: - Public and Internal
 
 	// MARK: Static Variables
@@ -39,7 +42,7 @@ public final class PeerViewModelController {
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
 	public func viewModel(of peerID: PeerID) -> PeerViewModel {
 		let clos: () -> PeerViewModel = {
-			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
+			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
 			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
@@ -51,7 +54,7 @@ public final class PeerViewModelController {
 	/// Makes modifications to the view model of `peerID`.
 	public func modify(peerID: PeerID, modifier: (inout PeerViewModel) -> ()) {
 		let clos: () -> PeerViewModel = {
-			wlog("From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
+			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
 			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
