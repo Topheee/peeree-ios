@@ -32,7 +32,7 @@ final class SetupIdentityViewController: UIViewController {
 	@IBAction func finishIntroduction(_ sender: AnyObject) {
 		guard termsSwitch.isOn else { return }
 
-		AppDelegate.createIdentity(displayError: false)
+		createIdentity(displayError: false)
 
 		dismiss(animated: true, completion: nil)
 	}

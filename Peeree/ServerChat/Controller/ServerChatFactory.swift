@@ -48,74 +48,85 @@ private func configureServerChat() {
  * Similarly, all static variables must be accessed from that queue. Use `use()` to get on the queue. */
 
 /// Manages the server chat account and creates sessions (`ServerChat` instances).
-public class ServerChatFactory {
-
-	// MARK: Static Variables
-
-	// Information provider; only change while being logged-out.
-	public static var dataSource: ServerChatDataSource? = nil
-
-	/// APNs device token.
-	public static var remoteNotificationsDeviceToken: Data? = nil
+public final class ServerChatFactory {
 
 	// MARK: Static Functions
+
+	/// This function must be called before any other. Otherwise, `ServerChatError.identityMissing` errors are thrown.
+	public static func initialize(ourPeerID: PeerID,
+								  dataSource: ServerChatDataSource,
+								  _ completion: @escaping (ServerChatFactory) -> Void) {
+		dQueue.async {
+			configureServerChat()
+
+			let factory = ServerChatFactory(peerID: ourPeerID, ds: dataSource)
+			instance = factory
+
+			completion(factory)
+		}
+	}
+
+	/// Retrieves a `ServerChatFactory` for the user; `getter` will always be called on `ServerChatFactory.dQueue`.
+	public static func use(_ getter: @escaping (ServerChatFactory?) -> Void) {
+		dQueue.async { getter(instance) }
+	}
+
+	/// Shortcut for `use() { $0.setup() }`.
+	public static func getOrSetupInstance(onlyLogin: Bool = false, _ completion: @escaping (Result<ServerChat, ServerChatError>) -> Void) {
+		Self.use { factory in
+			guard let factory else {
+				completion(.failure(.identityMissing))
+				return
+			}
+
+			factory.setup(onlyLogin: onlyLogin, completion)
+		}
+	}
 
 	/// Retrieves server chat interaction singleton.
 	public static func chat(_ getter: @escaping (ServerChat?) -> Void) {
 		Self.use { factory in getter(factory?.serverChatController) }
 	}
 
-	/// Retrieves already logged in instance, or creates a new one by logging in.
-	public static func getOrSetupInstance(onlyLogin: Bool = false, _ completion: @escaping (Result<ServerChat, ServerChatError>) -> Void) {
-		Self.use { factory in
-			guard let f = factory else {
-				completion(.failure(.identityMissing))
-				return
-			}
+	// MARK: Variables
 
-			if let scc = f.serverChatController {
-				completion(.success(scc))
-			} else {
-				f.setup(onlyLogin: onlyLogin, completion)
-			}
-		}
-	}
+	/// Informed party of server chat.
+	public weak var delegate: ServerChatDelegate?
 
-	/// Retrieves a `ServerChatFactory` for the user; `getter` will always be called on `ServerChatFactory.dQueue`.
-	public static func use(_ getter: @escaping (ServerChatFactory?) -> Void) {
-		dQueue.async {
-			if let i = instance {
-				getter(i)
-				return
-			}
-
-			guard let dataSource else {
-				getter(nil)
-				return
-			}
-
-			dataSource.ourPeerID { ourPeerID in
-				dQueue.async {
-					guard let ourPeerID else {
-						getter(nil)
-						return
-					}
-
-					configureServerChat()
-
-					let newInstance = ServerChatFactory(peerID: ourPeerID, ds: dataSource)
-					instance = newInstance
-					getter(newInstance)
-				}
-			}
-		}
-	}
+	/// On which queue are the methods of the `conversationDelegate` invoked.
+	public weak var conversationDelegate: ServerChatConversationDelegate?
 
 	// MARK: Methods
 
+	/// Login, create account or get readily configured `ServerChatController`.
+	public func setup(onlyLogin: Bool = false, _ completion: @escaping (Result<ServerChat, ServerChatError>) -> Void) {
+		if let scc = serverChatController {
+			completion(.success(scc))
+			return
+		}
+
+		creatingInstanceCallbacks.append(completion)
+		creatingInstanceOnlyLoginRequests.append(onlyLogin)
+		guard creatingInstanceCallbacks.count == 1 else { return }
+
+		resumeSession { _ in
+			// after we try to log in with the access token, proceed with password-based login
+			self.loginProcess()
+		}
+	}
+
+	/// Set the token to issue remote notifications.
+	public func configureRemoteNotificationsDeviceToken(_ deviceToken: Data) {
+		remoteNotificationsDeviceToken = deviceToken
+		serverChatController?.configurePusher(deviceToken: deviceToken)
+	}
+
 	/// Closes the underlying session and invalidates the global ServerChatController instance.
-	public static func close() {
-		use { $0?.closeServerChat() }
+	public func closeServerChat(with error: Error? = nil) {
+		serverChatController?.close()
+		serverChatController = nil
+
+		delegate?.serverChatClosed(error: error)
 	}
 
 	/// Removes the server chat account permanently.
@@ -242,6 +253,9 @@ public class ServerChatFactory {
 	/// Whether account deletion request is in progress.
 	private var isDeletingAccount = false
 
+	/// APNs device token.
+	private var remoteNotificationsDeviceToken: Data? = nil
+
 	/// Matrix userId based on user's PeerID.
 	private var userId: String { return peerID.serverChatUserId }
 
@@ -250,31 +264,8 @@ public class ServerChatFactory {
 
 	// MARK: Methods
 
-	/// Closes the underlying session and invalidates the global ServerChatController instance; must be called on `dQueue`.
-	private func closeServerChat(with error: Error? = nil) {
-		serverChatController?.close()
-		serverChatController = nil
 
-		ds.delegate?.serverChatClosed(error: error)
-	}
-
-	/// Login, create account or get readily configured `ServerChatController`.
-	private func setup(onlyLogin: Bool = false, _ completion: @escaping (Result<ServerChat, ServerChatError>) -> Void) {
-		if let scc = serverChatController {
-			completion(.success(scc))
-			return
-		}
-
-		creatingInstanceCallbacks.append(completion)
-		creatingInstanceOnlyLoginRequests.append(onlyLogin)
-		guard creatingInstanceCallbacks.count == 1 else { return }
-
-		resumeSession { _ in
-			// after we try to log in with the access token, proceed with password-based login
-			self.loginProcess()
-		}
-	}
-
+	/// Perform the login.
 	private func loginProcess() {
 		login { loginResult in
 			switch loginResult {
@@ -482,7 +473,7 @@ public class ServerChatFactory {
 	private func setupInstance(with credentials: MXCredentials, _ failure: ((ServerChatError) -> Void)? = nil) {
 		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
 			flog(Self.LogTag, "server chat certificate is not trusted.")
-			self.ds.delegate?.serverChatCertificateIsInvalid()
+			self.delegate?.serverChatCertificateIsInvalid()
 			return false
 		}, persistentTokenDataHandler: { callback in
 			dlog(Self.LogTag, "server chat persistentTokenDataHandler was called.")
@@ -527,6 +518,8 @@ public class ServerChatFactory {
 		restClient.completionQueue = Self.dQueue
 
 		let c = ServerChatController(peerID: self.peerID, restClient: restClient, dataSource: self.ds, dQueue: Self.dQueue, conversationQueue: DispatchQueue.main)
+		c.conversationDelegate = self.conversationDelegate
+		c.delegate = self.delegate
 
 		c.start { error in
 			Self.dQueue.async {
@@ -543,7 +536,7 @@ public class ServerChatFactory {
 					self.serverChatController = c
 
 					// configure the pusher if server chat account didn't exist when AppDelegate.didRegisterForRemoteNotificationsWithDeviceToken() is called
-					Self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
+					self.remoteNotificationsDeviceToken.map { c.configurePusher(deviceToken: $0) }
 
 					self.reportCreatingInstance(result: .success(c))
 				}

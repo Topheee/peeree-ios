@@ -12,6 +12,7 @@ import PeereeServerChat
 import PeereeDiscovery
 
 /// A class containing a <code>PeerObserver</code>.
+@MainActor
 protocol PeerObserverContainer: AnyObject {
 	/// The `PeerID` this container shall observe; make sure to set this before you access `peerObserver`.
 	var peerID: PeerID { get set }
@@ -37,6 +38,7 @@ extension PeerObserverContainer {
 }
 
 /// Observer for messaging-related notifications of `PeerViewModel.NotificationName`; the `UNNotication`s are unwrapped and the functions of this protocol are called accordingly.
+@MainActor
 public protocol PeerMessagingObserver: AnyObject {
 	/// Called when `PeerViewModel.NotificationName.messageQueued` is posted for the `PeerID` of this `PeerObserver`.
 	func messageQueued()

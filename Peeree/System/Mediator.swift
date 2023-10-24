@@ -37,7 +37,7 @@ final class Mediator {
 			}
 		}
 
-		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { _ in
+		notificationObservers.append(AccountControllerFactory.NotificationName.accountCreated.addObserver { _ in
 			// hack: this will sync the UserPeer to the ViewModel
 			UserPeer.instance.modifyInfo { _ in }
 
@@ -48,7 +48,7 @@ final class Mediator {
 			}
 		})
 
-		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver { _ in
+		notificationObservers.append(AccountControllerFactory.NotificationName.accountDeleted.addObserver { _ in
 			PeeringController.shared.teardown()
 		})
 
@@ -74,8 +74,8 @@ final class Mediator {
 
 // MARK: - Server Chat
 
-
 // MARK: ServerChatDelegate
+
 extension Mediator: ServerChatDelegate {
 	func decodingPersistedChatDataFailed(with error: Error) {
 		InAppNotificationController.display(error: error, localizedTitle: "Error")
@@ -93,7 +93,7 @@ extension Mediator: ServerChatDelegate {
 		InAppNotificationController.display(error: error, localizedTitle: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
 	}
 
-	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void) {
+	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping @Sendable () -> Void) {
 		DispatchQueue.main.async {
 			let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
 
@@ -113,8 +113,10 @@ extension Mediator: ServerChatDelegate {
 	}
 
 	func serverChatCertificateIsInvalid() {
-		let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
-		InAppNotificationController.display(serverChatError: .fatal(error), localizedTitle: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))
+		DispatchQueue.main.async {
+			let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
+			InAppNotificationController.display(serverChatError: .fatal(error), localizedTitle: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))
+		}
 	}
 
 	func serverChatClosed(error: Error?) {
@@ -132,22 +134,8 @@ extension Mediator: ServerChatDelegate {
 
 // MARK: ServerChatDataSource
 extension Mediator: ServerChatDataSource {
-	var delegate: PeereeServerChat.ServerChatDelegate? {
-		return self
-	}
-
-	var conversationDelegate: PeereeServerChat.ServerChatConversationDelegate? {
-		return ServerChatViewModelController.shared
-	}
-
-	func ourPeerID(_ result: @escaping (PeerID?) -> ()) {
-		AccountController.use({ ac in
-			result(ac.peerID)
-		}, { result(nil) })
-	}
-
-	func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ()) {
-		AccountController.use { ac in
+	public func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ()) {
+		AccountControllerFactory.shared.use { ac in
 			peerIDs.forEach { peerID in
 				ac.updatePinStatus(of: peerID, force: forceCheck) { state in
 					result(peerID, state == PinState.pinMatch)
@@ -164,20 +152,23 @@ extension Mediator: ServerChatDataSource {
 // MARK: PeeringControllerDataSource
 extension Mediator: PeeringControllerDataSource {
 	func cleanup(allPeers: [PeereeIdentity], _ result: @escaping ([PeerID]) -> ()) {
-		AccountController.use({ ac in
+		AccountControllerFactory.shared.use({ ac in
 			// never remove our own view model or the view model of pinned peers
 			result(allPeers.filter { $0.peerID != ac.peerID && !ac.isPinned($0) }.map { $0.peerID })
-		}, { result([]) })
+		}, { error in
+			error.map { flog(Self.LogTag, $0.localizedDescription) }
+			result([])
+		})
 	}
 
 	func getIdentity(_ result: @escaping (PeereeIdentity, KeyPair) -> ()) {
-		AccountController.use { ac in
+		AccountControllerFactory.shared.use { ac in
 			result(ac.identity, ac.keyPair)
 		}
 	}
 
 	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ()) {
-		AccountController.use { ac in
+		AccountControllerFactory.shared.use { ac in
 			// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
 			do {
 				let id = try ac.id(of: peerID)
@@ -215,13 +206,28 @@ extension Mediator: PeeringControllerDelegate {
 // MARK: UserPeerDelegate
 extension Mediator: UserPeerDelegate {
 	func syncToViewModel(info: PeerInfo, bio: String, pic: CGImage?) {
-		AccountController.use { ac in
+		AccountControllerFactory.shared.use { ac in
 			// we must access AccountController properties on its `dQueue`
-			let keyPair = ac.keyPair
 			let peerID = ac.peerID
 
+			let publicKeyData: Data
+			do {
+				publicKeyData = try ac.keyPair.publicKey.externalRepresentation()
+			} catch {
+				assertionFailure(error.localizedDescription)
+				return
+			}
+
 			DispatchQueue.main.async {
-				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey)))
+				let id: PeereeIdentity
+				do {
+					id = try PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData)
+				} catch {
+					assertionFailure(error.localizedDescription)
+					return
+				}
+
+				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: id))
 				PeerViewModelController.shared.update(peerID, info: info, lastSeen: Date())
 				PeerViewModelController.shared.modify(peerID: peerID) { model in
 					model.verified = true
@@ -256,9 +262,14 @@ extension Mediator: AccountControllerDelegate {
 		}
 	}
 
-	@MainActor
 	func sequenceNumberResetFailed(error: Error) {
-		InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Resetting Server Nonce Failed", comment: "Title of sequence number reset failure alert"), furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.", comment: "Further description of Resetting Server Nonce Failed alert"))
+		DispatchQueue.main.async {
+			InAppNotificationController.display(openapiError: error,
+												localizedTitle: NSLocalizedString("Resetting Server Nonce Failed",
+																				  comment: "Title of sequence number reset failure alert"),
+												furtherDescription: NSLocalizedString("The server nonce is used to secure your connection.",
+																					  comment: "Further description of Resetting Server Nonce Failed alert"))
+		}
 	}
 
 	func sequenceNumberReset() {

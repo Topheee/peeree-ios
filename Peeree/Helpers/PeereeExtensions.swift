@@ -56,7 +56,7 @@ extension RawRepresentable where Self.RawValue == String {
 	}
 
 	/// Observes notifications with a `name` equal to the `rawValue` of this notification and the value of the entry with key `peerIDKey` equal to `observedPeerID`.
-	public func addPeerObserver(for observedPeerID: PeerID, _ block: @escaping (Notification) -> Void) -> NSObjectProtocol {
+	public func addPeerObserver(for observedPeerID: PeerID, _ block: @escaping @MainActor (Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue) { (notification) in
 			if let peerID = notification.userInfo?[PeerID.NotificationInfoKey] as? PeerID, observedPeerID == peerID {
 				block(notification)

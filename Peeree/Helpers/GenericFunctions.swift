@@ -9,24 +9,50 @@
 import Foundation
 import CoreGraphics
 
+/// Log tag.
+private let LogTag = "GenericFunctions"
+
 // MARK: - Functions
 
+/// Archive an Objective-C object in `UserDefaults`.
 public func archiveObjectInUserDefs<T: NSSecureCoding>(_ object: T, forKey: String) {
 	#if TESTING
 	PeereeTests.UserDefaultsMock.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
 	#else
-	UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	if #available(iOS 12.0, *) {
+		do {
+			UserDefaults.standard.set(try NSKeyedArchiver.archivedData(withRootObject: object, requiringSecureCoding: true), forKey: forKey)
+		} catch {
+			flog(LogTag, error.localizedDescription)
+		}
+	} else {
+		UserDefaults.standard.set(NSKeyedArchiver.archivedData(withRootObject: object), forKey: forKey)
+	}
 	#endif
 }
 
-public func unarchiveObjectFromUserDefs<T: NSSecureCoding>(_ forKey: String) -> T? {
+/// Unarchive an Objective-C object in `UserDefaults`.
+public func unarchiveObjectFromUserDefs<T: NSObject & NSSecureCoding>(_ forKey: String, containing classes: [AnyClass] = []) -> T? {
 	#if TESTING
 	guard let data = UserDefaultsMock.standard.object(forKey: forKey) as? Data else { return nil }
 	#else
 	guard let data = UserDefaults.standard.object(forKey: forKey) as? Data else { return nil }
 	#endif
-	
-	return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
+
+	if #available(iOS 12.0, *) {
+		do {
+			if classes.count > 0 {
+				return try NSKeyedUnarchiver.unarchivedObject(ofClasses: [T.self] + classes, from: data) as? T
+			} else {
+				return try NSKeyedUnarchiver.unarchivedObject(ofClass: T.self, from: data)
+			}
+		} catch {
+			flog(LogTag, error.localizedDescription)
+			return nil
+		}
+	} else {
+		return NSKeyedUnarchiver.unarchiveObject(with: data) as? T
+	}
 }
 
 /// Encode `object` and put the resulting encoded `Data` value into `UserDefaults`.
@@ -203,8 +229,11 @@ extension RawRepresentable where Self.RawValue == String {
 }
 
 extension NotificationCenter {
-	public class func addObserverOnMain(_ name: String?, usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
-		return NotificationCenter.default.addObserver(forName: name.map { NSNotification.Name(rawValue: $0) }, object: nil, queue: OperationQueue.main, using: block)
+	/// Add an observer, which gets invoked on the `main` `DispatchQueue`.
+	public class func addObserverOnMain(_ name: String?, usingBlock block: @escaping @MainActor (Notification) -> Void) -> NSObjectProtocol {
+		return NotificationCenter.default.addObserver(forName: name.map { NSNotification.Name(rawValue: $0) }, object: nil, queue: nil) { notification in
+			DispatchQueue.main.async { block(notification) }
+		}
 	}
 }
 

@@ -26,8 +26,12 @@
 		9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B4D28EDBCFB00B7207D /* NotificationBannerSwift */; };
 		9D536B5828F700C800B7207D /* MultiSelectSegmentedControl in Frameworks */ = {isa = PBXBuildFile; productRef = 9D536B5728F700C800B7207D /* MultiSelectSegmentedControl */; };
 		9D5E806F1D8EF94C0039BB98 /* PinMatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */; };
+		9D6A8C192ADF241700C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C182ADF241700C8239D /* CSProgress */; };
+		9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C1A2ADF244100C8239D /* CSProgress */; };
+		9D6A8C1D2AE0651300C8239D /* AccountControllerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */; };
 		9D6F7B941BC82AD5007CD234 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6F7B931BC82AD5007CD234 /* RootView.swift */; };
 		9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */; };
+		9D7CB9E02AE7091900DDF10B /* Integrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7CB9DF2AE7091900DDF10B /* Integrator.swift */; };
 		9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */; };
 		9D883A4A1C26B5A200702F9A /* GenericFunctionsiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */; };
 		9D8A59301B92EC4500164C9F /* MeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8A592F1B92EC4500164C9F /* MeViewController.swift */; };
@@ -142,7 +146,6 @@
 		9DDFB86F22835D2000E129E2 /* MessageTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */; };
 		9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDFB87022837A1100E129E2 /* MessageCell.swift */; };
 		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
-		9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */; };
 		9DF2D9CE2A7C2E4A00C71507 /* KeyValueTree in Frameworks */ = {isa = PBXBuildFile; productRef = 9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */; };
 		9DFF60F1269236A200FEA957 /* PeerObserverContainers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DFF60F0269236A200FEA957 /* PeerObserverContainers.swift */; };
 /* End PBXBuildFile section */
@@ -263,10 +266,12 @@
 		9D56535E279A1014003F31A2 /* UserPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPeer.swift; sourceTree = "<group>"; };
 		9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentity.swift; sourceTree = "<group>"; };
 		9D5E806E1D8EF94C0039BB98 /* PinMatchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinMatchViewController.swift; sourceTree = "<group>"; };
+		9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountControllerFactory.swift; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
 		9D6F7B931BC82AD5007CD234 /* RootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		9D79074D27F3A08B00920D38 /* ServerChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatModel.swift; sourceTree = "<group>"; };
 		9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryState.swift; sourceTree = "<group>"; };
+		9D7CB9DF2AE7091900DDF10B /* Integrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Integrator.swift; sourceTree = "<group>"; };
 		9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistedPeersController.swift; sourceTree = "<group>"; };
 		9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PeereeExtensionsiOS.swift; path = Peeree/Helpers/PeereeExtensionsiOS.swift; sourceTree = "<group>"; };
 		9D883A491C26B5A200702F9A /* GenericFunctionsiOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GenericFunctionsiOS.swift; path = Peeree/Helpers/GenericFunctionsiOS.swift; sourceTree = "<group>"; };
@@ -358,7 +363,6 @@
 		9DDFB86E22835D2000E129E2 /* MessageTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTableViewController.swift; sourceTree = "<group>"; };
 		9DDFB87022837A1100E129E2 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		9DDFC2E5245C6EAE00311054 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
-		9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProgressManager.swift; path = Peeree/Helpers/ProgressManager.swift; sourceTree = "<group>"; };
 		9DE45F34280C0F870016D0DF /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		9DFE8A961F33769700264CFE /* NetworkReachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
 		9DFF60F0269236A200FEA957 /* PeerObserverContainers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerObserverContainers.swift; sourceTree = "<group>"; };
@@ -388,6 +392,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DD33C4F2A0063880046165E /* MatrixSDK in Frameworks */,
+				9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */,
 				9D536B4E28EDBCFB00B7207D /* NotificationBannerSwift in Frameworks */,
 				9DD33BAC29FEA9470046165E /* PeereeServerAPI.framework in Frameworks */,
 				9DD33C0129FFA9BF0046165E /* PeereeDiscovery.framework in Frameworks */,
@@ -434,6 +439,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D3AEE3D2A718E7900436696 /* KeyValueTreeCoding in Frameworks */,
+				9D6A8C192ADF241700C8239D /* CSProgress in Frameworks */,
 				9D9249212A0FB69800EDD320 /* KeychainWrapper in Frameworks */,
 				9DF2D9CE2A7C2E4A00C71507 /* KeyValueTree in Frameworks */,
 				9DD33C3F29FFC61C0046165E /* PeereeCore.framework in Frameworks */,
@@ -504,6 +510,7 @@
 			isa = PBXGroup;
 			children = (
 				9D400E611EBA2B9C0006480A /* AccountController.swift */,
+				9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -600,9 +607,10 @@
 			children = (
 				9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */,
 				9DD7B83725E2D6E0005682CF /* HapticController.swift */,
+				9D7CB9DF2AE7091900DDF10B /* Integrator.swift */,
+				9DD33BE529FF127B0046165E /* Mediator.swift */,
 				9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */,
 				9DA0F7B81B5C3AB800F3BA87 /* Supporting Files */,
-				9DD33BE529FF127B0046165E /* Mediator.swift */,
 			);
 			path = System;
 			sourceTree = "<group>";
@@ -680,7 +688,6 @@
 				9D0CDD4C1D557F6C004EB3FB /* PeereeExtensions.swift */,
 				9D830FC61E59AD17001BF4D9 /* PeereeExtensionsiOS.swift */,
 				9D47CF4028F964F100A3123E /* PeereeFunctionsiOS.swift */,
-				9DE2E59F1E48E7BC0004DA3E /* ProgressManager.swift */,
 				9DCD96E01EDA001E00C5AC3C /* SynchronizedCollections.swift */,
 			);
 			name = Utility;
@@ -996,6 +1003,7 @@
 				9D2CDF5F2A718CC500255995 /* BLEPeripheralOperations */,
 				9D3AEE382A718E5800436696 /* KeyValueTreeCoding */,
 				9D3AEE3F2A718F0600436696 /* KeyValueTree */,
+				9D6A8C1A2ADF244100C8239D /* CSProgress */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -1079,6 +1087,7 @@
 				9D3AEE3A2A718E7900436696 /* BLEPeripheralOperations */,
 				9D3AEE3C2A718E7900436696 /* KeyValueTreeCoding */,
 				9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */,
+				9D6A8C182ADF241700C8239D /* CSProgress */,
 			);
 			productName = PeereeDiscovery;
 			productReference = 9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */;
@@ -1133,7 +1142,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1500;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9D9248D82A0F8F4500EDD320 = {
@@ -1197,6 +1206,7 @@
 				9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */,
 				9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */,
 				9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */,
+				9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -1316,6 +1326,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D6A8C1D2AE0651300C8239D /* AccountControllerFactory.swift in Sources */,
 				9D9248E42A0F8F5300EDD320 /* AccountController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1340,9 +1351,9 @@
 				9D8A59411B92FABE00164C9F /* FilterViewController.swift in Sources */,
 				9D2923251B91D05F00B5B622 /* FirstLaunchViewController.swift in Sources */,
 				9D2923271B91E50B00B5B622 /* SetupViewController.swift in Sources */,
+				9D7CB9E02AE7091900DDF10B /* Integrator.swift in Sources */,
 				9DDFB87122837A1100E129E2 /* MessageCell.swift in Sources */,
 				9DDDE1DF1BCC122E006E6DEA /* WelcomeViewController.swift in Sources */,
-				9DE2E5A01E48E7BC0004DA3E /* ProgressManager.swift in Sources */,
 				9DDBD4C81D7BC681008B0CFC /* BeaconViewController.swift in Sources */,
 				9D830FC71E59AD17001BF4D9 /* PeereeExtensionsiOS.swift in Sources */,
 				9D2ECEF92618CD5800E8EB40 /* PeerTableViewCell.swift in Sources */,
@@ -1580,8 +1591,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -1636,8 +1646,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -1769,6 +1778,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -1822,6 +1832,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1992,8 +2003,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -2048,8 +2058,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -2096,8 +2105,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -2149,8 +2157,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -2194,8 +2201,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -2247,8 +2253,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -2292,8 +2297,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -2349,8 +2353,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -2559,7 +2562,7 @@
 			repositoryURL = "https://codeberg.org/Topheee/BLEPeripheralOperations.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 2.0.0;
 			};
 		};
 		9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */ = {
@@ -2600,6 +2603,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
+			};
+		};
+		9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CharlesJS/CSProgress.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.2;
 			};
 		};
 		9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */ = {
@@ -2655,6 +2666,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D536B5628F700C800B7207D /* XCRemoteSwiftPackageReference "MultiSelectSegmentedControl" */;
 			productName = MultiSelectSegmentedControl;
+		};
+		9D6A8C182ADF241700C8239D /* CSProgress */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */;
+			productName = CSProgress;
+		};
+		9D6A8C1A2ADF244100C8239D /* CSProgress */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */;
+			productName = CSProgress;
 		};
 		9D92491A2A0FB2B000EDD320 /* KeychainWrapper */ = {
 			isa = XCSwiftPackageProductDependency;

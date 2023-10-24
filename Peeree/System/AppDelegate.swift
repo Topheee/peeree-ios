@@ -35,8 +35,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	static let MeTabBarIndex = 2
 	static var shared: AppDelegate { return UIApplication.shared.delegate as! AppDelegate }
 
-	private let notificationManager = NotificationManager()
-
 	/// This is somehow set by the environment...
 	var window: UIWindow?
 	
@@ -48,52 +46,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		AccountController.initialize()
-
-		// Observe singletons
-		AccountController.delegate = Mediator.shared
-		ServerChatFactory.dataSource = Mediator.shared
+		// Configure singletons
+		AccountControllerFactory.shared.initialize()
+		NotificationManager.shared.initialize()
 		UserPeer.instance.delegate = Mediator.shared
 
 		// Global configuration
 		setupAppearance()
 
-		notificationManager.initialize()
-
 		_ = PeereeIdentityViewModel.NotificationName.pinStateUpdated.addAnyPeerObserver { (peerID, _) in
 			guard PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinned else { return }
-			if #available(iOS 13.0, *) { HapticController.shared.playHapticPin() }
-		}
-
-		// reinstantiate CBManagers if there where some
-		// TEST this probably will lead to get always online after the app was terminated once after going online as the central manager is always non-nil, so maybe only checck peripheralManager in the if statement
-		let restoredCentralManagerIDs = launchOptions?[.bluetoothCentrals] as? [String]
-		let restoredPeripheralManagerIDs = launchOptions?[.bluetoothPeripherals] as? [String]
-		if restoredCentralManagerIDs?.count ?? 0 > 0 || restoredPeripheralManagerIDs?.count ?? 0 > 0 {
-			self.togglePeering()
+			
+			if #available(iOS 13.0, *) {
+				Task {
+					await HapticController.shared.playHapticPin()
+				}
+			}
 		}
 
 		// start Bluetooth and server chat, but only if account exists
-		AccountController.use { ac in
+		AccountControllerFactory.shared.use { ac in
+			setup(ac: ac, errorTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
 			self.togglePeering()
-
-			ac.refreshBlockedContent { error in
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed."))
-			}
-
-			ServerChatFactory.getOrSetupInstance { result in
-				switch result {
-				case .failure(let error):
-					switch error {
-					case .identityMissing:
-						break
-					default:
-						InAppNotificationController.display(serverChatError: error, localizedTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
-					}
-				case .success(_):
-					break
-				}
-			}
 		}
 
 		return true
@@ -136,7 +110,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	 *  Stops networking and synchronizes preferences
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
-		ServerChatFactory.close()
+		ServerChatFactory.use { $0?.closeServerChat() }
 		PeeringController.shared.change(peering: false)
 		UserDefaults.standard.synchronize()
 	}
@@ -146,10 +120,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	}
 
 	/// MARK: Notifications
-	
-	func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-		notificationManager.application(application, didReceive: notification)
-	}
 
 	func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
 		elog(Self.LogTag, "Remote notifications are unavailable: \(error.localizedDescription)")
@@ -157,22 +127,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-		ServerChatFactory.getOrSetupInstance(onlyLogin: true) { result in
-			ServerChatFactory.remoteNotificationsDeviceToken = deviceToken
-			switch result {
-			case .failure(let serverChatError):
-				switch serverChatError {
-				case .identityMissing:
-					// ignored
-					break
-				default:
-					InAppNotificationController.display(serverChatError: serverChatError, localizedTitle: "Remote Notification Registration Failed")
-				}
-
-			case .success(let serverChatController):
-				serverChatController.configurePusher(deviceToken: deviceToken)
-			}
-		}
+		ServerChatFactory.use { $0?.configureRemoteNotificationsDeviceToken(deviceToken) }
 	}
 
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -214,8 +169,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 		UIPageControl.appearance().pageIndicatorTintColor = AppTheme.tintColor.withAlphaComponent(0.65)
 		UIPageControl.appearance().currentPageIndicatorTintColor = AppTheme.tintColor
 
-		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: OperationQueue.main) { (notification) in
-			self.setupManualAppearance()
+		NotificationCenter.default.addObserver(forName: UIAccessibility.invertColorsStatusDidChangeNotification, object: nil, queue: nil) { (notification) in
+			DispatchQueue.main.async { self.setupManualAppearance() }
 		}
 	}
 }

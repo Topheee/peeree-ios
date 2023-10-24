@@ -10,6 +10,7 @@ import Foundation
 import CoreGraphics
 import KeychainWrapper
 import PeereeCore
+import CSProgress
 
 /// An approximisation of the distance to the peer's phone.
 public enum PeerDistance {
@@ -87,6 +88,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	// MARK: Variables
 
+	/// Provider of information.
 	public var dataSource: PeeringControllerDataSource? = nil
 
 	/// Receives general updates and errors of the `PeeringController`.
@@ -123,7 +125,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	/// Stop all peering activity.
 	public func teardown() {
-		discoveryManager.set(userPeerID: nil, keyPair: nil)
+		discoveryManager.set(userIdentity: nil)
 		// delete all cached pictures and finally the persisted PeerInfo records themselves
 		persistence.clear()
 		DispatchQueue.main.async { self.viewModel.clear() }
@@ -179,7 +181,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	// MARK: DiscoveryManagerDelegate
 
-	func beganLoadingPortrait(_ progress: Progress, of peerID: PeereeCore.PeerID) {
+	func beganLoadingPortrait(_ progress: CSProgress, of peerID: PeereeCore.PeerID) {
 		publish(to: peerID) { model in
 			model.pictureProgress = progress
 		}
@@ -228,10 +230,12 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 			let now = Date()
 			self.lastSeenDates[peerID] = now
 			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
+
 			self.viewModel.modify(peerID: peerID) { model in
 				model.isAvailable = false
 				model.lastSeen = now
 			}
+
 			Notifications.peerDisappeared.post(peerID)
 		}
 	}
@@ -343,7 +347,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		discoveryManager.delegate = self
 		persistence.delegate = self
 
-		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(PeeringController.LastSeenKey)
+		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(PeeringController.LastSeenKey, containing: [NSUUID.self, NSDate.self])
 
 		DispatchQueue.main.async {
 			self.lastSeenDates = nsLastSeenDates as? [PeerID : Date] ?? [PeerID : Date]()
@@ -373,6 +377,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	// MARK: Static Methods
 
 	/// Populates the current peer-related data to the view models; must be called on the main thread!
+	@MainActor
 	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
 		let peerID = peer.id.peerID
 
@@ -410,7 +415,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	public func startAdvertising(restartOnly: Bool) {
 		dataSource?.getIdentity { identity, keyPair in
 			// these values MAY arrive a little late, but that is very unlikely
-			self.discoveryManager.set(userPeerID: identity.peerID, keyPair: keyPair)
+			self.discoveryManager.set(userIdentity: (identity.peerID, keyPair))
 
 			UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
 				guard (!restartOnly || self.localPeerManager != nil), let info = peerInfo else { return }
@@ -435,7 +440,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	/// publish changes to the model on the main thread
-	private func publish(to peerID: PeerID, completion: @escaping (inout PeerViewModel) -> ()) {
+	private func publish(to peerID: PeerID, completion: @MainActor @escaping (inout PeerViewModel) -> ()) {
 		DispatchQueue.main.async {
 			PeerViewModelController.shared.modify(peerID: peerID, modifier: completion)
 		}
@@ -459,7 +464,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		}
 	}
 
-	/// Cleans unnecessary peers from disk; must be called on AccountController.dQueue!
+	/// Cleans unnecessary peers from disk; must be called on PersistenceController.dQueue!
 	private func performCleanup(allPeers: Set<Peer>, lastSeens: [PeerID: Date]) {
 		let now = Date()
 		let never = Date.distantPast

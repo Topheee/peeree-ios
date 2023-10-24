@@ -15,7 +15,12 @@ final class WelcomeViewController: UIViewController {
 	private var timer: Timer?
 	
 	@IBAction func pressPin(_ sender: Any) {
-		if #available(iOS 13.0, *) { HapticController.shared.playHapticPin() }
+		if #available(iOS 13.0, *) {
+			Task {
+				await HapticController.shared.playHapticPin()
+			}
+		}
+
 		pinButton.layer.removeAllAnimations()
 	}
 	

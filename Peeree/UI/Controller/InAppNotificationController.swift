@@ -47,7 +47,7 @@ final class InAppNotificationController {
 	}
 
 	/// Show a globally visible in-app notification, similar to a 'toast'.
-	static func display(title: String, message: String, isNegative: Bool = true, _ notificationAction: (() -> Void)? = nil) {
+	static func display(title: String, message: String, isNegative: Bool = true, _ notificationAction: ( @Sendable () -> Void)? = nil) {
 		if isNegative {
 			dlog(Self.LogTag, "Displaying in-app warning '\(title)': \(message)")
 		}
@@ -71,9 +71,8 @@ final class InAppNotificationController {
 	}
 
 	/// Shows a 'toast' explaining `openapiError`; use this function for Errors from `AccountController`.
-	@MainActor
 	static func display(openapiError error: Error, localizedTitle: String, furtherDescription: String? = nil) {
-		var notificationAction: (() -> Void)? = nil
+		var notificationAction: ( @Sendable () -> Void)? = nil
 		var errorMessage: String
 		if let errorResponse = error as? ErrorResponse {
 			let httpErrorMessage = NSLocalizedString("HTTP error %d.", comment: "Error message for HTTP status codes")
@@ -93,7 +92,7 @@ final class InAppNotificationController {
 				}
 			case .offline:
 				errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
-				notificationAction = { open(urlString: UIApplication.openSettingsURLString) }
+				notificationAction = { DispatchQueue.main.async { open(urlString: UIApplication.openSettingsURLString) } }
 			}
 		} else {
 			errorMessage = error.localizedDescription
@@ -121,8 +120,6 @@ final class InAppNotificationController {
 			case .fatal(let error):
 				display(title: localizedTitle, message: error.localizedDescription)
 			case .cannotChat(let peerID, let reason):
-				let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
-
 				let format: String
 				switch reason {
 				case .noProfile:
@@ -135,7 +132,10 @@ final class InAppNotificationController {
 					format = NSLocalizedString("%@ removed their pin.", comment: "Message for the user that he cannot chat anymore with a person.")
 				}
 
-				display(title: localizedTitle, message: String(format: format, name))
+				DispatchQueue.main.async {
+					let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+					display(title: localizedTitle, message: String(format: format, name))
+				}
 			case .noAccount:
 				display(title: localizedTitle, message: "No server chat account yet.")
 			}

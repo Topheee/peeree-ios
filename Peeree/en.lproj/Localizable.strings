@@ -19,6 +19,9 @@
 /* Title of alert */
 "Account Creation Failed" = "Account Creation Failed";
 
+/* Title of alert */
+"Account Unavailable" = "Account Unavailable";
+
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Agreement to Terms of Use";
 
@@ -117,6 +120,9 @@
 
 /* Content of onboarding description paragraph. */
 "Efficient content" = "Data transmitted to our server is limited to the absolute necessary, conserving your battery and data.";
+
+/* Placeholder for missing biography */
+"Empty Biography." = "Empty Biography.";
 
 /* Low-level error */
 "Encoding Recent Peers Failed" = "Encoding Recent Peers Failed";

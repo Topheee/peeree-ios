@@ -287,8 +287,9 @@ final class PinMatchTableViewController: UITableViewController {
 			}
 
 			strongSelf.table.remove(at: peerPath.row)
+			strongSelf.tableView?.reloadData()
 		})
-		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver { [weak self] _ in
+		notificationObservers.append(AccountControllerFactory.NotificationName.accountCreated.addObserver { [weak self] _ in
 			self?.tableView.reloadData()
 		})
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver { [weak self] notification in

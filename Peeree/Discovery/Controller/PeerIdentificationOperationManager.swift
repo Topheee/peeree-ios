@@ -14,6 +14,7 @@ import PeereeCore
 import KeyValueTree
 import KeyValueTreeCoding
 import BLEPeripheralOperations
+import CSProgress
 
 /// Provides updates on peer identification tasks.
 protocol PeerIdentificationOperationManagerDelegate: AnyObject {
@@ -66,11 +67,11 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 
 	// MARK: PeripheralOperationDelegate
 
-	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiWrite characteristicID: CBUUID, with progress: Progress) {
+	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiWrite characteristicID: CBUUID, with progress: CSProgress) {
 		// ignored
 	}
 
-	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiRead characteristicID: CBUUID, with progress: Progress) {
+	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiRead characteristicID: CBUUID, with progress: CSProgress) {
 		// ignored
 	}
 

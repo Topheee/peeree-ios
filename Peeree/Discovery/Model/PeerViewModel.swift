@@ -9,8 +9,10 @@
 import Foundation
 import CoreGraphics
 import PeereeCore
+import CSProgress
 
-/// Holds current information of a peer to be used in the UI. Thus, all variables and methods must be accessed from main thread!
+/// Holds current information of a peer to be used in the UI.
+@MainActor
 public struct PeerViewModel {
 	// MARK: - Public and Internal
 
@@ -69,7 +71,7 @@ public struct PeerViewModel {
 	public private (set) var pictureHash: Data? = nil
 
 	/// The progress of portait transmission, if any.
-	public var pictureProgress: Progress? {
+	public var pictureProgress: CSProgress? {
 		didSet {
 			if pictureProgress != nil { self.post(.pictureLoadBegan) }
 		}

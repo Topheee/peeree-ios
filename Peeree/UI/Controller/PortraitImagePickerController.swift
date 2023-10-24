@@ -12,6 +12,7 @@ import Photos
 import PeereeDiscovery
 
 /// Informed party of ``PortraitImagePickerController``.
+@MainActor
 protocol PortraitImagePickerControllerDelegate: AnyObject {
 	/// Return the view controller that should present the picker.
 	func viewControllerToPresentImagePicker() -> UIViewController

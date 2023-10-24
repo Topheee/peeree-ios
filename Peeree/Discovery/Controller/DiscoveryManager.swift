@@ -23,7 +23,7 @@ protocol DiscoveryManagerDelegate: PeerDiscoveryOperationManagerDelegate {
 
 	/// The scan process stopped.
 	///
-	/// Either ``RemotePeerManager/stopScan()`` was called directly, or Bluetooth was turned of, or permissions where revoked.
+	/// Either ``DiscoveryManager/stopScan()`` was called directly, or Bluetooth was turned of, or permissions where revoked.
 	func scanningStopped()
 
 	/// An earlier discovered person was again encountered.
@@ -34,13 +34,10 @@ protocol DiscoveryManagerDelegate: PeerDiscoveryOperationManagerDelegate {
 }
 
 /// Retrieves information from remote peers.
-final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentificationOperationManagerDelegate, PeerDiscoveryOperationManagerDataSource {
+final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentificationOperationManagerDelegate {
 
-	/// Our peerID; access only from `dQueue`.
-	private(set) var userPeerID: PeerID? = nil
-
-	/// For authenticating ourselves.
-	private(set) var keyPair: KeyPair? = nil
+	/// The account of the user; access only from `dQueue`.
+	private(set) var userIdentity: (PeerID, KeyPair)? = nil
 
 	/// Needed for writing nonces; `16` is a good estimation.
 	private(set) var blockSize = 16
@@ -95,11 +92,10 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	}
 
 	/// Defines the values of our Peeree Identity.
-	func set(userPeerID peerID: PeerID?, keyPair: KeyPair?) {
+	func set(userIdentity: (peerID: PeerID, keyPair: KeyPair)?) {
 		dQueue.async {
-			self.userPeerID = peerID
-			self.keyPair = keyPair
-			self.blockSize = keyPair?.blockSize ?? self.blockSize
+			self.userIdentity = userIdentity
+			self.blockSize = userIdentity?.keyPair.blockSize ?? self.blockSize
 		}
 	}
 
@@ -231,12 +227,12 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		if let opm = self.discoveryOperations[peerID] {
 			opManager = opm
 		} else {
-			opManager = PeerDiscoveryOperationManager(peerID: peerID, lastChanged: lastChangedDate, dQueue: self.dQueue)
+			opManager = PeerDiscoveryOperationManager(peerID: peerID, lastChanged: lastChangedDate, dQueue: self.dQueue, blockSize: self.blockSize, userIdentity: self.userIdentity)
 			self.discoveryOperations[peerID] = opManager
 		}
 
 		opManager.delegate = self.delegate
-		opManager.beginDiscovery(on: peripheral, dataSource: self)
+		opManager.beginDiscovery(on: peripheral)
 	}
 
 	func peerIdentificationFailed(_ error: Error, of peripheral: CBPeripheral) {

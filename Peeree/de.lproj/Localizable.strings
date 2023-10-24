@@ -19,6 +19,9 @@
 /* Title of alert */
 "Account Creation Failed" = "Erstellen des Accounts fehlgeschlagen";
 
+/* Title of alert */
+"Account Unavailable" = "Account ist nicht verfügbar";
+
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Akzeptieren der Nutzungsbedingungen";
 
@@ -117,6 +120,9 @@
 
 /* Content of onboarding description paragraph. */
 "Efficient content" = "An unsere Server übermittelte Daten sind auf das Nötigste reduziert, was deinen Akku und dein Datenvolumen schont.";
+
+/* Placeholder for missing biography */
+"Empty Biography." = "Leerer Steckbrief.";
 
 /* Low-level error */
 "Encoding Recent Peers Failed" = "Serialisierung der zuletzt gefunden Leute fehlgeschlagen";

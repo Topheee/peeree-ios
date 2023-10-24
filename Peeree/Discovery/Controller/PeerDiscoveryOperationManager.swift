@@ -15,18 +15,7 @@ import KeychainWrapper
 import KeyValueTree
 import KeyValueTreeCoding
 import BLEPeripheralOperations
-
-/// Provider for data from our own Identity necessary to authenticate ourselves to others.
-protocol PeerDiscoveryOperationManagerDataSource: AnyObject {
-	/// Our peerID.
-	var userPeerID: PeerID? { get }
-
-	/// For authenticating ourselves.
-	var keyPair: KeyPair? { get }
-
-	/// Needed for writing nonces; `16` is a good estimation.
-	var blockSize: Int { get }
-}
+import CSProgress
 
 /// Provides a means to react on key steps of the discovery process.
 protocol PeerDiscoveryOperationManagerDelegate: AnyObject {
@@ -34,7 +23,7 @@ protocol PeerDiscoveryOperationManagerDelegate: AnyObject {
 	func verified(_ peereeIdentity: PeereeIdentity)
 
 	/// The portrait transmit process has begun.
-	func beganLoadingPortrait(_ progress: Progress, of peerID: PeerID)
+	func beganLoadingPortrait(_ progress: CSProgress, of peerID: PeerID)
 
 	/// Retrieved the describing information of a person.
 	func loaded(info: PeerInfo, of identity: PeereeIdentity)
@@ -80,6 +69,12 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// The PeerID of the remote peer we are discovering.
 	let peerID: PeerID
 
+	/// The account of the user, if available.
+	private(set) var userIdentity: (PeerID, KeyPair)? = nil
+
+	/// Needed for writing nonces.
+	let blockSize: Int
+
 	/// The state of authentication.
 	var authenticationStatus: AuthenticationStatus = []
 
@@ -90,16 +85,44 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	private(set) var state: PeerDiscoveryState
 
 	/// Create an the operation manager. Start it by using `beginDiscovery()`.
-	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue) {
+	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue, blockSize: Int, userIdentity: (PeerID, KeyPair)?) {
 		self.peerID = peerID
 		self.state = .discovered(lastChanged)
 		self.dQueue = dQueue
+		self.blockSize = blockSize
+		self.userIdentity = userIdentity
+
+		let opTreeGraph: [KeyValueTree<PeripheralOperation, Void>]
+
+		if userIdentity != nil {
+			opTreeGraph = [
+				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth1), nodes: [
+					.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth2), value: ())
+				]),
+				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth1), nodes: [
+					.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth2), nodes: [
+						.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreePeerInfo), value: ())
+					])
+				])
+			]
+		} else {
+			// omit authenticating ourselves - since we can't without our own identity
+			opTreeGraph = [
+				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth1), nodes: [
+					.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth2), nodes: [
+						.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreePeerInfo), value: ())
+					])
+				])
+			]
+		}
+
+		self.opTreeGraphDiscovery = opTreeGraph
+
 		self.opManager = PeripheralOperationTreeManager(operationTrees: opTreeGraphDiscovery, queue: dQueue)
 	}
 
 	/// Begin the discovery process for a given peripheral.
-	func beginDiscovery(on peripheral: CBPeripheral, dataSource: PeerDiscoveryOperationManagerDataSource) {
-		self.dataSource = dataSource
+	func beginDiscovery(on peripheral: CBPeripheral) {
 		self.opManager.delegate = self
 		self.opManager.begin(on: peripheral)
 	}
@@ -107,7 +130,13 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// After all mandatory information is retrieved, the optional (and time-consuming) data can be requested using this method.
 	func beginLoadAdditionalInfo(on peripheral: CBPeripheral, loadPortrait: Bool) throws {
 		guard case let .queried(queried) = self.state else {
-			throw createApplicationError(localizedDescription: "wrong state \(self.state)")
+			switch self.state {
+			case .scraping(_), .finished(_):
+				// already done
+				return
+			default:
+				throw createApplicationError(localizedDescription: "wrong state \(self.state)")
+			}
 		}
 
 		self.state = .scraping(queried)
@@ -155,10 +184,10 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 	// MARK: PeripheralOperationDelegate
 
-	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiWrite characteristicID: CBUUID, with progress: Progress) {
+	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiWrite characteristicID: CBUUID, with progress: CSProgress) {
 	}
 
-	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiRead characteristicID: CBUUID, with progress: Progress) {
+	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, beganMultiRead characteristicID: CBUUID, with progress: CSProgress) {
 		switch characteristicID {
 		case CBUUID.PortraitCharacteristicID:
 			delegate?.beganLoadingPortrait(progress, of: self.peerID)
@@ -179,7 +208,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	func peripheralOperation(_ operation: PeripheralOperation, writeDataFor characteristicID: CBUUID, of peripheral: CBPeripheral) throws -> Data {
 		switch characteristicID {
 		case CBUUID.RemoteUUIDCharacteristicID:
-			guard let userPeerID = self.dataSource?.userPeerID else {
+			guard let userPeerID = self.userIdentity?.0 else {
 				throw unexpectedNilError()
 			}
 
@@ -187,14 +216,14 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 		case CBUUID.AuthenticationCharacteristicID:
 			let writeType = CBCharacteristicWriteType.withResponse
-			let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), self.dataSource?.blockSize ?? 16)
+			let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), self.blockSize)
 			let nonce = try generateRandomData(length: randomByteCount)
 			self.nonce = nonce
 			return nonce
 
 
 		case CBUUID.RemoteAuthenticationCharacteristicID:
-			guard let keyPair = self.dataSource?.keyPair else {
+			guard let keyPair = self.userIdentity?.1 else {
 				throw unexpectedNilError()
 			}
 
@@ -425,25 +454,13 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// Dependencies of the operations. The root node is the start state. Once all leaf nodes finish, the connection is closed.
 	///
 	/// Must not be static, because `PeripheralOperation` is a reference type!
-	private let opTreeGraphDiscovery: [KeyValueTree<PeripheralOperation, Void>] = [
-		.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth1), nodes: [
-			.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth2), value: ())
-		]),
-		.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth1), nodes: [
-			.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth2), nodes: [
-				.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreePeerInfo), value: ())
-			])
-		])
-	]
+	private let opTreeGraphDiscovery: [KeyValueTree<PeripheralOperation, Void>]
 
 	/// The callback dispatch queue of the `CBCentralManager`.
 	private let dQueue: DispatchQueue
 
 	/// The operation manager handling the process.
 	private var opManager: PeripheralOperationTreeManager
-
-	/// Our identity provider.
-	private weak var dataSource: PeerDiscoveryOperationManagerDataSource?
 
 	/// Challenge sent during the authentication process.
 	private var nonce = Data()

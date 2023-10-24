@@ -8,6 +8,8 @@
 
 import UIKit
 
+import CSProgress
+
 /// A view containing a filled circle, which applies itself to another view.
 final class CircleMaskView: UIView {
 	override func draw(_ rect: CGRect) {
@@ -163,10 +165,7 @@ final class RoundedVisualEffectView: UIVisualEffectView {
 }
 
 /// An image view drawing a placeholder and progress until the actual image is being loaded.
-final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
-	private var progressManager: ProgressManager? = nil
-	private var circleLayer: CAShapeLayer!
-
+final class ProgressImageView: RoundedImageView {
 	/// Set to `true` to temporarly disable update the `strokeEnd` when the progress updates.
 	public var pauseUpdates = false {
 		didSet {
@@ -174,21 +173,65 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 		}
 	}
 
-	public var loadProgress: Progress? {
-		get {
-			progressManager?.progress
-		}
-		set {
-			if let progress = newValue {
-				progressManager = ProgressManager(progress: progress, delegate: self, queue: DispatchQueue.main)
-				animatePictureLoadLayer()
-			} else {
-				progressManager = nil
+	/// Animates a progress, or removes an animation.
+	public var loadProgress: CSProgress? {
+		didSet {
+			// Always remove the old ones
+			loadProgressID.map {
+				oldValue?.removeFractionCompletedNotification(identifier: $0)
+			}
+			// Always remove the old one
+			loadProgressCancellationID.map {
+				oldValue?.removeCancellationNotification(identifier: $0)
 				removePictureLoadLayer()
 			}
+
+			guard let loadProgress else { return }
+
+			loadProgressID = loadProgress.addFractionCompletedNotification(onQueue: OperationQueue.main) { completedUnitCount, totalUnitCount, fractionCompleted in
+				if completedUnitCount == totalUnitCount {
+					self.removePictureLoadLayer()
+				} else if let circle = self.circleLayer, !self.pauseUpdates {
+					circle.strokeEnd = CGFloat(loadProgress.fractionCompleted)
+					if #available(iOS 13, *) {
+						circle.setNeedsDisplay()
+					}
+				}
+			}
+
+			loadProgressCancellationID = loadProgress.addCancellationNotification(onQueue: OperationQueue.main) {
+				self.removePictureLoadLayer()
+
+				UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+					self.backgroundColor = UIColor.red
+				}) { (completed) in
+					UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+						self.backgroundColor = nil
+					}, completion: nil)
+				}
+			}
+
+			animatePictureLoadLayer()
 		}
 	}
 
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		resizeCircleLayer()
+	}
+
+	// MARK: Private
+
+	/// Layer containing the load progress.
+	private var circleLayer: CAShapeLayer!
+
+	/// Identifier for observer.
+	private var loadProgressID: Any?
+
+	/// Identifier for observer.
+	private var loadProgressCancellationID: Any?
+
+	/// Stop showing the load progress.
 	private func removePictureLoadLayer() {
 		circleLayer?.removeFromSuperlayer()
 		circleLayer = nil
@@ -229,48 +272,6 @@ final class ProgressImageView: RoundedImageView, ProgressManagerDelegate {
 		circleLayer.path = circlePath.cgPath
 		circleLayer.setNeedsLayout()
 		circleLayer.setNeedsDisplay()
-	}
-	
-	override func layoutSubviews() {
-		super.layoutSubviews()
-		resizeCircleLayer()
-	}
-
-	// MARK: ProgressManagerDelegate
-
-	func progressDidPause(_ progress: Progress) { /* ignored */ }
-	func progressDidResume(_ progress: Progress) { /* ignored */ }
-	
-	func progressDidCancel(_ progress: Progress) {
-		if progress === loadProgress {
-			progressManager = nil
-			removePictureLoadLayer()
-//			UIView.animate(withDuration: 1.0, delay: 0.0, options: [.autoreverse], animations: {
-//				self.portraitImageView.backgroundColor = UIColor.red
-//			})
-			// as above is not working...
-			UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-				self.backgroundColor = UIColor.red
-			}) { (completed) in
-				UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-					self.backgroundColor = nil
-				}, completion: nil)
-			}
-		}
-	}
-	
-	func progressDidUpdate(_ progress: Progress) {
-		if progress === loadProgress {
-			if progress.completedUnitCount == progress.totalUnitCount {
-				progressManager = nil
-				removePictureLoadLayer()
-			} else if let circle = circleLayer, !pauseUpdates {
-				circle.strokeEnd = CGFloat(progress.fractionCompleted)
-				if #available(iOS 13, *) {
-					circle.setNeedsDisplay()
-				}
-			}
-		}
 	}
 }
 

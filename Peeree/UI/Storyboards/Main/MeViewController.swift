@@ -54,11 +54,13 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 	private func initiateDeleteAccount() {
 		let alertController = UIAlertController(title: NSLocalizedString("Identity Deletion", comment: "Title message of alert for account deletion."), message: NSLocalizedString("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.", comment: "Message of account deletion alert."), preferredStyle: .alert)
+
 		alertController.addAction(UIAlertAction(title: NSLocalizedString("Delete Identity", comment: "Caption of button"), style: .destructive, handler: { (button) in
 			PeeringController.shared.change(peering: false)
 			self.deleteServerChatAccount()
-			AccountController.use { $0.deleteAccount(self.accountActionCompletionHandler) }
+			AccountControllerFactory.shared.deleteAccount(self.accountActionCompletionHandler)
 		}))
+
 		alertController.preferredAction = alertController.addCancelAction()
 		present(alertController, animated: true, completion: nil)
 	}
@@ -67,7 +69,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		let createButtonTitle = NSLocalizedString("Create Identity", comment: "Caption of button.")
 		let alertController = UIAlertController(title: NSLocalizedString("Agreement to Terms of Use", comment: "Title of identity creation alert"), message: String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), createButtonTitle), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
 		let createAction = UIAlertAction(title: createButtonTitle, style: .`default`) { (_) in
-			AppDelegate.createIdentity()
+			createIdentity()
 		}
 		alertController.addAction(createAction)
 		let viewTermsAction = UIAlertAction(title: NSLocalizedString("View Terms", comment: "Caption of identity creation alert action."), style: .`default`) { (action) in
@@ -224,7 +226,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		case mailTextField:
 			let newValue = textField.text ?? ""
 
-			AccountController.use { ac in
+			AccountControllerFactory.shared.use { ac in
 				guard newValue != ac.accountEmail ?? "" else { return }
 
 				if newValue != "" {
@@ -389,10 +391,10 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 	/// Do not allow changes to the user's peer while peering; show onboarding if peer does not exist.
 	private func lockAndLoadView(displayOnboardingIfNecessary showOnboarding: Bool) {
-		AccountController.use({ ac in
+		AccountControllerFactory.shared.use({ ac in
 			let email = ac.accountEmail
 			let peerID = ac.getPeerID()
-			let accountActionInProgress = AccountController.isCreatingAccount || ac.isDeletingAccount
+			let accountActionInProgress = AccountControllerFactory.shared.isCreatingAccount || AccountControllerFactory.shared.isDeletingAccount
 
 			UserPeer.instance.read { peerInfo, birthday, picture, biography in
 				let userPeerDefined = peerInfo != nil
@@ -411,7 +413,14 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 
 				self.loadUserPeerInfo(peerInfo: peerInfo, birthday: birthday, portrait: picture, bio: biography, displayOnboardingIfNecessary: showOnboarding)
 			}
-		}, {
+		}, { error in
+			error.map {
+				InAppNotificationController.display(
+					error: $0,
+					localizedTitle: NSLocalizedString("Account Unavailable", comment: "Title of alert")
+				)
+			}
+
 			UserPeer.instance.read { peerInfo, birthday, picture, biography in
 				// account does not exist
 				self.accountButton.setTitle(NSLocalizedString("Create Identity", comment: "Caption of button"), for: .normal)
@@ -420,7 +429,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 				self.mailTextField.isHidden = true
 				self.mailNoteLabel.isHidden = true
 				self.accountIDLabel.isHidden = true
-				self.accountButton.isEnabled = !AccountController.isCreatingAccount
+				self.accountButton.isEnabled = !AccountControllerFactory.shared.isCreatingAccount
 
 				self.previewButton.isEnabled = false
 
@@ -437,8 +446,8 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		}
 
 		notificationObservers.append(PeeringController.Notifications.connectionChangedState.addObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.NotificationName.accountCreated.addObserver(usingBlock: reloadBlock))
-		notificationObservers.append(AccountController.NotificationName.accountDeleted.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountControllerFactory.NotificationName.accountCreated.addObserver(usingBlock: reloadBlock))
+		notificationObservers.append(AccountControllerFactory.NotificationName.accountDeleted.addObserver(usingBlock: reloadBlock))
 		notificationObservers.append(UserPeer.NotificationName.changed.addObserver(usingBlock: reloadBlock))
 	}
 }

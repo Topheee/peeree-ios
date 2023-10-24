@@ -42,15 +42,6 @@ public protocol ServerChat {
 
 /// Information provider for the server chat.
 public protocol ServerChatDataSource {
-	/// Informed party.
-	var delegate: ServerChatDelegate? { get }
-
-	/// Informed party about chats.
-	var conversationDelegate: ServerChatConversationDelegate? { get }
-
-	/// Queries for the PeerID that identifies ourselves and will be used as the username for the chat server.
-	func ourPeerID(_ result: @escaping (PeerID?) -> ())
-
 	/// Queries pin state of peers.
 	func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ())
 }
@@ -64,7 +55,7 @@ public protocol ServerChatDelegate: AnyObject {
 	func cannotJoinRoom(_ error: Error)
 
 	/// Decrypting an encrypted server chat event failed; call `recreateRoom` to re-create the room (losing all messages).
-	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping () -> Void)
+	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping @Sendable () -> Void)
 
 	/// The certificate of the server is invalid.
 	func serverChatCertificateIsInvalid()

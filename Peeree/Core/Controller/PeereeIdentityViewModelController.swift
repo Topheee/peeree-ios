@@ -10,6 +10,7 @@ import Foundation
 import KeychainWrapper
 
 /// This class is intended for use on the main thread only!
+@MainActor
 public final class PeereeIdentityViewModelController {
 	// MARK: - Public and Internal
 
@@ -84,5 +85,6 @@ public final class PeereeIdentityViewModelController {
 
 extension PeerID {
 	/// Whether this is the ``PeerID`` of the local user.
+	@MainActor
 	public var isLocalPeer: Bool { return self == PeereeIdentityViewModelController.userPeerID }
 }

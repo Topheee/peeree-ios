@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HIO-b7-1gr">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22154" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="HIO-b7-1gr">
     <device id="retina4_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22130"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
@@ -16,7 +16,7 @@
             <objects>
                 <tableViewController title="Radar" id="44q-aX-Sii" userLabel="Browse" customClass="BrowseViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="64" sectionHeaderHeight="28" sectionFooterHeight="28" id="ym8-vj-FZW">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="498"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <color key="sectionIndexBackgroundColor" systemColor="systemBackgroundColor"/>
@@ -47,7 +47,7 @@
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap to go online" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9An-iq-LoL">
-                                                                    <rect key="frame" x="8" y="91" width="304" height="18"/>
+                                                                    <rect key="frame" x="8" y="88.5" width="304" height="18"/>
                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
@@ -361,7 +361,7 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="Search" largeTitleDisplayMode="always" id="sgW-Kv-UY4">
                         <button key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="7aa-4S-buU">
-                            <rect key="frame" x="110" y="9" width="100" height="32"/>
+                            <rect key="frame" x="110" y="6" width="100" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                             <accessibility key="accessibilityConfiguration" hint="Turn radar on or off" label="Toggle Network"/>
@@ -396,13 +396,13 @@
                                 <rect key="frame" x="12" y="72" width="296" height="400.5"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" horizontalHuggingPriority="240" verticalHuggingPriority="240" horizontalCompressionResistancePriority="740" verticalCompressionResistancePriority="740" translatesAutoresizingMaskIntoConstraints="NO" id="rHp-W3-COa">
-                                        <rect key="frame" x="5" y="0.0" width="286.5" height="286.5"/>
+                                        <rect key="frame" x="4" y="0.0" width="288.5" height="288.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" horizontalHuggingPriority="241" verticalHuggingPriority="241" horizontalCompressionResistancePriority="741" verticalCompressionResistancePriority="741" translatesAutoresizingMaskIntoConstraints="NO" id="oOD-vv-AaG" customClass="GradientView" customModule="Peeree" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="286.5" height="286.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="288.5" height="288.5"/>
                                                 <subviews>
                                                     <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" image="PortraitPlaceholder" translatesAutoresizingMaskIntoConstraints="NO" id="S6f-fD-kvO" customClass="ProgressImageView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="254.5" height="254.5"/>
+                                                        <rect key="frame" x="16" y="16" width="256.5" height="256.5"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Shows a portrait of the person" label="Portrait">
                                                             <bool key="isElement" value="YES"/>
                                                         </accessibility>
@@ -412,9 +412,9 @@
                                                         </constraints>
                                                     </imageView>
                                                     <visualEffectView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" verticalHuggingPriority="249" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="pRr-uE-8dC" customClass="RoundedVisualEffectView" customModule="Peeree" customModuleProvider="target">
-                                                        <rect key="frame" x="16" y="16" width="254.5" height="254.5"/>
+                                                        <rect key="frame" x="16" y="16" width="256.5" height="256.5"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7z0-Wa-RrG">
-                                                            <rect key="frame" x="0.0" y="0.0" width="254.5" height="254.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="256.5" height="256.5"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         </view>
                                                         <blurEffect style="regular"/>
@@ -453,10 +453,10 @@
                                         </constraints>
                                     </view>
                                     <view opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" translatesAutoresizingMaskIntoConstraints="NO" id="HnQ-9F-bJd">
-                                        <rect key="frame" x="0.0" y="298.5" width="296" height="102"/>
+                                        <rect key="frame" x="0.0" y="300.5" width="296" height="100"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" axis="vertical" distribution="fillProportionally" alignment="center" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="ega-fn-5Me">
-                                                <rect key="frame" x="8" y="0.0" width="280" height="90"/>
+                                                <rect key="frame" x="8" y="0.0" width="280" height="88"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="256" verticalHuggingPriority="256" horizontalCompressionResistancePriority="756" verticalCompressionResistancePriority="756" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="29q-7d-1Xd">
                                                         <rect key="frame" x="48.5" y="0.0" width="183" height="28"/>
@@ -579,15 +579,17 @@
                                                             </view>
                                                         </subviews>
                                                     </stackView>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" changesSelectionAsPrimaryAction="YES" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="HFc-7O-6xq">
-                                                        <rect key="frame" x="104" y="52" width="72" height="38"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HFc-7O-6xq">
+                                                        <rect key="frame" x="112" y="52" width="56.5" height="36"/>
                                                         <accessibility key="accessibilityConfiguration" hint="Marks this person as interesting" label="Pin button"/>
-                                                        <state key="normal" title="Button"/>
-                                                        <buttonConfiguration key="configuration" style="tinted" title="Pin" imagePadding="8" cornerStyle="large">
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                        <inset key="contentEdgeInsets" minX="8" minY="6" maxX="8" maxY="6"/>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
+                                                        <state key="normal" title="Pin" backgroundImage="ButtonBackground">
                                                             <imageReference key="image" image="PinSymbol" symbolScale="default"/>
-                                                            <preferredSymbolConfiguration key="preferredSymbolConfigurationForImage" configurationType="pointSize" pointSize="36" weight="ultraLight"/>
-                                                            <fontDescription key="titleFontDescription" style="UICTFontTextStyleTitle3"/>
-                                                        </buttonConfiguration>
+                                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="36" weight="ultraLight"/>
+                                                        </state>
+                                                        <state key="selected" backgroundImage="ButtonBackgroundSelected"/>
                                                         <connections>
                                                             <action selector="pinPeer:" destination="bgg-zV-1WC" eventType="touchUpInside" id="VRL-Cp-m6y"/>
                                                         </connections>
@@ -1348,7 +1350,7 @@
             <objects>
                 <tableViewController id="FVN-ta-Q5I" customClass="FilterViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="Qaz-Dg-iiu">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="498"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <color key="sectionIndexBackgroundColor" systemColor="systemGroupedBackgroundColor"/>
@@ -1740,7 +1742,7 @@
             <objects>
                 <viewController id="ZaK-Ee-yIa" customClass="MessagingViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Txw-fJ-F7E">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="464"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="470"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView contentMode="scaleToFill" horizontalHuggingPriority="248" verticalHuggingPriority="248" horizontalCompressionResistancePriority="748" verticalCompressionResistancePriority="748" translatesAutoresizingMaskIntoConstraints="NO" id="Vq4-kH-h3A">
@@ -1776,7 +1778,7 @@
                                                     <outlet property="delegate" destination="ZaK-Ee-yIa" id="qoB-lA-Qwy"/>
                                                 </connections>
                                             </textView>
-                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" role="primary" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
+                                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" verticalHuggingPriority="258" horizontalCompressionResistancePriority="753" verticalCompressionResistancePriority="752" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kJ7-ps-KKx">
                                                 <rect key="frame" x="291" y="0.0" width="13" height="34"/>
                                                 <accessibility key="accessibilityConfiguration" hint="Sends message" label="Send"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
@@ -1815,7 +1817,7 @@
                     <navigationItem key="navigationItem" prompt="Peer" largeTitleDisplayMode="always" id="Vvs-dp-GcW">
                         <nil key="title"/>
                         <button key="titleView" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="aS1-Mz-42g">
-                            <rect key="frame" x="138" y="37" width="44" height="44"/>
+                            <rect key="frame" x="138" y="34" width="44" height="44"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <color key="tintColor" systemColor="labelColor"/>
                             <state key="normal" image="PersonIcon"/>
@@ -1863,7 +1865,7 @@
             <objects>
                 <tableViewController id="hpg-pj-BfE" customClass="PinMatchTableViewController" customModule="Peeree" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="GAq-PF-ctD">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="498"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <prototypes>
@@ -2032,6 +2034,8 @@
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.082352941176470587" green="0.51764705882352935" blue="0.36470588235294116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
+        <image name="ButtonBackground" width="15" height="15"/>
+        <image name="ButtonBackgroundSelected" width="15" height="15"/>
         <image name="LeftRightRadarGlyph" width="30" height="30"/>
         <image name="MessageBubbleReceive" width="35" height="25"/>
         <image name="MessageBubbleSend" width="34" height="25"/>
@@ -2045,7 +2049,7 @@
         <image name="flag.fill" width="12" height="13"/>
         <image name="paperplane.circle.fill" width="13" height="13"/>
         <systemColor name="labelColor">
-            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="secondarySystemBackgroundColor">
             <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

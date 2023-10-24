@@ -9,7 +9,8 @@
 import Foundation
 import PeereeCore
 
-/// This class is intended for use on the main thread only!
+/// ViewModelController for ``PeerViewModel``s.
+@MainActor
 public final class PeerViewModelController {
 
 	// Log tag.
@@ -52,7 +53,7 @@ public final class PeerViewModelController {
 	}
 
 	/// Makes modifications to the view model of `peerID`.
-	public func modify(peerID: PeerID, modifier: (inout PeerViewModel) -> ()) {
+	public func modify(peerID: PeerID, modifier: @MainActor (inout PeerViewModel) -> ()) {
 		let clos: () -> PeerViewModel = {
 			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 

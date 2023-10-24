@@ -38,25 +38,6 @@ extension PeerViewModel {
 }
 
 extension AppDelegate {
-
-	/// Calls `AccountController.createAccount` and displays its error.
-	static func createIdentity(displayError: Bool = true) {
-		AccountController.createAccount { result in
-			switch result {
-			case .success(_):
-				ServerChatFactory.getOrSetupInstance { chatResult in
-					chatResult.mError.map {
-						InAppNotificationController.display(serverChatError: $0, localizedTitle: NSLocalizedString("Chat Server Account Creation Failed", comment: "Error message title"))
-					}
-				}
-
-			case .failure(let error):
-				guard displayError else { return }
-				InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Account Creation Failed", comment: "Title of alert"), furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error"))
-			}
-		}
-	}
-
 	/// Display appropriate view controller for `peerID`.
 	func showOrMessage(peerID: PeerID) {
 		if PeereeIdentityViewModelController.viewModels[peerID]?.pinState == .pinMatch {
@@ -151,7 +132,7 @@ extension AppDelegate {
 			alertController.addAction(retryVerifyAction)
 			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.info.nickname)
 			alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
-				AccountController.use { $0.pin(idModel.id) }
+				AccountControllerFactory.shared.use { $0.pin(idModel.id) }
 			})
 			alertController.addCancelAction()
 			alertController.preferredAction = retryVerifyAction
@@ -161,7 +142,7 @@ extension AppDelegate {
 				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
 			}*/
 		} else {
-			AccountController.use { $0.pin(idModel.id) }
+			AccountControllerFactory.shared.use { $0.pin(idModel.id) }
 		}
 	}
 
@@ -201,7 +182,12 @@ extension AppDelegate {
 
 			if PeerViewModelController.shared.isBluetoothOn {
 				pc.change(peering: !PeerViewModelController.shared.peering)
-				if #available(iOS 13.0, *) { HapticController.shared.playHapticClick() }
+
+				if #available(iOS 13.0, *) {
+					Task {
+						await HapticController.shared.playHapticPin()
+					}
+				}
 			} else {
 				open(urlString: UIApplication.openSettingsURLString)
 			}

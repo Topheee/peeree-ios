@@ -31,6 +31,12 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	/// Information provider for external dependencies.
 	let dataSource: ServerChatDataSource
 
+	/// Informed party.
+	weak var delegate: ServerChatDelegate?
+
+	/// Informed party.
+	weak var conversationDelegate: ServerChatConversationDelegate?
+
 	// MARK: Methods
 
 	/// this will close the underlying session and invalidate the global ServerChatController instance.
@@ -194,7 +200,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			switch response {
 			case .failure(let error):
 				elog(Self.LogTag, "setPusher() failed: \(error)")
-				self.dataSource.delegate?.configurePusherFailed(error)
+				self.delegate?.configurePusherFailed(error)
 			case .success():
 				dlog(Self.LogTag, "setPusher() was successful.")
 			}
@@ -224,7 +230,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 					self.join(roomId: success.roomId, with: peerID)
 				}
 			case .failure(let failure):
-				self.dataSource.delegate?.serverChatInternalErrorOccured(failure)
+				self.delegate?.serverChatInternalErrorOccured(failure)
 			}
 		}
 	}
@@ -283,11 +289,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	}
 
 	func encodingFailed(with error: Error) {
-		dataSource.delegate?.encodingPersistedChatDataFailed(with: error)
+		delegate?.encodingPersistedChatDataFailed(with: error)
 	}
 
 	func decodingFailed(with error: Error) {
-		dataSource.delegate?.decodingPersistedChatDataFailed(with: error)
+		delegate?.decodingPersistedChatDataFailed(with: error)
 	}
 
 	// MARK: - Private
@@ -474,7 +480,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
 				let sentUnreadMessages = unreadMessages
 				self.conversationQueue.async {
-					self.dataSource.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: true, unreadCount: sentUnreadMessages, with: peerID)
+					self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: true, unreadCount: sentUnreadMessages, with: peerID)
 				}
 			}
 		}
@@ -599,7 +605,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				}
 
 				elog(Self.LogTag, "Cannot join room \(roomId): \(error)")
-				self.dataSource.delegate?.cannotJoinRoom(error)
+				self.delegate?.cannotJoinRoom(error)
 			}
 		}
 	}
@@ -729,7 +735,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				self.reallyCreateRoom(with: peerID) { result in
 					result.error.map {
 						elog(Self.LogTag, "failed to really create room with \(peerID): \($0)")
-						self.dataSource.delegate?.serverChatInternalErrorOccured($0)
+						self.delegate?.serverChatInternalErrorOccured($0)
 					}
 				}
 			}
@@ -751,16 +757,18 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 	/// Parses `event` and informs the rest of the app with the contents.
 	private func process(messageEvent event: MXEvent) {
-		guard let peerID = roomIdsListeningOn[event.roomId ?? ""] else { return }
+		guard let peerID = roomIdsListeningOn[event.roomId ?? ""],
+			  let convDelegate = self.conversationDelegate else { return }
 
 		do {
 			let messageEvent = try MessageEventData(messageEvent: event)
+			let ourPeerID = self.peerID.serverChatUserId
 
 			self.conversationQueue.async {
-				if event.sender == self.peerID.serverChatUserId {
-					self.dataSource.conversationDelegate?.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
+				if event.sender == ourPeerID {
+					convDelegate.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
 				} else {
-					self.dataSource.conversationDelegate?.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
+					convDelegate.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
 				}
 			}
 		} catch let error {
@@ -817,7 +825,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 					// The only option I see is to leave the room and create a new one.
 
-					self.dataSource.delegate?.decryptionError(decryptionError, peerID: peerID) {
+					self.delegate?.decryptionError(decryptionError, peerID: peerID) {
 						self.forgetRoom(event.roomId) { forgetError in
 							forgetError.map { dlog(Self.LogTag, "forgetting room with broken encryption failed: \($0)") }
 

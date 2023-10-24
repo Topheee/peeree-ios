@@ -11,7 +11,8 @@ import PeereeCore
 import PeereeDiscovery
 import PeereeServer
 
-final class PersonDetailViewController: PeerViewController, ProgressManagerDelegate, UITextViewDelegate {
+/// Displays the profile of a user.
+final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 	private static let bioAnimationDuration: TimeInterval = 0.45
 	private static let signatureAnimationDuration: TimeInterval = 0.30
 
@@ -57,14 +58,12 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	static let beaconSegueID = "beaconSegue"
 
 	private var notificationObservers: [NSObjectProtocol] = []
-	
-	private var pictureProgressManager: ProgressManager?
 
 	@IBAction func reportPeer(_ sender: Any) {
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
 		let unpinAction = UIAlertAction(title: NSLocalizedString("Unpin", comment: "Alert action button title"), style: .default) { (action) in
-			AccountController.use { $0.unpin(id: self.idModel.id) }
+			AccountControllerFactory.shared.use { $0.unpin(id: self.idModel.id) }
 		}
 		unpinAction.isEnabled = !model.peerID.isLocalPeer && idModel.pinState.isPinned
 		alertController.addAction(unpinAction)
@@ -73,7 +72,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		if let portrait = model.cgPicture, let hash = model.pictureHash {
 			let peerID = self.peerID
 			let reportAction = UIAlertAction(title: NSLocalizedString("Report Portrait", comment: "Alert action button title"), style: .destructive) { (action) in
-				AccountController.use { ac in
+				AccountControllerFactory.shared.use { ac in
 					ac.report(peerID: peerID, portrait: portrait, portraitHash: hash) { (error) in
 						InAppNotificationController.display(openapiError: error, localizedTitle: NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog"))
 					}
@@ -96,7 +95,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 #else
 		let mdl = idModel
 		guard !mdl.pinState.isPinned else {
-			AccountController.use { $0.updatePinStatus(of: mdl.id, force: true) }
+			AccountControllerFactory.shared.use { $0.updatePinStatus(of: mdl.id, force: true) }
 			return
 		}
 
@@ -138,7 +137,6 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 		// restart circle updates and update to the latest state
 		portraitImageView.pauseUpdates = false
-		pictureProgressManager.map { portraitImageView.progressDidUpdate($0.progress) }
 
 		UIAccessibility.post(notification: .layoutChanged, argument: nil)
 	}
@@ -293,10 +291,15 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		}))
 
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoadBegan.addObserver(usingBlock: { [weak self] (_) in
-			guard let strongSelf = self else { return }
-			strongSelf.model.pictureProgress.map {
-				strongSelf.pictureProgressManager = ProgressManager(progress: $0, delegate: strongSelf, queue: DispatchQueue.main)
-			}
+			guard let strongSelf = self, let progress = strongSelf.model.pictureProgress else { return }
+
+			strongSelf.portraitImageView?.loadProgress = progress
+
+			progress.addFractionCompletedNotification(onQueue: OperationQueue.main, notification: { completedUnitCount, totalUnitCount, _ in
+				if completedUnitCount == totalUnitCount {
+					strongSelf.updateState()
+				}
+			})
 		}))
 	}
 	
@@ -306,6 +309,8 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 		gradientView.animateGradient = idModel.pinState == .pinMatch
 
 		guard peerID != PeereeIdentityViewModelController.userPeerID else { return }
+
+		self.portraitImageView?.loadProgress = model.pictureProgress
 
 		let loadPicture = model.cgPicture == nil && model.info.hasPicture
 		let loadBio = model.biography == ""
@@ -323,35 +328,9 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 	
 	override func viewDidDisappear(_ animated: Bool) {
 		super.viewDidDisappear(animated)
-		pictureProgressManager = nil
 		gradientView.animateGradient = false
 		portraitImageView.loadProgress = nil
 		portraitImageView.image = nil
-	}
-
-	// MARK: ProgressManagerDelegate
-
-	func progressDidPause(_ progress: Progress) {
-		// ignored
-	}
-	
-	func progressDidCancel(_ progress: Progress) {
-		if progress === pictureProgressManager?.progress {
-			pictureProgressManager = nil
-		}
-	}
-	
-	func progressDidResume(_ progress: Progress) {
-		// ignored
-	}
-	
-	func progressDidUpdate(_ progress: Progress) {
-		if progress.completedUnitCount == progress.totalUnitCount {
-			if progress === pictureProgressManager?.progress {
-				pictureProgressManager = nil
-			}
-			updateState()
-		}
 	}
 
 	// MARK: Private methods
@@ -387,7 +366,7 @@ final class PersonDetailViewController: PeerViewController, ProgressManagerDeleg
 
 		peerIDLabel.text = model.peerID.uuidString
 
-		bioTextView.text = model.biography != "" ? model.biography : NSLocalizedString("No Biography.", comment: "Placeholder for missing biography")
+		bioTextView.text = model.biography != "" ? model.biography : NSLocalizedString("Empty Biography.", comment: "Placeholder for missing biography")
 
 		// make font italic if bio placeholder is shown
 		if let font = bioTextView.font {

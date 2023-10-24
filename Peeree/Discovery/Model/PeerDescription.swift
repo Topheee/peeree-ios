@@ -95,7 +95,7 @@ extension Peer: Hashable {
 }
 
 /// All information a user may give about themselves.
-public struct PeerInfo: Codable {
+public struct PeerInfo: Codable, Sendable {
 	// MARK: - Public and Internal
 
 	/// Constructs a `PeerInfo` from its parts.
@@ -143,7 +143,7 @@ public struct PeerInfo: Codable {
 	// MARK: Classes, Structs, Enums
 
 	/// The available genders in the UI.
-	public enum Gender: String, CaseIterable, Codable {
+	public enum Gender: String, CaseIterable, Codable, Sendable {
 		case male, female, queer
 
 		/*
