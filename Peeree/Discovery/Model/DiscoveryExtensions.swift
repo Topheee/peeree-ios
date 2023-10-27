@@ -15,17 +15,6 @@ extension CBPeripheral {
 	var peereeService: CBService? {
 		return services?.first { $0.uuid == CBUUID.PeereeServiceID }
 	}
-
-	/// Mass-read characteristics.
-	func readValues(for characteristics: [CBCharacteristic]) {
-		for characteristic in characteristics {
-			if characteristic.properties.contains(.read) {
-				readValue(for: characteristic)
-			} else {
-				assertionFailure("Attempt to read unreadable characteristic \(characteristic.uuid.uuidString)")
-			}
-		}
-	}
 }
 
 extension CBService {
@@ -66,7 +55,4 @@ extension CBUUID {
 	static let NicknameSignatureCharacteristicID = CBUUID(string: "B69EB678-ABAC-4134-828D-D79868A6CB4A")
 	static let PortraitSignatureCharacteristicID = CBUUID(string: "44BFB98E-56AB-4436-9F14-7277C5D6A8CA")
 	static let BiographySignatureCharacteristicID = CBUUID(string: "1198D287-23DD-4F8A-8F08-0EB6B77FBF29")
-
-	static let PeereeCharacteristicIDs = [RemoteUUIDCharacteristicID, LocalPeerIDCharacteristicID, PortraitCharacteristicID, BiographyCharacteristicID, PinMatchIndicationCharacteristicID, AggregateCharacteristicID, LastChangedCharacteristicID, NicknameCharacteristicID, PublicKeyCharacteristicID, RemoteAuthenticationCharacteristicID, AuthenticationCharacteristicID, PeerIDSignatureCharacteristicID, AggregateSignatureCharacteristicID, NicknameSignatureCharacteristicID, PortraitSignatureCharacteristicID, BiographySignatureCharacteristicID, ConnectBackCharacteristicID]
-	static let SplitCharacteristicIDs = [PortraitCharacteristicID, BiographyCharacteristicID]
 }

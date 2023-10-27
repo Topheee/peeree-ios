@@ -25,9 +25,6 @@
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Akzeptieren der Nutzungsbedingungen";
 
-/* Alert message if the user is about to pin someone who did not yet authenticate himself */
-"Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!" = "Vorsicht: die Identität dieser Person ist nicht bestätigt, du pinnst vielleicht jemand Böswilliges!";
-
 /* Error title */
 "Bluetooth Publish Failed" = "Bluetooth Publish Fehlgeschlagen";
 
@@ -241,9 +238,6 @@
 /* Low level error. */
 "no public key derivable" = "kein öffentlicher Schlüssel ableitbar";
 
-/* Verification status of peer */
-"not verified" = "nicht bestätigt";
-
 /* Heading of the placeholder shown in browse view if no peers are around. */
 "Looking out…" = "Halte Ausschau …";
 
@@ -282,9 +276,6 @@
 
 /* The user wants to pin a person */
 "Pin" = "Pinnen";
-
-/* The user wants to pin the person, whose name is given in the format argument */
-"Pin %@" = "Pinne %@";
 
 /* Title of in-app error notification */
 "Pin Failed" = "Pin fehlgeschlagen";
@@ -342,9 +333,6 @@
 
 /* Title of sequence number reset failure alert */
 "Resetting Server Nonce Failed" = "Zurücksetzen der Server-Nonce fehlgeschlagen";
-
-/* The user wants to retry verifying peer */
-"Retry verify" = "Erneut überprüfen";
 
 /* Trait */
 "ruleAwareness" = "Rule Awareness";
@@ -450,12 +438,6 @@
 
 /* Alert action button title */
 "Unpin" = "Pin entfernen";
-
-/* Title of the alert which pops up when the user is about to pin an unverified peer */
-"Unverified Peer" = "Nicht verifizierter Benutzer";
-
-/* Verification status of peer */
-"verified" = "ID bestätigt";
 
 /* Caption of identity creation alert action. */
 "View Terms" = "Bedingungen ansehen";

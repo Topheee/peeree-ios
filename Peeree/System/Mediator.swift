@@ -230,7 +230,6 @@ extension Mediator: UserPeerDelegate {
 				PeereeIdentityViewModelController.insert(model: PeereeIdentityViewModel(id: id))
 				PeerViewModelController.shared.update(peerID, info: info, lastSeen: Date())
 				PeerViewModelController.shared.modify(peerID: peerID) { model in
-					model.verified = true
 					model.isAvailable = true
 					model.biography = bio
 					if let portrait = pic {

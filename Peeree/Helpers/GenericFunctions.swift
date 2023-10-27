@@ -213,7 +213,8 @@ extension RawRepresentable where Self.RawValue == String {
 	public var localizedRawValue: String {
 		return Bundle.main.localizedString(forKey: rawValue, value: nil, table: nil)
 	}
-	
+
+	/// Shortcut for `NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)`.
 	public func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
 		return NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
 	}

@@ -90,10 +90,10 @@ public final class ServerChatFactory {
 
 	// MARK: Variables
 
-	/// Informed party of server chat.
+	/// Informed party of server chat module.
 	public weak var delegate: ServerChatDelegate?
 
-	/// On which queue are the methods of the `conversationDelegate` invoked.
+	/// Informed party about server chats.
 	public weak var conversationDelegate: ServerChatConversationDelegate?
 
 	// MARK: Methods

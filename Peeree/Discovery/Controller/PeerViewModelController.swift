@@ -36,8 +36,8 @@ public final class PeerViewModelController {
 
 	/// Update or set the view model of `Peer`.
 	public func update(_ peerID: PeerID, info: PeerInfo, lastSeen: Date) {
-		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].info = info
-		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].lastSeen = lastSeen
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].info = info
+		viewModels[peerID, default: PeerViewModel(peerID: peerID, info: info, biography: "", lastSeen: lastSeen, cgPicture: nil, pictureHash: nil)].lastSeen = lastSeen
 	}
 
 	/// Retrieves the view model of `peerID`; possibly filled with empty data.
@@ -46,7 +46,7 @@ public final class PeerViewModelController {
 			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		return viewModels[peerID, default: clos()]
@@ -58,7 +58,7 @@ public final class PeerViewModelController {
 			wlog(Self.LogTag, "From somewhere in the code PeerID \(peerID.uuidString) appeared, before it was filled by the Bluetooth application part.")
 
 			let info = PeerInfo(nickname: peerID.uuidString, gender: .queer, age: nil, hasPicture: false)
-			return PeerViewModel(peerID: peerID, info: info, biography: "", verified: false, lastSeen: Date.distantPast, cgPicture: nil)
+			return PeerViewModel(peerID: peerID, info: info, biography: "", lastSeen: Date.distantPast, cgPicture: nil)
 		}
 
 		modifier(&viewModels[peerID, default: clos()])

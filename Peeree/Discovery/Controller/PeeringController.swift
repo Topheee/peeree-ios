@@ -298,9 +298,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	func verified(_ peereeIdentity: PeereeCore.PeereeIdentity) {
-		publish(to: peereeIdentity.peerID) { model in
-			model.verified = true
-		}
+		// ignored
 	}
 
 	// MARK: PersistedPeersControllerDelegate

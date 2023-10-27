@@ -121,28 +121,14 @@ extension AppDelegate {
 
 	/// Must be called on the main thread!
 	static func requestPin(of peerID: PeerID) {
-		let model = PeerViewModelController.shared.viewModel(of: peerID)
-		let idModel = PeereeIdentityViewModelController.viewModel(of: peerID)
+		let id = PeereeIdentityViewModelController.viewModel(of: peerID).id
 
-		if !model.verified {
-			let alertController = UIAlertController(title: NSLocalizedString("Unverified Peer", comment: "Title of the alert which pops up when the user is about to pin an unverified peer"), message: NSLocalizedString("Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!", comment: "Alert message if the user is about to pin someone who did not yet authenticate himself"), preferredStyle: UIDevice.current.iPadOrMac ? .alert : .actionSheet)
-			let retryVerifyAction = UIAlertAction(title: NSLocalizedString("Retry verify", comment: "The user wants to retry verifying peer"), style: .`default`) { action in
-				// TODO: restart or continue operations
-			}
-			alertController.addAction(retryVerifyAction)
-			let actionTitle = String(format: NSLocalizedString("Pin %@", comment: "The user wants to pin the person, whose name is given in the format argument"), model.info.nickname)
-			alertController.addAction(UIAlertAction(title: actionTitle, style: .destructive) { action in
-				AccountControllerFactory.shared.use { $0.pin(idModel.id) }
-			})
-			alertController.addCancelAction()
-			alertController.preferredAction = retryVerifyAction
-			alertController.present()
-		} else if !PeereeIdentityViewModelController.accountExists {
+		if !PeereeIdentityViewModelController.accountExists {
 			InAppNotificationController.display(title: NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed."), message: NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")) /*{
 				(AppDelegate.shared.window?.rootViewController as? UITabBarController)?.selectedIndex = AppDelegate.MeTabBarIndex
 			}*/
 		} else {
-			AccountControllerFactory.shared.use { $0.pin(idModel.id) }
+			AccountControllerFactory.shared.use { $0.pin(id) }
 		}
 	}
 

@@ -36,9 +36,10 @@ public struct PeereeIdentity: Codable {
 
 	// MARK: Constants
 
+	/// Unique identifier for each user.
 	public let peerID: PeerID
 
-	/// Being a constant ensures that the public key is not overwritten after it was verified.
+	/// The public key of the user that authenticates them.
 	public let publicKey: AsymmetricPublicKey
 
 	// MARK: Variables

@@ -179,9 +179,6 @@ public final class AccountControllerFactory {
 
 	/// Keychain property.
 	private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
-	
-	/// Keychain property.
-	private static let KeyLabel = "Peeree Identity"
 
 	/// The dispatch queue for actions on `AccountController`; should be private but is used in Server Chat as well for efficiency.
 	private let dQueue = DispatchQueue(label: "de.peeree.AccountController", qos: .default)

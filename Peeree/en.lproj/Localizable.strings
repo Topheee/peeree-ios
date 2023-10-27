@@ -25,9 +25,6 @@
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Agreement to Terms of Use";
 
-/* Alert message if the user is about to pin someone who did not yet authenticate himself */
-"Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!" = "Be careful: the identity of this person is not verified, you may attempt to pin someone malicious!";
-
 /* Error title */
 "Bluetooth Publish Failed" = "Bluetooth Publish Failed";
 
@@ -241,9 +238,6 @@
 /* Low level error. */
 "no public key derivable" = "no public key derivable";
 
-/* Verification status of peer */
-"not verified" = "not verified";
-
 /* Heading of the placeholder shown in browse view if no peers are around. */
 "Looking out…" = "Looking out…";
 
@@ -282,9 +276,6 @@
 
 /* The user wants to pin a person */
 "Pin" = "Pin";
-
-/* The user wants to pin the person, whose name is given in the format argument */
-"Pin %@" = "Pin %@";
 
 /* Title of in-app error notification */
 "Pin Failed" = "Pin Failed";
@@ -342,9 +333,6 @@
 
 /* Title of sequence number reset failure alert */
 "Resetting Server Nonce Failed" = "Resetting Server Nonce Failed";
-
-/* The user wants to retry verifying peer */
-"Retry verify" = "Retry verify";
 
 /* Trait */
 "ruleAwareness" = "Rule Awareness";
@@ -450,12 +438,6 @@
 
 /* Alert action button title */
 "Unpin" = "Unpin";
-
-/* Title of the alert which pops up when the user is about to pin an unverified peer */
-"Unverified Peer" = "Unverified Peer";
-
-/* Verification status of peer */
-"verified" = "verified";
 
 /* Caption of identity creation alert action. */
 "View Terms" = "View Terms";

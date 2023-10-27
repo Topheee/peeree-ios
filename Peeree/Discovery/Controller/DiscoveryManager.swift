@@ -215,9 +215,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			return
 		}
 
-		if let peereeService = (peripheral.services?.first { svc in
-			return svc.uuid == CBUUID.PeereeServiceID
-		}) {
+		if let peereeService = peripheral.peereeService {
 			// This characteristic is optional (only present on Android).
 			// Since the operation tree does not yet support optional characteristics, we handle this exception here by hand.
 			peripheral.discoverCharacteristics([CBUUID.ConnectBackCharacteristicID], for: peereeService)

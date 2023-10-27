@@ -20,7 +20,6 @@ public struct PeerViewModel {
 
 	/// Names of notifications sent by `PeerViewModel`.
 	public enum NotificationName: String {
-		case verified, verificationFailed
 		case pictureLoadBegan, pictureLoaded, biographyLoaded
 
 		func post(_ peerID: PeerID) {
@@ -46,18 +45,6 @@ public struct PeerViewModel {
 		didSet {
 			guard oldValue != biography else { return }
 			post(.biographyLoaded)
-		}
-	}
-
-	/// Whether this peer showed that he in fact is the owner of the PeerID.
-	public var verified: Bool {
-		didSet {
-			guard oldValue != verified else { return }
-			if verified {
-				post(.verified)
-			} else {
-				post(.verificationFailed)
-			}
 		}
 	}
 
@@ -143,17 +130,5 @@ public struct PeerViewModel {
 	/// Shortcut.
 	private func post(_ notification: NotificationName) {
 		notification.post(peerID)
-	}
-}
-
-extension PeerViewModel {
-	// MARK: Variables
-
-	public var verificationStatus: String {
-		if verified {
-			return NSLocalizedString("verified", comment: "Verification status of peer")
-		} else {
-			return NSLocalizedString("not verified", comment: "Verification status of peer")
-		}
 	}
 }
