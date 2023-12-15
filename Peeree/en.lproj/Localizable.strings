@@ -50,7 +50,7 @@
 "Cannot Join Room" = "Cannot Join Room";
 
 /* Error message title */
-"Chat Server Account Creation Failed" = "Chat Server Account Creation Failed";
+"Chat Account Creation Failed" = "Chat Account Creation Failed";
 
 /* Title of alert dialog */
 "Chat Unavailable" = "Chat Unavailable";
@@ -365,7 +365,7 @@
 "server_chat_controller_nil" = "No connection to the chat server.";
 
 /* Title of in-app alert. */
-"Chat Server Account Deletion Failed" = "Chat Server Account Deletion Failed";
+"Chat Account Deletion Failed" = "Chat Account Deletion Failed";
 
 /* Error when an account creation request response is malformed */
 "Server did provide malformed or no account information" = "Server did provide malformed or no account information";

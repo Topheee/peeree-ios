@@ -38,8 +38,6 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 
 	/// Begin the identification process for a specific peripheral. Only one operation may be started at a time.
 	public func begin(on peripheral: CBPeripheral) {
-		assert(self.peripheral == nil)
-
 		self.peripheral = peripheral
 		self.opManager.delegate = self
 		self.opManager.begin(on: peripheral)

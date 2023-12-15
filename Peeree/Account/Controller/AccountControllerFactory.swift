@@ -21,7 +21,7 @@ public final class AccountControllerFactory {
 
 	// MARK: Classes, Structs, Enums
 
-	/// Names of notifications sent by `AccountController`.
+	/// Names of notifications sent by `AccountControllerFactory`.
 	public enum NotificationName: String {
 		/// Notifications regarding identity management.
 		case accountCreated, accountDeleted

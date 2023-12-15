@@ -311,7 +311,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 		case Self.idOpTreeBio:
 			guard case let .scraping(identified) = self.state else {
-				assertionFailure("wrong state \(self.state) after retrieving idOpTreePeerData.")
+				assertionFailure("wrong state \(self.state) after retrieving idOpTreeBio.")
 				delegate?.peerDiscoveryFailed(createApplicationError(localizedDescription: "Internal state inconsisteny."))
 				return
 			}
@@ -335,7 +335,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 		case Self.idOpTreePortrait:
 			guard case let .scraping(identified) = self.state else {
-				assertionFailure("wrong state \(self.state) after retrieving idOpTreePeerData.")
+				assertionFailure("wrong state \(self.state) after retrieving idOpTreePortrait.")
 				delegate?.peerDiscoveryFailed(createApplicationError(localizedDescription: "Internal state inconsisteny."))
 				return
 			}

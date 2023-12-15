@@ -18,7 +18,7 @@ func createIdentity(displayError: Bool = true) {
 	AccountControllerFactory.shared.createAccount { result in
 		switch result {
 		case .success(let ac):
-			setup(ac: ac, errorTitle: NSLocalizedString("Chat Server Account Creation Failed", comment: "Error message title"))
+			setup(ac: ac, errorTitle: NSLocalizedString("Chat Account Creation Failed", comment: "Error message title"))
 
 		case .failure(let error):
 			guard displayError else { return }

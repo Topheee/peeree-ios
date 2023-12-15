@@ -22,8 +22,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		self.dataSource = dataSource
 		self.dQueue = dQueue
 		self.conversationQueue = conversationQueue
+
 		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!, queue: dQueue)
+
 		persistence.delegate = self
+		persistence.loadInitialData()
 	}
 
 	// MARK: Variables

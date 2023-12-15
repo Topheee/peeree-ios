@@ -131,6 +131,8 @@ public final class ServerChatFactory {
 
 	/// Removes the server chat account permanently.
 	public func deleteAccount(_ completion: @escaping (ServerChatError?) -> Void) {
+		guard !isDeletingAccount else { return } // TODO: maintain deleting account requests list just like for creating
+
 		let password: String
 		do {
 			password = try self.passwordFromKeychain()

@@ -46,7 +46,7 @@ final class MeViewController: UIViewController, UITextFieldDelegate, UITextViewD
 		ServerChatFactory.use {
 			$0?.deleteAccount() { error in
 				error.map {
-					InAppNotificationController.display(serverChatError: $0, localizedTitle: NSLocalizedString("Chat Server Account Deletion Failed", comment: "Title of in-app alert."))
+					InAppNotificationController.display(serverChatError: $0, localizedTitle: NSLocalizedString("Chat Account Deletion Failed", comment: "Title of in-app alert."))
 				}
 			}
 		}

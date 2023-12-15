@@ -59,6 +59,9 @@ final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 
 	private var notificationObservers: [NSObjectProtocol] = []
 
+	/// Handle for picture progress observer.
+	private var pictureLoadNotificationToken: Any?
+
 	@IBAction func reportPeer(_ sender: Any) {
 		let alertController = UIAlertController(title: NSLocalizedString("Report or Unpin", comment: "Title of alert"), message: NSLocalizedString("Mark the content of this user as inappropriate or unpin them to no longer receive messages.", comment: "Message of alert"), preferredStyle: UIAlertController.Style.alert)
 		alertController.preferredAction = alertController.addCancelAction()
@@ -259,7 +262,9 @@ final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 		super.viewWillAppear(animated)
 		
 		updateState()
-		
+
+		addPictureLoadObserver()
+
 		let simpleStateUpdate = { [weak self] (notification: Notification) in
 			guard let peerID = notification.userInfo?[PeerID.NotificationInfoKey] as? PeerID,
 				  let strongSelf = self, strongSelf.peerID == peerID else { return }
@@ -291,15 +296,7 @@ final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 		}))
 
 		notificationObservers.append(PeerViewModel.NotificationName.pictureLoadBegan.addObserver(usingBlock: { [weak self] (_) in
-			guard let strongSelf = self, let progress = strongSelf.model.pictureProgress else { return }
-
-			strongSelf.portraitImageView?.loadProgress = progress
-
-			progress.addFractionCompletedNotification(onQueue: OperationQueue.main, notification: { completedUnitCount, totalUnitCount, _ in
-				if completedUnitCount == totalUnitCount {
-					strongSelf.updateState()
-				}
-			})
+			self?.addPictureLoadObserver()
 		}))
 	}
 	
@@ -324,6 +321,10 @@ final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 		super.viewWillDisappear(animated)
 		for observer in notificationObservers { NotificationCenter.`default`.removeObserver(observer) }
 		notificationObservers.removeAll()
+
+		pictureLoadNotificationToken.map {
+			self.model.pictureProgress?.removeFractionCompletedNotification(identifier: $0)
+		}
 	}
 	
 	override func viewDidDisappear(_ animated: Bool) {
@@ -397,5 +398,16 @@ final class PersonDetailViewController: PeerViewController, UITextViewDelegate {
 		if #available(iOS 11.0, *) {
 			portraitImageView.accessibilityIgnoresInvertColors = state.picture != nil
 		}
+	}
+
+	/// Observe the progress of the portrait transmission.
+	private func addPictureLoadObserver() {
+		guard let progress = self.model.pictureProgress else { return }
+
+		pictureLoadNotificationToken = progress.addFractionCompletedNotification(onQueue: OperationQueue.main, notification: { completedUnitCount, totalUnitCount, _ in
+			if completedUnitCount == totalUnitCount {
+				self.updateState()
+			}
+		})
 	}
 }
