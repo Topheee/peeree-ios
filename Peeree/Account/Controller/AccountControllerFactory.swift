@@ -38,12 +38,16 @@ public final class AccountControllerFactory {
 		return !creatingInstanceCallbacks.isEmpty
 	}
 
-	// MARK: Static Functions
+	// MARK: Methods
 
 	/// Call this as soon as possible.
-	public func initialize(test: Bool = false) {
-		SwaggerClientAPI.host = test ? "localhost:10443" : "rest.peeree.de:39517"
-		SwaggerClientAPI.apiResponseQueue.underlyingQueue = self.dQueue
+	public func initialize(viewModel: any SocialViewModelDelegate, test: Bool = false) {
+		self.dQueue.async {
+			self.viewModel = viewModel
+
+			SwaggerClientAPI.host = test ? "localhost:10443" : "rest.peeree.de:39517"
+			SwaggerClientAPI.apiResponseQueue.underlyingQueue = self.dQueue
+		}
 	}
 
 	/// Retrieves the singleton on its `DispatchQueue`; call all methods on `AccountController` only directly from `getter`!
@@ -51,15 +55,17 @@ public final class AccountControllerFactory {
 		dQueue.async {
 			if let i = self.instance {
 				getter(i)
-			} else {
+			} else if let vm = self.viewModel {
 				do {
-					if let ac = AccountController.load(keyPair: try KeyPair(fromKeychainWithPrivateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize), dQueue: self.dQueue) {
+					if let ac = AccountController.load(keyPair: try KeyPair(fromKeychainWithPrivateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize), viewModel: vm, dQueue: self.dQueue) {
 						self.setInstance(ac)
 						getter(ac)
 					} else { unavailable?(nil) }
 				} catch {
 					unavailable?((error as NSError).code == errSecItemNotFound ? nil : error)
 				}
+			} else {
+				unavailable?(createApplicationError(localizedDescription: "AccountControllerFactory is uninitialized!"))
 			}
 		}
 	}
@@ -69,6 +75,11 @@ public final class AccountControllerFactory {
 		dQueue.async { [self] in
 			if let i = instance {
 				completion(.success(i))
+				return
+			}
+
+			guard let vm = self.viewModel else {
+				completion(.failure(createApplicationError(localizedDescription: "AccountControllerFactory is uninitialized!")))
 				return
 			}
 
@@ -98,7 +109,7 @@ public final class AccountControllerFactory {
 					return
 				}
 
-				let a = AccountController.create(account: account, keyPair: keyPair, dQueue: self.dQueue)
+				let a = AccountController.create(account: account, keyPair: keyPair, viewModel: vm, dQueue: self.dQueue)
 				self.setInstance(a)
 				self.reportCreatingInstance(result: .success(a))
 
@@ -188,6 +199,8 @@ public final class AccountControllerFactory {
 
 	/// Collected callbacks which where requesting a new account (through `createAcction()`)
 	private var creatingInstanceCallbacks = [(Result<AccountController, Error>) -> Void]()
+
+	private var viewModel: (any SocialViewModelDelegate)?
 
 	// MARK: Static Functions
 

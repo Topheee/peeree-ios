@@ -74,32 +74,3 @@ public protocol ServerChatDelegate: AnyObject {
 	/// An unexpected error occurred when storing auxilarily chat data.
 	func encodingPersistedChatDataFailed(with error: Error)
 }
-
-/// Interface for interactions with a peer coming from the server chat module.
-public protocol ServerChatConversationDelegate: AnyObject {
-	/// Received a new message.
-	func received(message: String, at: Date, from peerID: PeerID)
-
-	/// Sent a new message.
-	func didSend(message: String, at: Date, to peerID: PeerID)
-
-	/// Received and sent many new messages.
-	func catchUp(messages: [Transcript], sorted: Bool, unreadCount: Int, with peerID: PeerID)
-}
-
-/// Representation of a chat message.
-public struct Transcript {
-	/// From where the message was sent.
-	public enum Direction {
-		case send, receive
-	}
-
-	/// From where the message was sent.
-	public let direction: Direction
-
-	/// Content of the message.
-	public let message: String
-
-	/// When the message was sent.
-	public let timestamp: Date
-}

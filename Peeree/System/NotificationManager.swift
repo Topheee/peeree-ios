@@ -13,14 +13,17 @@ import PeereeServerChat
 import PeereeServer
 import PeereeDiscovery
 
-@MainActor
 final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
-	/// Singleton instance.
-	static let shared = NotificationManager()
+
+	let socialViewState: SocialViewState = SocialViewState.shared
+
+	let discoveryViewState: DiscoveryViewState = DiscoveryViewState.shared
+
+	let serverChatViewState: ServerChatViewState = ServerChatViewState.shared
 
 	/// Prepares local and remote notification handling.
-	func initialize() {
-		(try? BrowseFilter.getFilter()).map { filter = $0 }
+	override init() {
+		super.init()
 
 		observeNotifications()
 
@@ -91,7 +94,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	// MARK: UNUserNotificationCenterDelegate
 
 	@available(iOS 10.0, *)
-	nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		defer { completionHandler() }
 
 		let userInfo = response.notification.request.content.userInfo
@@ -103,7 +106,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		guard let action = NotificationActions(rawValue: response.actionIdentifier) else {
 			switch response.actionIdentifier {
 			case UNNotificationDefaultActionIdentifier:
-				DispatchQueue.main.async { AppDelegate.shared.showOrMessage(peerID: peerID) }
+				DispatchQueue.main.async { Mediator.shared.showOrMessage(peerID) }
 			case UNNotificationDismissActionIdentifier:
 				return
 			default:
@@ -124,8 +127,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				}
 			}
 		case .peerAppearedPin:
-			DispatchQueue.main.async {
-				guard let id = PeereeIdentityViewModelController.viewModels[peerID]?.id else { return }
+			Mediator.shared.readPeer(peerID) { peer in
+				guard let id = peer?.id else { return }
 
 				AccountControllerFactory.shared.use { $0.pin(id) }
 			}
@@ -143,7 +146,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	@available(iOS 10.0, *)
-	nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
 		guard !(notification.request.trigger is UNPushNotificationTrigger) else {
 			// do not display remote notifications at all while being in the foreground
 			completionHandler([])
@@ -162,8 +165,6 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 	// - MARK: Private
 
-	private override init() {}
-
 	private enum NotificationCategory: String {
 		case peerAppeared, pinMatch, message, none
 	}
@@ -174,24 +175,16 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	// MARK: Constants
 
 	// Log tag.
-	private static let LogTag = "AppDelegate"
+	private static let LogTag = "NotificationManager"
 
 	private static let PeerIDKey = "PeerIDKey"
 
 	private static let PortraitAttachmentIdentifier = "PortraitAttachmentIdentifier"
 
-	// MARK: Variables
-
-	/// Currently applied filter.
-	private var filter = BrowseFilter()
-
 	// MARK: Methods
 
 	/// shows an in-app or system (local) notification related to a peer
-	private func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory, displayInApp: Bool) {
-		if #available(iOS 10, *) {
-			guard !AppDelegate.shared.isActive || displayInApp else { return }
-
+	private static func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory) {
 			let center = UNUserNotificationCenter.current()
 			let content = UNMutableNotificationContent()
 			content.title = title
@@ -230,25 +223,14 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 					elog(Self.LogTag, "Scheduling local notification failed: \(error.localizedDescription)")
 				}
 			}
-		} else {
-			if AppDelegate.shared.isActive && displayInApp {
-				InAppNotificationController.display(title: title, message: body, isNegative: false) //{ AppDelegate.shared.showOrMessage(peerID: peerID) }
-			} else {
-				let note = UILocalNotification()
-				note.alertTitle = title
-				note.alertBody = body
-				note.userInfo = [Self.PeerIDKey : peerID.uuidString]
-				note.category = category.rawValue
-				UIApplication.shared.presentLocalNotificationNow(note)
-			}
-		}
 
 		// unschedule all remote notifications when we received a local one
 		Self.dismissRemoteNotifications()
 	}
 
+	@MainActor
 	private func received(message: String, from peerID: PeerID) {
-		let name = PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString
+		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
 
 		let title: String
 		if #available(iOS 10.0, *) {
@@ -258,53 +240,42 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
 			title = String(format: titleFormat, name)
 		}
-		var messagesNotVisible = true
-		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
-			if tabBarVC.selectedIndex == AppDelegate.PinMatchesTabBarIndex {
-				messagesNotVisible = ((tabBarVC.viewControllers?[AppDelegate.PinMatchesTabBarIndex] as? UINavigationController)?.visibleViewController as? MessagingViewController)?.peerID != peerID
-			} else {
-				tabBarVC.incrementItemBatch(itemIndex: AppDelegate.PinMatchesTabBarIndex)
-			}
-		}
-		displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message, displayInApp: messagesNotVisible)
+
+		let messagesNotVisible = self.serverChatViewState.displayedPeerID != peerID
+
+		guard messagesNotVisible || !AppViewState.shared.isActive else { return }
+
+		Self.displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message)
 	}
 
+	@MainActor
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let model = PeerViewModelController.shared.viewModels[peerID],
-			  let idModel = PeereeIdentityViewModelController.viewModels[peerID],
-			  filter.check(info: model.info, pinState: idModel.pinState) else { return }
-
-		PeeringController.shared.loadAdditionalInfo(of: peerID, loadPortrait: true)
+		guard !again, let model = discoveryViewState.people[peerID],
+			  let idModel = socialViewState.people[peerID],
+			  discoveryViewState.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
 
 		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-		var notBrowsing = true
-		if let tabBarVC = AppDelegate.shared.window?.rootViewController as? UITabBarController {
-			if tabBarVC.selectedIndex == AppDelegate.BrowseTabBarIndex {
-				notBrowsing = (tabBarVC.viewControllers?[AppDelegate.BrowseTabBarIndex] as? UINavigationController)?.visibleViewController as? BrowseViewController == nil
-			} else {
-				tabBarVC.incrementItemBatch(itemIndex: AppDelegate.BrowseTabBarIndex)
-			}
-		}
 
 		let category: NotificationCategory = idModel.pinState == .pinMatch ? .none : .peerAppeared
-		displayPeerRelatedNotification(title: String(format: alertBodyFormat, model.info.nickname), body: "", peerID: peerID, category: category, displayInApp: notBrowsing)
+		Self.displayPeerRelatedNotification(title: String(format: alertBodyFormat, model.info.nickname), body: "", peerID: peerID, category: category)
 	}
 
+	@MainActor
 	private func pinMatchOccured(_ peerID: PeerID) {
-		if AppDelegate.shared.isActive {
-			guard let pinMatchVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: PinMatchViewController.StoryboardID) as? PinMatchViewController else { return }
-			pinMatchVC.peerID = peerID
-			pinMatchVC.presentInFrontMostViewController(true, completion: nil)
+		if AppViewState.shared.isActive {
+			// this will show pin match animation
+			Mediator.shared.show(peerID)
 		} else {
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, PeerViewModelController.shared.viewModels[peerID]?.info.nickname ?? peerID.uuidString)
-			displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch, displayInApp: true)
+			let alertBody = String(format: alertBodyFormat, discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString)
+
+			Self.displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch)
 		}
 	}
 
 	/// Unschedules all remote notifications.
-	private static nonisolated func dismissRemoteNotifications() {
+	private static func dismissRemoteNotifications() {
 		let center = UNUserNotificationCenter.current()
 
 		center.getDeliveredNotifications { (notifications) in
@@ -329,14 +300,10 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			self.pinMatchOccured(peerID)
 		}
 
-		_ = ServerChatViewModel.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
-			guard let message = notification.userInfo?[ServerChatViewModel.NotificationInfoKey.message.rawValue] as? String else { return }
+		_ = ServerChatViewState.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
+			guard let message = notification.userInfo?[ServerChatViewState.NotificationInfoKey.message.rawValue] as? String else { return }
 
 			self.received(message: message, from: peerID)
-		}
-
-		_ = BrowseFilter.NotificationName.filterChanged.addObserver { notification in
-			(notification.object as? BrowseFilter).map { self.filter = $0 }
 		}
 	}
 }

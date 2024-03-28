@@ -94,7 +94,7 @@ public final class ServerChatFactory {
 	public weak var delegate: ServerChatDelegate?
 
 	/// Informed party about server chats.
-	public weak var conversationDelegate: ServerChatConversationDelegate?
+	public weak var conversationDelegate: (any ServerChatViewModelDelegate)?
 
 	// MARK: Methods
 
@@ -519,7 +519,7 @@ public final class ServerChatFactory {
 
 		restClient.completionQueue = Self.dQueue
 
-		let c = ServerChatController(peerID: self.peerID, restClient: restClient, dataSource: self.ds, dQueue: Self.dQueue, conversationQueue: DispatchQueue.main)
+		let c = ServerChatController(peerID: self.peerID, restClient: restClient, dataSource: self.ds, dQueue: Self.dQueue)
 		c.conversationDelegate = self.conversationDelegate
 		c.delegate = self.delegate
 

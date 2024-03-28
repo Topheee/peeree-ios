@@ -50,9 +50,10 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	private let biography: String
 	private let keyPair: KeyPair
 	private let pictureResourceURL: URL
-	
-	private var peripheralManager: CBPeripheralManager! = nil
-	
+
+	/// Handler for the Bluetooth framework.
+	private var peripheralManager: CBPeripheralManager? = nil
+
 	private var interruptedTransfers: [(Data, CBMutableCharacteristic, CBCentral, Bool)] = []
 	
 	// unfortunenately this will grow until we go offline as we do not get any disconnection notification...
@@ -339,13 +340,13 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 
 	/// Generate the to-be-advertised GATT service.
 	private func createService() -> CBMutableService {
-		// value: UserPeerManager.instance.peer.idData
+		// value: PeerID of the person using the app.
 		let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: peer.id.idData, permissions: [.readable])
 		// value: remote peer.idData
 		let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
 		// value: Data(count: 1)
 		let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
-		// value try? Data(contentsOf: UserPeerManager.pictureResourceURL)
+		// value: Data representation of a CGImage.
 		let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
 		// value: aggregateData
 		let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: peer.info.aggregateData, permissions: [.readable])
@@ -353,7 +354,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: peer.info.lastChangedData, permissions: [.readable])
 		// value nicknameData
 		let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: peer.info.nicknameData, permissions: [.readable])
-		// value UserPeerManager.instance.peer.publicKey
+		// value: public key of the person using the app.
 		let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: peer.id.publicKeyData, permissions: [.readable])
 		// value nonce when read, signed nonce when written
 		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written

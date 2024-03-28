@@ -19,8 +19,11 @@ public enum PeerDistance {
 
 /// Main information provider for the PeereeDiscovery module.
 public protocol PeeringControllerDataSource {
-	/// Obtains our identity, s.t. we are able to authenticate ourselves to others.
-	func getIdentity(_ result: @escaping (PeereeIdentity, KeyPair) -> ())
+	/// Return our information, s.t. we can present ourselves.
+	func advertiseData(_ result: @escaping (PeereeIdentity, KeyPair, PeerInfo, String, URL) -> ())
+
+	/// `result` must be called on the same queue as `advertiseData()`s `result`!
+	func shouldStopAdvertising(_ result: @escaping (Bool) -> ())
 
 	/// Verify the integrity of the `nonce`, using the `signature` and the peer's public key.
 	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ())
@@ -40,7 +43,7 @@ public protocol PeeringControllerDelegate {
 	/// A serialization error occurred.
 	func decodingPeersFailed(with error: Error)
 
-	/// If `isAvailable`, you might call `PeeringController.shared.change(peering: true)`.
+	/// If `isAvailable`, you might call `PeeringController.change(peering: true)`.
 	func bluetoothNetwork(isAvailable: Bool)
 }
 
@@ -62,7 +65,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		case persistedPeersLoadedFromDisk
 
 		/// Post this case to the `NotificationCenter` on the main thread.
-		fileprivate func post(_ peerID: PeerID? = nil, again: Bool? = nil) {
+		fileprivate func post(on pc: PeeringController, _ peerID: PeerID? = nil, again: Bool? = nil) {
 			var userInfo: [AnyHashable: Any]? = nil
 			if let id = peerID {
 				if let a = again {
@@ -71,28 +74,19 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 					userInfo = [PeerID.NotificationInfoKey : id]
 				}
 			}
-			postAsNotification(object: PeeringController.shared, userInfo: userInfo)
+			postAsNotification(object: pc, userInfo: userInfo)
 		}
 	}
 
-	// MARK: Static Constants
-
-	/// The singleton instance of this class.
-	///
-	/// > Note: Accessing this lazily instantiates the object (as is done with all static constants). Avoid automatic access at very first launch to not trigger the Bluetooth permission dialog too early.
-	public static let shared = PeeringController()
-
-	// MARK: Static Variables
-
-	// MARK: Constants
-
 	// MARK: Variables
 
+	private let viewModel: any DiscoveryViewModelDelegate
+
 	/// Provider of information.
-	public var dataSource: PeeringControllerDataSource? = nil
+	private let dataSource: PeeringControllerDataSource
 
 	/// Receives general updates and errors of the `PeeringController`.
-	public var delegate: PeeringControllerDelegate? = nil
+	private let delegate: PeeringControllerDelegate
 
 	// MARK: Methods
 
@@ -119,7 +113,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	/// Restart advertising if it is currently on, e.g. when the user peer data changed.
-	func restartAdvertising() {
+	public func restartAdvertising() {
 		startAdvertising(restartOnly: true)
 	}
 
@@ -154,12 +148,17 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		rangePeerID = nil
 	}
 
+	/// Read-only access to persisted peers.
+	public func readPeer(_ peerID: PeerID, _ completion: @escaping (Peer?) -> ()) {
+		persistence.readPeer(peerID, completion)
+	}
+
 	// MARK: LocalPeerManagerDelegate
 
 	func advertisingStarted() {}
 
 	func advertisingStopped(with error: Error?) {
-		error.map { delegate?.advertisingStopped(with: $0) }
+		error.map { delegate.advertisingStopped(with: $0) }
 	}
 
 	func authenticationFromPeerFailed(_ peerID: PeerID, with error: Error) {
@@ -168,7 +167,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	func characteristicSigningFailed(with error: Error) {
 		stopAdvertising()
-		delegate?.advertisingStopped(with: error)
+		delegate.advertisingStopped(with: error)
 	}
 
 	func receivedPinMatchIndication(from peerID: PeerID) {
@@ -176,14 +175,17 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ()) {
-		dataSource?.verify(peerID, nonce: nonce, signature: signature, result)
+		dataSource.verify(peerID, nonce: nonce, signature: signature, result)
 	}
 
 	// MARK: DiscoveryManagerDelegate
 
 	func beganLoadingPortrait(_ progress: CSProgress, of peerID: PeereeCore.PeerID) {
 		publish(to: peerID) { model in
-			model.pictureProgress = progress
+			model.pictureProgress = progress.fractionCompleted
+			progress.addFractionCompletedNotification { _, _, fractionCompleted in
+				model.pictureProgress = progress.fractionCompleted
+			}
 		}
 	}
 
@@ -199,7 +201,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	func discoveryManager(isReady: Bool) {
 		DispatchQueue.main.async {
 			self.viewModel.isBluetoothOn = isReady
-			self.delegate?.bluetoothNetwork(isAvailable: isReady)
+			self.delegate.bluetoothNetwork(isAvailable: isReady)
 		}
 	}
 
@@ -208,18 +210,21 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		connectionChangedState(false)
 	}
 
+	@MainActor
+	@discardableResult
+	private func updateLastSeen(of peerID: PeerID) -> Date {
+		let now = Date()
+		self.lastSeenDates[peerID] = now
+		archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: Self.LastSeenKey)
+		return now
+	}
+
 	func peerAppearedAgain(_ peerID: PeerID) {
 		DispatchQueue.main.async {
-			let now = Date()
-			self.lastSeenDates[peerID] = now
-			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
-
-			self.viewModel.modify(peerID: peerID) { model in
-				model.isAvailable = true
-			}
+			self.updateLastSeen(of: peerID)
 
 			// make sure the notification is sent only after the view model is updated:
-			Notifications.peerAppeared.post(peerID, again: true)
+			Notifications.peerAppeared.post(on: self, peerID, again: true)
 		}
 	}
 
@@ -227,16 +232,9 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		localPeerManager?.disconnect(cbPeerID)
 
 		DispatchQueue.main.async {
-			let now = Date()
-			self.lastSeenDates[peerID] = now
-			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
+			self.viewModel.persona(of: peerID).lastSeen = self.updateLastSeen(of: peerID)
 
-			self.viewModel.modify(peerID: peerID) { model in
-				model.isAvailable = false
-				model.lastSeen = now
-			}
-
-			Notifications.peerDisappeared.post(peerID)
+			Notifications.peerDisappeared.post(on: self, peerID)
 		}
 	}
 
@@ -248,16 +246,9 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		}
 
 		DispatchQueue.main.async {
-			let now = Date()
-			self.lastSeenDates[identity.peerID] = now
-			archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: PeeringController.LastSeenKey)
-			Self.updateViewModels(of: peer, lastSeen: now)
+			Self.updateViewModels(of: peer, lastSeen: self.updateLastSeen(of: peer.id.peerID), on: self.viewModel)
 
-			self.viewModel.modify(peerID: identity.peerID) { model in
-				model.isAvailable = true
-			}
-
-			Notifications.peerAppeared.post(identity.peerID, again: false)
+			Notifications.peerAppeared.post(on: self, peer.id.peerID, again: false)
 		}
 	}
 
@@ -307,18 +298,16 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		self.cleanupPersistedPeers()
 		DispatchQueue.main.async {
 			for peer in peers {
-				Self.updateViewModels(of: peer, lastSeen: self.lastSeenDates[peer.id.peerID] ?? Date.distantPast)
+				Self.updateViewModels(of: peer, lastSeen: self.lastSeenDates[peer.id.peerID] ?? Date.distantPast, on: self.viewModel)
 			}
-			Notifications.persistedPeersLoadedFromDisk.post()
+			Notifications.persistedPeersLoadedFromDisk.post(on: self)
 		}
 	}
 
 	public func persistedBiosLoadedFromDisk(_ bios: [PeerID : String]) {
 		DispatchQueue.main.async {
 			for entry in bios {
-				self.viewModel.modify(peerID: entry.key) { model in
-					model.biography = entry.value
-				}
+				self.viewModel.persona(of: entry.key).biography = entry.value
 
 				// TODO: We load all the portraits into memory for now. Later, we should only load them once a peer is displayed in browse or pin match table view.
 				// and we begin loadding the portraits only after persistedBiosLoadedFromDisk(), since loading the bios currently may overwrite the images
@@ -332,16 +321,21 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	public func encodingFailed(with error: Error) {
-		delegate?.encodingPeersFailed(with: error)
+		delegate.encodingPeersFailed(with: error)
 	}
 
 	public func decodingFailed(with error: Error) {
-		delegate?.decodingPeersFailed(with: error)
+		delegate.decodingPeersFailed(with: error)
 	}
 
 	// MARK: - Private
 
-	private init() {
+	/// Creates the central entry point to the Discovery module.
+	public init(viewModel: any DiscoveryViewModelDelegate, dataSource: PeeringControllerDataSource, delegate: PeeringControllerDelegate) {
+		self.viewModel = viewModel
+		self.dataSource = dataSource
+		self.delegate = delegate
+
 		discoveryManager.delegate = self
 		persistence.delegate = self
 
@@ -350,8 +344,6 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		DispatchQueue.main.async {
 			self.lastSeenDates = nsLastSeenDates as? [PeerID : Date] ?? [PeerID : Date]()
 		}
-
-		observeNotifications()
 
 		persistence.loadInitialData()
 	}
@@ -376,28 +368,20 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	/// Populates the current peer-related data to the view models; must be called on the main thread!
 	@MainActor
-	private static func updateViewModels(of peer: Peer, lastSeen: Date) {
+	private static func updateViewModels(of peer: Peer, lastSeen: Date, on viewModel: any DiscoveryViewModelDelegate) {
 		let peerID = peer.id.peerID
 
-		PeerViewModelController.shared.update(peerID, info: peer.info, lastSeen: lastSeen)
-
-		// This is a bit tricky. We can get the public key from both the AccountController and the PersistedPeersController.
-		// For now, we always use the one from the AccountController.
-		PeereeIdentityViewModelController.upsert(peerID: peerID, insert: PeereeIdentityViewModel(id: peer.id)) { model in
-			// only insert if it wasn't already defined by AccountController
-		}
+		let p = viewModel.addPersona(of: peerID, with: peer.info)
+		p.lastSeen = lastSeen
 	}
 
 	// MARK: Constants
 
-	/// Responsible for advertising the user's data; access only on `UserPeer`'s queue, e.g. through `UserPeer.read(on: nil)`.
+	/// Responsible for advertising the user's data; access only through `dataSource` callbacks.
 	private var localPeerManager: LocalPeerManager? = nil
 	private let discoveryManager = DiscoveryManager()
 
 	private let persistence = PersistedPeersController(filename: "peers.json", targetQueue: DispatchQueue(label: "de.peeree.PeeringController.persistence", qos: .utility))
-
-	// Shortcut to `PeerViewModelController.shared`.
-	private let viewModel = PeerViewModelController.shared
 
 	// MARK: Variables
 
@@ -411,43 +395,43 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 
 	/// Starts advertising our data via Bluetooth.
 	public func startAdvertising(restartOnly: Bool) {
-		dataSource?.getIdentity { identity, keyPair in
+		dataSource.advertiseData { identity, keyPair, info, biography, pictureResourceURL in
 			// these values MAY arrive a little late, but that is very unlikely
 			self.discoveryManager.set(userIdentity: (identity.peerID, keyPair))
 
-			UserPeer.instance.read(on: nil) { peerInfo, _, _, biography in
-				guard (!restartOnly || self.localPeerManager != nil), let info = peerInfo else { return }
+			guard !restartOnly || self.localPeerManager != nil else { return }
 
-				self.localPeerManager?.stopAdvertising()
+			self.localPeerManager?.stopAdvertising()
 
-				let l = LocalPeerManager(peer: Peer(id: identity, info: info),
-										 biography: biography, keyPair: keyPair, pictureResourceURL: UserPeer.pictureResourceURL)
-				self.localPeerManager = l
-				l.delegate = self
-				l.startAdvertising()
-			}
+			let l = LocalPeerManager(peer: Peer(id: identity, info: info),
+									 biography: biography, keyPair: keyPair, pictureResourceURL: pictureResourceURL)
+			self.localPeerManager = l
+			l.delegate = self
+			l.startAdvertising()
 		}
 	}
 
 	/// Stops advertising our data via Bluetooth.
 	private func stopAdvertising() {
-		UserPeer.instance.read(on: nil) { _, _, _, _ in
+		dataSource.shouldStopAdvertising { stop in
+			guard stop else { return }
+
 			self.localPeerManager?.stopAdvertising()
 			self.localPeerManager = nil
 		}
 	}
 
 	/// publish changes to the model on the main thread
-	private func publish(to peerID: PeerID, completion: @MainActor @escaping (inout PeerViewModel) -> ()) {
+	private func publish(to peerID: PeerID, _ query: @MainActor @escaping (any DiscoveryPersonAspect) -> ()) {
 		DispatchQueue.main.async {
-			PeerViewModelController.shared.modify(peerID: peerID, modifier: completion)
+			query(self.viewModel.persona(of: peerID))
 		}
 	}
 
 	/// Performs additional logic when a picture was received, e.g. objectionable content checks.
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
 		self.publish(to: peerID) { model in
-			model.loaded(portrait: picture, hash: hash)
+			model.set(portrait: picture, hash: hash)
 		}
 	}
 
@@ -468,7 +452,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		let never = Date.distantPast
 		let cal = Calendar.current as NSCalendar
 
-		dataSource?.cleanup(allPeers: allPeers.map { $0.id }, { cleanupPeerIDs in
+		dataSource.cleanup(allPeers: allPeers.map { $0.id }, { cleanupPeerIDs in
 			let removePeerIDs = cleanupPeerIDs.filter { peerID in
 				let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peerID] ?? never, to: now, options: []).hour
 				let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
@@ -481,16 +465,12 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		})
 	}
 
-	/// Observes relevant notifications in `NotificationCenter`.
-	private func observeNotifications() {
-		notificationObservers.append(UserPeer.NotificationName.changed.addObserver { _ in
-			self.restartAdvertising()
-		})
-	}
-
 	/// Posts `connectionChangedState` notification and starts/stops the server chat module.
 	private func connectionChangedState(_ newState: Bool) {
-		DispatchQueue.main.async { self.viewModel.peering = newState }
+		DispatchQueue.main.async {
+			//UISelectionFeedbackGenerator().selectionChanged()
+			self.viewModel.peering = newState
+		}
 		Notifications.connectionChangedState.postAsNotification(object: self, userInfo: [NotificationInfoKey.connectionState.rawValue : NSNumber(value: newState)])
 	}
 

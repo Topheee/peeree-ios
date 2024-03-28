@@ -22,7 +22,6 @@
 // limitations under the License.
 //
 
-import UIKit
 import KeychainWrapper
 import CommonCrypto
 import MatrixSDK

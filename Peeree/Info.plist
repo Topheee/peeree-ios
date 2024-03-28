@@ -25,15 +25,13 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.social-networking</string>
 	<key>LSRequiresIPhoneOS</key>
-	<true/>
+	<false/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Bluetooth is used to connect to other Peeree users around you. Nothing is shared while you are offline.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Bluetooth is used to connect to other Peeree users around you. Nothing is shared while you are offline.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a picture of you to be better recognizable.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>The accelerator sensor is used to improve location calculations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Your photo library is used to choose a portrait of you and to store it, if you took it within the app.</string>
 	<key>UIBackgroundModes</key>
@@ -41,14 +39,6 @@
 		<string>bluetooth-central</string>
 		<string>bluetooth-peripheral</string>
 		<string>remote-notification</string>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen.storyboard</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
 	</array>
 	<key>UIStatusBarHidden</key>
 	<false/>
@@ -65,6 +55,9 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 </dict>
 </plist>

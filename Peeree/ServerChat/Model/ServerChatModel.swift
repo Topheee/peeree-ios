@@ -43,13 +43,9 @@ func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 
 // MARK: Types
 
-struct MessageEventData {
-	let eventID: String
-	let timestamp: Date
-	let message: String
-
+extension ChatMessage {
 	/// Extracts the ID, message and timestamp from `event`.
-	init(messageEvent event: MXEvent) throws {
+	init(messageEvent event: MXEvent, ourUserId: String) throws {
 		guard event.content["format"] == nil else {
 			throw ServerChatError.parsing("Body is formatted \(String(describing: event.content["format"])), ignoring.")
 		}
@@ -64,11 +60,6 @@ struct MessageEventData {
 		self.eventID = event.eventId
 		self.timestamp = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
 		self.message = message
+		self.sent = event.sender == ourUserId
 	}
-}
-
-/// Notifications emitted by the server chat subsystem.
-public enum ServerChatNotificationName: String {
-	/// We are ready to chat with a `peerID` (sent along).
-	case readyToChat
 }

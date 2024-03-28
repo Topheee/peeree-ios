@@ -44,3 +44,21 @@ public enum ServerChatError: Error {
 	/// Passes on a fatal error.
 	case fatal(Error)
 }
+
+/// Server chat informed party.
+public enum ServerChatFail {
+	/// Configuring the Pusher on the server chat server failed.
+	case configurePusherFailed
+
+	/// Joining a server chat room failed.
+	case cannotJoinRoom
+
+	/// The certificate of the server is invalid.
+	case serverChatCertificateIsInvalid
+
+	/// An unexpected error occurred when loading auxilarily chat data.
+	case decodingPersistedChatDataFailed
+
+	/// An unexpected error occurred when storing auxilarily chat data.
+	case encodingPersistedChatDataFailed
+}

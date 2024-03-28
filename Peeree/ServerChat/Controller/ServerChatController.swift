@@ -13,20 +13,16 @@ import PeereeCore
 /// Internal implementaion of the `ServerChat` protocol.
 ///
 /// Note: __All__ functions must be called on `dQueue`!
-final class ServerChatController: ServerChat, PersistedServerChatDataControllerDelegate {
+final class ServerChatController: ServerChat {
 	// MARK: - Public and Internal
 
 	/// Creates a `ServerChatController`.
-	init(peerID: PeerID, restClient: MXRestClient, dataSource: ServerChatDataSource, dQueue: DispatchQueue, conversationQueue: DispatchQueue) {
+	init(peerID: PeerID, restClient: MXRestClient, dataSource: ServerChatDataSource, dQueue: DispatchQueue) {
 		self.peerID = peerID
 		self.dataSource = dataSource
 		self.dQueue = dQueue
-		self.conversationQueue = conversationQueue
 
 		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!, queue: dQueue)
-
-		persistence.delegate = self
-		persistence.loadInitialData()
 	}
 
 	// MARK: Variables
@@ -38,7 +34,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	weak var delegate: ServerChatDelegate?
 
 	/// Informed party.
-	weak var conversationDelegate: ServerChatConversationDelegate?
+	weak var conversationDelegate: (any ServerChatViewModelDelegate)?
 
 	// MARK: Methods
 
@@ -220,7 +216,17 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 	public func set(lastRead date: Date, of peerID: PeerID) {
 		lastReads[peerID] = date
-		persistence.set(lastRead: date, of: peerID)
+		Task {
+			do {
+				try await persistence.set(lastRead: date, of: peerID)
+			} catch {
+				self.delegate?.encodingPersistedChatDataFailed(with: error)
+			}
+		}
+
+		DispatchQueue.main.async {
+			self.conversationDelegate?.persona(of: peerID).set(lastReadDate: date)
+		}
 	}
 
 	/// Create chat room with `peerID`.
@@ -241,62 +247,6 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	/// Leave all chat rooms with `peerID`.
 	func leaveChat(with peerID: PeerID) {
 		forgetAllRooms(with: peerID)
-	}
-
-	// MARK: PersistedServerChatDataControllerDelegate
-
-	func persistedLastReadsLoadedFromDisk(_ lastReads: [PeereeCore.PeerID : Date]) {
-		// fix unread message count if last reads where read after server chat went online
-		// PERFORMANCE: poor
-		DispatchQueue.main.async {
-			for (peerID, model) in ServerChatViewModelController.shared.viewModels {
-				guard let lastReadDate = lastReads[peerID] else { continue }
-
-				let lastReadDay = DayDateComponents(from: lastReadDate)
-
-				var unreadCount = 0
-				var index = model.transcriptDays.endIndex - 1
-				while index >= model.transcriptDays.startIndex {
-					if lastReadDay < model.transcriptDays[index] {
-						unreadCount += model.transcripts[model.transcriptDays[index]]?.count ?? 0
-					} else if lastReadDay == model.transcriptDays[index] {
-						let messages = model.transcripts[model.transcriptDays[index]] ?? []
-
-						var messageIndex = messages.endIndex - 1
-						while messageIndex >= messages.startIndex {
-							if lastReadDate < messages[messageIndex].timestamp {
-								unreadCount += 1
-							} else {
-								break
-							}
-
-							messageIndex -= 1
-						}
-
-						break
-
-					} else {
-						break
-					}
-
-					index -= 1
-				}
-
-				guard unreadCount != model.unreadMessages else { continue }
-
-				ServerChatViewModelController.shared.modify(peerID: peerID) { modifyModel in
-					modifyModel.unreadMessages = unreadCount
-				}
-			}
-		}
-	}
-
-	func encodingFailed(with error: Error) {
-		delegate?.encodingPersistedChatDataFailed(with: error)
-	}
-
-	func decodingFailed(with error: Error) {
-		delegate?.decodingPersistedChatDataFailed(with: error)
 	}
 
 	// MARK: - Private
@@ -323,7 +273,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 	/// Matrix session.
 	private let session: ThreadSafeCallbacksMatrixSession
 
-	private let persistence = PersistedServerChatDataController(filename: "serverchats.json", targetQueue: DispatchQueue(label: "de.peeree.ServerChatController.persistence", qos: .utility))
+	private let persistence = PersistedServerChatDataController(filename: "serverchats.json")
 
 	/// Last read timestamps.
 	private var lastReads: [PeerID : Date] = [:]
@@ -338,9 +288,6 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 
 	/// The timelines of rooms we are listening on; must be used on `dQueue`.
 	private var roomTimelines = [String : MXEventTimeline]()
-
-	/// On which queue are the methods of the `conversationDelegate` invoked.
-	private let conversationQueue: DispatchQueue
 
 	/// All references to NotificationCenter observers by this object.
 	private var notificationObservers: [Any] = []
@@ -423,7 +370,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 		let lastReadDate = lastReads[peerID] ?? Date.distantPast
 
 		// Unencrypted stored messages.
-		var catchUpMissedMessages = [Transcript]()
+		var catchUpMissedMessages = [ChatMessage]()
 		// Encrypted stored messages.
 		var encryptedEvents = [MXEvent]()
 		var unreadMessages = 0
@@ -435,8 +382,8 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			switch event.eventType {
 			case .roomMessage:
 				do {
-					let messageEvent = try MessageEventData(messageEvent: event)
-					catchUpMissedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
+					let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
+					catchUpMissedMessages.append(messageEvent)
 					if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 				} catch let error {
 					elog(Self.LogTag, "\(error)")
@@ -462,13 +409,13 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			}
 
 			// these are all messages that we have seen earlier already, but we need to decryt them again apparently
-			var catchUpDecryptedMessages = [Transcript]()
+			var catchUpDecryptedMessages = [ChatMessage]()
 			for event in encryptedEvents {
 				switch event.eventType {
 				case .roomMessage:
 					do {
-						let messageEvent = try MessageEventData(messageEvent: event)
-						catchUpDecryptedMessages.append(Transcript(direction: event.sender == ourUserId ? .send : .receive, message: messageEvent.message, timestamp: messageEvent.timestamp))
+						let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
+						catchUpDecryptedMessages.append(messageEvent)
 						if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 					} catch let error {
 						elog(Self.LogTag, "\(error)")
@@ -482,7 +429,7 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			if catchUpDecryptedMessages.count > 0 {
 				let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
 				let sentUnreadMessages = unreadMessages
-				self.conversationQueue.async {
+				DispatchQueue.main.async {
 					self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: true, unreadCount: sentUnreadMessages, with: peerID)
 				}
 			}
@@ -629,7 +576,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			switch memberContent.membership {
 			case kMXMembershipStringJoin:
 				guard eventUserId != self.userId, let peerID = peerIDFrom(serverChatUserId: eventUserId) else { return }
-				ServerChatNotificationName.readyToChat.post(for: peerID)
+
+				DispatchQueue.main.async {
+					self.conversationDelegate?.persona(of: peerID).readyToChat = true
+				}
 
 			case kMXMembershipStringInvite:
 				guard eventUserId == self.userId else {
@@ -647,8 +597,15 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 				// check whether we still have a pin match with this person
 				dataSource.hasPinMatch(with: [peerID], forceCheck: false) { checkedPeerID, result in
 					guard result else {
-						// this will trigger the AccountController.NotificationName.PinMatch notification, where we will then join the room
-						self.dataSource.hasPinMatch(with: [peerID], forceCheck: true) { _,_ in }
+						self.dataSource.hasPinMatch(with: [peerID], forceCheck: true) { peerID, hasPinMatch in
+							self.dQueue.async {
+								if hasPinMatch {
+									self.join(roomId: roomId, with: peerID)
+								} else {
+									self.leaveChat(with: peerID)
+								}
+							}
+						}
 						return
 					}
 
@@ -726,6 +683,10 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			if let readyRoom = theyJoinedOrInvited.first(where: { $0.theirMembership == .join && $0.ourMembership == .join }) {
 				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != readyRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: readyRoom.room, with: peerID)
+				
+				DispatchQueue.main.async {
+					self.conversationDelegate?.persona(of: peerID).readyToChat = true
+				}
 			} else if let invitedRoom = theyJoinedOrInvited.first(where: { $0.ourMembership == .invite }) {
 				// it is very likely that they are joined here, since they needed to be when they invited us
 				self.join(roomId: invitedRoom.room.roomId, with: peerID)
@@ -764,15 +725,11 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			  let convDelegate = self.conversationDelegate else { return }
 
 		do {
-			let messageEvent = try MessageEventData(messageEvent: event)
-			let ourPeerID = self.peerID.serverChatUserId
+			let ourUserId = self.peerID.serverChatUserId
+			let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
 
-			self.conversationQueue.async {
-				if event.sender == ourPeerID {
-					convDelegate.didSend(message: messageEvent.message, at: messageEvent.timestamp, to: peerID)
-				} else {
-					convDelegate.received(message: messageEvent.message, at: messageEvent.timestamp, from: peerID)
-				}
+			DispatchQueue.main.async {
+				convDelegate.new(message: messageEvent, inChatWithConversationPartner: peerID)
 			}
 		} catch let error {
 			elog(Self.LogTag, "\(error)")
@@ -788,8 +745,24 @@ final class ServerChatController: ServerChat, PersistedServerChatDataControllerD
 			return
 		}
 
-		persistence.readLastReads { lastReads in
+		Task {
+			do {
+				try await persistence.loadInitialData()
+			} catch {
+				self.delegate?.decodingPersistedChatDataFailed(with: error)
+			}
+
+			let lastReads = await persistence.lastReads
+
 			self.lastReads = lastReads
+
+			if let d = self.conversationDelegate {
+				DispatchQueue.main.async {
+					for (peerID, lastReadDate) in lastReads {
+						d.persona(of: peerID).set(lastReadDate: lastReadDate)
+					}
+				}
+			}
 
 		let store = MXFileStore(credentials: sessionCreds)
 		self.session.setStore(store) { setStoreResponse in

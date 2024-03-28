@@ -24,49 +24,9 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>MarqueeLabelLicense</string>
-			<key>FooterText</key>
-			<string>MarqueeLabelLicenseText</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
 			<string>MatrixSDKLicense</string>
 			<key>FooterText</key>
 			<string>MatrixSDKLicenseText</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>MultiSelectSegmentedControlLicense</string>
-			<key>FooterText</key>
-			<string>MultiSelectSegmentedControlLicenseText</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>NotificationBannerSwiftLicense</string>
-			<key>FooterText</key>
-			<string>NotificationBannerSwiftLicenseText</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>SnapKitLicense</string>
-			<key>FooterText</key>
-			<string>SnapKitLicenseText</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>SweeterSwiftLicense</string>
-			<key>FooterText</key>
-			<string>SweeterSwiftLicenseText</string>
 		</dict>
 		<dict>
 			<key>Type</key>

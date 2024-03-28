@@ -6,17 +6,27 @@
 //  Copyright © 2022 Kobusch. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import CoreGraphics
-import PeereeCore
 
-/// Informed party.
-public protocol UserPeerDelegate {
-	func syncToViewModel(info: PeerInfo, bio: String, pic: CGImage?)
+import PeereeCore
+import PeereeDiscovery
+
+struct ProfileData {
+
+	var peerInfo: PeerInfo?
+
+	var picture: UIImage?
+
+	var biography: String
+
+	var birthday: Date?
 }
 
-/// Holds and persists the peer information of the user.
-public final class UserPeer {
+// Note: This actor could still has a race condition, since the file system is a shared domain, and if multiple instances of this actor are created, they may access the file system simultaneously. However, the FileManager docs state that its shared object is thread-safe.
+
+/// Serializes the profile information of the user.
+final actor UserPeer {
 	// MARK: - Public and Internal
 
 	// MARK: Classes, Structs, Enums
@@ -27,11 +37,6 @@ public final class UserPeer {
 		case changed
 	}
 
-	// MARK: Static Constants
-
-	/// The singleton instance of this class.
-	public static let instance = UserPeer()
-
 	// MARK: Static Variables
 
 	/// The URL of the user's picture.
@@ -41,173 +46,15 @@ public final class UserPeer {
 		return URL(fileURLWithPath: paths[0]).appendingPathComponent(UserPeer.PortraitFileName, isDirectory: false)
 	}
 
-	// MARK: Constants
-
-	// MARK: Variables
-
-	/// Informed party.
-	public var delegate: UserPeerDelegate?
-
 	// MARK: Methods
-
-	/// Grants read-only access to all of the user's properties: `peerInfo`, `birthday`, `portrait` and `biography`.
-	public func read(on callbackQueue: DispatchQueue? = DispatchQueue.main, completion: @escaping (PeerInfo?, Date?, CGImage?, String) -> ()) {
-		queue.async {
-			let info = self.peerInfo
-			let birthday = self.dateOfBirth
-			let pic = self.cgPicture
-			let bio = self.biography
-			if let callbackQueue = callbackQueue {
-				callbackQueue.async {
-					completion(info, birthday, pic, bio)
-				}
-			} else {
-				completion(info, birthday, pic, bio)
-			}
-		}
-	}
-
-	/// Modifies or sets the `PeerInfo` part of the user's peer.
-	public func modifyInfo(_ query: @escaping (inout PeerInfo?) -> ()) {
-		modify {
-			query(&self.peerInfo)
-
-			self.syncAge()
-			self.syncHasPicture()
-			self.savePeerInfo()
-		}
-	}
-
-	/// Sets the user's portrait.
-	public func modify(portrait: CGImage?, completion: @escaping (Error?) -> ()) {
-		modify {
-			guard portrait != self.cgPicture else { return }
-
-			var err: Error? = nil
-			do {
-				if let pic = portrait {
-					try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: StandardPortraitCompressionQuality)
-				} else {
-					try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
-				}
-
-				self.cgPicture = portrait
-				if self.syncHasPicture() { self.savePeerInfo() }
-			} catch let error as NSError {
-				err = error
-			}
-			completion(err)
-		}
-	}
-
-	/// Sets the user's birthday.
-	public func modify(birthday: Date?) {
-		modify {
-			self.dateOfBirth = birthday
-			if let birth = birthday {
-				UserDefaults.standard.set(birth.timeIntervalSince1970, forKey: UserPeer.DateOfBirthKey)
-			} else {
-				UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
-			}
-			if self.syncAge() { self.savePeerInfo() }
-		}
-	}
-
-	/// Sets the user's biography.
-	public func modify(biography: String) {
-		modify {
-			self.biography = biography
-			UserDefaults.standard.set(biography, forKey: UserPeer.BiographyKey)
-		}
-	}
-
-	// MARK: - Private
-
-	/// Reads all properties of the user from disk.
-	private init() {
-		if UserDefaults.standard.object(forKey: UserPeer.DateOfBirthKey) != nil {
-			dateOfBirth = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: UserPeer.DateOfBirthKey))
-		}
-		biography = UserDefaults.standard.string(forKey: UserPeer.BiographyKey) ?? ""
-		do {
-			peerInfo = try unarchiveFromUserDefs(PeerInfo.self, UserPeer.PrefKey)
-		} catch let error {
-			elog(Self.LogTag, "could not load UserPeer info: \(error.localizedDescription)")
-		}
-
-		if peerInfo?.hasPicture ?? false,
-		   let provider = CGDataProvider(url: UserPeer.pictureResourceURL as CFURL) {
-			cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
-		}
-
-		// if the user leveled up we need to update it in our PeerInfo as well (this is not very accurate but suffices for now)
-		syncAge()
-
-		queue.async { self.syncToViewModel() }
-	}
-
-	// MARK: Classes, Structs, Enums
-
-	// MARK: Static Constants
-
-	// Log tag.
-	private static let LogTag = "UserPeer"
-
-	private static let PrefKey = "UserPeer"
-	private static let PortraitFileName = "UserPortrait.jpg"
-	private static let DateOfBirthKey = "UserPeer.dateOfBirth"
-	private static let BiographyKey = "UserPeer.biography"
-
-	// MARK: Static Variables
-
-	// MARK: Constants
-
-	/// The queue where the user's data may be accessed on.
-	private let queue = DispatchQueue(label: "de.peeree.UserPeer", qos: .userInitiated)
-
-	// MARK: Variables
-
-	/// The concrete birthday of the user, based on which his age is calculated and communicated.
-	private var dateOfBirth: Date?
-	private var peerInfo: PeerInfo?
-	private var cgPicture: CGImage? = nil
-	private var biography = ""
-
-	// MARK: Methods
-
-	/// Wipes all persisted data.
-	private func clear() {
-		UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)
-		UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
-		UserDefaults.standard.removeObject(forKey: UserPeer.BiographyKey)
-		do {
-			try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
-		} catch let error {
-			elog(Self.LogTag, "could not delete UserPeer portrait: \(error.localizedDescription)")
-		}
-	}
-
-	/// Writes calculated age from `dateOfBirth` into `peerInfo` and returns whether the value really changed; call only from `queue`.
-	@discardableResult private func syncAge() -> Bool {
-		let oldValue = peerInfo?.age
-		if let birth = dateOfBirth {
-			peerInfo?.age = (Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: birth, to: Date(), options: []).year
-		} else {
-			peerInfo?.age = nil
-		}
-		return peerInfo != nil && oldValue != peerInfo?.age
-	}
-
-	/// Sets `hasPicture`of `peerInfo` based on `cgPicture` and returns whether the value really changed; call only from `queue`.
-	@discardableResult private func syncHasPicture() -> Bool {
-		let oldValue = peerInfo?.hasPicture
-		peerInfo?.hasPicture = cgPicture != nil
-		return peerInfo != nil && oldValue != peerInfo?.hasPicture
-	}
 
 	/// Persists `peerInfo`; call only from `queue`.
-	private func savePeerInfo() {
-		guard let info = self.peerInfo else {
+	func modify(peerInfo: PeerInfo?) {
+		defer {
+			NotificationName.changed.postAsNotification(object: self)
+		}
+
+		guard let info = peerInfo else {
 			UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)
 			return
 		}
@@ -218,19 +65,95 @@ public final class UserPeer {
 		}
 	}
 
-	/// Writes all properties to `PeerViewModelController`; call only from `queue`.
-	private func syncToViewModel() {
-		guard let info = self.peerInfo else { return }
-
-		delegate?.syncToViewModel(info: info, bio: biography, pic: cgPicture)
-	}
-
-	/// Calls `query` on `queue` and `syncToViewModel()` afterwards.
-	private func modify(query: @escaping () -> ()) {
-		queue.async {
-			query()
-			self.syncToViewModel()
+	/// Sets the user's portrait.
+	func modify(portrait: CGImage?) throws {
+		defer {
 			NotificationName.changed.postAsNotification(object: self)
 		}
+
+		if let pic = portrait {
+			try pic.save(to: UserPeer.pictureResourceURL, compressionQuality: StandardPortraitCompressionQuality)
+		} else {
+			try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
+		}
 	}
+
+	/// Sets the user's birthday.
+	func modify(birthday: Date?) {
+		defer {
+			NotificationName.changed.postAsNotification(object: self)
+		}
+
+		if let birth = birthday {
+			UserDefaults.standard.set(birth.timeIntervalSince1970, forKey: UserPeer.DateOfBirthKey)
+		} else {
+			UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
+		}
+	}
+
+	/// Sets the user's biography.
+	func modify(biography: String) {
+		defer {
+			NotificationName.changed.postAsNotification(object: self)
+		}
+
+		UserDefaults.standard.set(biography, forKey: UserPeer.BiographyKey)
+	}
+
+	/// Reads all properties of the user from disk.
+	func readProfileFromDisk() throws -> ProfileData {
+		let biography = UserDefaults.standard.string(forKey: UserPeer.BiographyKey) ?? ""
+
+		var peerInfo = try unarchiveFromUserDefs(PeerInfo.self, UserPeer.PrefKey)
+
+		let dateOfBirth: Date?
+		if UserDefaults.standard.object(forKey: UserPeer.DateOfBirthKey) != nil {
+			let birth = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: UserPeer.DateOfBirthKey))
+			dateOfBirth = birth
+			// if the user leveled up we need to update it in our PeerInfo as well (this is not very accurate but suffices for now)
+			peerInfo?.age = (Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: birth, to: Date(), options: []).year
+		} else {
+			dateOfBirth = nil
+			peerInfo?.age = nil
+		}
+
+		let image: UIImage?
+		if peerInfo?.hasPicture ?? false,
+		   let provider = CGDataProvider(url: UserPeer.pictureResourceURL as CFURL) {
+			let cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+			image = cgPicture.map { UIImage(cgImage: $0) }
+		} else {
+			image = nil
+		}
+
+		return ProfileData(peerInfo: peerInfo, picture: image, biography: biography, birthday: dateOfBirth)
+	}
+
+	/// Wipes all persisted data.
+	func clear() {
+		defer {
+			NotificationName.changed.postAsNotification(object: self)
+		}
+
+		UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)
+		UserDefaults.standard.removeObject(forKey: UserPeer.DateOfBirthKey)
+		UserDefaults.standard.removeObject(forKey: UserPeer.BiographyKey)
+		do {
+			try FileManager.default.deleteFile(at: UserPeer.pictureResourceURL)
+		} catch let error {
+			elog(Self.LogTag, "could not delete UserPeer portrait: \(error.localizedDescription)")
+		}
+	}
+
+	// MARK: - Private
+
+	// MARK: Static Constants
+
+	// Log tag.
+	private static let LogTag = "UserPeer"
+
+	private static let PrefKey = "UserPeer"
+	private static let PortraitFileName = "UserPortrait.jpg"
+	private static let DateOfBirthKey = "UserPeer.dateOfBirth"
+	private static let BiographyKey = "UserPeer.biography"
 }

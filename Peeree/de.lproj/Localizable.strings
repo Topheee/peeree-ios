@@ -433,6 +433,9 @@
 /* Peeree App Terms of Use URL */
 "terms-app-url" = "https://www.peeree.de/de/terms-app.html";
 
+/* Title of alert */
+"Unexpected Error" = "Unerwarteter Fehler";
+
 /* Requested information about an unknown peer. */
 "Unknown peer." = "Unbekannter Peeree Benutzer.";
 
@@ -470,3 +473,127 @@
 // we ignore the args here, since the user would only be the PeerID:
 "MSG_FROM_USER" = "Neue Nachricht";
 "USER_INVITE_TO_CHAT" = "Neuer Pin Match!";
+
+/********************************************/
+/* macOS keys. */
+"NSMenuItemTitleAbout" = "Über";
+
+"NSMenuItemTitleHide" = "Ausblenden";
+
+"NSMenuItemTitleQuit" = "Beenden";
+
+/********************************************/
+/* SwiftUI keys. */
+"Offline" = "Offline";
+
+"Create your profile." = "Erstelle deine Profil.";
+
+"Setup filter." = "Setup filter.";
+
+"Demo" = "Demo";
+
+"Peeree is all about Pinning. Pin people who you are interested in. If the pin is mutual, you can start chatting." = "In Peeree dreht sich alles ums Pinnen. Pinne Leute die dich interessieren. Falls Du auch gepinnt wirst, könnt ihr chatten.";
+
+"Learn more about how Peeree works" = "Erfahre, wie Peeree funktioniert";
+
+"Swipe up or tap to find new people." = "Wische nach oben oder tippe, um neue Leute zu finden.";
+
+"Pinboard" = "Pinnwand";
+
+"%@ is not yet ready to chat." = "%@ kann noch nicht chatten.";
+
+"To ensure the confidentiality of your messages, chat is only available after %@ opened the app." = "Um die Sicherheit deiner Nachrichten zu garantieren ist der Chat erst verfügbar, nachdem %@ die App geöffnet hat.";
+
+"PortraitPlaceholder" = "PortraitPlaceholder";
+
+"Biography" = "Steckbrief";
+
+"Birthday" = "Geburtstag";
+
+"Female" = "Weiblich";
+
+"Male" = "Männlich";
+
+"Queer" = "Divers";
+
+"Gender" = "Geschlecht";
+
+"Show Age on Profile" = "Zeige Alter im Profil";
+
+"Name" = "Name";
+
+"Preview" = "Vorschau";
+
+"Privacy Policy" = "Datenschutzerklärung";
+
+"Website" = "Webseite";
+
+"Remove the pin or report the portrait of %@." = "Entferne den Pin oder melde das Portrait von %@.";
+
+"Unpin or Report" = "Pin Entfernen oder Melden";
+
+"Females" = "Frauen";
+
+"Males" = "Männer";
+
+"Queers" = "Diverse";
+
+"Minimum Age:" = "Altersuntergrenze:";
+
+"Maximum Age:" = "Altersobergrenze:";
+
+"Minimum Age" = "Altersuntergrenze";
+
+"Maximum Age" = "Altersobergrenze";
+
+"Only with age available" = "Nur mit Alter angegeben";
+
+"Only with picture available" = "Nur mit Bild angegeben";
+
+"Filter based on gender." = "Filtert nach Geschlecht.";
+
+"Age" = "Age";
+
+"Filter based on age." = "Filtert nach Alter.";
+
+"Display filtered people" = "Zeige ausgefilterte Leute";
+
+"Portrait" = "Portrait";
+
+"Filter based on portrait." = "Filtert nach Portrait.";
+
+"Display people although they are filtered out. Notifications are still not triggered." = "Zeige Leute an, obwohl sie durch den Filter fallen. Es werden trotzdem keine Benachrichtigungen erzeugt.";
+
+"Biography:" = "Steckbrief:";
+
+"Pin Match!" = "Pin Match!";
+
+"Online – Looking for people." = "Online – Suche nach Leuten.";
+
+"Filter" = "Filter";
+
+"Profile" = "Profil";
+
+"Visit crowded places to find other Peeree users." = "Besuche belebte Orte um andere Peeree-Nutzer zu finden.";
+
+"A person." = "Eine Person.";
+
+"PinTemplate" = "Pin-Knopf";
+
+"PinTemplateFilled" = "Filled Pin";
+
+"%lld" = "%lld";
+
+"Use this button to pin people." = "Drücke diesen Knopf um Leute zu pinnen.";
+
+"Waiting for a response …" = "Wartet auf Antwort …";
+
+"The person is pinned." = "Die Person ist gepinnt.";
+
+"Trying to remove the pin …" = "Löse Pin …";
+
+"Pin Match! You can now chat with the person." = "Pin Match! Du kannst nun mit dieser Person schreiben.";
+
+"Lot's of void out here!" = "Ganz schön leer hier!";
+
+"Sounds good!" = "Klingt gut!";

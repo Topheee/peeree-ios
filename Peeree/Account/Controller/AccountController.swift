@@ -46,15 +46,15 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Creates a new `AccountController` for the user.
-	internal static func create(email: String? = nil, account: Account, keyPair: KeyPair, dQueue: DispatchQueue) -> AccountController {
+	internal static func create(email: String? = nil, account: Account, keyPair: KeyPair, viewModel: any SocialViewModelDelegate, dQueue: DispatchQueue) -> AccountController {
 		UserDefaults.standard.set(account.peerID.uuidString, forKey: Self.PeerIDKey)
 		UserDefaults.standard.set(NSNumber(value: account.sequenceNumber), forKey: Self.SequenceNumberKey)
 
-		return AccountController(peerID: account.peerID, sequenceNumber: account.sequenceNumber, keyPair: keyPair, dQueue: dQueue)
+		return AccountController(peerID: account.peerID, sequenceNumber: account.sequenceNumber, keyPair: keyPair, viewModel: viewModel, dQueue: dQueue)
 	}
 
 	/// Load account data from disk; factory method for `AccountController`.
-	internal static func load(keyPair: KeyPair, dQueue: DispatchQueue) -> AccountController? {
+	internal static func load(keyPair: KeyPair, viewModel: any SocialViewModelDelegate, dQueue: DispatchQueue) -> AccountController? {
 		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
 		guard let peerID = UUID(uuidString: str) else {
 			flog(Self.LogTag, "our peer ID is not a UUID, deleting!")
@@ -72,10 +72,12 @@ public class AccountController: SecurityDataSource {
 			sequenceNumber = 0
 		}
 
-		return AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: keyPair, dQueue: dQueue)
+		return AccountController(peerID: peerID, sequenceNumber: sequenceNumber, keyPair: keyPair, viewModel: viewModel, dQueue: dQueue)
 	}
 
 	// MARK: Static Variables
+
+	public var viewModel: any SocialViewModelDelegate
 
 	/// Informed party when `AccountController` actions fail.
 	public var delegate: AccountControllerDelegate?
@@ -165,9 +167,9 @@ public class AccountController: SecurityDataSource {
 	}
 
 	/// Removes the pin from a person.
-	public func unpin(id: PeereeIdentity) {
-		guard !unpinningPeers.contains(id.peerID) && isPinned(id) else { return }
-		let peerID = id.peerID
+	public func unpin(_ peerID: PeerID) {
+		guard let id: PeereeIdentity = try? self.id(of: peerID),
+			  !unpinningPeers.contains(peerID) && isPinned(id) else { return }
 
 		unpinningPeers.insert(peerID)
 		updateModels(of: [id])
@@ -203,10 +205,12 @@ public class AccountController: SecurityDataSource {
 				self.preprocessAuthenticatedRequestError(error)
 				errorCallback(error)
 			} else {
-				DispatchQueue.main.async {
-					PeereeIdentityViewModelController.pendingObjectionableImageHashes[portraitHash] = Date()
+				let vm = self.viewModel
 
-					let save = PeereeIdentityViewModelController.pendingObjectionableImageHashes
+				DispatchQueue.main.async {
+					vm.pendingObjectionableImageHashes[portraitHash] = Date()
+
+					let save = vm.pendingObjectionableImageHashes
 					self.dQueue.async {
 						archiveObjectInUserDefs(save as NSDictionary, forKey: AccountController.PendingObjectionableImageHashesKey)
 					}
@@ -240,8 +244,8 @@ public class AccountController: SecurityDataSource {
 				UserDefaults.standard.set(self.lastObjectionableContentRefresh.timeIntervalSinceReferenceDate, forKey: AccountController.ObjectionableContentRefreshKey)
 
 				DispatchQueue.main.async {
-					PeereeIdentityViewModelController.objectionableImageHashes = hashesAsData
-					PeereeIdentityViewModelController.pendingObjectionableImageHashes = pendingObjectionableImageHashes
+					self.viewModel.objectionableImageHashes = hashesAsData
+					self.viewModel.pendingObjectionableImageHashes = pendingObjectionableImageHashes
 				}
 			} else {
 				errorCallback(ErrorResponse.parseError(nil))
@@ -390,10 +394,11 @@ public class AccountController: SecurityDataSource {
 	// MARK: - Private
 
 	/// Creates the AccountController singleton and installs it in the rest of the app.
-	private init(peerID: PeerID, sequenceNumber: Int32, keyPair: KeyPair, dQueue: DispatchQueue) {
+	private init(peerID: PeerID, sequenceNumber: Int32, keyPair: KeyPair, viewModel: any SocialViewModelDelegate, dQueue: DispatchQueue) {
 		self.peerID = peerID
 		self.sequenceNumber = sequenceNumber
 		self.keyPair = keyPair
+		self.viewModel = viewModel
 		self.dQueue = dQueue
 
 		let nsPinnedBy: NSSet? = unarchiveObjectFromUserDefs(Self.PinnedByPeersKey, containing: [NSUUID.self])
@@ -407,20 +412,15 @@ public class AccountController: SecurityDataSource {
 
 		accountEmail = UserDefaults.standard.string(forKey: AccountController.EmailKey)
 
-		let models: [PeereeIdentityViewModel] = pinnedPeers.compactMap { (peerID, publicKeyData) in
-			guard let id = try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData) else {
-				assertionFailure()
-				return nil
-			}
-			return PeereeIdentityViewModel(id: id, pinState: self.pinState(of: peerID))
+		let models: [PeereeIdentity] = pinnedPeers.compactMap { (peerID, publicKeyData) in
+			try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData)
 		}
 
 		DispatchQueue.main.async {
-			PeereeIdentityViewModelController.userPeerID = peerID
-			for model in models {
-				PeereeIdentityViewModelController.insert(model: model)
-			}
+			viewModel.userPeerID = peerID
 		}
+
+		self.updateModels(of: models)
 	}
 
 	// MARK: Static Constants
@@ -511,14 +511,12 @@ public class AccountController: SecurityDataSource {
 	/// Populate changes in `ids` to the appropriate view models.
 	private func updateModels(of ids: [PeereeIdentity]) {
 		let models = ids.map { id in
-			PeereeIdentityViewModel(id: id, pinState: pinState(of: id.peerID))
+			SocialPersonData(peerID: id.peerID, pinState: self.pinState(of: id.peerID))
 		}
 
 		DispatchQueue.main.async {
 			for model in models {
-				PeereeIdentityViewModelController.upsert(peerID: model.peerID, insert: model) { mdl in
-					mdl.pinState = model.pinState
-				}
+				_ = self.viewModel.addPersona(of: model.peerID, with: model.pinState)
 			}
 		}
 	}
@@ -598,7 +596,7 @@ public class AccountController: SecurityDataSource {
 
 		SwaggerClientAPI.dataSource = nil
 		DispatchQueue.main.async {
-			PeereeIdentityViewModelController.clear()
+			self.viewModel.clear()
 			self.dQueue.async { completion() }
 		}
 	}

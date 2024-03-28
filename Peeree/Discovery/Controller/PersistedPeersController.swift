@@ -54,6 +54,11 @@ public final class PersistedPeersController {
 	}
 
 	/// Read-only access to persisted peers.
+	public func readPeer(_ peerID: PeerID, _ completion: @escaping (Peer?) -> ()) {
+		targetQueue.async { completion(self.persistedPeers.first { $0.id.peerID == peerID } ) }
+	}
+
+	/// Read-only access to persisted peers.
 	public func readPeers(completion: @escaping (Set<Peer>) -> ()) {
 		targetQueue.async { completion(self.persistedPeers) }
 	}

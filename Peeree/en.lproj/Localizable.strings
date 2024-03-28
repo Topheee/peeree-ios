@@ -433,6 +433,9 @@
 /* Peeree App Terms of Use URL */
 "terms-app-url" = "https://www.peeree.de/en/terms-app.html";
 
+/* Title of alert */
+"Unexpected Error" = "Unexpected Error";
+
 /* Requested information about an unknown peer. */
 "Unknown peer." = "Unknown peer.";
 
@@ -472,3 +475,127 @@
 // we ignore the args here, since the user would only be the PeerID:
 "MSG_FROM_USER" = "New Message";
 "USER_INVITE_TO_CHAT" = "New Pin Match!";
+
+/********************************************/
+/* macOS keys. */
+"NSMenuItemTitleAbout" = "About";
+
+"NSMenuItemTitleHide" = "Hide";
+
+"NSMenuItemTitleQuit" = "Quit";
+
+/********************************************/
+/* SwiftUI keys. */
+"Offline" = "Offline";
+
+"Create your profile." = "Create your profile.";
+
+"Setup filter." = "Setup filter.";
+
+"Demo" = "Demo";
+
+"Peeree is all about Pinning. Pin people who you are interested in. If the pin is mutual, you can start chatting." = "Peeree is all about Pinning. Pin people who you are interested in. If the pin is mutual, you can start chatting.";
+
+"Learn more about how Peeree works" = "Learn more about how Peeree works";
+
+"Swipe up or tap to find new people." = "Swipe up or tap to find new people.";
+
+"Pinboard" = "Pinboard";
+
+"%@ is not yet ready to chat." = "%@ is not yet ready to chat.";
+
+"To ensure the confidentiality of your messages, chat is only available after %@ opened the app." = "To ensure the confidentiality of your messages, chat is only available after %@ opened the app.";
+
+"PortraitPlaceholder" = "PortraitPlaceholder";
+
+"Biography" = "Biography";
+
+"Birthday" = "Birthday";
+
+"Female" = "Female";
+
+"Male" = "Male";
+
+"Queer" = "Queer";
+
+"Gender" = "Gender";
+
+"Show Age on Profile" = "Show Age on Profile";
+
+"Name" = "Name";
+
+"Preview" = "Preview";
+
+"Privacy Policy" = "Privacy Policy";
+
+"Website" = "Website";
+
+"Remove the pin or report the portrait of %@." = "Remove the pin or report the portrait of %@.";
+
+"Unpin or Report" = "Unpin or Report";
+
+"Females" = "Females";
+
+"Males" = "Males";
+
+"Queers" = "Queers";
+
+"Minimum Age:" = "Minimum Age:";
+
+"Maximum Age:" = "Maximum Age:";
+
+"Minimum Age" = "Minimum Age";
+
+"Maximum Age" = "Maximum Age";
+
+"Only with age available" = "Only with age available";
+
+"Only with picture available" = "Only with picture available";
+
+"Filter based on gender." = "Filter based on gender.";
+
+"Age" = "Age";
+
+"Filter based on age." = "Filter based on age.";
+
+"Display filtered people" = "Display filtered people";
+
+"Portrait" = "Portrait";
+
+"Filter based on portrait." = "Filter based on portrait.";
+
+"Display people although they are filtered out. Notifications are still not triggered." = "Display people although they are filtered out. Notifications are still not triggered.";
+
+"Biography:" = "Biography:";
+
+"Pin Match!" = "Pin Match!";
+
+"Online – Looking for people." = "Online – Looking for people.";
+
+"Filter" = "Filter";
+
+"Profile" = "Profile";
+
+"Visit crowded places to find other Peeree users." = "Visit crowded places to find other Peeree users.";
+
+"A person." = "A person.";
+
+"PinTemplate" = "Pin Button";
+
+"%lld" = "%lld";
+
+"Use this button to pin people." = "Use this button to pin people.";
+
+"Waiting for a response …" = "Waiting for a response …";
+
+"The person is pinned." = "The person is pinned.";
+
+"Trying to remove the pin …" = "Trying to remove the pin …";
+
+"Pin Match! You can now chat with the person." = "Pin Match! You can now chat with the person.";
+
+"Lot's of void out here!" = "Lot's of void out here!";
+
+"Sounds good!" = "Sounds good!";
+
+"" = "";

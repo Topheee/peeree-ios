@@ -60,16 +60,6 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	/// Initiate the discovery process.
 	func scan() {
 		dQueue.async {
-#if os(iOS)
-			guard !self.isScanning else { return }
-#endif
-
-			// Reset all operations.
-			self.discoveryOperations.removeAll()
-			self.identifyOperations.removeAll()
-
-			self.encounteredPeripherals.removeAll()
-
 			self.centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
 		}
 	}
@@ -77,11 +67,6 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	/// Stop the discovery process.
 	func stopScan() {
 		dQueue.async {
-			guard self.isScanning else { return }
-
-			self.knownPeripheralIDs.removeAll()
-			self.completedPeerDiscoveries.removeAll()
-
 			self.centralManager.stopScan()
 			// We may NOT do `self.encounteredPeripherals.removeAll()` here, as this deallocates the CBPeripheral and thus didDisconnect is never invoked (and the central manager does not even recognize that we disconnected internally)!
 			for (peripheral, _) in self.encounteredPeripherals {
