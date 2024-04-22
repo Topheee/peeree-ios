@@ -418,6 +418,7 @@ public class AccountController: SecurityDataSource {
 
 		DispatchQueue.main.async {
 			viewModel.userPeerID = peerID
+			viewModel.accountExists = .on
 		}
 
 		self.updateModels(of: models)

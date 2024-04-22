@@ -132,24 +132,24 @@ struct ProfileView: View {
 							.fontWeight(.light)
 							.modify {
 								if #available(iOS 16, *) {
-									$0.italic(!socialViewState.accountExists)
+									$0.italic(!socialViewState.accountExists.isOn)
 								} else {
-									if !socialViewState.accountExists {
+									if !socialViewState.accountExists.isOn {
 										$0.italic()
 									}
 								}
 							}
 							.padding(.top, 0.5)
 
-						Button(role: socialViewState.accountExists ? .destructive : .none) {
+						Button(role: socialViewState.accountExists.isOn ? .destructive : .none) {
 							showCreateDeleteAccountDialog.toggle()
 						} label: {
-							Text(socialViewState.accountExists ? "Delete Identity" : "Create Identity")
+							Text(socialViewState.accountExistsText)
 								.modify {
 									if #available(iOS 16, *) {
-										$0.bold(!socialViewState.accountExists)
+										$0.bold(!socialViewState.accountExists.isOn)
 									} else {
-										if !socialViewState.accountExists {
+										if !socialViewState.accountExists.isOn {
 											$0.bold()
 										} else {
 											$0
@@ -157,9 +157,10 @@ struct ProfileView: View {
 									}
 								}
 						}
+						.disabled(socialViewState.accountExists.isTransitioning)
 						.modify {
 							if #available(iOS 15, *) {
-								if socialViewState.accountExists {
+								if socialViewState.accountExists.isOn {
 									$0.confirmationDialog(
 										"Delete Identity",
 										isPresented: $showCreateDeleteAccountDialog
@@ -186,7 +187,7 @@ struct ProfileView: View {
 									}
 								}
 							} else {
-								if socialViewState.accountExists {
+								if socialViewState.accountExists.isOn {
 									$0.actionSheet(isPresented: $showCreateDeleteAccountDialog) {
 										ActionSheet(title: Text("Delete Identity"),
 													message: Text("Deleting your identity is bad."),

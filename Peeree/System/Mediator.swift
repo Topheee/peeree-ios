@@ -43,6 +43,11 @@ final class Mediator {
 			ServerChatFactory.chat { sc in
 				sc?.leaveChat(with: peerID)
 			}
+
+			let scvs = self.serverChatViewState
+			DispatchQueue.main.async {
+				scvs.matchedPeople.removeAll { $0.peerID == peerID }
+			}
 		}
 
 		notificationObservers.append(UserPeer.NotificationName.changed.addObserver { _ in
@@ -450,7 +455,7 @@ extension Mediator: SocialViewDelegate {
 			return
 		}
 
-		if !socialViewState.accountExists {
+		if socialViewState.accountExists != .on {
 			let title = NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed.")
 			let message = NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")
 			InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))

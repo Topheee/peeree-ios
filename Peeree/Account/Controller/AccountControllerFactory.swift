@@ -86,6 +86,10 @@ public final class AccountControllerFactory {
 			creatingInstanceCallbacks.append(completion)
 			guard creatingInstanceCallbacks.count == 1 else { return }
 
+			DispatchQueue.main.async {
+				vm.accountExists = .turningOn
+			}
+
 			// generate our asymmetric key pair
 			let keyPair: KeyPair
 			do {
@@ -98,20 +102,20 @@ public final class AccountControllerFactory {
 
 				SwaggerClientAPI.dataSource = InitialSecurityDataSource(keyPair: keyPair)
 			} catch let error {
-				reportCreatingInstance(result: .failure(error))
+				reportCreatingInstance(result: .failure(error), vm: vm)
 				return
 			}
 
 			AccountAPI.putAccount(email: email) { (account, error) in
 				guard let account else {
 					let desc = NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")
-					self.reportCreatingInstance(result: .failure(error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])))
+					self.reportCreatingInstance(result: .failure(error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])), vm: vm)
 					return
 				}
 
 				let a = AccountController.create(account: account, keyPair: keyPair, viewModel: vm, dQueue: self.dQueue)
 				self.setInstance(a)
-				self.reportCreatingInstance(result: .success(a))
+				self.reportCreatingInstance(result: .success(a), vm: vm)
 
 				NotificationName.accountCreated.postAsNotification(object: a, userInfo: [PeerID.NotificationInfoKey : account.peerID])
 			}
@@ -122,6 +126,12 @@ public final class AccountControllerFactory {
 	public func deleteAccount(_ completion: @escaping (Error?) -> Void) {
 		guard !isDeletingAccount, let ac = instance else { return }
 		isDeletingAccount = true
+
+		if let vm = self.viewModel {
+			DispatchQueue.main.async {
+				vm.accountExists = .turningOff
+			}
+		}
 
 		AccountAPI.deleteAccount { (_, error) in
 			var reportedError = error
@@ -148,6 +158,13 @@ public final class AccountControllerFactory {
 				self.isDeletingAccount = false
 				completion(reportedError)
 			}
+
+			if let vm = self.viewModel {
+			 DispatchQueue.main.async {
+				 vm.userPeerID = nil
+				 vm.accountExists = reportedError == nil ? .off : .on
+			 }
+		 }
 		}
 	}
 
@@ -211,7 +228,16 @@ public final class AccountControllerFactory {
 	}
 
 	/// Concludes registration process; must be called on `dQueue`!
-	private func reportCreatingInstance(result: Result<AccountController, Error>) {
+	private func reportCreatingInstance(result: Result<AccountController, Error>, vm: any SocialViewModelDelegate) {
+		DispatchQueue.main.async {
+			switch result {
+			case .success(_):
+				vm.accountExists = .on
+			case .failure(_):
+				vm.accountExists = .off
+			}
+		}
+
 		creatingInstanceCallbacks.forEach { $0(result) }
 		creatingInstanceCallbacks.removeAll()
 	}

@@ -6,6 +6,8 @@
 //  Copyright © 2024 Kobusch. All rights reserved.
 //
 
+import PeereeCore
+
 /// The states a pin on a peer can be in.
 public enum PinState {
 	/// Pin process state machine states.
@@ -14,18 +16,16 @@ public enum PinState {
 
 extension PinState: CaseIterable, Sendable {}
 
+extension PinState: RemoteState {
+	public var isTransitioning: Bool {
+		return self == .pinning || self == .unpinning
+	}
+}
+
 extension PinState {
 
 	/// Checks whether we have a pin match, are currently unpinning (but effectively still having a pin) or simply have an (unmatched) pin.
 	public var isPinned: Bool { return self == .pinned || self == .pinMatch || self == .unpinning }
-
-	public var isTransitioning: Bool {
-		return self == .pinning || self == .unpinning
-	}
-
-	public var isFixed: Bool {
-		return !isTransitioning
-	}
 
 	public var isPinnedOrUnpinning: Bool {
 		return self == .pinMatch || self == .pinned || self == .unpinning

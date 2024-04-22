@@ -22,8 +22,6 @@ struct FilterView: View {
 
 	@State private var ageMaxRange: ClosedRange<Float> = Float(PeerInfo.MinAge)...Float(PeerInfo.MaxAge)
 
-	@EnvironmentObject private var inAppNotificationState: InAppNotificationStackViewState
-
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
@@ -92,6 +90,7 @@ struct FilterView: View {
 						HStack {
 							Text("Minimum Age:")
 							TextField("Minimum Age", value: $filter.ageMin, formatter: NumberFormatter())
+								.disabled(true)
 								.frame(maxWidth: 36)
 						}
 					}
@@ -105,6 +104,7 @@ struct FilterView: View {
 						HStack {
 							Text("Maximum Age:")
 							TextField("Maximum Age", value: $filter.ageMax, formatter: NumberFormatter())
+								.disabled(true)
 								.frame(maxWidth: 36)
 						}
 					}

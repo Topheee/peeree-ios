@@ -14,7 +14,7 @@ public protocol RemoteState {
 
 extension RemoteState {
 	/// We are not aware of any in-flight state change operations.
-	var isFixed: Bool { return !isTransitioning }
+	public var isFixed: Bool { return !isTransitioning }
 }
 
 public enum RemoteToggle {
@@ -24,5 +24,12 @@ public enum RemoteToggle {
 extension RemoteToggle: RemoteState {
 	public var isTransitioning: Bool {
 		return self == .turningOn || self == .turningOff
+	}
+}
+
+extension RemoteToggle {
+	/// If self is `.on` or `.turningOff`.
+	public var isOn: Bool {
+		return self == .on || self == .turningOff
 	}
 }

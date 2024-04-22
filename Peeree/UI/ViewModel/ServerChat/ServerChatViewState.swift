@@ -6,7 +6,7 @@
 //  Copyright © 2024 Kobusch. All rights reserved.
 //
 
-import Foundation
+import SwiftUI
 
 import PeereeCore
 import PeereeServerChat
@@ -53,6 +53,11 @@ final class ServerChatViewState: ObservableObject {
 	/// All chats.
 	private (set) var people: [PeerID : ServerChatPerson] = [:]
 
+	/// Controls the scroll view of the currently visible chat.
+	var messagesScrollViewProxy: ScrollViewProxy? = nil
+
+	@Published var lastMessageDisplayed = false
+
 	// MARK: Methods
 
 	func addPersona(of peerID: PeerID, with data: Void) -> ServerChatPerson {
@@ -66,7 +71,7 @@ final class ServerChatViewState: ObservableObject {
 		} else {
 			let p = ServerChatPerson(peerID: peerID)
 			self.people[peerID] = p
-			self.matchedPeople.append(p)
+			self.matchedPeople.insert(p, at: 0)
 			return p
 		}
 	}
@@ -93,7 +98,17 @@ extension ServerChatViewState: ServerChatViewModelDelegate {
 	typealias RequiredData = Void
 
 	func new(message: ChatMessage, inChatWithConversationPartner peerID: PeerID) {
-		persona(of: peerID).insert(messages: [message], sorted: true)
+		let p = persona(of: peerID)
+		p.insert(messages: [message], sorted: true)
+
+		// If peer is not shown this message is unread.
+		if peerID != displayedPeerID {
+			p.unreadMessages += 1
+		} else if lastMessageDisplayed {
+			messagesScrollViewProxy?.scrollTo(message.id, anchor: .bottom)
+		}
+
+		sortChatList()
 
 		let n: NotificationName = message.sent ? .messageSent : .messageReceived
 		n.post(peerID, message: message.message)
@@ -103,6 +118,15 @@ extension ServerChatViewState: ServerChatViewModelDelegate {
 		let p = persona(of: peerID)
 		p.insert(messages: messages, sorted: sorted)
 		p.unreadMessages += unreadCount
+
+		sortChatList()
+	}
+
+	private func sortChatList() {
+		// Chat list should be sorted after date of last message in each chat.
+		matchedPeople.sort { a, b in
+			(a.lastMessage?.timestamp ?? Date.distantPast) > (b.lastMessage?.timestamp ?? Date.distantPast)
+		}
 	}
 
 }

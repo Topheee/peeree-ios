@@ -152,12 +152,12 @@
 		9DD33C4029FFC6250046165E /* PeereeCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33C1F29FFC5200046165E /* PeereeCore.framework */; };
 		9DD33C4129FFC62B0046165E /* PeereeCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33C1F29FFC5200046165E /* PeereeCore.framework */; };
 		9DD33C4329FFC6320046165E /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD33C4229FFC6320046165E /* KeychainWrapper */; };
-		9DD33C4529FFC6740046165E /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD33C4429FFC6740046165E /* MatrixSDK */; };
 		9DD33C4629FFC6E60046165E /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE45F34280C0F870016D0DF /* Logging.swift */; };
 		9DD33C4C29FFDD820046165E /* PersistedServerChatDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD33C4B29FFDD820046165E /* PersistedServerChatDataController.swift */; };
-		9DD33C4F2A0063880046165E /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD33C4E2A0063880046165E /* MatrixSDK */; };
 		9DD584EF296B6C1B0024D7E0 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9DD584EE296B6C1B0024D7E0 /* Settings.bundle */; };
 		9DD7B83825E2D6E0005682CF /* HapticController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD7B83725E2D6E0005682CF /* HapticController.swift */; };
+		9DD9972F2BBDB65A00EE3D94 /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD9972E2BBDB65A00EE3D94 /* MatrixSDK */; };
+		9DD997312BBDB66B00EE3D94 /* MatrixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 9DD997302BBDB66B00EE3D94 /* MatrixSDK */; };
 		9DDA3A511D77B6EA00C2ADC8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DDA3A4F1D77B6EA00C2ADC8 /* InfoPlist.strings */; };
 		9DDFC2E6245C6EAE00311054 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9DDFC2E5245C6EAE00311054 /* LICENSE.txt */; };
 		9DF2D9CE2A7C2E4A00C71507 /* KeyValueTree in Frameworks */ = {isa = PBXBuildFile; productRef = 9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */; };
@@ -407,11 +407,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DD33C4F2A0063880046165E /* MatrixSDK in Frameworks */,
 				9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */,
 				9DD33BAC29FEA9470046165E /* PeereeServerAPI.framework in Frameworks */,
 				9DD33C0129FFA9BF0046165E /* PeereeDiscovery.framework in Frameworks */,
 				9D9249252A0FB6C400EDD320 /* KeychainWrapper in Frameworks */,
+				9DD9972F2BBDB65A00EE3D94 /* MatrixSDK in Frameworks */,
 				9DD33BF529FF27410046165E /* DequeModule in Frameworks */,
 				9DD33C3429FFC5210046165E /* PeereeCore.framework in Frameworks */,
 				9D3AEE402A718F0600436696 /* KeyValueTree in Frameworks */,
@@ -434,9 +434,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DD997312BBDB66B00EE3D94 /* MatrixSDK in Frameworks */,
 				9D9249232A0FB6AE00EDD320 /* KeychainWrapper in Frameworks */,
 				9DD33C4029FFC6250046165E /* PeereeCore.framework in Frameworks */,
-				9DD33C4529FFC6740046165E /* MatrixSDK in Frameworks */,
 				9DD33BF129FF27160046165E /* DequeModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1047,12 +1047,12 @@
 			name = Peeree;
 			packageProductDependencies = (
 				9DD33BF429FF27410046165E /* DequeModule */,
-				9DD33C4E2A0063880046165E /* MatrixSDK */,
 				9D9249242A0FB6C400EDD320 /* KeychainWrapper */,
 				9D2CDF5F2A718CC500255995 /* BLEPeripheralOperations */,
 				9D3AEE382A718E5800436696 /* KeyValueTreeCoding */,
 				9D3AEE3F2A718F0600436696 /* KeyValueTree */,
 				9D6A8C1A2ADF244100C8239D /* CSProgress */,
+				9DD9972E2BBDB65A00EE3D94 /* MatrixSDK */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
@@ -1092,8 +1092,8 @@
 			name = PeereeServerChat;
 			packageProductDependencies = (
 				9DD33BF029FF27160046165E /* DequeModule */,
-				9DD33C4429FFC6740046165E /* MatrixSDK */,
 				9D9249222A0FB6AE00EDD320 /* KeychainWrapper */,
+				9DD997302BBDB66B00EE3D94 /* MatrixSDK */,
 			);
 			productName = PeereeServerChat;
 			productReference = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */;
@@ -1225,11 +1225,11 @@
 			packageReferences = (
 				9D536B4F28F0674500B7207D /* XCRemoteSwiftPackageReference "swift-collections" */,
 				9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */,
-				9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 				9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */,
 				9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */,
 				9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */,
 				9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */,
+				9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -2541,12 +2541,12 @@
 				minimumVersion = 1.1.3;
 			};
 		};
-		9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
+		9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Topheee/MatrixSDK";
+			repositoryURL = "https://github.com/PeereeApp/MatrixSDK";
 			requirement = {
 				kind = exactVersion;
-				version = 0.27.3;
+				version = 0.27.6;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -2627,14 +2627,14 @@
 			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
 			productName = KeychainWrapper;
 		};
-		9DD33C4429FFC6740046165E /* MatrixSDK */ = {
+		9DD9972E2BBDB65A00EE3D94 /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */;
+			package = 9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
 		};
-		9DD33C4E2A0063880046165E /* MatrixSDK */ = {
+		9DD997302BBDB66B00EE3D94 /* MatrixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9DD33BC429FEA9AA0046165E /* XCRemoteSwiftPackageReference "MatrixSDK" */;
+			package = 9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
 		};
 		9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */ = {

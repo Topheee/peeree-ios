@@ -48,23 +48,44 @@ struct ChatView: View {
 	var body: some View {
 		ZStack(alignment: .bottom) {
 			if chatPersona.readyToChat {
-				ScrollView() {
-					// not state of the art, but it is what it is
-					Button("More …") {
-						loadOlderMessages()
-					}
-					.font(.caption)
-					LazyVStack {
-						ForEach(chatPersona.messagesPerDay) { day in
-							Section(day.title) {
-								ForEach(day.messages) { message in
-									MessageTableCell(message: message)
-								}
-							}
-							.font(.caption)
+				ScrollViewReader { proxy in
+					ScrollView() {
+						// not state of the art, but it is what it is
+						Button("More …") {
+							loadOlderMessages()
 						}
+						.font(.caption)
+						LazyVStack {
+							ForEach(chatPersona.messagesPerDay) { day in
+								Section(day.title) {
+									ForEach(day.messages) { message in
+										MessageTableCell(message: message)
+											.id(message.id)
+											.modify {
+												if message.id == chatPersona.lastMessage?.id {
+													$0.onAppear {
+														serverChatViewState.lastMessageDisplayed = true
+													}
+													.onDisappear {
+														serverChatViewState.lastMessageDisplayed = false
+													}
+												} else {
+													$0
+												}
+											}
+									}
+								}
+								.font(.caption)
+							}
+						}
+						.padding(.bottom, chatMessageAreaHeight + 6)
 					}
-					.padding(.bottom, chatMessageAreaHeight + 6)
+					.onAppear {
+						self.serverChatViewState.messagesScrollViewProxy = proxy
+					}
+					.onDisappear {
+						self.serverChatViewState.messagesScrollViewProxy = nil
+					}
 				}
 				.modify {
 					if #available(iOS 16, *) {
@@ -108,7 +129,17 @@ struct ChatView: View {
 
 			HStack {
 				TextField(text: $composingMessage, prompt: Text("Message")) {}
+					.modify {
+						if #available(iOS 16.0, *) {
+							$0.lineLimit(5, reservesSpace: true)
+						}
+					}
 					.focused($messageFieldIsFocused)
+					.onAppear {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+							self.messageFieldIsFocused = true
+						}
+					}
 					.onSubmit {
 						sendMessage()
 					}
@@ -131,6 +162,9 @@ struct ChatView: View {
 						}
 				}
 			)
+		}
+		.onAppear {
+			self.markRead()
 		}
 		.toolbar {
 			NavigationLink {

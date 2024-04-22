@@ -32,7 +32,20 @@ final class SocialViewState: SocialViewModelDelegate, ObservableObject {
 	public var userPeerID: PeerID? = nil
 
 	/// Whether the user has create a `PeereeIdentity`.
-	public var accountExists: Bool { return userPeerID != nil }
+	@Published public var accountExists: RemoteToggle = .off
+
+	public var accountExistsText: String {
+		switch accountExists {
+		case .on:
+			return NSLocalizedString("Delete Identity", comment: "Caption of button")
+		case .off:
+			return NSLocalizedString("Create Identity", comment: "Caption of button")
+		case .turningOff:
+			return NSLocalizedString("Deleting Identity …", comment: "Caption of button")
+		case .turningOn:
+			return NSLocalizedString("Creating Identity …", comment: "Caption of button")
+		}
+	}
 
 	/// Hashes of known inappropriate photos.
 	public var objectionableImageHashes = Set<Data>()

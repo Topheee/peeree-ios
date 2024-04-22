@@ -13,21 +13,68 @@ struct InAppNotificationStackView: View {
 
 	private static let Cap = 3
 
+	@GestureState private var dragOffset: CGFloat = 0.0
+
+	@State private var secondsRemaining: Int = -1
+
+	private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+	private var drag: some Gesture {
+		DragGesture(minimumDistance: 0.0, coordinateSpace: .global)
+			.updating($dragOffset, body: { value, state, transaction in
+				state = value.translation.height
+			})
+			.onEnded { value in
+				let translation = value.startLocation.y - value.location.y
+				guard translation > 22 else { return }
+
+				controller.dismiss()
+				secondsRemaining = Int(controller.timeRemaining)
+			}
+	}
+
+	/// Careful, this is not updated!
 	private var displayCount: Int { min(controller.notifications.count, Self.Cap) }
+
+	@State private var stackLeft: Int = 0
 
 	private func reversedIndex(_ index: Int) -> Int {
 		return displayCount - index
 	}
 
 	var body: some View {
+		// Cache for performance.
+		let stackHeight = displayCount
+
 		ZStack(alignment: .topLeading) {
 			ForEachIndexed(controller.notifications.prefix(Self.Cap).reversed()) { index, notification in
-				InAppNotificationView(notification: notification,
-									  time: controller.timeRemaining - 1.0 + (InAppNotificationStackViewState.PresentationDuration * Double(reversedIndex(index) - 1)))
-					.padding(CGFloat((reversedIndex(index) + displayCount) * 12) / 2.0)
-					.disabled(index != displayCount - 1)
+				InAppNotificationView(notification: notification)
+					.offset(y: (index == stackHeight - 1) ? min(dragOffset, 0.0) : 0.0)
+					.padding(CGFloat((reversedIndex(index) + stackHeight) * 12) / 2.0)
+					.disabled(index != stackHeight - 1)
 					.animation(.easeInOut(duration: 0.4))
+					.gesture(drag)
 			}
+		}
+		.overlay(alignment: .topTrailing) {
+			Text("\(self.secondsRemaining)")
+				.font(.caption2)
+				.padding(4)
+				.background(Circle().fill(Color("ColorBackground")))
+				.padding(CGFloat(12 + (stackLeft > 0 ? stackLeft : displayCount) * 6))
+				.padding(.trailing, 2)
+				.offset(y: min(dragOffset, 0.0))
+				.onReceive(timer) { _ in
+					stackLeft = displayCount
+					if secondsRemaining <= 0 {
+						secondsRemaining = Int(controller.timeRemaining)
+//						if stackLeft == 0 {
+//							timer.upstream.connect().cancel()
+//						}
+					} else {
+						secondsRemaining -= 1
+					}
+				}
 		}
 	}
 }

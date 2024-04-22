@@ -43,6 +43,13 @@ final class InAppNotificationStackViewState: ObservableObject {
 		startTimer()
 	}
 
+	/// Dismisses the notification at the top of the stack.
+	func dismiss() {
+		pauseRemoval()
+		removeFirst()
+		resumeRemoval()
+	}
+
 	private func startTimer() {
 		let t = Timer.scheduledTimer(timeInterval: Self.PresentationDuration, target: self, selector: #selector(removeFirst), userInfo: nil, repeats: true)
 		t.tolerance = Self.PresentationDuration / 10

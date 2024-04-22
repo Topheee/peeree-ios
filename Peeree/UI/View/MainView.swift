@@ -45,9 +45,11 @@ struct MainView: View {
 				state = value.translation.height
 			})
 			.onEnded { value in
-				guard abs(abs(value.startLocation.y - value.location.y)) > 42 else { return }
+				let translation = value.startLocation.y - value.location.y
+				let peering = discoveryViewState.peering
+				guard peering ? translation < -82 : translation > 82 else { return }
 
-				Mediator.shared.togglePeering(on: !discoveryViewState.peering)
+				Mediator.shared.togglePeering(on: !peering)
 			}
 
 		NavigationView {
@@ -63,32 +65,15 @@ struct MainView: View {
 							NavigationLink(tag: chatPersona.peerID, selection: $serverChatViewState.displayedPeerID) {
 								ChatView(discoveryPersona: discoveryPersona, chatPersona: chatPersona)
 							} label: {
-								//ChatTableCell(portrait: discoveryPersona.image, personName: discoveryPersona.info.nickname, lastMessage: chatPersona.lastMessage?.message ?? "", unreadMessageCount: chatPersona.unreadMessages)
-								ChatTableCell2(chatPersona: chatPersona, discoveryPersona: discoveryPersona)
+								ChatTableCell(chatPersona: chatPersona, discoveryPersona: discoveryPersona)
 							}
 						}
 						.listStyle(.inset)
+						.listRowSpacing(0)
 
 						Rectangle()
 							.fill(Color.clear)
-							.frame(height: discoveryViewState.peering ? lookingOutPaneHeight : lookingOutHeaderHeight)
-
-//						List {
-//							ForEach(chatViewState.matchedPeople) { chatPersona in
-//								let discoveryPersona = discoveryViewState.persona(of: chatPersona.peerID)
-//								NavigationLink {
-//									ChatView(discoveryPersona: discoveryPersona, chatPersona: chatPersona)
-//								} label: {
-//									//ChatTableCell(portrait: discoveryPersona.image, personName: discoveryPersona.info.nickname, lastMessage: chatPersona.lastMessage?.message ?? "", unreadMessageCount: chatPersona.unreadMessages)
-//									ChatTableCell2(chatPersona: chatPersona, discoveryPersona: discoveryPersona)
-//								}
-//							}
-//
-//							Rectangle()
-//								.fill(Color.clear)
-//								.frame(height: discoveryViewState.peering ? lookingOutPaneHeight : lookingOutHeaderHeight)
-//						}
-//						.listStyle(.inset)
+							.frame(height: (discoveryViewState.peering ? lookingOutPaneHeight : lookingOutHeaderHeight) + 12)
 					}
 				}
 
@@ -112,7 +97,7 @@ struct MainView: View {
 								})
 						})
 					)
-					.offset(y: discoveryViewState.peering ? 0.0 : (max(dragOffset, -self.lookingOutPaneHeight + self.lookingOutHeaderHeight) / 2.0))
+					.offset(y: discoveryViewState.peering ? 0.0 : min(max(dragOffset, -self.lookingOutPaneHeight + self.lookingOutHeaderHeight), 0.0))
 					.onTapGesture {
 						Mediator.shared.togglePeering(on: !discoveryViewState.peering)
 					}
@@ -124,17 +109,12 @@ struct MainView: View {
 								var index = 0
 								ForEach(discoveryViewState.peopleInFilter, id: \.id) { discoveryPersona in
 									PortraitView(socialPersona: socialViewState.persona(of: discoveryPersona.peerID), discoveryPersona: discoveryPersona) { showingDetail in
-										if #available(iOS 15, *) {
-											withAnimation {
-												proxy.scrollTo(discoveryPersona.id)
-											}
+										withAnimation {
+											proxy.scrollTo(discoveryPersona.id, anchor: .bottom)
 										}
 									}
-									.modify {
-										if #available(iOS 15, *) {
-											$0.id(discoveryPersona.id)
-										}
-									}
+									.padding([.bottom, .leading, .trailing])
+									.id(discoveryPersona.id)
 									.offset(x: 0, y: discoveryViewState.peering ? 0 : 200)
 									.animation(.ripple(index: advancing(&index)), value: discoveryViewState.peering)
 								}
@@ -175,7 +155,7 @@ struct MainView: View {
 							})
 					})
 				)
-				.frame(minHeight: discoveryViewState.peering ? self.lookingOutPaneHeight : min(0.0 - self.dragOffset + self.lookingOutHeaderHeight, self.lookingOutPaneHeight))
+				.frame(minHeight: discoveryViewState.peering ? max(self.lookingOutHeaderHeight - self.dragOffset, self.lookingOutPaneHeight) : self.lookingOutPaneHeight)
 				.background(DiscoveryBackgroundView(lookingOut: discoveryViewState.peering))
 				.padding()
 				.shadow(radius: 10)
@@ -223,16 +203,19 @@ struct MainView: View {
 			}
 			.popover(item: $discoveryViewState.displayedPersona) { displayedPersona in
 				let socialPersona = socialViewState.persona(of: displayedPersona.peerID)
-				PersonView(socialPersona: socialPersona, discoveryPersona: displayedPersona)
-					.toolbar {
-						ToolbarItem(placement: .navigationBarLeading) {
-							Button {
-								discoveryViewState.displayedPersona = nil
-							} label: {
-								Label("Done", systemImage: "checkmark.circle")
+				NavigationView {
+					PersonView(socialPersona: socialPersona, discoveryPersona: displayedPersona)
+						.padding(2)
+						.toolbar {
+							ToolbarItem(placement: .navigationBarLeading) {
+								Button {
+									discoveryViewState.displayedPersona = nil
+								} label: {
+									Label("Done", systemImage: "checkmark.circle")
+								}
 							}
 						}
-					}
+				}
 			}
 		}
 	}

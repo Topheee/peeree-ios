@@ -82,6 +82,9 @@
 /* Caption of button */
 "Create Identity" = "Identität erstellen";
 
+/* Caption of button */
+"Creating Identity …" = "Erstelle Identität …";
+
 /* User-facing security error. */
 "chat_server_cert_invalid" = "Das Chatserver Zertifikat ist ungültig. Die Sicherheit der Verbindung kann nicht gewährleistet werden, sodass sie unterbrochen wurde.";
 
@@ -93,6 +96,9 @@
 
 /* Button caption for removing the users portrait image */
 "Delete Portrait" = "Portrait löschen";
+
+/* Caption of button */
+"Deleting Identity …" = "Lösche Identität …";
 
 /* Trait */
 "dominance" = "Dominance";
@@ -597,3 +603,7 @@
 "Lot's of void out here!" = "Ganz schön leer hier!";
 
 "Sounds good!" = "Klingt gut!";
+
+"No biography." = "Kein Steckbrief vorhanden.";
+
+"Tap to show biography." = "Tippe um Steckbrief zu zeigen.";

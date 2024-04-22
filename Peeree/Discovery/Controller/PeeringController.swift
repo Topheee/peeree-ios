@@ -184,7 +184,10 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		publish(to: peerID) { model in
 			model.pictureProgress = progress.fractionCompleted
 			progress.addFractionCompletedNotification { _, _, fractionCompleted in
-				model.pictureProgress = progress.fractionCompleted
+				// update UI less frequently; in 1% steps
+				if progress.fractionCompleted - model.pictureProgress > 0.01 {
+					model.pictureProgress = progress.fractionCompleted
+				}
 			}
 		}
 	}

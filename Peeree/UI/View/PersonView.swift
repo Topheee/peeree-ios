@@ -87,7 +87,7 @@ struct PersonView: View {
 							guard !discoveryPersona.isUser else { return }
 							socialViewState.delegate?.pinToggle(peerID: peerID)
 						}
-						.padding()
+						.padding([.bottom, .top])
 						.modify {
 							if #available(iOS 17, *) {
 								$0.phaseAnimator([PinMatchAnimationPhase.start, PinMatchAnimationPhase.chargingUp, PinMatchAnimationPhase.slamming], trigger: socialPersona.pinState == .pinMatch) { content, phase in
@@ -140,7 +140,7 @@ struct PersonView: View {
 
 						ScrollView(.vertical) {
 							HStack {
-								Text(discoveryPersona.biography == "" ? "No biography." : (compact ? "Tap to show biography." : discoveryPersona.biography))
+								Text(discoveryPersona.biography == "" ? NSLocalizedString("No biography.", comment: "SwiftUI") : (compact ? NSLocalizedString("Tap to show biography.", comment: "SwiftUI") : discoveryPersona.biography))
 									.font(.body)
 									.modify {
 										if #available(iOS 16, *) {
@@ -167,9 +167,9 @@ struct PersonView: View {
 								}
 							}
 						}
-						.frame(maxHeight: bioHeight)
+						.frame(maxHeight: compact ? min(bioHeight, 42) : bioHeight)
 
-						if !compact {
+						if !compact && discoveryPersona.biography != "" {
 							Text(discoveryPersona.info.nickname)
 								.font(.custom("Bradley Hand", fixedSize: 24))
 								.lineLimit(1)
@@ -259,5 +259,13 @@ struct PersonView: View {
 	let ss = SocialViewState()
 	let p = ds.demo()
 	p.biography = "Lorem ipsum dolor colores senetra hila."
+	return PersonView(peerID: p.peerID, socialViewState: ss, discoveryViewState: ds)
+}
+
+#Preview {
+	let ds = DiscoveryViewState()
+	let ss = SocialViewState()
+	let p = ds.demo()
+	p.biography = "Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. "
 	return PersonView(peerID: p.peerID, socialViewState: ss, discoveryViewState: ds)
 }

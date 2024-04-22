@@ -82,6 +82,9 @@
 /* Caption of button */
 "Create Identity" = "Create Identity";
 
+/* Caption of button */
+"Creating Identity …" = "Creating Identity …";
+
 /* User-facing security error. */
 "chat_server_cert_invalid" = "Chat server certificate is invalid. The security of the connection cannot be guaranteed and thus it was cancelled.";
 
@@ -90,6 +93,9 @@
 
 /* Caption of button */
 "Delete Identity" = "Delete Identity";
+
+/* Caption of button */
+"Deleting Identity …" = "Deleting Identity …";
 
 /* Button caption for removing the users portrait image */
 "Delete Portrait" = "Delete Portrait";
@@ -597,5 +603,9 @@
 "Lot's of void out here!" = "Lot's of void out here!";
 
 "Sounds good!" = "Sounds good!";
+
+"No biography." = "No biography.";
+
+"Tap to show biography." = "Tap to show biography.";
 
 "" = "";

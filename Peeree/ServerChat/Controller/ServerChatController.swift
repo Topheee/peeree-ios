@@ -246,7 +246,22 @@ final class ServerChatController: ServerChat {
 
 	/// Leave all chat rooms with `peerID`.
 	func leaveChat(with peerID: PeerID) {
-		forgetAllRooms(with: peerID)
+		lastReads.removeValue(forKey: peerID)
+		Task {
+			do {
+				try await persistence.removePeerData([peerID])
+			} catch {
+				self.delegate?.encodingPersistedChatDataFailed(with: error)
+			}
+		}
+		
+		session.directRooms?[peerID.serverChatUserId].map {
+			forgetRooms($0) {}
+		}
+
+		DispatchQueue.main.async {
+			self.conversationDelegate?.removePersona(of: peerID)
+		}
 	}
 
 	// MARK: - Private
@@ -658,7 +673,7 @@ final class ServerChatController: ServerChat {
 				// this may cause us to be throttled down, since we potentially start many requests in parallel here
 				self.fixRooms(with: peerID)
 			} else {
-				self.forgetAllRooms(with: peerID)
+				self.leaveChat(with: peerID)
 			}
 		}
 	}
@@ -713,7 +728,7 @@ final class ServerChatController: ServerChat {
 			if result {
 				pinMatchedAction?()
 			} else {
-				self.forgetAllRooms(with: peerID)
+				self.leaveChat(with: peerID)
 				noPinMatchAction?()
 			}
 		}
@@ -824,13 +839,6 @@ final class ServerChatController: ServerChat {
 				completion(response.error)
 			}
 		} }
-	}
-
-	/// Action when we unmatch someone.
-	private func forgetAllRooms(with peerID: PeerID) {
-		session.directRooms?[peerID.serverChatUserId].map {
-			forgetRooms($0) {}
-		}
 	}
 
 	/// Observes relevant notifications in `NotificationCenter`.

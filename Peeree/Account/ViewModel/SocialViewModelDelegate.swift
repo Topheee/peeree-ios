@@ -18,6 +18,8 @@ public protocol SocialViewModelDelegate: PersonAspectState where Aspect: SocialP
 
 	var userPeerID: PeerID? { get set }
 
+	var accountExists: RemoteToggle { get set }
+
 	/// Hashes of known inappropriate photos.
 	var objectionableImageHashes: Set<Data> { get set }
 

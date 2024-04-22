@@ -40,6 +40,8 @@
 		<string>bluetooth-peripheral</string>
 		<string>remote-notification</string>
 	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen.storyboard</string>
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>UIStatusBarTintParameters</key>
