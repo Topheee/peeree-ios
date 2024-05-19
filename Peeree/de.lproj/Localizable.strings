@@ -494,7 +494,7 @@
 
 "Create your profile." = "Erstelle deine Profil.";
 
-"Setup filter." = "Setup filter.";
+"Setup filter." = "Filtere Leute.";
 
 "Demo" = "Demo";
 
@@ -607,3 +607,8 @@
 "No biography." = "Kein Steckbrief vorhanden.";
 
 "Tap to show biography." = "Tippe um Steckbrief zu zeigen.";
+
+/* Placeholder text */
+"No messages." = "Keine Nachrichten.";
+
+"The Peeree Way" = "Der Peeree-Weg";

@@ -50,13 +50,15 @@ final class ServerChatViewState: ObservableObject {
 	/// The person that we currently chat with, if any.
 	@Published var displayedPeerID: PeerID? = nil
 
+	let bottomViewID = UUID()
+
 	/// All chats.
 	private (set) var people: [PeerID : ServerChatPerson] = [:]
 
 	/// Controls the scroll view of the currently visible chat.
 	var messagesScrollViewProxy: ScrollViewProxy? = nil
 
-	@Published var lastMessageDisplayed = false
+	var lastMessageDisplayed = false
 
 	// MARK: Methods
 
@@ -105,7 +107,7 @@ extension ServerChatViewState: ServerChatViewModelDelegate {
 		if peerID != displayedPeerID {
 			p.unreadMessages += 1
 		} else if lastMessageDisplayed {
-			messagesScrollViewProxy?.scrollTo(message.id, anchor: .bottom)
+			messagesScrollViewProxy?.scrollTo(bottomViewID, anchor: .bottom)
 		}
 
 		sortChatList()

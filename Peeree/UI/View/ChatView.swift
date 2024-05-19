@@ -60,7 +60,6 @@ struct ChatView: View {
 								Section(day.title) {
 									ForEach(day.messages) { message in
 										MessageTableCell(message: message)
-											.id(message.id)
 											.modify {
 												if message.id == chatPersona.lastMessage?.id {
 													$0.onAppear {
@@ -79,6 +78,8 @@ struct ChatView: View {
 							}
 						}
 						.padding(.bottom, chatMessageAreaHeight + 6)
+
+						Rectangle().fill(Color.clear).id(serverChatViewState.bottomViewID)
 					}
 					.onAppear {
 						self.serverChatViewState.messagesScrollViewProxy = proxy

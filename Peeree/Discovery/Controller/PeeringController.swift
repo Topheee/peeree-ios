@@ -214,12 +214,12 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	}
 
 	@MainActor
-	@discardableResult
-	private func updateLastSeen(of peerID: PeerID) -> Date {
+	private func updateLastSeen(of peerID: PeerID) {
 		let now = Date()
 		self.lastSeenDates[peerID] = now
 		archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: Self.LastSeenKey)
-		return now
+
+		self.viewModel.updateLastSeen(of: peerID, lastSeen: now)
 	}
 
 	func peerAppearedAgain(_ peerID: PeerID) {
@@ -235,7 +235,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		localPeerManager?.disconnect(cbPeerID)
 
 		DispatchQueue.main.async {
-			self.viewModel.persona(of: peerID).lastSeen = self.updateLastSeen(of: peerID)
+			self.updateLastSeen(of: peerID)
 
 			Notifications.peerDisappeared.post(on: self, peerID)
 		}
@@ -249,7 +249,7 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 		}
 
 		DispatchQueue.main.async {
-			Self.updateViewModels(of: peer, lastSeen: self.updateLastSeen(of: peer.id.peerID), on: self.viewModel)
+			Self.updateViewModels(of: peer, lastSeen: Date(), on: self.viewModel)
 
 			Notifications.peerAppeared.post(on: self, peer.id.peerID, again: false)
 		}
@@ -374,8 +374,8 @@ public final class PeeringController : LocalPeerManagerDelegate, DiscoveryManage
 	private static func updateViewModels(of peer: Peer, lastSeen: Date, on viewModel: any DiscoveryViewModelDelegate) {
 		let peerID = peer.id.peerID
 
-		let p = viewModel.addPersona(of: peerID, with: peer.info)
-		p.lastSeen = lastSeen
+		_ = viewModel.addPersona(of: peerID, with: peer.info)
+		viewModel.updateLastSeen(of: peerID, lastSeen: lastSeen)
 	}
 
 	// MARK: Constants

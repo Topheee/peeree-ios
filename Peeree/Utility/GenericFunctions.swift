@@ -238,6 +238,35 @@ extension NotificationCenter {
 	}
 }
 
+// http://stackoverflow.com/questions/30757193/ddg#39425959
+extension Character {
+	/// A simple emoji is one scalar and presented to the user as an Emoji
+	public var isSimpleEmoji: Bool {
+		guard let firstScalar = unicodeScalars.first else { return false }
+		return firstScalar.properties.isEmoji && firstScalar.value > 0x238C
+	}
+
+	/// Checks if the scalars will be merged into an emoji
+	public var isCombinedIntoEmoji: Bool { unicodeScalars.count > 1 && unicodeScalars.first?.properties.isEmoji ?? false }
+
+	public var isEmoji: Bool { isSimpleEmoji || isCombinedIntoEmoji }
+}
+
+// http://stackoverflow.com/questions/30757193/ddg#39425959
+extension String {
+	public var isSingleEmoji: Bool { count == 1 && containsEmoji }
+
+	public var containsEmoji: Bool { contains { $0.isEmoji } }
+
+	public var containsOnlyEmoji: Bool { !isEmpty && !contains { !$0.isEmoji } }
+
+	public var emojiString: String { emojis.map { String($0) }.reduce("", +) }
+
+	public var emojis: [Character] { filter { $0.isEmoji } }
+
+	public var emojiScalars: [UnicodeScalar] { filter { $0.isEmoji }.flatMap { $0.unicodeScalars } }
+}
+
 extension String {
 	/// stores the encoding along the serialization of the string to let decoders know which it is
 	public func data(prefixedEncoding encoding: String.Encoding) -> Data? {

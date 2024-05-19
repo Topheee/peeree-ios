@@ -44,6 +44,9 @@ public protocol ServerChat {
 public protocol ServerChatDataSource {
 	/// Queries pin state of peers.
 	func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ())
+
+	/// Queries for all pin-matched peers.
+	func pinMatches(_ result: @escaping (Set<PeerID>) -> ())
 }
 
 /// Server chat informed party.

@@ -27,7 +27,7 @@ struct ChatTableCell: View {
 
 			VStack(alignment: .leading) {
 				Text(discoveryPersona.info.nickname).font(.title).lineLimit(1)
-				Text(((chatPersona.lastMessage?.sent ?? false) ? (chatPersona.unreadMessages > 0 ? "📬 " : "📭 ") : "📤 ") + (chatPersona.lastMessage?.message ?? NSLocalizedString("No messages.", comment: "Placeholder text")))
+				Text(((chatPersona.lastMessage?.sent ?? false) ? "📤 " : (chatPersona.unreadMessages > 0 ? "📬 " : "📭 ")) + (chatPersona.lastMessage?.message ?? NSLocalizedString("No messages.", comment: "Placeholder text")))
 					.font(.subheadline)
 					.modify {
 						if #available(iOS 16, *) {

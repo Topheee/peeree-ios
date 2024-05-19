@@ -104,6 +104,8 @@ public class AccountController: SecurityDataSource {
 		}
 	}
 
+	public var pinMatches: Set<PeerID> { return self.pinnedByPeers }
+
 	/// Retrieves the full known public key of `peerID`, if available.
 	public func publicKey(of peerID: PeereeCore.PeerID) -> Data? { return pinnedPeers[peerID] }
 

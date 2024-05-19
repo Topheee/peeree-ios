@@ -21,16 +21,15 @@ struct PeereeApp: App {
 
 	var body: some Scene {
 		WindowGroup {
-			ZStack(alignment: .top) {
-				MainView()
-					.environmentObject(DiscoveryViewState.shared)
-					.environmentObject(ServerChatViewState.shared)
-					.environmentObject(SocialViewState.shared)
-					.environmentObject(InAppNotificationStackViewState.shared)
-					.environmentObject(AppViewState.shared)
-
-				InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
-			}
+			MainView()
+				.environmentObject(DiscoveryViewState.shared)
+				.environmentObject(ServerChatViewState.shared)
+				.environmentObject(SocialViewState.shared)
+				.environmentObject(InAppNotificationStackViewState.shared)
+				.environmentObject(AppViewState.shared)
+				.overlay(alignment: .top) {
+					InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
+				}
 				.task {
 					do {
 						SocialViewState.shared.delegate = Mediator.shared

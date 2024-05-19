@@ -10,21 +10,21 @@ import SwiftUI
 
 import PeereeServer
 
-// TODO: localize
+/// Descriptive text in onboarding.
 fileprivate func onboardingDescription(of state: PinState) -> String {
 	switch state {
 	case .unpinned:
-		return "Use this button to pin people."
+		return NSLocalizedString("Use this button to pin people.", comment: "")
 	case .pinning:
-		return "Waiting for a response …"
+		return NSLocalizedString("Waiting for a response …", comment: "")
 		//return "The app is waiting for a response, while the button is pulsing."
 	case .pinned:
-		return "The person is pinned."
+		return NSLocalizedString("The person is pinned.", comment: "")
 		//return "A filled pin on the button indicates that the person is pinned."
 	case .unpinning:
-		return "Trying to remove the pin …"
+		return NSLocalizedString("Trying to remove the pin …", comment: "")
 	case .pinMatch:
-		return "Pin Match! You can now chat with the person."
+		return NSLocalizedString("Pin Match! You can now chat with the person.", comment: "")
 	}
 }
 
@@ -126,7 +126,7 @@ struct OnboardingView: View {
 					}
 				}
 
-				Text(peering ? "Lot's of void out here!" : onboardingDescription(of: self.pinState))
+				Text(peering ? NSLocalizedString("Lot's of void out here!", comment: "") : onboardingDescription(of: self.pinState))
 					.font(.body)
 
 				if verticalSizeClass == .regular {

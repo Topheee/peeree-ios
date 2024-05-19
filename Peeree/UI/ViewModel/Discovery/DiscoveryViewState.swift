@@ -126,6 +126,13 @@ class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 		peopleOutFilter.removeAll()
 	}
 
+	func updateLastSeen(of peerID: PeerID, lastSeen: Date) {
+		persona(of: peerID).lastSeen = lastSeen
+
+		// TODO: inefficient
+		calculateViewLists()
+	}
+
 	// MARK: Private
 
 	// Log tag.
@@ -140,12 +147,16 @@ class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 
 		browseFilter.check(info: person.info, pinState: .unpinned) ? peopleInFilter.append(person) : peopleOutFilter.append(person)
 
+		sortLists()
+	}
+
+	private func sortLists() {
 		// TODO: inefficient
 		peopleInFilter.sort { p1, p2 in
-			p1.lastSeen.timeIntervalSince1970 < p2.lastSeen.timeIntervalSince1970
+			p1.lastSeen.timeIntervalSince1970 > p2.lastSeen.timeIntervalSince1970
 		}
 		peopleOutFilter.sort { p1, p2 in
-			p1.lastSeen.timeIntervalSince1970 < p2.lastSeen.timeIntervalSince1970
+			p1.lastSeen.timeIntervalSince1970 > p2.lastSeen.timeIntervalSince1970
 		}
 	}
 

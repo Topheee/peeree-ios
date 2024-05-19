@@ -21,4 +21,7 @@ public protocol DiscoveryViewModelDelegate: AnyObject, PersonAspectState where A
 
 	/// The last known state of the Bluetooth network.
 	var isBluetoothOn: Bool { get set }
+
+	/// Update the last seen date.
+	func updateLastSeen(of peerID: PeerID, lastSeen: Date)
 }

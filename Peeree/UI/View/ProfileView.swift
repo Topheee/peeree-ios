@@ -170,7 +170,7 @@ struct ProfileView: View {
 										}
 										Button("Cancel", role: .cancel) {}
 									} message: {
-										Text("Deleting your identity is bad.")
+										Text("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.")
 									}
 								} else {
 									$0.confirmationDialog(
@@ -180,17 +180,17 @@ struct ProfileView: View {
 										Button("Create Identity") {
 											socialViewState.delegate?.createIdentity()
 										}
-										Button("Read Terms") { openTerms() }
+										Button("View Terms") { openTerms() }
 										Button("Cancel", role: .cancel) {}
 									} message: {
-										Text("With creating your identity you agree to our terms.")
+										Text(String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button")))
 									}
 								}
 							} else {
 								if socialViewState.accountExists.isOn {
 									$0.actionSheet(isPresented: $showCreateDeleteAccountDialog) {
 										ActionSheet(title: Text("Delete Identity"),
-													message: Text("Deleting your identity is bad."),
+													message: Text("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost."),
 													buttons: [
 														.cancel(),
 														.destructive(
@@ -201,10 +201,10 @@ struct ProfileView: View {
 								} else {
 									$0.actionSheet(isPresented: $showCreateDeleteAccountDialog) {
 										ActionSheet(title: Text("Create Identity"),
-													message: Text("With creating your identity you agree to our terms."),
+													message: Text(String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button"))),
 													buttons: [
 														.cancel(),
-														.default(Text("Read Terms")) { openTerms() },
+														.default(Text("View Terms")) { openTerms() },
 														.destructive(
 															Text("Create Identity")) {
 																socialViewState.delegate?.createIdentity()

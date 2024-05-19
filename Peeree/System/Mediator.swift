@@ -200,6 +200,12 @@ extension Mediator: ServerChatDataSource {
 			}
 		}
 	}
+
+	public func pinMatches(_ result: @escaping (Set<PeerID>) -> ()) {
+		AccountControllerFactory.shared.use { ac in
+			result(ac.pinMatches)
+		}
+	}
 }
 
 

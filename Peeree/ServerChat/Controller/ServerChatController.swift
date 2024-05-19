@@ -65,6 +65,12 @@ final class ServerChatController: ServerChat {
 		session.deactivateAccount(withAuthParameters: ["type" : kMXLoginFlowTypePassword, "user" : self.userId, "password" : password], eraseAccount: true) { response in
 			guard response.isSuccess else { completion(.sdk(response.error ?? unexpectedNilError())); return }
 
+			Task { await self.persistence.clear() }
+
+			DispatchQueue.main.async {
+				self.conversationDelegate?.clear()
+			}
+
 			// it seems we need to log out after we deleted the account
 			self.logout { _error in
 				_error.map { elog(Self.LogTag, "Logout after account deletion failed: \($0.localizedDescription)") }
@@ -399,7 +405,7 @@ final class ServerChatController: ServerChat {
 				do {
 					let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
 					catchUpMissedMessages.append(messageEvent)
-					if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
+					if !messageEvent.sent && messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 				} catch let error {
 					elog(Self.LogTag, "\(error)")
 				}
@@ -431,7 +437,7 @@ final class ServerChatController: ServerChat {
 					do {
 						let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
 						catchUpDecryptedMessages.append(messageEvent)
-						if messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
+						if !messageEvent.sent && messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
 					} catch let error {
 						elog(Self.LogTag, "\(error)")
 					}
@@ -668,12 +674,26 @@ final class ServerChatController: ServerChat {
 			} ? peerIDFrom(serverChatUserId: key) : nil
 		}), directChatPeerIDs.count > 0 else { return }
 
-		dataSource.hasPinMatch(with: directChatPeerIDs, forceCheck: false) { peerID, result in
-			if result {
-				// this may cause us to be throttled down, since we potentially start many requests in parallel here
-				self.fixRooms(with: peerID)
-			} else {
+		let directChatPeerIDSet = Set<PeerID>(directChatPeerIDs)
+
+		// this may cause us to be throttled down, since we potentially start many requests in parallel here
+		dataSource.pinMatches { pinMatches in
+
+			// create new rooms for pin matches that we somehow missed to create
+			for peerID in pinMatches.subtracting(directChatPeerIDSet) {
+				self.getOrCreateRoom(with: peerID) { result in
+					// silently ignore errors with non-existing chat accounts for now
+					//result.error.map { self.delegate?.cannotJoinRoom($0) }
+				}
+			}
+
+			// leave rooms with peers we are not matched with anymore
+			for peerID in directChatPeerIDSet.subtracting(pinMatches) {
 				self.leaveChat(with: peerID)
+			}
+
+			for peerID in pinMatches.intersection(directChatPeerIDSet) {
+				self.fixRooms(with: peerID)
 			}
 		}
 	}
@@ -710,6 +730,11 @@ final class ServerChatController: ServerChat {
 				// we chose the first room we invited them and drop the rest
 				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: invitedRoom.room, with: peerID)
+
+				DispatchQueue.main.async {
+					/// we need to call `persona()` in order for the persona to be created and added to `matchedPeople`.
+					self.conversationDelegate?.persona(of: peerID).readyToChat = false
+				}
 			} else {
 				self.reallyCreateRoom(with: peerID) { result in
 					result.error.map {

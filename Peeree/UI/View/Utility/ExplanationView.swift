@@ -23,7 +23,7 @@ struct ExplanationView: View {
 
 	var body: some View {
 		ZStack(alignment: .top) {
-			ScrollView {
+			ScrollView(showsIndicators: false) {
 				VStack(alignment: .leading) {
 					ForEach(explanations) { explanation in
 						HStack {
@@ -43,18 +43,23 @@ struct ExplanationView: View {
 					}
 				}
 				.padding()
-				.padding(.top, 100)
+				.padding(.top, 120)
 			}
 
-			HStack {
-				ForEach(explanations) { explanation in
-					Image(explanation.iconName)
-						.resizable()
-						.aspectRatio(contentMode: .fit)
+			VStack {
+				Text("The Peeree Way")
+					.font(.title)
+				HStack {
+					ForEach(explanations) { explanation in
+						Image(explanation.iconName)
+							.resizable()
+							.aspectRatio(contentMode: .fit)
+					}
 				}
 			}
+			.padding()
 			.frame(maxWidth: .infinity)
-			.frame(height: 100)
+			.frame(height: 120)
 			.background(.regularMaterial)
 		}
 	}

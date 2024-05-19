@@ -17,7 +17,7 @@ struct MessageTableCell: View {
 		HStack {
 			FlipGroupView3(if: message.sent) {
 				Text(message.message)
-					.font(.body)
+					.font(message.message.containsOnlyEmoji ? .largeTitle : .body)
 					.foregroundColor(Color.white)
 					.multilineTextAlignment(.leading)
 					.padding(.horizontal, 20.0)
