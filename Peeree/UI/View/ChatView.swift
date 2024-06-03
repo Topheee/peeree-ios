@@ -45,14 +45,19 @@ struct ChatView: View {
 
 	@State private var chatMessageAreaHeight = CGFloat.zero
 
+	@State private var showRoomAlert = false
+
 	var body: some View {
 		ZStack(alignment: .bottom) {
 			if chatPersona.readyToChat {
 				ScrollViewReader { proxy in
 					ScrollView() {
-						// not state of the art, but it is what it is
-						Button("More …") {
-							loadOlderMessages()
+						VStack {
+							Text(chatPersona.technicalInfo)
+							// not state of the art, but it is what it is
+							Button("More …") {
+								loadOlderMessages()
+							}
 						}
 						.font(.caption)
 						LazyVStack {
@@ -83,6 +88,19 @@ struct ChatView: View {
 					}
 					.onAppear {
 						self.serverChatViewState.messagesScrollViewProxy = proxy
+					}
+					.modify {
+						if #available(iOS 17, *) {
+							$0.onChange(of: messageFieldIsFocused) { old, new in
+								if new {
+									DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+										proxy.scrollTo(serverChatViewState.bottomViewID)
+									}
+								}
+							}
+						} else {
+							$0
+						}
 					}
 					.onDisappear {
 						self.serverChatViewState.messagesScrollViewProxy = nil
@@ -137,7 +155,7 @@ struct ChatView: View {
 					}
 					.focused($messageFieldIsFocused)
 					.onAppear {
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
 							self.messageFieldIsFocused = true
 						}
 					}
@@ -168,6 +186,38 @@ struct ChatView: View {
 			self.markRead()
 		}
 		.toolbar {
+			if let roomError = chatPersona.roomError {
+				Button {
+					showRoomAlert.toggle()
+				} label: {
+					Image(systemName: "exclamationmark.triangle")
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.frame(maxHeight: 24)
+						.foregroundColor(.red)
+				}
+				.alert(
+					"Broken Chatroom",
+					isPresented: $showRoomAlert,
+					presenting: chatPersona
+				) { details in
+					Button("Re-create room", role: .destructive) {
+						DispatchQueue.main.async { chatPersona.roomError = nil }
+						ServerChatFactory.chat { sc in
+							sc?.recreateRoom(with: details.peerID)
+						}
+					}
+					Button("Cancel", role: .cancel) {
+
+					}
+				} message: { details in
+					VStack {
+						Text("broken_chatroom_content")
+						Text(roomError.localizedDescription)
+					}
+				}
+			}
+
 			NavigationLink {
 				PersonView(socialPersona: socialViewState.persona(of: peerID), discoveryPersona: discoveryPersona)
 			} label: {

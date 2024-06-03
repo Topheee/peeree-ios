@@ -155,19 +155,6 @@ extension Mediator: ServerChatDelegate {
 		self.display(error: error, title: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
 	}
 
-	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping @Sendable () -> Void) {
-		let dvs = self.discoveryViewState
-		DispatchQueue.main.async {
-			let name = dvs.people[peerID]?.info.nickname ?? peerID.uuidString
-
-			let alertTitle = NSLocalizedString("Broken Chatroom", comment: "Title of broken room alert")
-			let alertBody = String(format: NSLocalizedString("broken_chatroom_content", comment: "Content of broken room alert."), name, error.localizedDescription)
-			let recreateRoomButtonTitle = NSLocalizedString("Re-create room", comment: "Caption of button.")
-
-			// TODO: ask user if they want to re-create the room
-		}
-	}
-
 	func serverChatCertificateIsInvalid() {
 		let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
 		self.display(error: error, title: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))

@@ -10,5 +10,5 @@ import Foundation
 
 
 public func demoMessage(sent: Bool, message: String, timestamp: Date) -> ChatMessage {
-	return ChatMessage(eventID: UUID().uuidString, sent: sent, message: message, timestamp: timestamp)
+	return ChatMessage(eventID: UUID().uuidString, type: sent ? .sent : .received, message: message, timestamp: timestamp)
 }

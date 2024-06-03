@@ -38,6 +38,9 @@ public protocol ServerChat {
 
 	/// Leave chat room with `peerID`, after it was unmatched.
 	func leaveChat(with peerID: PeerID)
+
+	/// Re-create a room after an unrecoverable error occurred.
+	func recreateRoom(with peerID: PeerID)
 }
 
 /// Information provider for the server chat.
@@ -56,9 +59,6 @@ public protocol ServerChatDelegate: AnyObject {
 
 	/// Joining a server chat room failed.
 	func cannotJoinRoom(_ error: Error)
-
-	/// Decrypting an encrypted server chat event failed; call `recreateRoom` to re-create the room (losing all messages).
-	func decryptionError(_ error: Error, peerID: PeerID, recreateRoom: @escaping @Sendable () -> Void)
 
 	/// The certificate of the server is invalid.
 	func serverChatCertificateIsInvalid()

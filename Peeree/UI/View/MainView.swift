@@ -70,7 +70,7 @@ struct MainView: View {
 						}
 					}
 					.listStyle(.inset)
-					.padding(.bottom, lookingOutPaneHeight + 12)
+					.padding(.bottom, (discoveryViewState.peering ? lookingOutPaneHeight : lookingOutHeaderHeight) + 12)
 				}
 
 				VStack {

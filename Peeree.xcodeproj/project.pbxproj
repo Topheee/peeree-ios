@@ -1323,8 +1323,11 @@
 			files = (
 			);
 			inputFileListPaths = (
+				"$(SRCROOT)/swiftlintInputFile.xcfilelist",
 			);
 			inputPaths = (
+				"$(SRCROOT)/.swiftlint.yml",
+				"$(SRCROOT)/Peeree/",
 			);
 			outputFileListPaths = (
 			);

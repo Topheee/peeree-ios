@@ -46,6 +46,19 @@ func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 extension ChatMessage {
 	/// Extracts the ID, message and timestamp from `event`.
 	init(messageEvent event: MXEvent, ourUserId: String) throws {
+		guard let eventId = event.eventId else {
+			throw ServerChatError.parsing("Event-ID is nil.")
+		}
+
+		self.eventID = eventId
+		self.timestamp = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
+
+		if let decryptionError = event.decryptionError {
+			self.message = decryptionError.localizedDescription
+			self.type = .broken
+			return
+		}
+
 		guard event.content["format"] == nil else {
 			throw ServerChatError.parsing("Body is formatted \(String(describing: event.content["format"])), ignoring.")
 		}
@@ -57,9 +70,23 @@ extension ChatMessage {
 			throw ServerChatError.parsing("Message body not a string: \(event.content["body"] ?? "<nil>").")
 		}
 
-		self.eventID = event.eventId
-		self.timestamp = Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0)
 		self.message = message
-		self.sent = event.sender == ourUserId
+		self.type = event.sender == ourUserId ? .sent : .received
+	}
+}
+
+func makeChatMessage(messageEvent event: MXEvent, ourUserId: String) -> ChatMessage {
+	do {
+		return try ChatMessage(messageEvent: event, ourUserId: ourUserId)
+	} catch ServerChatError.parsing(let parseError) {
+		return ChatMessage(eventID: event.eventId ?? "",
+						   type: .broken,
+						   message: parseError,
+						   timestamp: Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0))
+	} catch {
+		return ChatMessage(eventID: event.eventId ?? "",
+						   type: .broken,
+						   message: error.localizedDescription,
+						   timestamp: Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0))
 	}
 }

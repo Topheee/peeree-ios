@@ -38,7 +38,7 @@
 "bio_placeholder" = "Dein Steckbrief.";
 
 /* Content of broken room alert. */
-"broken_chatroom_content" = "Der Chat-Raum mit '%@' scheint fehlerhaft, da die Entschlüsselung einer Nachricht fehlgeschlagen ist (%@). Du kannst den Raum neu erstellen, jedoch verlierst du dabei alle Nachrichten.";
+"broken_chatroom_content" = "Dieser Chat-Raum scheint fehlerhaft, da die Entschlüsselung einer Nachricht fehlgeschlagen ist. Du kannst den Raum neu erstellen, jedoch verlierst du dabei alle Nachrichten.";
 
 /* Camera of the device. */
 "Camera" = "Kamera";

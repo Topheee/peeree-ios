@@ -25,6 +25,10 @@ public final class ServerChatPerson: ObservableObject {
 
 	@Published public var unreadMessages: Int = 0
 
+	@Published public var technicalInfo: String = ""
+
+	@Published public var roomError: Error?
+
 	/// Chronological message thread with this peer.
 	@Published public private(set) var messagesPerDay: Deque<ChatDay> = Deque()
 }

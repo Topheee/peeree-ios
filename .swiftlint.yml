@@ -10,3 +10,10 @@ disabled_rules: # rule identifiers turned on by default to exclude from running
   - large_tuple
   - cyclomatic_complexity
   - vertical_whitespace
+
+included:
+  - "*/*.swift"
+  - "*/**/*.swift"
+excluded:
+  - "*.xcodeproj"
+  - ".git"

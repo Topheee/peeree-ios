@@ -38,7 +38,7 @@
 "bio_placeholder" = "Your biography.";
 
 /* Content of broken room alert. */
-"broken_chatroom_content" = "Your chat room with '%@' seems to be broken, because the decryption of a message failed (%@). You may re-create the room to fix the error, but this will delete all your messages.";
+"broken_chatroom_content" = "This chat room seems to be broken, because the decryption of a message failed. You may re-create the room to fix the error, but this will delete all your messages.";
 
 /* Camera of the device. */
 "Camera" = "Camera";

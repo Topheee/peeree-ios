@@ -270,6 +270,23 @@ final class ServerChatController: ServerChat {
 		}
 	}
 
+	func recreateRoom(with peerID: PeerID) {
+		session.getJoinedOrInvitedRoom(with: peerID.serverChatUserId, bothJoined: false) { room in
+			self.reallyCreateRoom(with: peerID) { result in
+				dlog(Self.LogTag, "created new room to replace broken encryption with result \(result)")
+
+				guard result.isSuccess else { return }
+
+				if let room = room {
+					self.forgetRoom(room.roomId) { forgetError in
+						forgetError.map { dlog(Self.LogTag, "forgetting room with broken encryption failed: \($0)") }
+					}
+				}
+
+			}
+		}
+	}
+
 	// MARK: - Private
 
 	// MARK: Static Constants
@@ -423,35 +440,50 @@ final class ServerChatController: ServerChat {
 //#if os(iOS)
 		// decryptEvents() is somehow not available on macOS
 		self.session.decryptEvents(encryptedEvents, inTimeline: timelineID) { failedEvents in
-			if let failedEvents, failedEvents.count > 0 {
-				for failedEvent in failedEvents {
-					wlog(Self.LogTag, "Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
-				}
-			}
 
 			// these are all messages that we have seen earlier already, but we need to decryt them again apparently
 			var catchUpDecryptedMessages = [ChatMessage]()
+
+			if let failedEvents, failedEvents.count > 0 {
+				var error: Error?
+				for failedEvent in failedEvents {
+					if error == nil {
+						error = failedEvent.decryptionError
+					}
+					wlog(Self.LogTag, "Couldn't decrypt event: \(failedEvent.eventId ?? "<nil>"). Reason: \(failedEvent.decryptionError ?? unexpectedNilError())")
+				}
+
+				let failedMsgs = failedEvents.map { makeChatMessage(messageEvent: $0, ourUserId: ourUserId) }
+
+				catchUpDecryptedMessages.append(contentsOf: failedMsgs)
+
+				DispatchQueue.main.async {
+					self.conversationDelegate?.persona(of: peerID).roomError = error ?? unexpectedNilError()
+				}
+			}
+
+			// we only guarantee sortedness if no decryption errors occurred
+			let sorted = catchUpDecryptedMessages.count == 0
+
 			for event in encryptedEvents {
 				switch event.eventType {
 				case .roomMessage:
-					do {
-						let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
-						catchUpDecryptedMessages.append(messageEvent)
-						if !messageEvent.sent && messageEvent.timestamp > lastReadDate { unreadMessages += 1 }
-					} catch let error {
-						elog(Self.LogTag, "\(error)")
-					}
+					let message = makeChatMessage(messageEvent: event, ourUserId: ourUserId)
+					catchUpDecryptedMessages.append(message)
+					if !message.sent && message.timestamp > lastReadDate { unreadMessages += 1 }
 				default:
 					break
 				}
 			}
+
 			catchUpDecryptedMessages.reverse()
 			catchUpDecryptedMessages.append(contentsOf: catchUpMissedMessages)
+
 			if catchUpDecryptedMessages.count > 0 {
 				let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
 				let sentUnreadMessages = unreadMessages
 				DispatchQueue.main.async {
-					self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: true, unreadCount: sentUnreadMessages, with: peerID)
+					self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: sorted, unreadCount: sentUnreadMessages, with: peerID)
 				}
 			}
 		}
@@ -477,6 +509,10 @@ final class ServerChatController: ServerChat {
 			}
 
 			self.roomTimelines[room.roomId] = timeline
+
+			DispatchQueue.main.async {
+				self.conversationDelegate?.persona(of: peerID).technicalInfo = room.roomId
+			}
 
 			self.loadEventsFromDisk(10, in: room, with: peerID)
 		}
@@ -764,15 +800,11 @@ final class ServerChatController: ServerChat {
 		guard let peerID = roomIdsListeningOn[event.roomId ?? ""],
 			  let convDelegate = self.conversationDelegate else { return }
 
-		do {
-			let ourUserId = self.peerID.serverChatUserId
-			let messageEvent = try ChatMessage(messageEvent: event, ourUserId: ourUserId)
+		let ourUserId = self.peerID.serverChatUserId
+		let messageEvent = makeChatMessage(messageEvent: event, ourUserId: ourUserId)
 
-			DispatchQueue.main.async {
-				convDelegate.new(message: messageEvent, inChatWithConversationPartner: peerID)
-			}
-		} catch let error {
-			elog(Self.LogTag, "\(error)")
+		DispatchQueue.main.async {
+			convDelegate.new(message: messageEvent, inChatWithConversationPartner: peerID)
 		}
 	}
 
@@ -841,15 +873,11 @@ final class ServerChatController: ServerChat {
 
 					// The only option I see is to leave the room and create a new one.
 
-					self.delegate?.decryptionError(decryptionError, peerID: peerID) {
-						self.forgetRoom(event.roomId) { forgetError in
-							forgetError.map { dlog(Self.LogTag, "forgetting room with broken encryption failed: \($0)") }
-
-							self.getOrCreateRoom(with: peerID) { result in
-								dlog(Self.LogTag, "replaced room with broken encryption with result \(result)")
-							}
-						}
+					DispatchQueue.main.async {
+						self.conversationDelegate?.persona(of: peerID).roomError = decryptionError
 					}
+
+					self.process(messageEvent: event)
 				}
 
 				_ = self.session.listenToEvents([.roomMember, .roomMessage]) { event, direction, state in

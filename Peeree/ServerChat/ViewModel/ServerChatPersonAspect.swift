@@ -15,6 +15,10 @@ public protocol ServerChatPersonAspect: PersonAspect {
 
 	var unreadMessages: Int { get set }
 
+	var technicalInfo: String { get set }
+
+	var roomError: Error? { get set }
+
 	/// Inserts messages into `messagesPerDay` in the correct order.
 	func insert(messages: [ChatMessage], sorted: Bool)
 

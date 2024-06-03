@@ -26,14 +26,24 @@ private let headerFormatter: DateFormatter = {
 	return formatter
 }()
 
+public enum ChatMessageType {
+	case sent, received, broken, pending
+}
+
 public struct ChatMessage {
 	public let eventID: String
 
-	public let sent: Bool
+	public let type: ChatMessageType
 
 	public let message: String
 
 	public let timestamp: Date
+}
+
+extension ChatMessage {
+	public var sent: Bool {
+		return type == .sent || type == .pending
+	}
 }
 
 extension ChatMessage: Identifiable {

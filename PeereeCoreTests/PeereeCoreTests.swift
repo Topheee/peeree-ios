@@ -17,7 +17,7 @@ final class PeereeCoreTests: XCTestCase {
 	}
 
 	func testOldObjectSerializationAndDeserialization() throws {
-		let myDict = ["a" : "b"]
+		let myDict = ["a": "b"]
 		archiveObjectInUserDefs(myDict as NSDictionary, forKey: UserDefaultsKeyTestDict)
 
 		let unarchived: NSDictionary? = unarchiveObjectFromUserDefs(UserDefaultsKeyTestDict)
@@ -31,8 +31,8 @@ final class PeereeCoreTests: XCTestCase {
 	}
 
 	func testOldObjectSerializationAndNewDeserializationNSDictionary() throws {
-		let myDict = ["a" : "b"]
-		
+		let myDict = ["a": "b"]
+
 		let data = NSKeyedArchiver.archivedData(withRootObject: myDict as NSDictionary)
 
 		let unarchived: NSDictionary? = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSDictionary.self, from: data)
@@ -46,7 +46,7 @@ final class PeereeCoreTests: XCTestCase {
 	}
 
 	func testOldObjectSerializationAndNewDeserializationDictionary() throws {
-		let myDict = ["a" : "b"]
+		let myDict = ["a": "b"]
 
 		let data = NSKeyedArchiver.archivedData(withRootObject: myDict)
 
