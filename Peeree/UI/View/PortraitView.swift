@@ -48,22 +48,15 @@ struct PortraitView: View {
 
 	var body: some View {
 		VStack {
-			HStack {
-				Text(discoveryPersona.info.nickname)
-					.frame(maxWidth: 120)
-
-				if discoveryPersona.biography != "" {
-					Text(Image(systemName: "text.bubble"))
-				}
-			}
+			Text(discoveryPersona.info.nickname)
 			.font(.body)
 			.lineLimit(1)
-			.offset(x: expanded ? 0 : 12)
 
 			HStack {
 				discoveryPersona.image
 					.resizable()
 					.aspectRatio(contentMode: .fit)
+					.blur(radius: socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none ? 10 : 0)
 					.clipShape(Circle())
 					.overlay(Circle().stroke(.white, lineWidth: 4))
 					.onTapGesture {

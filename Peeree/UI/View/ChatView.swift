@@ -55,7 +55,7 @@ struct ChatView: View {
 						VStack {
 							Text(chatPersona.technicalInfo)
 							// not state of the art, but it is what it is
-							Button("More …") {
+							Button("Load older messages …") {
 								loadOlderMessages()
 							}
 						}
@@ -86,21 +86,11 @@ struct ChatView: View {
 
 						Rectangle().fill(Color.clear).id(serverChatViewState.bottomViewID)
 					}
+					.onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidChangeFrameNotification)) { _ in
+						proxy.scrollTo(serverChatViewState.bottomViewID)
+					}
 					.onAppear {
 						self.serverChatViewState.messagesScrollViewProxy = proxy
-					}
-					.modify {
-						if #available(iOS 17, *) {
-							$0.onChange(of: messageFieldIsFocused) { old, new in
-								if new {
-									DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-										proxy.scrollTo(serverChatViewState.bottomViewID)
-									}
-								}
-							}
-						} else {
-							$0
-						}
 					}
 					.onDisappear {
 						self.serverChatViewState.messagesScrollViewProxy = nil

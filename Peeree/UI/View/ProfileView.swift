@@ -99,8 +99,9 @@ struct ProfileView: View {
 
 					VStack(alignment: .leading) {
 						Text("Biography:")
+							.padding(.top)
 						TextEditor(text: $discoveryViewState.profile.biography)
-							.background(RoundedRectangle(cornerRadius: 5).fill(Color.gray))
+							.background(RoundedRectangle(cornerRadius: 5).fill(Color("ColorDivider")))
 							.frame(minHeight: 32)
 							.padding(.bottom)
 					}
@@ -108,24 +109,6 @@ struct ProfileView: View {
 				}
 
 				VStack {
-					HStack(spacing: 24.0) {
-						if #available(iOS 14, *) {
-							Link("Website", destination: mainWebsite)
-							Link("Privacy Policy", destination: privacyWebsite)
-						} else {
-							Button() {
-								UIApplication.shared.open(mainWebsite)
-							} label: {
-								Text("Website")
-							}
-							Button() {
-								UIApplication.shared.open(privacyWebsite)
-							} label: {
-								Text("Privacy Policy")
-							}
-						}
-					}
-
 					VStack {
 						Text(socialViewState.userPeerID?.uuidString ?? "No identity.")
 							.font(.caption)
@@ -213,6 +196,24 @@ struct ProfileView: View {
 								}
 							}
 						}
+						
+						HStack(spacing: 24.0) {
+						 if #available(iOS 14, *) {
+							 Link("Website", destination: mainWebsite)
+							 Link("Privacy Policy", destination: privacyWebsite)
+						 } else {
+							 Button() {
+								 UIApplication.shared.open(mainWebsite)
+							 } label: {
+								 Text("Website")
+							 }
+							 Button() {
+								 UIApplication.shared.open(privacyWebsite)
+							 } label: {
+								 Text("Privacy Policy")
+							 }
+						 }
+					 }
 					}
 				}
 				.modify {

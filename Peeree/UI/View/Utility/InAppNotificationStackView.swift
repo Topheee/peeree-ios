@@ -15,8 +15,6 @@ struct InAppNotificationStackView: View {
 
 	@GestureState private var dragOffset: CGFloat = 0.0
 
-	@State private var secondsRemaining: Int = -1
-
 	private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
 	private var drag: some Gesture {
@@ -29,14 +27,11 @@ struct InAppNotificationStackView: View {
 				guard translation > 22 else { return }
 
 				controller.dismiss()
-				secondsRemaining = Int(controller.timeRemaining)
 			}
 	}
 
 	/// Careful, this is not updated!
 	private var displayCount: Int { min(controller.notifications.count, Self.Cap) }
-
-	@State private var stackLeft: Int = 0
 
 	private func reversedIndex(_ index: Int) -> Int {
 		return displayCount - index
@@ -55,26 +50,6 @@ struct InAppNotificationStackView: View {
 					.animation(.easeInOut(duration: 0.4))
 					.gesture(drag)
 			}
-		}
-		.overlay(alignment: .topTrailing) {
-			Text("\(self.secondsRemaining)")
-				.font(.caption2)
-				.padding(4)
-				.background(Circle().fill(Color("ColorBackground")))
-				.padding(CGFloat(12 + (stackLeft > 0 ? stackLeft : displayCount) * 6))
-				.padding(.trailing, 2)
-				.offset(y: min(dragOffset, 0.0))
-				.onReceive(timer) { _ in
-					stackLeft = displayCount
-					if secondsRemaining <= 0 {
-						secondsRemaining = Int(controller.timeRemaining)
-//						if stackLeft == 0 {
-//							timer.upstream.connect().cancel()
-//						}
-					} else {
-						secondsRemaining -= 1
-					}
-				}
 		}
 	}
 }

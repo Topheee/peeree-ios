@@ -50,8 +50,6 @@ struct PersonView: View {
 
 	@State private var bioHeight = CGFloat.zero
 
-	@State private var blurImage = false
-
 	var body: some View {
 		ZStack {
 			LinearGradient(colors: [Color.accentColor, Color("ColorBackground")], startPoint: UnitPoint(x: 1, y: 1), endPoint: UnitPoint(x: 1, y: socialPersona.pinState == .pinMatch ? 0 : 1))
@@ -63,7 +61,7 @@ struct PersonView: View {
 					discoveryPersona.image
 						.resizable()
 						.aspectRatio(contentMode: .fit)
-						.blur(radius: blurImage ? 10 : 0)
+						.blur(radius: socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none ? 10 : 0)
 						.clipShape(Circle())
 						.modify {
 							if discoveryPersona.pictureProgress > 0.0 && discoveryPersona.pictureProgress < 1.0 {
@@ -218,14 +216,14 @@ struct PersonView: View {
 								Button("Report Portrait") {
 									socialViewState.delegate?.reportPortrait(peerID: peerID)
 								}
-								.disabled(discoveryPersona.cgPicture == nil || discoveryPersona.pictureClassification != .none)
+								.disabled(discoveryPersona.cgPicture == nil || socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none)
 								Button("Cancel", role: .cancel) {
 
 								}
 							} message: { details in
 								Text("Remove the pin or report the portrait of \(details.info.nickname).")
 							}
-						} else if socialPersona.pinState.isPinned || (discoveryPersona.cgPicture != nil &&  discoveryPersona.pictureClassification == .none) {
+						} else if socialPersona.pinState.isPinned || (discoveryPersona.cgPicture != nil && socialViewState.classify(imageHash: discoveryPersona.pictureHash) == .none) {
 							$0.actionSheet(isPresented: $showFlagAlert) {
 								ActionSheet(title: Text("Unpin or Report"),
 											message: Text("Remove the pin or report the portrait of \(discoveryPersona.info.nickname)."),
@@ -246,7 +244,6 @@ struct PersonView: View {
 			}
 		}
 		.onAppear {
-			blurImage = discoveryPersona.pictureClassification != .none
 			if socialPersona.pinState == .pinMatch {
 				UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
 			}

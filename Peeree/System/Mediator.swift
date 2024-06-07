@@ -16,14 +16,6 @@ import PeereeDiscovery
 import KeychainWrapper
 import PeereeServer
 
-extension DiscoveryPerson {
-	/// Objectionable content classification required by the App Store.
-	@MainActor
-	public var pictureClassification: ContentClassification {
-		return SocialViewState.shared.classify(imageHash: pictureHash)
-	}
-}
-
 /// This singleton ties all Peeree modules together.
 final class Mediator {
 
