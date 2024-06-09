@@ -23,6 +23,7 @@ private let headerFormatter: DateFormatter = {
 	let formatter = DateFormatter()
 	formatter.dateStyle = .full
 	formatter.timeStyle = .none
+	// only for screenshots: formatter.locale = Locale(identifier: "en")
 	return formatter
 }()
 

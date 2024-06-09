@@ -126,6 +126,7 @@ struct PortraitView: View {
 	person.biography = "Ich war hier"
 	ss.demo(person.peerID)
 	return PortraitView(peerID: person.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
 }
 
 #Preview {
@@ -137,6 +138,7 @@ struct PortraitView: View {
 	person.lastSeen = Date().advanced(by: -130)
 	ss.demo(person.peerID)
 	return PortraitView(peerID: person.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
 }
 
 #Preview {
@@ -148,4 +150,5 @@ struct PortraitView: View {
 	person.lastSeen = Date().advanced(by: -160)
 	ss.demo(person.peerID)
 	return PortraitView(peerID: person.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
 }

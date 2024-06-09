@@ -83,6 +83,7 @@ struct MainView: View {
 						if !discoveryViewState.peering || verticalSizeClass == .regular {
 							Text(discoveryViewState.peering ? "Online – Looking for people." : "Offline")
 								.fontWeight(discoveryViewState.peering ? .light : .thin)
+								.lineLimit(1)
 						}
 					}
 					.overlay(
@@ -211,7 +212,142 @@ struct MainView: View {
 	}
 }
 
-#Preview {
+// for previews only
+import PeereeServerChat
+
+#Preview("In-App Notifications") {
+	let ds = DiscoveryViewState()
+	let cs = ServerChatViewState()
+	let ss = SocialViewState()
+	let ns = InAppNotificationStackViewState()
+
+	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .info, furtherDescription: "Ich war hier"))
+
+	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .error, furtherDescription: "Oh shit 1"))
+
+	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 2"))
+
+	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 3"))
+
+	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 4"))
+
+	return MainView()
+		.environmentObject(ds)
+		.environmentObject(cs)
+		.environmentObject(ss)
+		.environmentObject(ns)
+		.overlay(alignment: .top) {
+			InAppNotificationStackView(controller: ns)
+		}
+}
+
+#Preview("App Store Scene 1") {
+	// change to desired language
+	let language = "en"
+	let path = Bundle.main.path(forResource: language, ofType: "lproj")
+	let bundle = Bundle(path: path!)!
+
+	let people = [
+		PeerInfo(nickname: "Lea", gender: .female, age: 28, hasPicture: true),
+		PeerInfo(nickname: "Anna", gender: .female, age: 27, hasPicture: true),
+		PeerInfo(nickname: "Ingrid", gender: .female, age: 28, hasPicture: true),
+		PeerInfo(nickname: "Sarah", gender: .female, age: 22, hasPicture: true)
+	]
+
+	let ds = DiscoveryViewState()
+	let cs = ServerChatViewState()
+	let ss = SocialViewState()
+	let ns = InAppNotificationStackViewState()
+
+	let unsplashAuthors = ["Rowan Kyle", "Avdalyan", "Dmitry Vechorko", "Andrei Caliman"]
+
+	ds.peering = true
+
+	var index = 0
+	for p in people {
+		let peerID = PeerID()
+		let dp = ds.addPersona(of: peerID, with: p)
+		dp.set(portrait: UIImage(named: "p\((advancing(&index) % 4) + 1)")?.cgImage, hash: Data())
+		let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
+		dp.biography = String(format: bioFormat, unsplashAuthors[(index - 1) % 4])
+		let sp = ss.demo(peerID)
+		sp.pinState = dp.info.nickname == "Sarah" ? .unpinned : .pinMatch
+		if sp.pinState == .pinMatch {
+			let cp = cs.persona(of: peerID)
+			cp.unreadMessages = dp.info.nickname == "Ingrid" ? 1 : 0
+			switch dp.info.nickname {
+			case "Ingrid":
+				cp.insert(messages: [
+					demoMessage(sent: false, message: bundle.localizedString(forKey: "Working on it ...", value: nil, table: nil), timestamp: Date().advanced(by: -120))
+				], sorted: true)
+			case "Anna":
+				cp.insert(messages: [
+					demoMessage(sent: false, message: bundle.localizedString(forKey: "I'll be there.", value: nil, table: nil), timestamp: Date().advanced(by: -120))
+				], sorted: true)
+			case "Lea":
+				cp.insert(messages: [
+					demoMessage(sent: true, message: bundle.localizedString(forKey: "Sounds good, count me in!", value: nil, table: nil), timestamp: Date().advanced(by: -120))
+				], sorted: true)
+			default:
+				break
+			}
+		} else {
+			dp.lastSeen = Date().advanced(by: TimeInterval(-120 * index))
+		}
+	}
+
+	ds.calculateViewLists()
+
+	return MainView()
+		.environmentObject(ds)
+		.environmentObject(cs)
+		.environmentObject(ss)
+		.environmentObject(ns)
+		.environment(\.locale, .init(identifier: language))
+}
+
+#Preview("App Store Scene 2") {
+	// change to desired language
+	let language = "en"
+	let path = Bundle.main.path(forResource: language, ofType: "lproj")
+	let bundle = Bundle(path: path!)!
+
+	let ds = DiscoveryViewState()
+	let cs = ServerChatViewState()
+	let ss = SocialViewState()
+	let ns = InAppNotificationStackViewState()
+
+	let peerID = PeerID()
+	let p = PeerInfo(nickname: "Sarah", gender: .female, age: 22, hasPicture: true)
+
+	let dp = ds.addPersona(of: peerID, with: p)
+	dp.set(portrait: UIImage(named: "p1")?.cgImage, hash: Data())
+	let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
+	dp.biography = String(format: bioFormat, "Andrei Caliman")
+
+	let sp = ss.demo(peerID)
+	sp.pinState = .pinMatch
+	let cp = cs.persona(of: peerID)
+
+	cp.readyToChat = true
+
+	cp.insert(messages: [
+		demoMessage(sent: true, message: bundle.localizedString(forKey: "Vicki Vale, Vicki Vale, Vicki Vale, …", value: nil, table: nil), timestamp: Date().advanced(by: 60)),
+		demoMessage(sent: false, message: bundle.localizedString(forKey: "I hope I'm not interrupting.", value: nil, table: nil), timestamp: Date()),
+		demoMessage(sent: true, message: bundle.localizedString(forKey: "No, not at all.", value: nil, table: nil), timestamp: Date().advanced(by: -60)),
+		demoMessage(sent: true, message: bundle.localizedString(forKey: "It’s from Batman.", value: nil, table: nil), timestamp: Date().advanced(by: -120)),
+		demoMessage(sent: false, message: bundle.localizedString(forKey: "Because that makes it better.", value: nil, table: nil), timestamp: Date().advanced(by: -240))
+	], sorted: true)
+
+	return MainView()
+		.environmentObject(ds)
+		.environmentObject(cs)
+		.environmentObject(ss)
+		.environmentObject(ns)
+		.environment(\.locale, .init(identifier: language))
+}
+
+#Preview("Normal") {
 	let people = [
 		PeerInfo(nickname: "Lea", gender: .female, age: 28, hasPicture: true),
 		PeerInfo(nickname: "Anna", gender: .female, age: 27, hasPicture: true),
@@ -225,16 +361,6 @@ struct MainView: View {
 	let cs = ServerChatViewState()
 	let ss = SocialViewState()
 	let ns = InAppNotificationStackViewState()
-
-//	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .info, furtherDescription: "Ich war hier"))
-//
-//	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .error, furtherDescription: "Oh shit 1"))
-//
-//	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 2"))
-//
-//	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 3"))
-//
-//	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 4"))
 
 	var index = 0
 	for p in people {
@@ -251,7 +377,6 @@ struct MainView: View {
 		}
 	}
 
-	//return MainView(profile: .constant(Profile(socialPersona: ss.demo(ownPeerID), discoveryPersona: DiscoveryPerson(peerID: ownPeerID, info: PeerInfo(nickname: "Bartholomaeus Didactus Mechanicus", gender: .queer, age: nil, hasPicture: false), lastSeen: Date()))))
 	return MainView()
 		.environmentObject(ds)
 		.environmentObject(cs)
@@ -259,7 +384,7 @@ struct MainView: View {
 		.environmentObject(ns)
 }
 
-#Preview {
+#Preview("Onboarding") {
 	let ds = DiscoveryViewState()
 	let cs = ServerChatViewState()
 	let ss = SocialViewState()

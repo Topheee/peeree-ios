@@ -616,3 +616,33 @@
 "Load older messages …" = "Load older messages …";
 
 "" = "";
+
+/********************************************/
+/* App Store Screenshot keys. */
+
+/* Demo */
+"Photo from Unsplash by %@." = "Photo from Unsplash by %@.";
+
+/* Demo */
+"Working on it ..." = "Working on it ...";
+
+/* Demo */
+"I'll be there." = "I'll be there.";
+
+/* Demo */
+"Sounds good, count me in!" = "Sounds good, count me in!";
+
+/* Demo */
+"Vicki Vale, Vicki Vale, Vicki Vale, …" = "Vicki Vale, Vicki Vale, Vicki Vale, …";
+
+/* Demo */
+"I hope I'm not interrupting." = "I hope I'm not interrupting.";
+
+/* Demo */
+"No, not at all." = "No, not at all.";
+
+/* Demo */
+"It’s from Batman." = "It’s from Batman.";
+
+/* Demo */
+"Because that makes it better." = "Because that makes it better.";

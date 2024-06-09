@@ -257,6 +257,7 @@ struct PersonView: View {
 	let p = ds.demo()
 	p.biography = "Lorem ipsum dolor colores senetra hila."
 	return PersonView(peerID: p.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
 }
 
 #Preview {
@@ -265,4 +266,29 @@ struct PersonView: View {
 	let p = ds.demo()
 	p.biography = "Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. Lorem ipsum dolor colores senetra hila. "
 	return PersonView(peerID: p.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
+}
+
+
+#Preview("App Store Scene 2") {
+	let language = "en"
+	let path = Bundle.main.path(forResource: language, ofType: "lproj")
+	let bundle = Bundle(path: path!)!
+
+	let ds = DiscoveryViewState()
+	let ss = SocialViewState()
+	let p = ds.demo()
+	p.info.age = 22
+	p.info.gender = .female
+	p.info.nickname = "Sarah"
+	p.set(portrait: UIImage(named: "p1")?.cgImage, hash: Data())
+	let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
+	p.biography = String(format: bioFormat, "Andrei Caliman")
+
+	let sp = ss.demo(p.peerID)
+	sp.pinState = .pinMatch
+
+	return PersonView(peerID: p.peerID, socialViewState: ss, discoveryViewState: ds)
+		.environmentObject(ss)
+		.environment(\.locale, .init(identifier: language))
 }

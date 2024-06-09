@@ -63,14 +63,14 @@ extension DiscoveryPerson {
 		}
 	}
 
-	var genderText: String {
+	var genderText: LocalizedStringKey {
 		switch info.gender {
 		case PeerInfo.Gender.male:
-			NSLocalizedString("Male", comment: "Gender")
+			"Male"
 		case PeerInfo.Gender.female:
-			NSLocalizedString("Female", comment: "Gender")
+			"Female"
 		case PeerInfo.Gender.queer:
-			NSLocalizedString("Queer", comment: "Gender")
+			"Queer"
 		}
 	}
 
@@ -111,6 +111,7 @@ extension DiscoveryPerson {
 	@available(iOS 13.0, macOS 10.15, *)
 	private static let lastSeenFormatter2: RelativeDateTimeFormatter = {
 		let formatter = RelativeDateTimeFormatter()
+		// only for screenshots: formatter.locale = Locale(identifier: "en")
 		formatter.unitsStyle = .short
 		formatter.formattingContext = .standalone
 		return formatter

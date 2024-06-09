@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct TagView: View {
-	let text: String
+	let text: LocalizedStringKey
 
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 

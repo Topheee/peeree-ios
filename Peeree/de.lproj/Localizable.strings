@@ -614,3 +614,33 @@
 "The Peeree Way" = "Der Peeree-Weg";
 
 "Load older messages …" = "Ältere Nachrichten laden …";
+
+/********************************************/
+/* App Store Screenshot keys. */
+
+/* Demo */
+"Photo from Unsplash by %@." = "Foto von Unsplash von %@.";
+
+/* Demo */
+"Working on it ..." = "Ich arbeite dran ...";
+
+/* Demo */
+"I'll be there." = "Ich werde da sein.";
+
+/* Demo */
+"Sounds good, count me in!" = "Klingt gut, bin dabei!";
+
+/* Demo */
+"Vicki Vale, Vicki Vale, Vicki Vale, …" = "Vicki Vale, Vicki Vale, Vicki Vale, …";
+
+/* Demo */
+"I hope I'm not interrupting." = "Habe Ich Sie bei irgendetwas Wichtigem gestört?";
+
+/* Demo */
+"No, not at all." = "Nein, ganz und gar nicht.";
+
+/* Demo */
+"It’s from Batman." = "Das war bloß ein Zitat aus dem Film Batman.";
+
+/* Demo */
+"Because that makes it better." = "Sehr gut, dann ich ja beruhigt.";

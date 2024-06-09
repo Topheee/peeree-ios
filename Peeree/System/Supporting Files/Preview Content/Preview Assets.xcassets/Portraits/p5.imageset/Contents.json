@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "ian-denegri-mb_75ZJYyR4-unsplash_squard.jpg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
