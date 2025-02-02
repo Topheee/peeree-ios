@@ -67,7 +67,7 @@ final class ServerChatController: ServerChat {
 
 			Task { await self.persistence.clear() }
 
-			DispatchQueue.main.async {
+			Task { @MainActor in
 				self.conversationDelegate?.clear()
 			}
 
@@ -205,7 +205,9 @@ final class ServerChatController: ServerChat {
 			switch response {
 			case .failure(let error):
 				elog(Self.LogTag, "setPusher() failed: \(error)")
-				self.delegate?.configurePusherFailed(error)
+				Task {
+					await self.delegate?.configurePusherFailed(error)
+				}
 			case .success():
 				dlog(Self.LogTag, "setPusher() was successful.")
 			}
@@ -226,11 +228,11 @@ final class ServerChatController: ServerChat {
 			do {
 				try await persistence.set(lastRead: date, of: peerID)
 			} catch {
-				self.delegate?.encodingPersistedChatDataFailed(with: error)
+				await self.delegate?.encodingPersistedChatDataFailed(with: error)
 			}
 		}
 
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			self.conversationDelegate?.persona(of: peerID).set(lastReadDate: date)
 		}
 	}
@@ -245,7 +247,9 @@ final class ServerChatController: ServerChat {
 					self.join(roomId: success.roomId, with: peerID)
 				}
 			case .failure(let failure):
-				self.delegate?.serverChatInternalErrorOccured(failure)
+				Task {
+					await self.delegate?.serverChatInternalErrorOccured(failure)
+				}
 			}
 		}
 	}
@@ -257,7 +261,7 @@ final class ServerChatController: ServerChat {
 			do {
 				try await persistence.removePeerData([peerID])
 			} catch {
-				self.delegate?.encodingPersistedChatDataFailed(with: error)
+				await self.delegate?.encodingPersistedChatDataFailed(with: error)
 			}
 		}
 		
@@ -265,7 +269,7 @@ final class ServerChatController: ServerChat {
 			forgetRooms($0) {}
 		}
 
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			self.conversationDelegate?.removePersona(of: peerID)
 		}
 	}
@@ -457,7 +461,7 @@ final class ServerChatController: ServerChat {
 
 				catchUpDecryptedMessages.append(contentsOf: failedMsgs)
 
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					self.conversationDelegate?.persona(of: peerID).roomError = error ?? unexpectedNilError()
 				}
 			}
@@ -482,7 +486,7 @@ final class ServerChatController: ServerChat {
 			if catchUpDecryptedMessages.count > 0 {
 				let sentCatchUpDecryptedMessages = catchUpDecryptedMessages
 				let sentUnreadMessages = unreadMessages
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					self.conversationDelegate?.catchUp(messages: sentCatchUpDecryptedMessages, sorted: sorted, unreadCount: sentUnreadMessages, with: peerID)
 				}
 			}
@@ -510,7 +514,7 @@ final class ServerChatController: ServerChat {
 
 			self.roomTimelines[room.roomId] = timeline
 
-			DispatchQueue.main.async {
+			Task { @MainActor in
 				self.conversationDelegate?.persona(of: peerID).technicalInfo = room.roomId
 			}
 
@@ -612,7 +616,9 @@ final class ServerChatController: ServerChat {
 				}
 
 				elog(Self.LogTag, "Cannot join room \(roomId): \(error)")
-				self.delegate?.cannotJoinRoom(error)
+				Task {
+					await self.delegate?.cannotJoinRoom(error)
+				}
 			}
 		}
 	}
@@ -634,7 +640,7 @@ final class ServerChatController: ServerChat {
 			case kMXMembershipStringJoin:
 				guard eventUserId != self.userId, let peerID = peerIDFrom(serverChatUserId: eventUserId) else { return }
 
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					self.conversationDelegate?.persona(of: peerID).readyToChat = true
 				}
 
@@ -652,9 +658,9 @@ final class ServerChatController: ServerChat {
 				}
 
 				// check whether we still have a pin match with this person
-				dataSource.hasPinMatch(with: [peerID], forceCheck: false) { checkedPeerID, result in
+				dataSource.hasPinMatch(with: peerID, forceCheck: false) { checkedPeerID, result in
 					guard result else {
-						self.dataSource.hasPinMatch(with: [peerID], forceCheck: true) { peerID, hasPinMatch in
+						self.dataSource.hasPinMatch(with: peerID, forceCheck: true) { peerID, hasPinMatch in
 							self.dQueue.async {
 								if hasPinMatch {
 									self.join(roomId: roomId, with: peerID)
@@ -755,7 +761,7 @@ final class ServerChatController: ServerChat {
 				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != readyRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: readyRoom.room, with: peerID)
 				
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					self.conversationDelegate?.persona(of: peerID).readyToChat = true
 				}
 			} else if let invitedRoom = theyJoinedOrInvited.first(where: { $0.ourMembership == .invite }) {
@@ -767,15 +773,17 @@ final class ServerChatController: ServerChat {
 				self.forgetRooms(theyJoinedOrInvited.compactMap { $0.room.roomId != invitedRoom.room.roomId ? $0.room.roomId : nil }) {}
 				self.listenToEvents(in: invitedRoom.room, with: peerID)
 
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					/// we need to call `persona()` in order for the persona to be created and added to `matchedPeople`.
 					self.conversationDelegate?.persona(of: peerID).readyToChat = false
 				}
 			} else {
 				self.reallyCreateRoom(with: peerID) { result in
-					result.error.map {
-						elog(Self.LogTag, "failed to really create room with \(peerID): \($0)")
-						self.delegate?.serverChatInternalErrorOccured($0)
+					result.error.map { e in
+						elog(Self.LogTag, "failed to really create room with \(peerID): \(e)")
+						Task {
+							await self.delegate?.serverChatInternalErrorOccured(e)
+						}
 					}
 				}
 			}
@@ -783,8 +791,9 @@ final class ServerChatController: ServerChat {
 	}
 
 	/// Refreshes the pin status with the Peeree server, forgets all rooms with `peerID` if we do not have a pin match, and calls `pinMatchedAction` or `noPinMatchAction` depending on the pin status.
+
 	private func refreshPinStatus(of peerID: PeerID, force: Bool, _ pinMatchedAction: (() -> Void)?, _ noPinMatchAction: (() -> Void)? = nil) {
-		dataSource.hasPinMatch(with: [peerID], forceCheck: force) { checkedPeerID, result in
+		dataSource.hasPinMatch(with: peerID, forceCheck: force) { checkedPeerID, result in
 			assert(checkedPeerID == peerID)
 			if result {
 				pinMatchedAction?()
@@ -803,7 +812,7 @@ final class ServerChatController: ServerChat {
 		let ourUserId = self.peerID.serverChatUserId
 		let messageEvent = makeChatMessage(messageEvent: event, ourUserId: ourUserId)
 
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			convDelegate.new(message: messageEvent, inChatWithConversationPartner: peerID)
 		}
 	}
@@ -821,7 +830,7 @@ final class ServerChatController: ServerChat {
 			do {
 				try await persistence.loadInitialData()
 			} catch {
-				self.delegate?.decodingPersistedChatDataFailed(with: error)
+				await self.delegate?.decodingPersistedChatDataFailed(with: error)
 			}
 
 			let lastReads = await persistence.lastReads
@@ -829,7 +838,7 @@ final class ServerChatController: ServerChat {
 			self.lastReads = lastReads
 
 			if let d = self.conversationDelegate {
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					for (peerID, lastReadDate) in lastReads {
 						d.persona(of: peerID).set(lastReadDate: lastReadDate)
 					}
@@ -873,7 +882,7 @@ final class ServerChatController: ServerChat {
 
 					// The only option I see is to leave the room and create a new one.
 
-					DispatchQueue.main.async {
+					Task { @MainActor in
 						self.conversationDelegate?.persona(of: peerID).roomError = decryptionError
 					}
 

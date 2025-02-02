@@ -11,22 +11,21 @@ import Foundation
 import KeychainWrapper
 
 import PeereeCore
-import PeereeServer
+import PeereeIdP
+import PeereeSocial
 
 // Global UI state.
 @MainActor
-final class SocialViewState: SocialViewModelDelegate, ObservableObject {
+final class SocialViewState:
+	SocialViewModelDelegate, AccountViewModelDelegate, ObservableObject {
 
 	/// Social personas must have a `PinState`.
 	typealias RequiredData = PinState
 
-	/// Global state object.
-	static let shared = SocialViewState()
-
 	var delegate: SocialViewDelegate?
 
 	/// All known people.
-	private (set) var people: [PeerID : SocialPerson] = [:]
+	private(set) var people: [PeerID : SocialPerson] = [:]
 
 	/// The `PeerID` of the local user, if available.
 	public var userPeerID: PeerID? = nil

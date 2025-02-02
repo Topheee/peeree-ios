@@ -23,19 +23,18 @@ struct ProfileData {
 	var birthday: Date?
 }
 
+/// Names of notifications sent by ``UserPeer``.
+extension Notification.Name {
+
+	/// One of the properties of UserPeer's ``PeerInfo`` changed.
+	static let userPeerChanged = Notification.Name("de.peeree.userPeerChanged")
+}
+
 // Note: This actor could still has a race condition, since the file system is a shared domain, and if multiple instances of this actor are created, they may access the file system simultaneously. However, the FileManager docs state that its shared object is thread-safe.
 
 /// Serializes the profile information of the user.
 final actor UserPeer {
 	// MARK: - Public and Internal
-
-	// MARK: Classes, Structs, Enums
-
-	/// Names of notifications sent by ``UserPeer``.
-	public enum NotificationName: String {
-		/// One of the properties of UserPeer's ``PeerInfo`` changed.
-		case changed
-	}
 
 	// MARK: Static Variables
 
@@ -51,7 +50,7 @@ final actor UserPeer {
 	/// Persists `peerInfo`; call only from `queue`.
 	func modify(peerInfo: PeerInfo?) {
 		defer {
-			NotificationName.changed.postAsNotification(object: self)
+			Notification.Name.userPeerChanged.post(on: self)
 		}
 
 		guard let info = peerInfo else {
@@ -68,7 +67,7 @@ final actor UserPeer {
 	/// Sets the user's portrait.
 	func modify(portrait: CGImage?) throws {
 		defer {
-			NotificationName.changed.postAsNotification(object: self)
+			Notification.Name.userPeerChanged.post(on: self)
 		}
 
 		if let pic = portrait {
@@ -81,7 +80,7 @@ final actor UserPeer {
 	/// Sets the user's birthday.
 	func modify(birthday: Date?) {
 		defer {
-			NotificationName.changed.postAsNotification(object: self)
+			Notification.Name.userPeerChanged.post(on: self)
 		}
 
 		if let birth = birthday {
@@ -94,7 +93,7 @@ final actor UserPeer {
 	/// Sets the user's biography.
 	func modify(biography: String) {
 		defer {
-			NotificationName.changed.postAsNotification(object: self)
+			Notification.Name.userPeerChanged.post(on: self)
 		}
 
 		UserDefaults.standard.set(biography, forKey: UserPeer.BiographyKey)
@@ -132,7 +131,7 @@ final actor UserPeer {
 	/// Wipes all persisted data.
 	func clear() {
 		defer {
-			NotificationName.changed.postAsNotification(object: self)
+			Notification.Name.userPeerChanged.post(on: self)
 		}
 
 		UserDefaults.standard.removeObject(forKey: UserPeer.PrefKey)

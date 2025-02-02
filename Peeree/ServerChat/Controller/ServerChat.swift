@@ -46,34 +46,34 @@ public protocol ServerChat {
 /// Information provider for the server chat.
 public protocol ServerChatDataSource {
 	/// Queries pin state of peers.
-	func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ())
+	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async throws -> Bool
 
 	/// Queries for all pin-matched peers.
-	func pinMatches(_ result: @escaping (Set<PeerID>) -> ())
+	func pinMatches() async -> Set<PeerID>
 }
 
 /// Server chat informed party.
 public protocol ServerChatDelegate: AnyObject {
 	/// Configuring the Pusher on the server chat server failed.
-	func configurePusherFailed(_ error: Error)
+	func configurePusherFailed(_ error: Error) async
 
 	/// Joining a server chat room failed.
-	func cannotJoinRoom(_ error: Error)
+	func cannotJoinRoom(_ error: Error) async
 
 	/// The certificate of the server is invalid.
-	func serverChatCertificateIsInvalid()
+	func serverChatCertificateIsInvalid() async
 
 	/// The server chat session disconnected.
 	///
 	/// - Parameter error: Set if the server chat session became invalid.
-	func serverChatClosed(error: Error?)
+	func serverChatClosed(error: Error?) async
 
 	/// An unexpected error occurred, mostly network-related; use for logging.
-	func serverChatInternalErrorOccured(_ error: Error)
+	func serverChatInternalErrorOccured(_ error: Error) async
 
 	/// An unexpected error occurred when loading auxilarily chat data.
-	func decodingPersistedChatDataFailed(with error: Error)
+	func decodingPersistedChatDataFailed(with error: Error) async
 
 	/// An unexpected error occurred when storing auxilarily chat data.
-	func encodingPersistedChatDataFailed(with error: Error)
+	func encodingPersistedChatDataFailed(with error: Error) async
 }

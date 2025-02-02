@@ -213,28 +213,14 @@ extension RawRepresentable where Self.RawValue == String {
 	public var localizedRawValue: String {
 		return Bundle.main.localizedString(forKey: rawValue, value: nil, table: nil)
 	}
-
-	/// Shortcut for `NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)`.
-	public func addObserver(usingBlock block: @escaping (Notification) -> Void) -> NSObjectProtocol {
-		return NotificationCenter.addObserverOnMain(self.rawValue, usingBlock: block)
-	}
-
-	/// Posts a new notification to the `default` `NotificationCenter` and uses the `rawValue` of this enumeration case as the notification name.
-	public func postAsNotification(object: Any?, userInfo: [AnyHashable : Any]? = nil) {
-		// I thought that this would be actually done asynchronously, but turns out that it is posted synchronously on the main queue (the operation queue of the default notification center), so we have to make it asynchronously ourselves and rely on the re-entrance capability of the main queue….
-		// The drawback is, that some use cases require strict execution of the notified code, as for instance insertions into UITableViews (because with async, there might come in another task in parallel which changes the number of rows, and then insertRows() fails
-		DispatchQueue.main.async {
-			NotificationCenter.`default`.post(name: Notification.Name(rawValue: self.rawValue), object: object, userInfo: userInfo)
-		}
-	}
 }
 
-extension NotificationCenter {
-	/// Add an observer, which gets invoked on the `main` `DispatchQueue`.
-	public class func addObserverOnMain(_ name: String?, usingBlock block: @escaping @MainActor (Notification) -> Void) -> NSObjectProtocol {
-		return NotificationCenter.default.addObserver(forName: name.map { NSNotification.Name(rawValue: $0) }, object: nil, queue: nil) { notification in
-			DispatchQueue.main.async { block(notification) }
-		}
+extension Notification.Name {
+	/// Posts a new notification to the `default` `NotificationCenter`.
+	public func post(on object: (any AnyObject & Sendable)? = nil,
+					 userInfo: [AnyHashable : Any]? = nil) {
+		NotificationCenter.`default`.post(name: self, object: object,
+										  userInfo: userInfo)
 	}
 }
 

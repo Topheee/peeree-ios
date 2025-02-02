@@ -27,8 +27,6 @@ import CommonCrypto
 import MatrixSDK
 
 final class EncryptionKeyManager: NSObject, MXKeyProviderDelegate {
-	static let shared = EncryptionKeyManager()
-
 	private static let keychainService: String = "EncryptionKeyManager.encryption-manager-service"
 	private static let contactsIv: String = "EncryptionKeyManager.contactsIv"
 	private static let contactsAesKey: String = "EncryptionKeyManager.contactsAesKey"
@@ -39,7 +37,7 @@ final class EncryptionKeyManager: NSObject, MXKeyProviderDelegate {
 	private static let roomLastMessageAesKey: String = "EncryptionKeyManager.roomLastMessageAesKey"
 	private static let cryptoSDKStoreKey: String = "EncryptionKeyManager.cryptoSDKStoreKey"
 
-	private override init() {
+	override init() {
 		super.init()
 		initKeys()
 	}

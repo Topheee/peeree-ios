@@ -10,7 +10,7 @@ import SwiftUI
 
 import PeereeCore
 import PeereeServerChat
-import PeereeServer
+import PeereeIdP
 import PeereeDiscovery
 
 @main
@@ -19,28 +19,35 @@ struct PeereeApp: App {
 
 	@Environment(\.scenePhase) private var scenePhase
 
+	private let mediator = Mediator()
+
 	var body: some Scene {
 		WindowGroup {
 			MainView()
-				.environmentObject(DiscoveryViewState.shared)
-				.environmentObject(ServerChatViewState.shared)
-				.environmentObject(SocialViewState.shared)
+				.environmentObject(mediator.discoveryViewState)
+				.environmentObject(mediator.serverChatViewState)
+				.environmentObject(mediator.socialViewState)
 				.environmentObject(InAppNotificationStackViewState.shared)
-				.environmentObject(AppViewState.shared)
+				.environmentObject(mediator.appViewState)
 				.overlay(alignment: .top) {
 					InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
 				}
 				.task {
 					do {
-						SocialViewState.shared.delegate = Mediator.shared
-						try await DiscoveryViewState.shared.load()
+						try await self.mediator.discoveryViewState.load()
+
+						// start Bluetooth and server chat, but only if account exists
+						if let ac = try await self.mediator.accountControllerFactory.use() {
+							try await self.mediator.setup(ac: ac, errorTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
+							try await self.mediator.togglePeering(on: true)
+						}
 					} catch {
 						InAppNotificationStackViewState.shared.display(genericError: error)
 					}
 				}
 		}
 		.onChange(of: scenePhase) { phase in
-			AppViewState.shared.scenePhase = phase
+			mediator.appViewState.scenePhase = phase
 
 			switch phase {
 			case .background:
@@ -77,14 +84,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
 	 */
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		// Configure singletons
-		AccountControllerFactory.shared.initialize(viewModel: SocialViewState.shared)
-
-		// start Bluetooth and server chat, but only if account exists
-		AccountControllerFactory.shared.use { ac in
-			Mediator.shared.setup(ac: ac, errorTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
-			Mediator.shared.togglePeering(on: true)
-		}
 
 		return true
 	}
@@ -94,12 +93,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
 		ServerChatFactory.use { $0?.closeServerChat() }
-		Mediator.shared.togglePeering(on: false)
+		//mediator.togglePeering(on: false)
 		UserDefaults.standard.synchronize()
 	}
 
 	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-		Mediator.shared.togglePeering(on: false)
+		//mediator.togglePeering(on: false)
 	}
 
 	/// MARK: Notifications

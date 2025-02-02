@@ -108,8 +108,10 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 			}
 
 			do {
-				Self.decoder.stringDecodingStrategy = .fixed(.utf8)
-				let identificationData = try Self.decoder.decode(IdentificationData.self, from: modelNode.mapTypes({ CBUUIDCodingKey($0) }, { $0 }))
+				self.decoder.stringDecodingStrategy = .fixed(.utf8)
+				let identificationData = try self.decoder
+					.decode(IdentificationData.self, from: modelNode
+						.mapTypes({ CBUUIDCodingKey($0) }, { $0 }))
 
 				delegate?.foundPeer(identificationData.peerID, lastChangedDate: identificationData.lastChanged, of: peripheral)
 			} catch {
@@ -125,19 +127,34 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 	private static let MaxFailures = 3
 
 	/// The Decoder to unmarshal the results of the sub-operations.
-	private static let decoder = KeyValueTreeCoding.DataTreeDecoder()
+	// This could be static.
+	private let decoder = KeyValueTreeCoding.DataTreeDecoder()
 
 	/// The root ID of the identifaction operation tree.
-	private static let idOpTreeIdentification = CBUUID(nsuuid: UUID())
+	private static let idOpTreeIdentificationUUID = UUID()
+	private static var idOpTreeIdentification: CBUUID {
+		CBUUID(nsuuid: idOpTreeIdentificationUUID)
+	}
 
 	/// The operation tree to identify a remote peer.
-	private static let opTreeIdentification = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeIdentification, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.LocalPeerIDCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.LastChangedCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.ConnectBackCharacteristicID, value: CharacteristicOperation(task: .write, mandatory: false))
+	// This could be static.
+	private static
+	var opTreeIdentification: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeIdentification, nodes: [
+			.branch(key: CBUUID.PeereeServiceID, nodes: [
+				.leaf(key: CBUUID.LocalPeerIDCharacteristicID,
+					  value: CharacteristicOperation(task: .read,
+													 mandatory: true)),
+				.leaf(key: CBUUID.LastChangedCharacteristicID,
+					  value: CharacteristicOperation(task: .read,
+													 mandatory: true)),
+				.leaf(key: CBUUID.ConnectBackCharacteristicID,
+					  value: CharacteristicOperation(task: .write,
+													 mandatory: false))
+			])
 		])
-	])
+	}
 
 	/// The operation tree graph.
 	///

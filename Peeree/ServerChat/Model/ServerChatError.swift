@@ -10,7 +10,7 @@ import Foundation
 import PeereeCore
 
 /// Causes for `ServerChatError.cannotChat` error.
-public enum ServerChatCannotChatReason {
+public enum ServerChatCannotChatReason: Sendable {
 	/// This user has no chat profile.
 	case noProfile
 

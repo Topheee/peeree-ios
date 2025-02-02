@@ -9,8 +9,9 @@
 import SwiftUI
 
 import PeereeCore
-import PeereeServer
 import PeereeDiscovery
+import PeereeIdP
+import PeereeSocial
 
 //fileprivate let SamplePublicKeyData = Data(hexString: "040248b9c0a2d23086eba6d55671ac9c440f853760bfd909ad0fb1b3249f6b2cb15aa052362bb8d5650a024d800060f1f0de4077f29444f7051769af29e762967b")!
 //

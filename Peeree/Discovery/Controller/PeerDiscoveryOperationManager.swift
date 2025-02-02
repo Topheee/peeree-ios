@@ -9,6 +9,7 @@
 import Foundation
 import CoreBluetooth
 import CoreGraphics
+import CryptoKit
 
 import PeereeCore
 import KeychainWrapper
@@ -249,20 +250,23 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 			}
 
 			let identity: PeereeIdentity
+			let pubKey: AsymmetricPublicKey
 			do {
-				let verificationData = try Self.decoder.decode(VerificationData.self, from: sub(model: model))
+				let verificationData = try self.decoder
+					.decode(VerificationData.self, from: sub(model: model))
 
-				identity = try PeereeIdentity(peerID: self.peerID, publicKeyData: verificationData.publicKeyData)
+				identity = PeereeIdentity(peerID: self.peerID, publicKeyData: verificationData.publicKeyData)
 
-				try identity.publicKey.verify(message: nonce, signature: verificationData.nonceSignature)
-				try identity.publicKey.verify(message: self.peerID.encode(), signature: verificationData.peerIDSignature)
+				pubKey = try identity.publicKey()
+				try pubKey.verify(message: nonce, signature: verificationData.nonceSignature)
+				try pubKey.verify(message: self.peerID.encode(), signature: verificationData.peerIDSignature)
 			} catch {
 				delegate?.peerDiscoveryFailed(error)
 				self.opManager.cancel()
 				return
 			}
 
-			self.state = .identified(Identified(publicKey: identity.publicKey, lastChanged: lastChanged))
+			self.state = .identified(Identified(publicKey: pubKey, lastChanged: lastChanged))
 
 			self.authenticationStatus.insert(AuthenticationStatus.from)
 
@@ -270,7 +274,10 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 		case Self.idOpTreeRemoteAuth1:
 			do {
-				let remoteIdentificationData = try Self.decoder.decode(RemoteIdentificationData.self, from: sub(model: model))
+				let remoteIdentificationData = try self.decoder
+					.decode(RemoteIdentificationData.self,
+							from: sub(model: model))
+
 				self.remoteNonce = remoteIdentificationData.remoteNonce
 			} catch {
 				delegate?.peerDiscoveryFailed(error)
@@ -289,11 +296,15 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 			}
 
 			let peerData: PeerData
+			let identity: PeereeIdentity
 			do {
-				peerData = try Self.decoder.decode(PeerData.self, from: sub(model: model))
+				peerData = try self.decoder
+					.decode(PeerData.self, from: sub(model: model))
 
 				try identified.publicKey.verify(message: peerData.aggregateData, signature: peerData.aggregateDataSignature)
 				try identified.publicKey.verify(message: peerData.nickname, signature: peerData.nicknameSignature)
+
+				identity = try PeereeIdentity(peerID: self.peerID, publicKey: identified.publicKey)
 			} catch {
 				delegate?.peerDiscoveryFailed(error)
 				self.opManager.cancel()
@@ -307,7 +318,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 			self.state = .queried(identified)
 
-			delegate?.loaded(info: peerInfo, of: PeereeIdentity(peerID: self.peerID, publicKey: identified.publicKey))
+			delegate?.loaded(info: peerInfo, of: identity)
 
 		case Self.idOpTreeBio:
 			guard case let .scraping(identified) = self.state else {
@@ -318,7 +329,8 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 			do {
 				let subModel = try sub(model: model)
-				let bioData = try Self.decoder.decode(BioData.self, from: subModel)
+				let bioData = try self.decoder
+					.decode(BioData.self, from: subModel)
 
 				guard let rawBio = subModel.value(at: [BioData.CodingKeys.bio]) else {
 					throw createApplicationError(localizedDescription: "didn't find bio key")
@@ -342,7 +354,8 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 			let portraitData: PortraitData
 			do {
-				portraitData = try Self.decoder.decode(PortraitData.self, from: sub(model: model))
+				portraitData = try self.decoder
+					.decode(PortraitData.self, from: sub(model: model))
 
 				try identified.publicKey.verify(message: portraitData.portrait, signature: portraitData.portraitSignature)
 			} catch {
@@ -358,7 +371,9 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 				return
 			}
 
-			delegate?.loaded(picture: image, of: self.peerID, hash: portraitData.portrait.sha256())
+			let hash = Data(SHA256.hash(data: portraitData.portrait))
+			delegate?.loaded(picture: image, of: self.peerID,
+							 hash: hash)
 
 		default:
 			assertionFailure("unknown peripheral operation \(operation.id.uuidString) finished.")
@@ -371,85 +386,157 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	private static let MaxFailures = 3
 
 	/// The Decoder to unmarshal the results of the sub-operations.
-	private static let decoder = KeyValueTreeCoding.DataTreeDecoder()
+	private let decoder = KeyValueTreeCoding.DataTreeDecoder()
 
 	/// The ID of the first authentication step.
-	private static let idOpTreeAuth1 = CBUUID(nsuuid: UUID())
+	private static let idOpTreeAuth1UUID = UUID()
+	private static
+	var idOpTreeAuth1: CBUUID { CBUUID(nsuuid: idOpTreeAuth1UUID) }
 
 	/// The ID of the second authentication step.
-	private static let idOpTreeAuth2 = CBUUID(nsuuid: UUID())
+	private static let idOpTreeAuth2UUID = UUID()
+	private static
+	var idOpTreeAuth2: CBUUID { CBUUID(nsuuid: idOpTreeAuth2UUID) }
 
 	/// The ID of the first remote authentication step.
-	private static let idOpTreeRemoteAuth1 = CBUUID(nsuuid: UUID())
+	private static let idOpTreeRemoteAuth1UUID = UUID()
+	private static
+	var idOpTreeRemoteAuth1: CBUUID { CBUUID(nsuuid: idOpTreeRemoteAuth1UUID) }
 
 	/// The ID of the second remote authentication step.
-	private static let idOpTreeRemoteAuth2 = CBUUID(nsuuid: UUID())
+	private static let idOpTreeRemoteAuth2UUID = UUID()
+	private static
+	var idOpTreeRemoteAuth2: CBUUID { CBUUID(nsuuid: idOpTreeRemoteAuth2UUID) }
 
 	/// The ID of the main information retrieval step.
-	private static let idOpTreePeerData = CBUUID(nsuuid: UUID())
+	private static let idOpTreePeerDataUUID = UUID()
+	private static
+	var idOpTreePeerData: CBUUID { CBUUID(nsuuid: idOpTreePeerDataUUID) }
 
 	/// The ID of the portrait retrieval step.
-	private static let idOpTreePortrait = CBUUID(nsuuid: UUID())
+	private static let idOpTreePortraitUUID = UUID()
+	private static
+	var idOpTreePortrait: CBUUID { CBUUID(nsuuid: idOpTreePortraitUUID) }
 
 	/// The ID of the biography retrieval step.
-	private static let idOpTreeBio = CBUUID(nsuuid: UUID())
+	private static let idOpTreeBioUUID = UUID()
+	private static
+	var idOpTreeBio: CBUUID { CBUUID(nsuuid: idOpTreeBioUUID) }
 
 	/// The first authentication step.
-	private static let opTreeAuth1 = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeAuth1, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.AuthenticationCharacteristicID, value: CharacteristicOperation(task: .write, mandatory: true))
-		])
-	])
+	private static
+	var opTreeAuth1: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeAuth1, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.AuthenticationCharacteristicID,
+						  value: CharacteristicOperation(task: .write,
+														 mandatory: true))
+				])
+			])
+	}
 
 	/// The second authentication step.
-	private static let opTreeAuth2 = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeAuth2, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.AuthenticationCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.PublicKeyCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.PeerIDSignatureCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true))
-		])
-	])
+	private static
+	var opTreeAuth2: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeAuth2, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.AuthenticationCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true)),
+					.leaf(key: CBUUID.PublicKeyCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true)),
+					.leaf(key: CBUUID.PeerIDSignatureCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true))
+				])
+			])
+	}
 
 	/// The  first remote authentication step.
-	private static let opTreeRemoteAuth1 = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeRemoteAuth1, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.RemoteUUIDCharacteristicID, value: CharacteristicOperation(task: .write, mandatory: false)),
-			.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: false))
-		])
-	])
+	private static
+	var opTreeRemoteAuth1: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeRemoteAuth1, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.RemoteUUIDCharacteristicID,
+						  value: CharacteristicOperation(task: .write,
+														 mandatory: false)),
+					.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: false))
+				])
+			])
+	}
 
 	/// The second remote authentication step.
-	private static let opTreeRemoteAuth2 = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeRemoteAuth2, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID, value: CharacteristicOperation(task: .write, mandatory: false))
-		])
-	])
+	private static
+	var opTreeRemoteAuth2: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeRemoteAuth2, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID,
+						  value: CharacteristicOperation(task: .write,
+														 mandatory: false))
+				])
+			])
+	}
 
 	/// The main information retrieval step.
-	private static let opTreePeerInfo = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreePeerData, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.AggregateCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.NicknameCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.AggregateSignatureCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true)),
-			.leaf(key: CBUUID.NicknameSignatureCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: true))
-		])
-	])
+	private static
+	var opTreePeerInfo: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreePeerData, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.AggregateCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true)),
+					.leaf(key: CBUUID.NicknameCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true)),
+					.leaf(key: CBUUID.AggregateSignatureCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true)),
+					.leaf(key: CBUUID.NicknameSignatureCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: true))
+				])
+			])
+	}
 
 	/// The portrait retrieval step.
-	private static let opTreePortrait = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreePortrait, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.PortraitCharacteristicID, value: CharacteristicOperation(task: .multiRead, mandatory: false)),
-			.leaf(key: CBUUID.PortraitSignatureCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: false))
-		])
-	])
+	private static
+	var opTreePortrait: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreePortrait, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.PortraitCharacteristicID,
+						  value: CharacteristicOperation(task: .multiRead,
+														 mandatory: false)),
+					.leaf(key: CBUUID.PortraitSignatureCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: false))
+				])
+			])
+	}
 
 	/// The biography retrieval step.
-	private static let opTreeBio = KeyValueTree<CBUUID, CharacteristicOperation>.branch(key: idOpTreeBio, nodes: [
-		.branch(key: CBUUID.PeereeServiceID, nodes: [
-			.leaf(key: CBUUID.BiographyCharacteristicID, value: CharacteristicOperation(task: .multiRead, mandatory: false)),
-			.leaf(key: CBUUID.BiographySignatureCharacteristicID, value: CharacteristicOperation(task: .read, mandatory: false))
-		])
-	])
+	private static
+	var opTreeBio: KeyValueTree<CBUUID, CharacteristicOperation> {
+		KeyValueTree<CBUUID, CharacteristicOperation>
+			.branch(key: idOpTreeBio, nodes: [
+				.branch(key: CBUUID.PeereeServiceID, nodes: [
+					.leaf(key: CBUUID.BiographyCharacteristicID,
+						  value: CharacteristicOperation(task: .multiRead,
+														 mandatory: false)),
+					.leaf(key: CBUUID.BiographySignatureCharacteristicID,
+						  value: CharacteristicOperation(task: .read,
+														 mandatory: false))
+				])
+			])
+	}
 
 	/// Dependencies of the operations. The root node is the start state. Once all leaf nodes finish, the connection is closed.
 	///
@@ -462,6 +549,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// The operation manager handling the process.
 	private var opManager: PeripheralOperationTreeManager
 
+	
 	/// Challenge sent during the authentication process.
 	private var nonce = Data()
 

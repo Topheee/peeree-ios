@@ -32,9 +32,6 @@ protocol LocalPeerManagerDelegate: AnyObject {
 
 	/// Another peer claims we have a pin match with them.
 	func receivedPinMatchIndication(from peerID: PeerID)
-
-	/// Check the validity of the `signature` for the `nonce`.
-	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ())
 }
 
 /// The LocalPeerManager serves as delegate of the local peripheral manager to supply information about the local peer to connected peers.
@@ -78,24 +75,20 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 
 	/// Begin advertising the Bluetooth service to other device around.
 	func startAdvertising() {
-		dQueue.async {
-			guard self.peripheralManager == nil else { return }
+		guard self.peripheralManager == nil else { return }
 
-			self.peripheralManager = CBPeripheralManager(delegate: self, queue: self.dQueue, options: nil)
-		}
+		self.peripheralManager = CBPeripheralManager(delegate: self, queue: self.dQueue, options: nil)
 	}
 
 	/// Stop advertising the Bluetooth service to other device around.
 	func stopAdvertising() {
-		dQueue.async { self.abortAdvertising(with: nil) }
+		self.abortAdvertising(with: nil)
 	}
 
 	/// Forgets all data about the central with `identifier` equals to `cbPeerID`.
 	func disconnect(_ cbPeerID: UUID) {
-		dQueue.async {
-			_ = self._availableCentrals.removeValue(forKey: cbPeerID)
-			_ = self.authenticatedPinMatchedCentrals.removeValue(forKey: cbPeerID)
-		}
+		_ = self._availableCentrals.removeValue(forKey: cbPeerID)
+		_ = self.authenticatedPinMatchedCentrals.removeValue(forKey: cbPeerID)
 	}
 	
 	// MARK: CBPeripheralManagerDelegate
@@ -214,8 +207,12 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				peripheral.respond(to: request, withResult: .insufficientResources)
 				return
 			}
-			let randomByteCount = min(request.central.maximumUpdateValueLength, keyPair.blockSize)
+
 			do {
+				let randomByteCount = min(
+					request.central.maximumUpdateValueLength,
+					try keyPair.blockSize)
+
 				var nonce = try generateRandomData(length: randomByteCount)
 				remoteNonces[peerID] = nonce
 				request.value = nonce
@@ -290,17 +287,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 					break
 				}
 
-				// note that we do not return the result of the verification process to the remote party
-				delegate?.verify(peerID, nonce: nonce, signature: data) { verified in
-					guard verified else {
-						wlog(Self.LogTag, "the peer \(peerID) which did not pin match us tried to authenticate to us.")
-						return
-					}
-
-					self.dQueue.async {
-						self.authenticatedPinMatchedCentrals[request.central.identifier] = peerID
-					}
-				}
+				// here we could do "backward authentication", but we don't
+				// need to
 			} else {
 				error = .requestNotSupported
 				break

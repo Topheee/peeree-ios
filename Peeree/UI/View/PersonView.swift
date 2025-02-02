@@ -71,6 +71,11 @@ struct PersonView: View {
 							}
 						}
 						.padding(.bottom, 4)
+						.onTapGesture {
+							withAnimation(.snappy) {
+								compact.toggle()
+							}
+						}
 
 					AdaptiveStackView(orientation: compact ? .horizontal : .vertical) {
 

@@ -12,7 +12,7 @@ import SwiftUI
 final class InAppNotificationStackViewState: ObservableObject {
 	static let shared = InAppNotificationStackViewState()
 
-	@Published private (set) var notifications: [InAppNotification] = []
+	@Published private(set) var notifications: [InAppNotification] = []
 
 	var timeRemaining: TimeInterval {
 		guard let target = self.timer?.fireDate else { return -1 }

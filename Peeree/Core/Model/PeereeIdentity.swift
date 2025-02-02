@@ -10,11 +10,8 @@ import Foundation
 import KeychainWrapper
 
 /// The Peeree identity of a user in the social network.
-public struct PeereeIdentity: Codable {
+public struct PeereeIdentity: Sendable, Codable {
 	// MARK: - Public and Internal
-
-	/// Keychain property
-	public static let KeyType = kSecAttrKeyTypeEC
 
 	/// Keychain property
 	public static let KeyAlgorithm = AsymmetricAlgorithm.ec
@@ -23,15 +20,15 @@ public struct PeereeIdentity: Codable {
 	public static let KeySize = 256 // SecKeySizes.secp256r1.rawValue as AnyObject, only available on macOS...
 
 	/// Constructs a `PeereeIdentity` from its parts.
-	public init(peerID: PeerID, publicKey: AsymmetricPublicKey) {
+	public init(peerID: PeerID, publicKey: AsymmetricPublicKey) throws {
 		self.peerID = peerID
-		self.publicKey = publicKey
+		self.publicKeyData = try publicKey.externalRepresentation()
 	}
 
 	/// Constructs a `PeereeIdentity` from a `PeerID` and the binary representation of a public key.
-	public init(peerID: PeerID, publicKeyData: Data) throws {
+	public init(peerID: PeerID, publicKeyData: Data) {
 		self.peerID = peerID
-		self.publicKey = try AsymmetricPublicKey(from: publicKeyData, algorithm: Self.KeyAlgorithm, size: Self.KeySize)
+		self.publicKeyData = publicKeyData
 	}
 
 	// MARK: Constants
@@ -39,13 +36,20 @@ public struct PeereeIdentity: Codable {
 	/// Unique identifier for each user.
 	public let peerID: PeerID
 
-	/// The public key of the user that authenticates them.
-	public let publicKey: AsymmetricPublicKey
+	/// The binary representation of `publicKey`.
+	public let publicKeyData: Data
 
 	// MARK: Variables
 
-	/// The binary representation of `publicKey`.
-	public var publicKeyData: Data { return try! publicKey.externalRepresentation() }
+	/// The public key of the user that authenticates them.
+	public func publicKey() throws -> AsymmetricPublicKey {
+		return AsymmetricKeyBacking.memory(
+			AsymmetricKeyInMemory(
+				data: publicKeyData,
+				properties: AsymmetricKeyProperties(
+					part: .publicKey, algorithm: Self.KeyAlgorithm,
+					size: Self.KeySize)))
+	}
 
 	/// The binary representation of `peerID`.
 	public var idData: Data { return peerID.encode() }

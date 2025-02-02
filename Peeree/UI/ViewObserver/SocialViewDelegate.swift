@@ -9,6 +9,7 @@
 import PeereeCore
 
 /// Handles interaction with the social view module.
+@MainActor
 protocol SocialViewDelegate {
 	func createIdentity()
 

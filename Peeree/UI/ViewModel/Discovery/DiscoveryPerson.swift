@@ -42,6 +42,16 @@ class DiscoveryPerson: ObservableObject {
 		self.info = info
 		self.lastSeen = lastSeen
 	}
+
+	// TODO: shitty performance keeping this for every object
+	/// Formatter for `lastSeenText`.
+	private let lastSeenFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		// only for screenshots: formatter.locale = Locale(identifier: "en")
+		formatter.unitsStyle = .short
+		formatter.formattingContext = .standalone
+		return formatter
+	}()
 }
 
 extension DiscoveryPerson: DiscoveryPersonAspect {
@@ -80,11 +90,7 @@ extension DiscoveryPerson {
 		if now < lastSeen || now.timeIntervalSince1970 - lastSeen.timeIntervalSince1970 < DiscoveryPerson.NowThreshold {
 			return NSLocalizedString("now", comment: "Last Seen Text")
 		} else {
-			if #available(iOS 13, macOS 10.15, *) {
-				return DiscoveryPerson.lastSeenFormatter2.localizedString(for: lastSeen, relativeTo: now)
-			} else {
-				return DiscoveryPerson.lastSeenFormatter.string(from: lastSeen, to: now) ?? "⏱"
-			}
+			return lastSeenFormatter.localizedString(for: lastSeen, relativeTo: now)
 		}
 	}
 
@@ -94,28 +100,6 @@ extension DiscoveryPerson {
 
 	/// Seconds to disregard when showing `lastSeenText`.
 	private static let NowThreshold: TimeInterval = 5.0
-
-	/// Formatter for `lastSeenText`.
-	private static let lastSeenFormatter: DateComponentsFormatter = {
-		let formatter = DateComponentsFormatter()
-		formatter.unitsStyle = .brief
-		formatter.allowedUnits = [.hour, .minute]
-		formatter.allowsFractionalUnits = true
-		formatter.includesApproximationPhrase = true
-		formatter.maximumUnitCount = 1
-		formatter.formattingContext = .standalone
-		return formatter
-	}()
-
-	/// Formatter for `lastSeenText`.
-	@available(iOS 13.0, macOS 10.15, *)
-	private static let lastSeenFormatter2: RelativeDateTimeFormatter = {
-		let formatter = RelativeDateTimeFormatter()
-		// only for screenshots: formatter.locale = Locale(identifier: "en")
-		formatter.unitsStyle = .short
-		formatter.formattingContext = .standalone
-		return formatter
-	}()
 }
 
 extension DiscoveryPerson: Hashable {

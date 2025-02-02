@@ -36,7 +36,7 @@ protocol DiscoveryManagerDelegate: PeerDiscoveryOperationManagerDelegate {
 /// Retrieves information from remote peers.
 final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentificationOperationManagerDelegate {
 
-	/// The account of the user; access only from `dQueue`.
+	/// The account of the user.
 	private(set) var userIdentity: (PeerID, KeyPair)? = nil
 
 	/// Needed for writing nonces; `16` is a good estimation.
@@ -52,139 +52,64 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		centralManager = CBCentralManager(delegate: self, queue: dQueue, options: [CBCentralManagerOptionShowPowerAlertKey : 1])
 	}
 
-	/// Whether the underlying `CBCentralManager` is scanning for peripherals.
-	func checkIsScanning(_ callback: @escaping (Bool) -> Void) {
-		dQueue.async { callback(self.isScanning) }
-	}
-
 	/// Initiate the discovery process.
 	func scan() {
-		dQueue.async {
-			self.centralManager.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
-		}
+		self.centralManager
+			.scanForPeripherals(withServices: [CBUUID.PeereeServiceID])
 	}
 
 	/// Stop the discovery process.
 	func stopScan() {
-		dQueue.async {
-			self.centralManager.stopScan()
-			// We may NOT do `self.encounteredPeripherals.removeAll()` here, as this deallocates the CBPeripheral and thus didDisconnect is never invoked (and the central manager does not even recognize that we disconnected internally)!
-			for (peripheral, _) in self.encounteredPeripherals {
-				self.disconnect(peripheral)
-			}
-			self.delegate?.scanningStopped()
+		self.centralManager.stopScan()
+
+		// We may NOT do `self.encounteredPeripherals.removeAll()` here,
+		// as this deallocates the CBPeripheral and thus didDisconnect is never
+		// invoked (and the central manager does not even recognize that we
+		// disconnected internally)!
+		for (peripheral, _) in self.encounteredPeripherals {
+			self.disconnect(peripheral)
 		}
+
+		self.delegate?.scanningStopped()
 	}
 
 	/// Defines the values of our Peeree Identity.
 	func set(userIdentity: (peerID: PeerID, keyPair: KeyPair)?) {
-		dQueue.async {
-			self.userIdentity = userIdentity
-			self.blockSize = userIdentity?.keyPair.blockSize ?? self.blockSize
-		}
+		self.userIdentity = userIdentity
+		self.blockSize =
+		(try? userIdentity?.keyPair.blockSize) ?? self.blockSize
 	}
 
 	/// Call this at best immediately from `PeerDiscoveryOperationManagerDelegate.peerDiscoveryFinished(peerLastChangedDate:, of:)`.
 	func discoveryCompleted(of peerID: PeerID, lastChanged: Date) {
-		dQueue.async {
-			self.peripheralPeerIDs[peerID].map { _ = self.knownPeripheralIDs.insert($0.identifier) }
-			self.completedPeerDiscoveries[peerID] = lastChanged
+		self.peripheralPeerIDs[peerID].map {
+			_ = self.knownPeripheralIDs.insert($0.identifier)
 		}
+
+		self.completedPeerDiscoveries[peerID] = lastChanged
 	}
 
 	/// Start the operation tree for additional, large info retrieval.
 	func loadAdditionalInfo(of peerID: PeerID, loadPortrait: Bool) {
-		dQueue.async {
-			guard let peripheral = self.peripheralPeerIDs[peerID] else { return }
+		guard let peripheral = self.peripheralPeerIDs[peerID] else { return }
 
-			do {
-				try self.discoveryOperations[peerID]?.beginLoadAdditionalInfo(on: peripheral, loadPortrait: loadPortrait)
-			} catch {
-				elog(Self.LogTag, "error when loading add. info: \(error)")
-			}
+		do {
+			try self.discoveryOperations[peerID]?
+				.beginLoadAdditionalInfo(on: peripheral,
+										 loadPortrait: loadPortrait)
+		} catch {
+			elog(Self.LogTag, "error when loading add. info: \(error)")
 		}
 	}
 
 	/// Begin measuring the distance to a peer.
 	func range(_ peerID: PeerID) {
-		dQueue.async {
-			self.peripheralPeerIDs[peerID]?.readRSSI()
-		}
+		self.peripheralPeerIDs[peerID]?.readRSSI()
 	}
 
 	/// Cancel all ongoing operations (if any) and close the connection to a peer.
 	func closeConnection(with peerID: PeerID) {
-		dQueue.async {
-			self.peripheralPeerIDs[peerID].map { self.disconnect($0) }
-		}
-	}
-
-	// MARK: CBCentralManagerDelegate
-
-	func centralManagerDidUpdateState(_ central: CBCentralManager) {
-		// needed for state restoration as we may not have a "clean" state here anymore
-		switch central.state {
-		case .unknown, .resetting:
-			// just wait
-			break
-		case .poweredOff, .unsupported, .unauthorized:
-			stopScan()
-		case .poweredOn:
-			break
-			// TODO: resume opManager
-//			for (peripheral, opManager) in encounteredPeripherals {
-//			}
-		default:
-			break
-		}
-
-		delegate?.discoveryManager(isReady: central.state == .poweredOn)
-	}
-
-	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		wlog(Self.LogTag, "Failed to connect to \(peripheral) (\(error?.localizedDescription ?? "")).")
-		disconnect(peripheral)
-	}
-
-	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-		//dlog(Self.LogTag, "Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
-
-		guard !self.knownPeripheralIDs.contains(peripheral.identifier) else {
-			return
-		}
-
-		if encounteredPeripherals[peripheral] == nil {
-			encounteredPeripherals.updateValue(nil, forKey: peripheral)
-		}
-
-		if peripheral.state == .disconnected {
-			central.connect(peripheral, options: nil)
-		}
-	}
-
-	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-		dlog(Self.LogTag, "Connected peripheral \(peripheral)")
-		let opManager: PeerIdentificationOperationManager
-		if let opm = self.identifyOperations[peripheral] {
-			opManager = opm
-		} else {
-			opManager = PeerIdentificationOperationManager(dQueue: self.dQueue)
-			self.identifyOperations[peripheral] = opManager
-		}
-
-		opManager.delegate = self
-		opManager.begin(on: peripheral)
-	}
-
-	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-		dlog(Self.LogTag, "Disconnected peripheral \(peripheral) \(error?.localizedDescription ?? "")")
-		// error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
-
-		self.identifyOperations.removeValue(forKey: peripheral)
-		guard let peerID = encounteredPeripherals.removeValue(forKey: peripheral), let peerID else { return }
-		self.peripheralPeerIDs.removeValue(forKey: peerID)
-		self.discoveryOperations.removeValue(forKey: peerID)
-		delegate?.peerDisappeared(peerID, cbPeerID: peripheral.identifier)
+		self.peripheralPeerIDs[peerID].map { self.disconnect($0) }
 	}
 
 	// MARK: PeerIdentificationOperationManagerDelegate
@@ -260,8 +185,8 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	/// The main class to interact with the Bluetooth subsystem.
 	private var centralManager: CBCentralManager!
 
-	/// Whether the underlying `CBCentralManager` is scanning for peripherals; must be called on `dQueue`.
-	private var isScanning: Bool {
+	/// Whether the underlying `CBCentralManager` is scanning for peripherals.
+	var isScanning: Bool {
 		if #available(macOS 10.13, iOS 6.0, *) {
 			return centralManager.isScanning
 		} else {
@@ -282,5 +207,73 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			self.discoveryOperations[$0]?.cancel()
 		}
 		centralManager.cancelPeripheralConnection(peripheral)
+	}
+
+	// MARK: CBCentralManagerDelegate
+
+	func centralManagerDidUpdateState(_ central: CBCentralManager) {
+		// needed for state restoration as we may not have a "clean" state here anymore
+		switch central.state {
+		case .unknown, .resetting:
+			// just wait
+			break
+		case .poweredOff, .unsupported, .unauthorized:
+			stopScan()
+		case .poweredOn:
+			break
+			// TODO: resume opManager
+//			for (peripheral, opManager) in encounteredPeripherals {
+//			}
+		default:
+			break
+		}
+
+		delegate?.discoveryManager(isReady: central.state == .poweredOn)
+	}
+
+	func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+		wlog(Self.LogTag, "Failed to connect to \(peripheral) (\(error?.localizedDescription ?? "")).")
+		disconnect(peripheral)
+	}
+
+	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+		//dlog(Self.LogTag, "Discovered peripheral \(peripheral) with advertisement data \(advertisementData).")
+
+		guard !self.knownPeripheralIDs.contains(peripheral.identifier) else {
+			return
+		}
+
+		if encounteredPeripherals[peripheral] == nil {
+			encounteredPeripherals.updateValue(nil, forKey: peripheral)
+		}
+
+		if peripheral.state == .disconnected {
+			central.connect(peripheral, options: nil)
+		}
+	}
+
+	func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+		dlog(Self.LogTag, "Connected peripheral \(peripheral)")
+		let opManager: PeerIdentificationOperationManager
+		if let opm = self.identifyOperations[peripheral] {
+			opManager = opm
+		} else {
+			opManager = PeerIdentificationOperationManager(dQueue: self.dQueue)
+			self.identifyOperations[peripheral] = opManager
+		}
+
+		opManager.delegate = self
+		opManager.begin(on: peripheral)
+	}
+
+	func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+		dlog(Self.LogTag, "Disconnected peripheral \(peripheral) \(error?.localizedDescription ?? "")")
+		// error is set when the peripheral disconnected without us having called disconnectPeripheral before, so in almost all cases...
+
+		self.identifyOperations.removeValue(forKey: peripheral)
+		guard let peerID = encounteredPeripherals.removeValue(forKey: peripheral), let peerID else { return }
+		self.peripheralPeerIDs.removeValue(forKey: peerID)
+		self.discoveryOperations.removeValue(forKey: peerID)
+		delegate?.peerDisappeared(peerID, cbPeerID: peripheral.identifier)
 	}
 }

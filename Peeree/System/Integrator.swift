@@ -11,8 +11,8 @@ import UIKit
 
 // Internal Dependencies
 import PeereeCore
-import PeereeServerAPI
-import PeereeServer
+import PeereeSocial
+import PeereeIdP
 import PeereeServerChat
 import PeereeDiscovery
 
@@ -21,27 +21,7 @@ private var serverDownMessage: String { return NSLocalizedString("Sorry, we are 
 /// Shows a 'toast' explaining `openapiError`; use this function for Errors from `AccountController`.
 func socialModuleErrorMessage(from error: Error) -> String {
 	var errorMessage: String
-	if let errorResponse = error as? ErrorResponse {
-		let httpErrorMessage = NSLocalizedString("HTTP error %d.", comment: "Error message for HTTP status codes")
-		switch errorResponse {
-		case .parseError(_):
-			errorMessage = NSLocalizedString("Malformed server response.", comment: "Message of network error")
-		case .httpError(let code, _):
-			errorMessage = String(format: httpErrorMessage, code)
-			if code == 403 {
-				errorMessage += NSLocalizedString(" Something went wrong with the authentication. Please try again in a minute.", comment: "Appendix to message")
-			}
-		case .sessionTaskError(let code, _, let theError):
-			if (theError as NSError).code == NSURLErrorCannotConnectToHost {
-				errorMessage = serverDownMessage
-			} else {
-				errorMessage = "\(String(format: httpErrorMessage, code ?? -1)): \(theError.localizedDescription)"
-			}
-		case .offline:
-			errorMessage = NSLocalizedString("The network appears to be offline. You may need to grant Peeree access to it.", comment: "Message of network offline error")
-			//notificationAction = { DispatchQueue.main.async { open(urlString: UIApplication.openSettingsURLString) } }
-		}
-	} else if (error as NSError).code == NSURLErrorCannotConnectToHost && (error as NSError).domain == NSURLErrorDomain {
+	if (error as NSError).code == NSURLErrorCannotConnectToHost && (error as NSError).domain == NSURLErrorDomain {
 		errorMessage = serverDownMessage
 	} else {
 		errorMessage = error.localizedDescription
@@ -91,7 +71,7 @@ func act<T>(on result: Result<T, ServerChatError>, dvs: DiscoveryViewState, nvs:
 	case .success(let s):
 		onSuccess(s)
 	case .failure(let failure):
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			let message = serverChatModuleErrorMessage(from: failure, on: dvs)
 			nvs.display(InAppNotification(localizedTitle: localizedErrorTitle, localizedMessage: message, severity: .error, furtherDescription: nil))
 		}

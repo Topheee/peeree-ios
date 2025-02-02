@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-import PeereeServer
+import PeereeSocial
 
 struct PinButtonStyle: ButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {

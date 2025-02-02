@@ -11,191 +11,199 @@ import Foundation
 
 // Internal Dependencies
 import PeereeCore
-import PeereeServerAPI
 
-// Package Dependencies
+// External Dependencies
 import KeychainWrapper
+import OpenAPIURLSession
+import OpenAPIRuntime
+
+/// Names of notifications sent by `AccountControllerFactory`.
+extension Notification.Name {
+
+	/// Notifications regarding identity management.
+	public static
+	let accountCreated = Notification.Name("de.peeree.accountCreated")
+
+	/// Notifications regarding identity management.
+	public static
+	let accountDeleted = Notification.Name("de.peeree.accountDeleted")
+}
 
 /// Responsible for creating an ``AccountController`` singleton.
-public final class AccountControllerFactory {
+public actor AccountControllerFactory {
 
-	// MARK: Classes, Structs, Enums
+	/// Whether the test backend should be used.
+	private let isTest: Bool
 
-	/// Names of notifications sent by `AccountControllerFactory`.
-	public enum NotificationName: String {
-		/// Notifications regarding identity management.
-		case accountCreated, accountDeleted
+	/// Network client for IdP API access.
+	private func client() throws -> Client {
+		Client(
+			serverURL: isTest ? try Servers.Server2.url() :
+				try Servers.Server1.url(),
+			transport: URLSessionTransport()
+		)
 	}
 
-	/// Singleton instance.
-	public static let shared = AccountControllerFactory()
+	/// Handle API error.
+	private func handle(
+		_ response: Components.Responses.ClientSideErrorResponse
+	) throws -> Never {
+		throw createApplicationError(
+			localizedDescription: "Programming error.")
+	}
 
-	/// Whether the account deletion process is running.
-	public private (set) var isDeletingAccount = false
+	/// Handle API error.
+	private func handle(
+		_ response: Components.Responses.InvalidSignatureResponse
+	) throws -> Never {
+		throw createApplicationError(
+			localizedDescription: "Severe Programming error.")
+	}
 
-	/// Whether a request to create an account is in flight.
-	public var isCreatingAccount: Bool {
-		return !creatingInstanceCallbacks.isEmpty
+	/// Handle API error.
+	private func handle(_ response: Components.Responses.RateLimitResponse
+	) throws -> Never {
+		throw createApplicationError(
+			localizedDescription: "Too many requests.")
+	}
+
+	/// Handle API error.
+	private func handle(
+		_ response: Components.Responses.ServerSideErrorResponse
+	) throws -> Never {
+		throw createApplicationError(localizedDescription: "Server error.")
+	}
+
+	/// Handle API error.
+	private func handle(
+		_ statusCode: Int, _ payload: OpenAPIRuntime.UndocumentedPayload
+	) throws -> Never {
+		// TODO: localize
+		throw createApplicationError(
+			localizedDescription: "Unknown IdP error \(statusCode).")
 	}
 
 	// MARK: Methods
 
 	/// Call this as soon as possible.
-	public func initialize(viewModel: any SocialViewModelDelegate, test: Bool = false) {
-		self.dQueue.async {
-			self.viewModel = viewModel
-
-			SwaggerClientAPI.host = test ? "localhost:10443" : "rest.peeree.de:39517"
-			SwaggerClientAPI.apiResponseQueue.underlyingQueue = self.dQueue
-		}
+	public init(viewModel: AccountViewModelDelegate, isTest: Bool = false) {
+		self.viewModel = viewModel
+		self.isTest = isTest
 	}
 
-	/// Retrieves the singleton on its `DispatchQueue`; call all methods on `AccountController` only directly from `getter`!
-	public func use(_ getter: @escaping (AccountController) -> Void, _ unavailable: ((Error?) -> Void)? = nil) {
-		dQueue.async {
-			if let i = self.instance {
-				getter(i)
-			} else if let vm = self.viewModel {
-				do {
-					if let ac = AccountController.load(keyPair: try KeyPair(fromKeychainWithPrivateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize), viewModel: vm, dQueue: self.dQueue) {
-						self.setInstance(ac)
-						getter(ac)
-					} else { unavailable?(nil) }
-				} catch {
-					unavailable?((error as NSError).code == errSecItemNotFound ? nil : error)
-				}
-			} else {
-				unavailable?(createApplicationError(localizedDescription: "AccountControllerFactory is uninitialized!"))
-			}
+	/// Retrieves the singleton.
+	public func use() throws -> AccountController? {
+		if let i = self.instance {
+			return i
 		}
+
+		let keyPair = KeyPair(
+			fromKeychainWithPrivateTag: Self.PrivateKeyTag,
+			publicTag: Self.PublicKeyTag,
+			algorithm: PeereeIdentity.KeyAlgorithm,
+			size: PeereeIdentity.KeySize)
+
+		if let ac = AccountController.load(
+			isTest: isTest, keyPair: keyPair, viewModel: self.viewModel) {
+			self.setInstance(ac)
+			return ac
+		} else { return nil }
 	}
 
 	/// Creates a new `PeereeIdentity` for the user.
-	public func createAccount(email: String? = nil, _ completion: @escaping (Result<AccountController, Error>) -> Void) {
-		dQueue.async { [self] in
-			if let i = instance {
-				completion(.success(i))
-				return
-			}
+	public func createAccount() async throws -> AccountController {
+		if let i = instance {
+			return i
+		}
 
-			guard let vm = self.viewModel else {
-				completion(.failure(createApplicationError(localizedDescription: "AccountControllerFactory is uninitialized!")))
-				return
-			}
+		let vm = self.viewModel
 
-			creatingInstanceCallbacks.append(completion)
-			guard creatingInstanceCallbacks.count == 1 else { return }
+		Task { @MainActor in
+			vm.accountExists = .turningOn
+		}
 
-			DispatchQueue.main.async {
-				vm.accountExists = .turningOn
-			}
+		// generate our asymmetric key pair
+		let keyPair: KeyPair
+		do {
+			// try to remove the old key, just to be sure
+			let oldKeyPair = KeyPair(
+				fromKeychainWithPrivateTag: Self.PrivateKeyTag,
+				publicTag: Self.PublicKeyTag,
+				algorithm: PeereeIdentity.KeyAlgorithm,
+				size: PeereeIdentity.KeySize)
+			try? oldKeyPair.removeFromKeychain()
 
-			// generate our asymmetric key pair
-			let keyPair: KeyPair
-			do {
-				// try to remove the old key, just to be sure
-				try? KeychainWrapper.removePublicKeyFromKeychain(tag: Self.PublicKeyTag, algorithm: .ec, size: PeereeIdentity.KeySize)
-				try? KeychainWrapper.removePrivateKeyFromKeychain(tag: Self.PrivateKeyTag, algorithm: .ec, size: PeereeIdentity.KeySize)
+			// this will add the pair to the keychain,
+			// from where it is read later by the constructor
+			keyPair = try KeyPair(
+				privateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag,
+				algorithm: PeereeIdentity.KeyAlgorithm,
+				size: PeereeIdentity.KeySize, persistent: true)
 
-				// this will add the pair to the keychain, from where it is read later by the constructor
-				keyPair = try KeyPair(privateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag, algorithm: PeereeIdentity.KeyAlgorithm, size: PeereeIdentity.KeySize, persistent: true)
+			let publicKeyData = try keyPair.publicKey.externalRepresentation()
 
-				SwaggerClientAPI.dataSource = InitialSecurityDataSource(keyPair: keyPair)
-			} catch let error {
-				reportCreatingInstance(result: .failure(error), vm: vm)
-				return
-			}
+			let response = try await client()
+				.postAccount(query: .init(publicKey: .init(publicKeyData)))
 
-			AccountAPI.putAccount(email: email) { (account, error) in
-				guard let account else {
-					let desc = NSLocalizedString("Server did provide malformed or no account information", comment: "Error when an account creation request response is malformed")
-					self.reportCreatingInstance(result: .failure(error ?? NSError(domain: "Peeree", code: -1, userInfo: [NSLocalizedDescriptionKey : desc])), vm: vm)
-					return
+			switch response {
+			case .badRequest(let response):
+				try self.handle(response)
+			case .tooManyRequests(let response):
+				try self.handle(response)
+			case .internalServerError(let response):
+				try self.handle(response)
+			case .undocumented(statusCode: let statusCode, let payload):
+				try self.handle(statusCode, payload)
+			case .created(let response):
+				let account = try response.body.json
+				guard let peerID = UUID(uuidString: account.userID) else {
+					throw createApplicationError(
+						localizedDescription:
+							"Malformed peerID \(account.userID)")
 				}
-
-				let a = AccountController.create(account: account, keyPair: keyPair, viewModel: vm, dQueue: self.dQueue)
+				let a = AccountController.create(
+					isTest: isTest, peerID: peerID, keyPair: keyPair,
+					viewModel: vm)
 				self.setInstance(a)
 				self.reportCreatingInstance(result: .success(a), vm: vm)
 
-				NotificationName.accountCreated.postAsNotification(object: a, userInfo: [PeerID.NotificationInfoKey : account.peerID])
+				Notification.Name.accountCreated
+					.post(on: a,
+						  userInfo: [PeerID.NotificationInfoKey : peerID])
+
+				return a
 			}
+		} catch let error {
+			reportCreatingInstance(result: .failure(error), vm: vm)
+			throw error
 		}
 	}
 
-	/// Permanently delete this identity; do not use this `AccountController` instance after this completes successfully!
-	public func deleteAccount(_ completion: @escaping (Error?) -> Void) {
-		guard !isDeletingAccount, let ac = instance else { return }
-		isDeletingAccount = true
+	/// Permanently delete this identity.
+	/// Do not use this `AccountController` instance after this completes successfully!
+	public func deleteAccount() async throws {
+		guard let ac = instance else { return }
 
-		if let vm = self.viewModel {
-			DispatchQueue.main.async {
-				vm.accountExists = .turningOff
-			}
+		let vm = self.viewModel
+		Task { @MainActor in
+			vm.accountExists = .turningOff
 		}
 
-		AccountAPI.deleteAccount { (_, error) in
-			var reportedError = error
-			if let error {
-				switch error {
-				case .httpError(403, let messageData):
-					elog(Self.LogTag, "Our account seems to not exist on the server. Will silently delete local references. Body: \(String(describing: messageData))")
-					reportedError = nil
-				default:
-					break
-				}
-			}
+		try await ac.deleteAccount()
 
-			if reportedError == nil {
-				ac.clearLocalData() {
-					self.instance = nil
-					self.isDeletingAccount = false
+		await ac.clearLocalData()
 
-					completion(reportedError)
+		self.instance = nil
 
-					NotificationName.accountDeleted.postAsNotification(object: self)
-				}
-			} else {
-				self.isDeletingAccount = false
-				completion(reportedError)
-			}
-
-			if let vm = self.viewModel {
-			 DispatchQueue.main.async {
-				 vm.userPeerID = nil
-				 vm.accountExists = reportedError == nil ? .off : .on
-			 }
-		 }
+		Task { @MainActor in
+			vm.userPeerID = nil
+			vm.accountExists = .off
 		}
+
+		Notification.Name.accountDeleted.post(on: self)
 	}
 
 	// MARK: Private
-
-	/// For singleton pattern.
-	private init() {}
-
-	// MARK: Classes, Structs, Enums
-
-	/// Used during account creation.
-	private struct InitialSecurityDataSource: SecurityDataSource {
-		// MARK: Constants
-
-		let keyPair: KeyPair
-
-		// MARK: SecurityDataSource
-
-		public func getPeerID() -> String {
-			return ""
-		}
-
-		public func getSignature() -> String {
-			do {
-				return try keyPair.externalPublicKey().base64EncodedString()
-			} catch let error {
-				flog(AccountControllerFactory.LogTag, "exporting public key failed: \(error)")
-				return ""
-			}
-		}
-	}
 
 	// MARK: Static Constants
 
@@ -203,33 +211,33 @@ public final class AccountControllerFactory {
 	private static let LogTag = "Account"
 
 	/// Keychain property.
-	private static let PrivateKeyTag = "com.peeree.keys.restkey.private".data(using: .utf8)!
+	private static let PrivateKeyTag = "com.peeree.keys.restkey.private"
+		.data(using: .utf8)!
 
 	/// Keychain property.
-	private static let PublicKeyTag = "com.peeree.keys.restkey.public".data(using: .utf8)!
+	private static let PublicKeyTag = "com.peeree.keys.restkey.public"
+		.data(using: .utf8)!
 
-	/// The dispatch queue for actions on `AccountController`; should be private but is used in Server Chat as well for efficiency.
-	private let dQueue = DispatchQueue(label: "de.peeree.AccountController", qos: .default)
+	// MARK: Variables
 
 	/// Singleton instance of this class.
 	private var instance: AccountController?
 
-	/// Collected callbacks which where requesting a new account (through `createAcction()`)
-	private var creatingInstanceCallbacks = [(Result<AccountController, Error>) -> Void]()
-
-	private var viewModel: (any SocialViewModelDelegate)?
+	@MainActor
+	private let viewModel: AccountViewModelDelegate
 
 	// MARK: Static Functions
 
 	/// Establish the singleton instance.
 	private func setInstance(_ ac: AccountController) {
 		instance = ac
-		SwaggerClientAPI.dataSource = ac
 	}
 
 	/// Concludes registration process; must be called on `dQueue`!
-	private func reportCreatingInstance(result: Result<AccountController, Error>, vm: any SocialViewModelDelegate) {
-		DispatchQueue.main.async {
+	private func reportCreatingInstance(
+		result: Result<AccountController, Error>,
+		vm: any AccountViewModelDelegate) {
+		Task { @MainActor in
 			switch result {
 			case .success(_):
 				vm.accountExists = .on
@@ -237,8 +245,16 @@ public final class AccountControllerFactory {
 				vm.accountExists = .off
 			}
 		}
+	}
+}
 
-		creatingInstanceCallbacks.forEach { $0(result) }
-		creatingInstanceCallbacks.removeAll()
+extension AccountControllerFactory: PeereeCore.Authenticator {
+	public func accessToken() async throws -> String {
+		guard let ac = try self.use() else {
+			throw createApplicationError(
+				localizedDescription: "Tried to access API without account.")
+		}
+
+		return try await ac.getAccessToken()
 	}
 }

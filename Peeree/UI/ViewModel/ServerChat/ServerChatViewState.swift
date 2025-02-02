@@ -11,6 +11,15 @@ import SwiftUI
 import PeereeCore
 import PeereeServerChat
 
+/// Names of notifications sent by `ServerChatViewModel`.
+extension Notification.Name {
+	public static
+	let serverChatMessageSent = Notification.Name("ServerChatViewState.messageSent")
+
+	public static
+	let serverChatMessageReceived = Notification.Name("ServerChatViewState.messageReceived")
+}
+
 // Global UI state.
 @MainActor
 final class ServerChatViewState: ObservableObject {
@@ -22,25 +31,15 @@ final class ServerChatViewState: ObservableObject {
 		case message
 	}
 
-	/// Names of notifications sent by `ServerChatViewModel`.
-	public enum NotificationName: String {
-		case messageSent, messageReceived
-
-		func post(_ peerID: PeerID, message: String = "") {
-			let userInfo: [AnyHashable : Any]
-			if message != "" {
-				userInfo = [PeerID.NotificationInfoKey : peerID, NotificationInfoKey.message.rawValue : message]
-			} else {
-				userInfo = [PeerID.NotificationInfoKey : peerID]
-			}
-			postAsNotification(object: nil, userInfo: userInfo)
-		}
+	func post(_ peerID: PeerID, message: String, sent: Bool) {
+		let userInfo: [AnyHashable : Any] = [
+			PeerID.NotificationInfoKey : peerID,
+			NotificationInfoKey.message.rawValue : message]
+		let n: Notification.Name = sent ? .serverChatMessageSent : .serverChatMessageReceived
+		n.post(for: peerID, userInfo: userInfo)
 	}
 
 	// MARK: Static Constants
-
-	/// Global state object.
-	static let shared = ServerChatViewState()
 
 	// MARK: Variables
 
@@ -53,7 +52,7 @@ final class ServerChatViewState: ObservableObject {
 	let bottomViewID = UUID()
 
 	/// All chats.
-	private (set) var people: [PeerID : ServerChatPerson] = [:]
+	private(set) var people: [PeerID : ServerChatPerson] = [:]
 
 	/// Controls the scroll view of the currently visible chat.
 	var messagesScrollViewProxy: ScrollViewProxy? = nil
@@ -112,8 +111,7 @@ extension ServerChatViewState: ServerChatViewModelDelegate {
 
 		sortChatList()
 
-		let n: NotificationName = message.sent ? .messageSent : .messageReceived
-		n.post(peerID, message: message.message)
+		self.post(peerID, message: message.message, sent: message.sent)
 	}
 
 	func catchUp(messages: [ChatMessage], sorted: Bool, unreadCount: Int, with peerID: PeerID) {

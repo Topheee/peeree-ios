@@ -255,7 +255,7 @@ struct ProfileView: View {
 
 	private func openTerms() {
 		let website = self.termsWebsite
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			UIApplication.shared.open(website)
 		}
 	}

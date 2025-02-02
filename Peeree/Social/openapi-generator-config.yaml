@@ -1,0 +1,13 @@
+---
+#
+# openapi-generator-config.yaml
+# Peeree
+#
+# Created by Christopher Kobusch on 09.01.25.
+# Copyright © 2025 Kobusch. All rights reserved.
+#
+
+generate:
+  - types
+  - client
+namingStrategy: idiomatic

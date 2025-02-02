@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-import PeereeServer
+import PeereeSocial
 
 /// Descriptive text in onboarding.
 fileprivate func onboardingDescription(of state: PinState) -> String {

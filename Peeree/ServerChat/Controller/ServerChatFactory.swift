@@ -7,12 +7,12 @@
 //
 
 import Foundation
-import MatrixSDK
+@preconcurrency import MatrixSDK
 import KeychainWrapper
 import PeereeCore
 
 private class CryptDelegate: MXCryptoV2MigrationDelegate {
-	static let shared = CryptDelegate()
+	nonisolated(unsafe) static let shared = CryptDelegate()
 
 	init() {
 		needsVerificationUpgrade = true
@@ -41,7 +41,7 @@ private func configureServerChat() {
 	options.wellknownDomainUrl = "https://\(serverChatDomain)"
 	options.cryptoMigrationDelegate = CryptDelegate.shared
 
-	MXKeyProvider.sharedInstance().delegate = EncryptionKeyManager.shared
+	MXKeyProvider.sharedInstance().delegate = EncryptionKeyManager()
 }
 
 /* All instance methods must be called on `ServerChatFactory.qQueue`. If they invoke a callback, that is always called on that queue as well.
@@ -126,7 +126,7 @@ public final class ServerChatFactory {
 		serverChatController?.close()
 		serverChatController = nil
 
-		delegate?.serverChatClosed(error: error)
+		Task { await self.delegate?.serverChatClosed(error: error) }
 	}
 
 	/// Removes the server chat account permanently.
@@ -475,7 +475,7 @@ public final class ServerChatFactory {
 	private func setupInstance(with credentials: MXCredentials, _ failure: ((ServerChatError) -> Void)? = nil) {
 		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
 			flog(Self.LogTag, "server chat certificate is not trusted.")
-			self.delegate?.serverChatCertificateIsInvalid()
+			Task { await self.delegate?.serverChatCertificateIsInvalid() }
 			return false
 		}, persistentTokenDataHandler: { callback in
 			dlog(Self.LogTag, "server chat persistentTokenDataHandler was called.")
@@ -565,35 +565,16 @@ public final class ServerChatFactory {
 
 	/// Retrieves our account's password from the keychain.
 	private func passwordFromKeychain() throws -> String {
-		do {
-			// try to retrieve the password the old way
-			let password = try internetPasswordFromKeychain(account: userId, url: homeServerURL)
-
-			// migrate it to new storage
-			do {
-				guard let pwData = password.data(using: Self.KeychainEncoding) else {
-					throw unexpectedNilError()
-				}
-
-				try persistPasswordInKeychain(pwData)
-				try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
-			} catch {
-				elog(Self.LogTag, "password migration failed: \(error)")
-			}
-
-			return password
-		} catch {
-			// the new way
-			return try genericPasswordFromKeychain(account: keychainAccount, service: Self.ServerChatPasswordKeychainService, encoding: Self.KeychainEncoding)
-		}
+		return try genericPasswordFromKeychain(
+			account: keychainAccount,
+			service: Self.ServerChatPasswordKeychainService,
+			encoding: Self.KeychainEncoding)
 	}
 
 	/// force-delete local account information. Only use as a last resort!
 	private func removePasswordFromKeychain() throws {
-		do {
-			try removeInternetPasswordFromKeychain(account: userId, url: homeServerURL)
-		} catch {
-			try removeGenericPasswordFromKeychain(account: keychainAccount, service: Self.ServerChatPasswordKeychainService)
-		}
+		try removeGenericPasswordFromKeychain(
+			account: keychainAccount,
+			service: Self.ServerChatPasswordKeychainService)
 	}
 }

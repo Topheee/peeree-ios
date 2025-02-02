@@ -49,7 +49,7 @@ struct MainView: View {
 				let peering = discoveryViewState.peering
 				guard peering ? translation < -82 : translation > 82 else { return }
 
-				Mediator.shared.togglePeering(on: !peering)
+				//TODO: dis Mediator.shared.togglePeering(on: !peering)
 			}
 
 		NavigationView {
@@ -136,7 +136,7 @@ struct MainView: View {
 					}
 				}
 				.onTapGesture {
-					Mediator.shared.togglePeering(on: !discoveryViewState.peering)
+					//TODO: dis Mediator.shared.togglePeering(on: !discoveryViewState.peering)
 				}
 				.gesture(lookoutDragGesture)
 				.overlay(

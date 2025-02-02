@@ -8,13 +8,11 @@
 
 import Foundation
 
-import KeychainWrapper
-
 import PeereeCore
 
 /// Interface between the social module and the UI.
 @MainActor
-public protocol SocialViewModelDelegate: PersonAspectState where Aspect: SocialPersonAspect, RequiredData == PinState {
+public protocol SocialViewModelDelegate: Sendable, PersonAspectState where Aspect: SocialPersonAspect, RequiredData == PinState {
 
 	var userPeerID: PeerID? { get set }
 

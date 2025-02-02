@@ -9,7 +9,7 @@
 import SwiftUI
 
 import PeereeCore
-import PeereeServer
+import PeereeSocial
 
 public final class SocialPerson: ObservableObject {
 

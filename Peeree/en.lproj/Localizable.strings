@@ -302,7 +302,7 @@
 "Private" = "Private";
 
 /* Content of onboarding description paragraph. */
-"Private content" = "We do not collect any of your personal data. Only an opaque ID is sent to our servers. This ID is not related to your personal identity.";
+"Private content" = "We do not collect any of your personal data. Only a pseudonymous ID is sent to our servers. All chats are end-to-end encrypted.";
 
 /* Trait */
 "privateness" = "Privateness";

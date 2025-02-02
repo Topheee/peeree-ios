@@ -12,9 +12,6 @@ final class AppViewState: ObservableObject {
 
 	// MARK: Static Constants
 
-	/// Global state object.
-	static let shared = AppViewState()
-
 	var isActive: Bool {
 		return scenePhase == .active
 	}

@@ -15,7 +15,7 @@ import KeychainWrapper
 
 // Global UI state.
 @MainActor
-class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
+final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 
 	/// Discovery personas must have a PeereeIdentity, which requires a public key next to the PeerID.
 	typealias RequiredData = PeerInfo
@@ -23,9 +23,6 @@ class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 	// MARK: Static Constants
 
 	static let MaxRememberedHours = 24
-
-	/// Global state object.
-	static let shared = DiscoveryViewState()
 
 	// MARK: Variables
 
@@ -60,7 +57,7 @@ class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 	@Published var displayedPersona: DiscoveryPerson? = nil
 
 	/// All encountered people.
-	private (set) var people: [PeerID : DiscoveryPerson] = [:]
+	private(set) var people: [PeerID : DiscoveryPerson] = [:]
 
 	// MARK: Methods
 

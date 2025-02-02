@@ -6,87 +6,257 @@
 //  Copyright © 2023 Kobusch. All rights reserved.
 //
 
+// Platform Dependencies
 import CoreGraphics
 import UIKit
 import Combine
 
+// Internal Dependencies
 import PeereeCore
 import PeereeServerChat
 import PeereeDiscovery
+import PeereeIdP
+import PeereeSocial
+
+// External Dependencies
 import KeychainWrapper
-import PeereeServer
 
 /// This singleton ties all Peeree modules together.
+@MainActor
 final class Mediator {
 
 	// Log tag.
 	private static let LogTag = "Mediator"
 
-	/// Singleton instance.
-	public static let shared = Mediator()
+	private var notificationTask: Task<Void, Never>?
 
-	let notificationManager = NotificationManager()
+	private let notificationManager = NotificationManager()
+
+	private let accountControllerFactory: AccountControllerFactory
+
+	private let socialController: SocialNetworkController
+
+	let appViewState = AppViewState()
+
+	let discoveryViewState = DiscoveryViewState()
+
+	let socialViewState = SocialViewState()
+
+	let serverChatViewState = ServerChatViewState()
 
 	private var peeringController: PeeringController?
 
+	private func restartAdvertising() async throws {
+		guard let pc = self.peeringController else { return }
+		try await pc.restartAdvertising()
+	}
+
+	private func startAdvertising() async {
+		guard let pc = self.peeringController else { return }
+
+		guard await pc.checkPeering() else { return }
+
+		Task {
+			// TODO: error handling
+			try await pc.startAdvertising(restartOnly: false)
+		}
+	}
+
+	private func teardown() {
+		self.peeringController?.teardown()
+	}
+
 	/// Observes relevant notifications in `NotificationCenter`.
-	private func observeNotifications() {
-		let pinStateChangeHandler: (PeerID, Notification) -> Void = { peerID, _ in
+	private nonisolated func observeNotifications() -> Task<Void, Never> {
+		let scvs = self.serverChatViewState
+
+		let pinStateChangeHandler: @Sendable (PeerID) -> Void = { peerID in
 			ServerChatFactory.chat { sc in
 				sc?.leaveChat(with: peerID)
 			}
 
-			let scvs = self.serverChatViewState
-			DispatchQueue.main.async {
+			Task { @MainActor in
 				scvs.matchedPeople.removeAll { $0.peerID == peerID }
 			}
 		}
 
-		notificationObservers.append(UserPeer.NotificationName.changed.addObserver { _ in
-			self.peeringController?.restartAdvertising()
-		})
+		return Task {
+			await withTaskGroup(of: Void.self) { taskGroup in
 
-		notificationObservers.append(AccountControllerFactory.NotificationName.accountCreated.addObserver { _ in
-			self.peeringController?.checkPeering { peering in
-				guard peering else { return }
+				let notificationCenter = NotificationCenter.default
 
-				self.peeringController?.startAdvertising(restartOnly: false)
+				taskGroup.addTask {
+					for await _ in notificationCenter
+						.notifications(named: Notification.Name.userPeerChanged)
+						.map ({ notification in
+							return false
+						}) {
+						// TODO: error handling
+						try? await self.restartAdvertising()
+					}
+				}
+
+				taskGroup.addTask {
+					for await _ in notificationCenter
+						.notifications(named: Notification.Name.accountCreated)
+						.map ({ notification in
+							return false
+						}) {
+						await self.startAdvertising()
+					}
+				}
+
+				taskGroup.addTask {
+					for await _ in notificationCenter
+						.notifications(named: Notification.Name.accountDeleted)
+						.map ({ notification in
+							return false
+						}) {
+						await self.teardown()
+					}
+				}
+
+				taskGroup.addTask {
+					for await (peerID, _) in Notification.Name.unpinned
+						.observe(transform: { notification in
+							return false
+						}) {
+						pinStateChangeHandler(peerID)
+					}
+				}
+
+				taskGroup.addTask {
+					for await (peerID, _) in Notification.Name.unmatch
+						.observe(transform: { notification in
+							return false
+						}) {
+						pinStateChangeHandler(peerID)
+					}
+				}
+
+				taskGroup.addTask {
+					for await (peerID, _) in Notification.Name.pinMatch
+						.observe(transform: { notification in
+							return false
+						}) {
+						await self.pinMatchOccured(peerID)
+					}
+				}
+
+				taskGroup.addTask {
+					for await (peerID, again) in Notification.Name.peerAppeared
+						.observe(transform: { notification in
+							return notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
+						}) {
+						ServerChatFactory.chat { sc in
+							sc?.initiateChat(with: peerID)
+						}
+						await self.peerAppeared(peerID, again: again)
+					}
+				}
+
+				taskGroup.addTask {
+					for await (peerID, message) in Notification.Name.serverChatMessageReceived
+						.observe(transform: { notification in
+							return notification.userInfo?[ServerChatViewState.NotificationInfoKey.message.rawValue] as? String
+						}) {
+						await self.received(message: message ?? "", from: peerID)
+					}
+				}
+
+				// waits forever or cancellation
+				for await _ in taskGroup {}
 			}
-		})
+		}
+	}
 
-		notificationObservers.append(AccountControllerFactory.NotificationName.accountDeleted.addObserver { _ in
-			self.peeringController?.teardown()
-		})
+	private func received(message: String, from peerID: PeerID) {
+		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
 
-		notificationObservers.append(AccountController.NotificationName.unpinned.addAnyPeerObserver(pinStateChangeHandler))
-		notificationObservers.append(AccountController.NotificationName.unmatch.addAnyPeerObserver(pinStateChangeHandler))
+		let title: String
+		if #available(iOS 10.0, *) {
+			// The localizedUserNotificationString(forKey:arguments:) method delays the loading of the localized string until the notification is delivered. Thus, if the user changes language settings before a notification is delivered, the alert text is updated to the user’s current language instead of the language that was set when the notification was scheduled.
+			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [name])
+		} else {
+			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
+			title = String(format: titleFormat, name)
+		}
 
-		notificationObservers.append(AccountController.NotificationName.pinMatch.addAnyPeerObserver { peerID, _ in
-			ServerChatFactory.chat { sc in
-				sc?.initiateChat(with: peerID)
-			}
-		})
+		let messagesNotVisible = self.serverChatViewState.displayedPeerID != peerID
 
-		notificationObservers.append(PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
-			let dvs = self.discoveryViewState
-			let svs = self.socialViewState
+		guard messagesNotVisible || !self.appViewState.isActive else { return }
 
-			if AppViewState.shared.isActive || dvs.browseFilter.displayFilteredPeople {
-				self.peeringController?.loadAdditionalInfo(of: peerID, loadPortrait: true)
-				return
-			}
+		NotificationManager.displayPeerRelatedNotification(
+			title: title, body: message, peerID: peerID, category: .message)
+	}
 
-			guard let model = dvs.people[peerID],
-				  let idModel = svs.people[peerID],
-				  dvs.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
+	private func peerAppeared(_ peerID: PeerID, again: Bool) {
+		guard !again, let model = discoveryViewState.people[peerID],
+			  let idModel = socialViewState.people[peerID],
+			  discoveryViewState.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
 
-			self.peeringController?.loadAdditionalInfo(of: peerID, loadPortrait: true)
-		})
+		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
+
+		let category: NotificationManager.NotificationCategory =
+			idModel.pinState == .pinMatch ? .none : .peerAppeared
+
+		NotificationManager.displayPeerRelatedNotification(
+			title: String(format: alertBodyFormat, model.info.nickname),
+			body: "", peerID: peerID, category: category)
+	}
+
+	private func pinMatchOccured(_ peerID: PeerID) {
+		ServerChatFactory.chat { sc in
+			sc?.initiateChat(with: peerID)
+		}
+		if self.appViewState.isActive {
+			// this will show pin match animation
+			self.show(peerID)
+		} else {
+			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
+			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
+			let alertBody = String(format: alertBodyFormat, discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString)
+
+			NotificationManager.displayPeerRelatedNotification(
+				title: title, body: alertBody, peerID: peerID,
+				category: .pinMatch)
+		}
+	}
+
+	private func load(_ peerID: PeerID) {
+		self.peeringController?.loadAdditionalInfo(of: peerID, loadPortrait: true)
+	}
+
+	private func peerAppeared(_ peerID: PeerID) {
+		let dvs = self.discoveryViewState
+		let svs = self.socialViewState
+
+		if self.appViewState.isActive || dvs.browseFilter.displayFilteredPeople {
+			self.load(peerID)
+			return
+		}
+
+		guard let model = dvs.people[peerID],
+			  let idModel = svs.people[peerID],
+			  dvs.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
+
+		self.load(peerID)
 	}
 
 	/// Observes notifications.
-	private init() {
-		observeNotifications()
+	init() {
+		accountControllerFactory = .init(viewModel: socialViewState)
+		socialController = SocialNetworkController(
+			authenticator: accountControllerFactory,
+			viewModel: socialViewState)
+	}
+
+	func start() {
+		// Configure singletons
+		Task { @MainActor in
+			self.socialViewState.delegate = self
+		}
+		notificationTask = observeNotifications()
 	}
 
 	/// All references to NotificationCenter observers by this object.
@@ -95,22 +265,17 @@ final class Mediator {
 
 // View states.
 extension Mediator {
-	var discoveryViewState: DiscoveryViewState { return DiscoveryViewState.shared }
-	var socialViewState: SocialViewState { return SocialViewState.shared }
-	var serverChatViewState: ServerChatViewState { return ServerChatViewState.shared }
-	var inAppNotificationViewState: InAppNotificationStackViewState { return InAppNotificationStackViewState.shared }
 
 	/// Displays `error` to the user. `title` and `furtherDescription` must be localized.
 	func display(error: Error, title: String, furtherDescription: String? = nil) {
-		let ianvs = inAppNotificationViewState
-		DispatchQueue.main.async {
-			ianvs.display(InAppNotification(localizedTitle: title, localizedMessage: error.localizedDescription, severity: .error, furtherDescription: nil))
+		Task { @MainActor in
+			InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: error.localizedDescription, severity: .error, furtherDescription: nil))
 		}
 	}
 
 	@MainActor
 	func showOrMessage(_ peerID: PeerID) {
-		if let serverChatPersona = serverChatViewState.people[peerID] {
+		if serverChatViewState.people[peerID] != nil {
 			serverChatViewState.displayedPeerID = peerID
 		} else if let discoveryPersona = discoveryViewState.people[peerID] {
 			discoveryViewState.displayedPersona = discoveryPersona
@@ -154,7 +319,7 @@ extension Mediator: ServerChatDelegate {
 
 	func serverChatClosed(error: Error?) {
 		let scvs = self.serverChatViewState
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			scvs.clear()
 		}
 
@@ -170,20 +335,15 @@ extension Mediator: ServerChatDelegate {
 
 // MARK: ServerChatDataSource
 extension Mediator: ServerChatDataSource {
-	public func hasPinMatch(with peerIDs: [PeerID], forceCheck: Bool, _ result: @escaping (PeerID, Bool) -> ()) {
-		AccountControllerFactory.shared.use { ac in
-			peerIDs.forEach { peerID in
-				ac.updatePinStatus(of: peerID, force: forceCheck) { state in
-					result(peerID, state == PinState.pinMatch)
-				}
-			}
-		}
+
+	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async throws -> Bool {
+		let id = try await socialController.id(of: peerID)
+		return try await socialController.updatePinStatus(of: id, force: forceCheck) == .pinMatch
 	}
 
-	public func pinMatches(_ result: @escaping (Set<PeerID>) -> ()) {
-		AccountControllerFactory.shared.use { ac in
-			result(ac.pinMatches)
-		}
+	/// Queries for all pin-matched peers.
+	func pinMatches() async -> Set<PeerID> {
+		return await socialController.pinMatches
 	}
 }
 
@@ -193,52 +353,22 @@ extension Mediator: ServerChatDataSource {
 
 // MARK: PeeringControllerDataSource
 extension Mediator: PeeringControllerDataSource {
-	
-	func shouldStopAdvertising(_ result: @escaping (Bool) -> ()) {
-		// we need to invoke `result` on the same queue as in `advertiseData`.
-		AccountControllerFactory.shared.use { _ in
-			result(true)
-		}
-	}
-	
-	func cleanup(allPeers: [PeereeIdentity], _ result: @escaping ([PeerID]) -> ()) {
-		AccountControllerFactory.shared.use({ ac in
-			// never remove our own view model or the view model of pinned peers
-			result(allPeers.filter { $0.peerID != ac.peerID && !ac.isPinned($0) }.map { $0.peerID })
-		}, { error in
-			error.map { flog(Self.LogTag, $0.localizedDescription) }
-			result([])
-		})
+
+	func cleanup(allPeers: [PeereeIdentity]) async -> [PeerID] {
+		// never remove our own view model or the view model of pinned peers
+		return await socialController.unpinnedPeers(allPeers)
 	}
 
-	func advertiseData(_ result: @escaping (PeereeIdentity, KeyPair, PeerInfo, String, URL) -> ()) {
+	func advertiseData() async throws -> (PeerID, KeyPair, PeerInfo, String, URL) {
 		let ds = self.discoveryViewState
-		DispatchQueue.main.async {
-			let info = ds.profile.info
-			let bio = ds.profile.biography
+		let info = ds.profile.info
+		let bio = ds.profile.biography
 
-			AccountControllerFactory.shared.use { ac in
-				result(ac.identity, ac.keyPair, info, bio, UserPeer.pictureResourceURL)
-			}
+		guard let ac = try await accountControllerFactory.use() else {
+			throw unexpectedNilError()
 		}
-	}
 
-	func verify(_ peerID: PeerID, nonce: Data, signature: Data, _ result: @escaping (Bool) -> ()) {
-		// we do not need this currently
-		result(false)
-//		AccountControllerFactory.shared.use { ac in
-//			// we need to compute the verification in all cases, because if we would only do it if we have a public key available, it takes less time to fail if we did not pin the attacker -> timing attack: the attacker can deduce whether we pinned him, because he sees how much time it takes to fulfill their request
-//			do {
-//				let id = try ac.id(of: peerID)
-//				try id.publicKey.verify(message: nonce, signature: signature)
-//
-//				// we need to check if we pin MATCHED the peer, because if we would sent him a successful authentication return code while he did not already pin us, it means he can see that we pinned him
-//				result(ac.hasPinMatch(peerID))
-//			} catch let exc {
-//				elog(Self.LogTag, "A peer tried to authenticate to us as \(peerID). Message: \(exc.localizedDescription)")
-//				result(false)
-//			}
-//		}
+		return (await ac.peerID, await ac.keyPair, info, bio, UserPeer.pictureResourceURL)
 	}
 }
 
@@ -249,7 +379,10 @@ extension Mediator: PeeringControllerDelegate {
 	}
 
 	func bluetoothNetwork(isAvailable: Bool) {
-		self.peeringController?.change(peering: isAvailable)
+		guard let pc = peeringController else { return }
+		Task {
+			await go(peering: isAvailable)
+		}
 	}
 
 	func encodingPeersFailed(with error: Error) {
@@ -263,38 +396,57 @@ extension Mediator: PeeringControllerDelegate {
 
 extension Mediator {
 
-	/// Read-only access to persisted peers.
-	public func readPeer(_ peerID: PeerID, _ completion: @escaping (Peer?) -> ()) {
-		if let pc = self.peeringController {
-			pc.readPeer(peerID, completion)
-		} else {
-			completion(nil)
+	/// Turn `PeeringController` on or off.
+	@MainActor
+	func go(peering: Bool) async {
+		guard let pc = peeringController else { return }
+
+		do {
+			let fb = UIImpactFeedbackGenerator()
+			fb.prepare()
+
+			try await pc.change(peering: peering)
+
+			fb.impactOccurred()
+		} catch {
+			UINotificationFeedbackGenerator()
+				.notificationOccurred(.error)
+
+			let title = NSLocalizedString(
+				"Going Online Failed",
+				comment: "Low-level error")
+
+			self.display(error: error, title: title)
 		}
 	}
 
+	/// Read-only access to persisted peers.
+	func readPeer(_ peerID: PeerID) async -> Peer? {
+		return await self.peeringController?.readPeer(peerID)
+	}
+
 	/// Toggle the bluetooth network between _on_ and _off_.
-	func togglePeering(on: Bool) {
+	func togglePeering(on: Bool) async throws {
 		let dvs = self.discoveryViewState
 
 		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
-		guard let pc = peeringController else {
+		guard peeringController != nil else {
 			guard on else { return }
 
 			// first time accessing Bluetooth
 			// PeeringController.isBluetoothOn is `false` in all cases here!
 			// Creating a PeeringController will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
-			peeringController = PeeringController(viewModel: dvs, dataSource: self, delegate: self)
+			let newPC = PeeringController(viewModel: dvs, dataSource: self, delegate: self)
+			try await newPC.initialize()
+
+			peeringController = newPC
 
 			return
 		}
 
-		DispatchQueue.main.async {
+		Task { @MainActor in
 			if dvs.isBluetoothOn {
-				pc.change(peering: on)
-
-				Task {
-					await HapticController.shared.playHapticPin()
-				}
+				await go(peering: on)
 			} else {
 				open(urlString: UIApplication.openSettingsURLString)
 			}
@@ -307,30 +459,28 @@ extension Mediator {
 
 extension Mediator {
 	/// Sets up an `AccountController` after it was created; must be called on its `dQueue`.
-	func setup(ac: AccountController, errorTitle: String) {
+	func setup(ac: AccountController, errorTitle: String) async throws {
 		let nm = self.notificationManager
 		let dvs = self.discoveryViewState
 
-		ac.delegate = self
-
-		ac.refreshBlockedContent { error in
+		try await socialController.refreshBlockedContent { error in
 			let title = NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed.")
 			let message = socialModuleErrorMessage(from: error)
-			DispatchQueue.main.async {
+			Task { @MainActor in
 				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
 			}
 		}
 
-		ServerChatFactory.initialize(ourPeerID: ac.peerID, dataSource: self) { factory in
+		await ServerChatFactory.initialize(ourPeerID: ac.peerID, dataSource: self) { factory in
 			factory.delegate = self
 			factory.conversationDelegate = self.serverChatViewState
 
 			factory.setup { result in
 				switch result {
 				case .success(_):
-					nm.setupNotifications()
+					nm.setupNotifications(mediator: self)
 				case .failure(let failure):
-					DispatchQueue.main.async {
+					Task { @MainActor in
 						let message = serverChatModuleErrorMessage(from: failure, on: dvs)
 						InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: errorTitle, localizedMessage: message, severity: .error, furtherDescription: nil))
 					}
@@ -340,143 +490,132 @@ extension Mediator {
 	}
 }
 
-// MARK: AccountControllerDelegate
-extension Mediator: AccountControllerDelegate {
-	func pin(of peerID: PeerID, failedWith error: Error) {
-		self.display(error: error, title: NSLocalizedString("Pin Failed", comment: "Title of in-app error notification"))
-	}
-
-	func publicKeyMismatch(of peerID: PeerID) {
-		let ianvs = self.inAppNotificationViewState
-		let dvs = self.discoveryViewState
-		DispatchQueue.main.async {
-			let name = dvs.persona(of: peerID).info.nickname
-			let message = String(format: NSLocalizedString("The identity of %@ is invalid.", comment: "Message of Possible Malicious Peer alert"), name)
-			let error = createApplicationError(localizedDescription: message)
-			ianvs.display(InAppNotification(localizedTitle: NSLocalizedString("Possible Malicious Peer", comment: "Title of public key mismatch in-app notification"), localizedMessage: error.localizedDescription, severity: .error, furtherDescription: nil))
-		}
-	}
-
-	func sequenceNumberResetFailed(error: Error) {
-		let ianvs = self.inAppNotificationViewState
-		DispatchQueue.main.async {
-			let message = socialModuleErrorMessage(from: error)
-			let title = NSLocalizedString("Resetting Server Nonce Failed",
-										  comment: "Title of sequence number reset failure alert")
-			let description = NSLocalizedString("The server nonce is used to secure your connection.",
-												comment: "Further description of Resetting Server Nonce Failed alert")
-			ianvs.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: description))
-		}
-	}
-
-	func sequenceNumberReset() {
-		let ianvs = self.inAppNotificationViewState
-		DispatchQueue.main.async {
-			let message = NSLocalizedString("A request has failed, please try again.", comment: "Error body")
-			let title = NSLocalizedString("Request Failed", comment: "Error title")
-			ianvs.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-		}
-	}
-}
-
 // MARK: SocialViewDelegate
 extension Mediator: SocialViewDelegate {
 	func createIdentity() {
-		AccountControllerFactory.shared.createAccount { result in
-			switch result {
-			case .success(let ac):
-				self.setup(ac: ac, errorTitle: NSLocalizedString("Chat Account Creation Failed", comment: "Error message title"))
+		Task { await self.createIdentityAsync() }
+	}
 
-			case .failure(let error):
-				let title = NSLocalizedString("Account Creation Failed", comment: "Title of alert")
-				let message = socialModuleErrorMessage(from: error)
-				DispatchQueue.main.async {
-					InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error")))
-				}
+	private func createIdentityAsync() async {
+		do {
+			let ac = try await accountControllerFactory.createAccount()
+
+			let title = NSLocalizedString("Chat Account Creation Failed",
+										  comment: "Error message title")
+
+			try await self.setup(ac: ac, errorTitle: title)
+		} catch {
+			let title = NSLocalizedString("Account Creation Failed",
+										  comment: "Title of alert")
+			let message = socialModuleErrorMessage(from: error)
+			Task { @MainActor in
+				let desc = NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error")
+
+				InAppNotificationStackViewState.shared.display(
+					InAppNotification(localizedTitle: title,
+									  localizedMessage: message,
+									  severity: .error,
+									  furtherDescription: desc))
 			}
 		}
 	}
 
 	func deleteIdentity() {
-		self.togglePeering(on: false)
+		Task { await self.deleteIdentityAsync() }
+	}
 
-		// TODO: make this method atomic
+	private func deleteIdentityAsync() async {
+		do {
+			try await self.togglePeering(on: false)
 
-		ServerChatFactory.use { f in
-			f?.deleteAccount() { error in
-				error.map { error in
-					let title = NSLocalizedString("Chat Account Deletion Failed", comment: "Title of in-app alert.")
-					DispatchQueue.main.async {
-						let message = serverChatModuleErrorMessage(from: error, on: DiscoveryViewState.shared)
-						InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
+			// TODO: make this method atomic
+
+			ServerChatFactory.use { f in
+				f?.deleteAccount() { error in
+					error.map { error in
+						let title = NSLocalizedString("Chat Account Deletion Failed", comment: "Title of in-app alert.")
+						Task { @MainActor in
+							let message = serverChatModuleErrorMessage(from: error, on: self.discoveryViewState)
+							InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
+						}
 					}
 				}
 			}
-		}
 
-		AccountControllerFactory.shared.deleteAccount() { error in
-			error.map { error in
-				let title = NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors.")
-				let message = socialModuleErrorMessage(from: error)
-				DispatchQueue.main.async {
-					InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-				}
+			try await accountControllerFactory.deleteAccount()
+
+			await socialController.clearLocalData()
+		} catch {
+			let title = NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors.")
+			let message = socialModuleErrorMessage(from: error)
+			Task { @MainActor in
+				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
 			}
 		}
 	}
 
 	func pinToggle(peerID: PeerID) {
-		DispatchQueue.main.async {
-			self.pinToggleOnMain(peerID: peerID)
-		}
+		Task { await self.pinToggleOnMain(peerID: peerID) }
 	}
 
-	@MainActor
-	private func pinToggleOnMain(peerID: PeerID) {
+	private func pinToggleOnMain(peerID: PeerID) async {
 		let socialPersona = self.socialViewState.persona(of: peerID)
 
-		guard !socialPersona.pinState.isPinned else {
-			AccountControllerFactory.shared.use { $0.updatePinStatus(of: socialPersona.id, force: true) }
-			return
-		}
-
-		if socialViewState.accountExists != .on {
-			let title = NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed.")
-			let message = NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")
-			InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-		} else {
-			self.readPeer(peerID) { peer in
-				guard let id = peer?.id else { return }
-
-				AccountControllerFactory.shared.use { $0.pin(id) }
+		do {
+			guard !socialPersona.pinState.isPinned else {
+				let peerID = try await socialController.id(of: socialPersona.id)
+				_ = try await socialController.updatePinStatus(of: peerID, force: true)
+				return
 			}
 
+			if socialViewState.accountExists != .on {
+				let title = NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed.")
+				let message = NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")
+				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
+			} else {
+				let peer = await self.readPeer(peerID)
+				guard let id = peer?.id else { return }
+
+				try await socialController.pin(id)
+			}
+		} catch {
+			InAppNotificationStackViewState.shared.display(genericError: error)
 		}
 	}
 
 	func removePin(peerID: PeerID) {
-		AccountControllerFactory.shared.use { $0.unpin(peerID) }
+		Task { await self.removePinAsync(peerID: peerID) }
 	}
 
-	func reportPortrait(peerID: PeerID) {
-		DispatchQueue.main.async {
-			self.reportPortraitOnMain(peerID: peerID)
+	private func removePinAsync(peerID: PeerID) async {
+		do {
+			try await socialController.unpin(peerID)
+		} catch {
+			InAppNotificationStackViewState.shared.display(genericError: error)
 		}
 	}
 
-	@MainActor
-	func reportPortraitOnMain(peerID: PeerID) {
+	func reportPortrait(peerID: PeerID) {
+		Task { await self.reportPortraitAsync(peerID: peerID) }
+	}
+
+	private func reportPortraitAsync(peerID: PeerID) async {
+		await self.reportPortraitOnMain(peerID: peerID)
+	}
+
+	private func reportPortraitOnMain(peerID: PeerID) async {
 		guard let discoveryPersona = self.discoveryViewState.people[peerID],
 			 let portrait = discoveryPersona.cgPicture else { return }
 
-		let hash = discoveryPersona.pictureHash
-		AccountControllerFactory.shared.use { ac in
-			ac.report(peerID: peerID, portrait: portrait, portraitHash: hash) { (error) in
-				let message = socialModuleErrorMessage(from: error)
-				DispatchQueue.main.async {
-					let title = NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog")
-					InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-				}
+		do {
+			let hash = discoveryPersona.pictureHash
+			// TODO: hash signature
+			try await socialController.report(peerID: peerID, portrait: portrait, portraitHash: hash, hashSignature: Data())
+		} catch {
+			let message = socialModuleErrorMessage(from: error)
+			Task { @MainActor in
+				let title = NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog")
+				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
 			}
 		}
 	}

@@ -1,0 +1,295 @@
+openapi: "3.0.3"
+
+###############################################################################
+#                               API Information                               #
+###############################################################################
+info:
+  title: Peeree API
+#  summary: Public REST API of the Peeree Application
+  description: |
+    Endpoint to interact with the Peeree social network.
+  version: "2.0.0"
+  contact:
+    name: Peeree Support
+    url: https://www.peeree.de/en/about.html
+    email: support@peeree.de
+servers:
+- url: https://api.peeree.de/v2
+  description: Production endpoint.
+- url: https://test-api.peeree.de/v2
+  description: Test endpoint.
+tags:
+- name: Contentfilter
+- name: Healthcheck
+- name: Pins
+
+
+components:
+###############################################################################
+#                                  Definitions                                #
+###############################################################################
+  schemas:
+    UserID:
+      description: |
+        Unique identifier representing a specific user.
+        
+        RFC 4122 version 4 universally unique identifier (UUID).
+      type: string
+      format: uuid
+    PinnedState:
+      description: |
+        Match status of a pinned user.
+      type: object
+      required:
+        - userID
+        - isMatch
+      properties:
+        userID:
+          $ref: '#/components/schemas/UserID'
+        isMatch:
+          type: boolean
+          description: |
+            True, if the pinned peer also pinned the user.
+    PinState:
+      description: |
+        Pin status.
+      type: string
+      enum:
+        - unpinned
+        - pinned
+        - matched
+
+
+###############################################################################
+#                                   Examples                                  #
+###############################################################################
+  examples:
+    exampleUserID:
+      summary: An example userID.
+      description: Display of the encoding of an userID.
+      value: "E621E1F8-C36C-495A-93FC-0C247A3E6E5F"
+
+###############################################################################
+#                                   Security                                  #
+###############################################################################
+  securitySchemes:
+    accessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT obtained from the Peeree Identity Provider.
+
+
+###############################################################################
+#                               Standard Parameters                           #
+###############################################################################
+  parameters:
+    userID:
+      name: userID
+      in: path
+      description: |
+        The `UserID` of a user.
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserID'
+
+
+###############################################################################
+#                              Standard Responses                             #
+###############################################################################
+  responses:
+    ClientSideErrorResponse:
+      description: |
+        The client provided unprocessable data.
+        The returned message is not intended to be presented to the user.
+        Must be HTTP code `400 Bad Request`.
+      content:
+        'text/plain':
+          schema:
+            type: string
+    MissingAccessTokenResponse:
+      description: |
+        The `Authorization` header is not present or malformed. Must be HTTP code `401`.
+    PinStateResponse:
+      description: |
+        The access token is invalid. Must be HTTP code `403`.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/PinState'
+
+# The access token is a JWT and contains the `userID` in the `sub` field.
+security:
+  - accessToken: []
+
+###############################################################################
+#                                    Paths                                    #
+###############################################################################
+paths:
+  /healthcheck:
+    get:
+      tags:
+        - Healthcheck
+      security: []
+      operationId: isHealthy
+      summary: Health Check
+      description: |
+        Checks for the health of the server.
+      responses:
+        '200':
+          description: |
+            The server is healthy.
+        '500':
+          description: |
+            The server is unhealthy.
+
+  /contentfilter/portrait/hashes:
+    get:
+      tags:
+        - Contentfilter
+      security: []
+      operationId: getContentFilterPortraitHashes
+      summary: Retrieve objectional portrait hashes.
+      description: |
+        Returns a list of SHA-256 objectional portrait hashes.
+      parameters:
+        - name: startDate
+          in: query
+          description: |
+            Only return hashes added after this date.
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Array of hashes, encoded as hexadecimal digits.
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /contentfilter/portrait/{userID}/report:
+    post:
+      tags:
+        - Contentfilter
+      operationId: postContentFilterPortraitReport
+      summary: Report a portrait picture as objectional.
+      description: |
+        Requests classification of portrait picture.
+        To prevent from false claims, the signature of the user in question
+        must be sent along. The API server then first checks the signature
+        against the reported user's current public key.
+      requestBody:
+        required: true
+        description: |
+          The portrait in question.
+        content:
+          'image/jpeg':
+            schema:
+              type: string
+              format: binary
+      parameters:
+        # The userID of the reported user.
+        - $ref: '#/components/parameters/userID'
+        - name: signature
+          in: query
+          description: |
+            The signature on the SHA-256 hash as presented by the reported user
+            to proof that the reported user actually presented this portrait in
+            their profile.
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        '202':
+          description: |
+            The portrait was successfully submitted for verification.
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '401':
+          $ref: '#/components/responses/MissingAccessTokenResponse'
+
+  /pin/{userID}:
+    delete:
+      tags:
+        - Pins
+      operationId: deletePin
+      summary: Delete Pin
+      description: |
+        Unpins a previously pinned user.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+      responses:
+        '200':
+          description: |
+            The user is no longer pinned.
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '401':
+          $ref: '#/components/responses/MissingAccessTokenResponse'
+    get:
+      tags:
+        - Pins
+      operationId: getPin
+      summary: Pin Status Query
+      description: |
+        Returns whether the requested peer is pinnend or a pin match occured.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+      responses:
+        '200':
+          $ref: '#/components/responses/PinStateResponse'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '401':
+          $ref: '#/components/responses/MissingAccessTokenResponse'
+    post:
+      tags:
+        - Pins
+      operationId: postPin
+      summary: Pin Another User
+      description: |
+        Requests a *Pin* and returns whether a *Pin Match* occurred.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+      responses:
+        '200':
+          description: |
+            Whether a *Pin Match* has occurred.
+          content:
+            'text/plain':
+               schema:
+                 type: boolean
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '401':
+          $ref: '#/components/responses/MissingAccessTokenResponse'
+
+  /pins:
+    get:
+      tags:
+        - Pins
+      operationId: getPins
+      summary: Retrieve All Pinned Users
+      description: |
+        Retrieves a list of all pinned identities.
+        This request is best used when a new device is installed.
+      responses:
+        '200':
+          description: Array of all pinned user IDs.
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PinnedState'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '401':
+          $ref: '#/components/responses/MissingAccessTokenResponse'
+

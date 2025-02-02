@@ -1,0 +1,506 @@
+---
+#
+#  openapi.yaml
+#  Peeree
+#
+#  Created by Christopher Kobusch on 22.01.25.
+#  Copyright © 2025 Kobusch. All rights reserved.
+#
+openapi: "3.0.3"
+
+###############################################################################
+#                               API Information                               #
+###############################################################################
+info:
+  title: Peeree IdP API
+#  summary: Identity provider API of Peeree.
+  description: |
+    Endpoint to manage Peeree accounts and API access.
+  version: "1.0.0"
+  contact:
+    name: Peeree Support
+    url: https://www.peeree.de/en/about.html
+    email: support@peeree.de
+servers:
+  - url: https://api-idp.peeree.de/v1
+    description: Production endpoint.
+  - url: https://test-api-idp.peeree.de/v1
+    description: Test endpoint.
+tags:
+  - name: Account
+  - name: Healthcheck
+
+components:
+###############################################################################
+#                                  Definitions                                #
+###############################################################################
+  schemas:
+    AccessToken:
+      type: string
+      description: |
+        A signed JWT that can be used to access the Peeree API.
+        This token needs to be kept confidential. Its claims are:
+        - aud: Either `https://api.peeree.de` or `https://test-api.peeree.de`.
+        - exp: Some expiry time in the future.
+        - iat: When the token was created.
+        - iss: One of the URLs listed below `servers:`.
+        - jti: The challenge for the `getAccess` request.
+        - sub: The `UserID` of the user.
+    Account:
+      type: object
+      required:
+        - chatAccount
+        - userID
+      properties:
+        chatAccount:
+          $ref: '#/components/schemas/ChatAccount'
+        userID:
+          $ref: '#/components/schemas/UserID'
+        recoveryCode:
+          $ref: '#/components/schemas/RecoveryCode'
+        accessToken:
+          $ref: '#/components/schemas/AccessToken'
+        identityToken:
+          $ref: '#/components/schemas/IdentityToken'
+      description: |
+        An account in the app. If `recoveryCode` is omitted, it was sent via a
+        second channel.
+    ChatAccount:
+      type: object
+      required:
+        - accessToken
+        - deviceID
+        - initialPassword
+        - serverURL
+        - userID
+      properties:
+        accessToken:
+          type: string
+          description: |
+            An opaque token that can be used to access the chat.
+        deviceID:
+          type: string
+          description: |
+            The ID representing the device the user used to register.
+        initialPassword:
+          type: string
+          description: |
+            The password to be used for chat login; should be changed.
+        serverURL:
+          type: string
+          description: |
+            URL pointing to the URL of the chat server.
+        userID:
+          type: string
+          description: |
+            The userID in the chat component.
+      description: |
+        An account on the chat component.
+    UserID:
+      type: string
+      format: uuid
+      description: |
+        Unique identifier representing a specific user.
+        
+        RFC 4122 version 4 universally unique identifier (UUID), encoded as in
+        "E621E1F8-C36C-495A-93FC-0C247A3E6E5F".
+    IdentityToken:
+      type: string
+      description: |
+        A signed JWT that can be used to proof identity to other users.
+        Thus this token is public. Its claims are:
+        - aud: Always `public`.
+        - exp: Some expiry time in the future.
+        - iat: When the token was created.
+        - iss: One of the URLs listed below `servers:`.
+        - nonce: The challenge for the `getIdentity ` request.
+        - pbk: The `PublicKey` of the user, base64-encoded.
+        - sub: The `UserID` of the user.
+    OutOfBandChannel:
+      type: object
+      description: |
+        An out-of-band channel to be used to send the recovery code.
+      required:
+        - channel
+        - endpoint
+      properties:
+        channel:
+          $ref: '#/components/schemas/OutOfBandChannelOption'
+        endpoint:
+          type: string
+          description: |
+            Where the recovery code is sent to, e.g. an email address.
+    OutOfBandChannelOption:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: |
+            An out-of-band channel that the server supports to send the
+            recovery code. Examples are 'email' or 'http-drop'.
+        description:
+          type: string
+          description: |
+            A text to display to the user that describes how this channel
+            works.
+    PublicKey:
+      type: string
+      format: byte
+      description: |
+        Public key of a user.
+        Base-64 encoded ANSI X9.63 format (using a byte string of
+        "04 || X || Y" encoding elliptic curve point coordinates) of an
+        elliptic curve key.
+    RecoveryCode:
+      type: string
+      description: |
+        A human-readable, random string used to recover an account.
+    Signature:
+      type: string
+      format: byte
+      description: |
+        Digital signature using ECDSA X962 of a challenge, computed with the
+        public key of the user.
+
+
+###############################################################################
+#                                   Examples                                  #
+###############################################################################
+  examples:
+    exampleUserID:
+      summary: An example userID.
+      description: Display of the encoding of an userID.
+      value: "E621E1F8-C36C-495A-93FC-0C247A3E6E5F"
+
+
+###############################################################################
+#                               Standard Parameters                           #
+###############################################################################
+  parameters:
+    userID:
+      name: userID
+      in: header
+      description: |
+        The identity of a user.
+        RFC 4122 version 4 universally unique identifier (UUID) of the user,
+        encoded as in "E621E1F8-C36C-495A-93FC-0C247A3E6E5F".
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserID'
+    publicKey:
+      name: publicKey
+      in: query
+      description: |
+        A public key belonging to a user.
+      required: true
+      schema:
+        $ref: '#/components/schemas/PublicKey'
+    signature:
+      name: signature
+      in: header
+      description: |
+        Digital signature using ECDSA X962 of a challenge, computed with the
+        public key of the user.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Signature'
+
+
+###############################################################################
+#                                 Standard Bodies                             #
+###############################################################################
+  requestBodies:
+    outOfBandChannel:
+      required: false
+      description: |
+        A public key belonging to a user.
+      content:
+        'application/json':
+          schema:
+            $ref: '#/components/schemas/OutOfBandChannel'
+
+
+###############################################################################
+#                               Standard Responses                            #
+###############################################################################
+  responses:
+    AccessTokenResponse:
+      description: |
+        Access was granted.
+      content:
+        'text/plain':
+          schema:
+            $ref: '#/components/schemas/AccessToken'
+    ClientSideErrorResponse:
+      description: |
+        The client provided unprocessable data.
+        The returned message is not intended to be presented to the user.
+        Must be HTTP code `400 Bad Request`.
+      content:
+        'text/plain':
+          schema:
+            type: string
+    IdentityTokenResponse:
+      description: |
+        Identity token was created.
+      content:
+        'text/plain':
+          schema:
+            $ref: '#/components/schemas/IdentityToken'
+    InvalidSignatureResponse:
+      description: |
+        The signature is invalid. Must be HTTP code `403 Forbidden`.
+      content:
+        'text/plain':
+          schema:
+            type: string
+    RateLimitResponse:
+      description: |
+        The user has sent too many requests in a given amount of time.
+        Must be HTTP code `429 Too Many Requests`.
+      content:
+        'text/plain':
+          schema:
+            type: string
+    ServerSideErrorResponse:
+      description: |
+        An unexpected internal error occurred during request processing.
+        The returned message is not intended to be presented to the user.
+        Must be HTTP code `500 Internal Server Error`.
+      content:
+        'text/plain':
+          schema:
+            type: string
+
+###############################################################################
+#                                     Paths                                   #
+###############################################################################
+paths:
+  /access:
+    get:
+      tags:
+        - Account
+      operationId: getAccess
+      summary: Get Access Token
+      description: |
+        Generates an access token with limited lifetime.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          $ref: '#/components/responses/AccessTokenResponse'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '403':
+          $ref: '#/components/responses/InvalidSignatureResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /account:
+    post:
+      tags:
+        - Account
+      operationId: postAccount
+      summary: Account Creation
+      description: |
+        Creates a new user account with the provided public key.
+      parameters:
+        - $ref: '#/components/parameters/publicKey'
+      requestBody:
+        $ref: '#/components/requestBodies/outOfBandChannel'
+      responses:
+        '201':
+          description: |
+            A new account was created.
+            The return body contains a generated ID of the user, an access
+            token, and optionally a recovery code (if no out-of-band channel is
+            used).
+          content:
+           'application/json':
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+    delete:
+      tags:
+        - Account
+      operationId: deleteAccount
+      summary: Account Deletion
+      description: |
+        Deletes a user account.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          description: |
+            User account deleted successfully.
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '403':
+          $ref: '#/components/responses/InvalidSignatureResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /account/public_key:
+    put:
+      tags:
+        - Account
+      operationId: putAccountPublicKey
+      summary: Reset Public Key
+      description: |
+        Establishes a new public key for the user.
+        This request can be used when the user moved to a new device.
+        The signature of this request must be computed using the new public
+        key.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/signature'
+        - $ref: '#/components/parameters/publicKey'
+        - name: recoveryCode
+          in: header
+          description: |
+            The recovery code generated during account creation.
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecoveryCode'
+      responses:
+        '200':
+          $ref: '#/components/responses/IdentityTokenResponse'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '403':
+          $ref: '#/components/responses/InvalidSignatureResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /account/recovery_code:
+    post:
+      tags:
+        - Account
+      operationId: postAccountRecoveryCode
+      summary: Reset Recovery Code
+      description: |
+        Generates a new recovery code for the user.
+        This request can be used when the original recovery code is no longer
+        trusted.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/signature'
+      requestBody:
+        $ref: '#/components/requestBodies/outOfBandChannel'
+      responses:
+        '200':
+          description: |
+            If the request body was empty, the recovery code is returned.
+          content:
+            'text/plain':
+              schema:
+                $ref: '#/components/schemas/RecoveryCode'
+        '204':
+          description: |
+            The new recovery code has been sent via an out-of-band channel.
+          content:
+            'text/plain':
+              schema:
+                $ref: '#/components/schemas/RecoveryCode'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '403':
+          $ref: '#/components/responses/InvalidSignatureResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /challenge:
+    get:
+      tags:
+        - Account
+      operationId: getChallenge
+      summary: Challenge Generation
+      description: |
+        Generates a challenge that needs to be signed for a further request.
+        Each challenge can be used only once. It is valid for a few minutes.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+      responses:
+        '202':
+          description: |
+            A generated, temporary challenge is returned.
+          content:
+            'text/plain':
+              schema:
+                type: string
+                format: byte
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /channels:
+    get:
+      tags:
+        - Account
+      operationId: getChannels
+      summary: List Recovery Code Channel
+      description: |
+        Returns an array of supported out-of-band channels for recovery code
+        transmission.
+      parameters:
+        - name: languageCode
+          in: query
+          description: |
+            Four letter localization code, e.g. `en-US` or `de-DE`.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            The channels.
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutOfBandChannelOption'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+  /healthcheck:
+    get:
+      tags:
+        - Healthcheck
+      operationId: isHealthy
+      summary: Health Check
+      description: |
+        Checks for the health of the server.
+      responses:
+        '200':
+          description: |
+            The server is healthy.
+        '500':
+          description: |
+            The server is unhealthy.
+  /identity:
+    get:
+      tags:
+        - Account
+      operationId: getIdentity
+      summary: Get Identity Token
+      description: |
+        Generates an identity token with limited lifetime.
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/signature'
+      responses:
+        '200':
+          $ref: '#/components/responses/IdentityTokenResponse'
+        '400':
+          $ref: '#/components/responses/ClientSideErrorResponse'
+        '403':
+          $ref: '#/components/responses/InvalidSignatureResponse'
+        '500':
+          $ref: '#/components/responses/ServerSideErrorResponse'
+

@@ -66,7 +66,6 @@ struct ChatTableCell: View {
 	scp.unreadMessages = 1
 	scp.insert(messages: [demoMessage(sent: false, message: "Hello there!", timestamp: Date())], sorted: true)
 
-	let pi = PeerInfo(nickname: "Anna", gender: .female, age: nil, hasPicture: false)
 	let dp = ds.demo(peerID)
 
 	return ChatTableCell(chatPersona: scp, discoveryPersona: dp)

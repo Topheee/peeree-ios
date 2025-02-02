@@ -14,7 +14,7 @@ import PeereeCore
 public let StandardPortraitCompressionQuality: CGFloat = 0.0
 
 /// The Peeree identity of a user combined with their mandatory info.
-public struct Peer: Codable, Equatable {
+public struct Peer: Sendable, Codable, Equatable {
 	// MARK: - Public and Internal
 
 	/// Constructs a `Peer` with its properties.
@@ -24,25 +24,33 @@ public struct Peer: Codable, Equatable {
 	}
 
 	/// Constructs a `Peer` from its dismantled properties.
-	public init(peerID: PeerID, publicKey: AsymmetricPublicKey, nickname: String, gender: PeerInfo.Gender, age: Int?, hasPicture: Bool) {
-		self.init(id: PeereeIdentity(peerID: peerID, publicKey: publicKey),
+	public init(peerID: PeerID, publicKey: AsymmetricPublicKey,
+				nickname: String, gender: PeerInfo.Gender, age: Int?,
+				hasPicture: Bool) throws {
+		self.init(id: try PeereeIdentity(peerID: peerID, publicKey: publicKey),
 				  info: PeerInfo(nickname: nickname, gender: gender, age: age, hasPicture: hasPicture))
 	}
 
 	/// Constructs a `Peer` from the binary representations of its properties.
 	init?(peerID: PeerID, publicKeyData: Data, aggregateData: Data, nicknameData: Data) {
-		guard let id = try? PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData),
-			  let pi = PeerInfo(aggregateData: aggregateData, nicknameData: nicknameData) else {
+		guard let pi = PeerInfo(aggregateData: aggregateData,
+								nicknameData: nicknameData) else {
 			return nil
 		}
 
-		self.id = id
+		self.id = PeereeIdentity(peerID: peerID, publicKeyData: publicKeyData)
 		info = pi
 	}
 
 	/// Constructs a `Peer` from the binary representations of its properties and the components of its `id`.
 	init?(peerID: PeerID, publicKey: AsymmetricPublicKey, aggregateData: Data, nicknameData: Data) {
-		id = PeereeIdentity(peerID: peerID, publicKey: publicKey)
+		if let theID = try? PeereeIdentity(peerID: peerID,
+										   publicKey: publicKey) {
+			id = theID
+		} else {
+			return nil
+		}
+
 		if let i = PeerInfo(aggregateData: aggregateData, nicknameData: nicknameData) {
 			info = i
 		} else {

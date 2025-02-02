@@ -10,22 +10,19 @@ import UIKit
 import CoreServices
 import PeereeCore
 import PeereeServerChat
-import PeereeServer
+import PeereeIdP
 import PeereeDiscovery
 
 final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
-	let socialViewState: SocialViewState = SocialViewState.shared
+	/// Notifications that came in bevor `mediator` was set.
+	private var notificationQueue: [Notification] = []
 
-	let discoveryViewState: DiscoveryViewState = DiscoveryViewState.shared
-
-	let serverChatViewState: ServerChatViewState = ServerChatViewState.shared
+	private var mediator: Mediator?
 
 	/// Prepares local and remote notification handling.
 	override init() {
 		super.init()
-
-		observeNotifications()
 
 		if #available(iOS 10.0, *) {
 			let notificationCenter = UNUserNotificationCenter.current()
@@ -51,42 +48,20 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	}
 
 	/// Call this method after the user took an action that could result in a notification.
-	func setupNotifications() {
-		DispatchQueue.main.async {
-			if #available(iOS 10.0, *) {
-				UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-					// Enable or disable features based on authorization.
-					guard error == nil else {
-						elog(Self.LogTag, "Error requesting user notification authorization: \(error!.localizedDescription)")
-						return
-					}
+	func setupNotifications(mediator: Mediator) {
+		self.mediator = mediator
 
-					DispatchQueue.main.async {
-						UIApplication.shared.registerForRemoteNotifications()
-					}
-				}
-			} else {
-				let pinMatchMessageAction = UIMutableUserNotificationAction()
-				pinMatchMessageAction.identifier = NotificationActions.pinMatchMessage.rawValue
-				pinMatchMessageAction.title = NSLocalizedString("Send Message", comment: "Notification action title.")
-				let messageReplyAction = UIMutableUserNotificationAction()
-				messageReplyAction.identifier = NotificationActions.messageReply.rawValue
-				messageReplyAction.title = NSLocalizedString("Reply", comment: "Notification action title.")
-				messageReplyAction.behavior = .textInput
-				messageReplyAction.parameters = [UIUserNotificationTextInputActionButtonTitleKey : NSLocalizedString("Send", comment: "Text notification button title.")]
-				let peerAppearedPinAction = UIMutableUserNotificationAction()
-				peerAppearedPinAction.identifier = NotificationActions.peerAppearedPin.rawValue
-				peerAppearedPinAction.title = NSLocalizedString("Pin", comment: "Notification action title.")
-				let pinMatchCategory = UIMutableUserNotificationCategory()
-				let messageCategory = UIMutableUserNotificationCategory()
-				let peerAppearedCategory = UIMutableUserNotificationCategory()
-				pinMatchCategory.identifier = NotificationCategory.pinMatch.rawValue
-				messageCategory.identifier = NotificationCategory.message.rawValue
-				peerAppearedCategory.identifier = NotificationCategory.peerAppeared.rawValue
-				pinMatchCategory.setActions([pinMatchMessageAction], for: .default)
-				pinMatchCategory.setActions([pinMatchMessageAction], for: .minimal)
-				
-				UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: [pinMatchCategory, messageCategory, peerAppearedCategory]))
+		UNUserNotificationCenter.current().requestAuthorization(
+			options: [.alert, .badge, .sound]) { granted, error in
+
+			// Enable or disable features based on authorization.
+			guard error == nil else {
+				elog(Self.LogTag, "Error requesting user notification authorization: \(error!.localizedDescription)")
+				return
+			}
+
+			Task { @MainActor in
+				UIApplication.shared.registerForRemoteNotifications()
 			}
 		}
 	}
@@ -106,7 +81,9 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		guard let action = NotificationActions(rawValue: response.actionIdentifier) else {
 			switch response.actionIdentifier {
 			case UNNotificationDefaultActionIdentifier:
-				DispatchQueue.main.async { Mediator.shared.showOrMessage(peerID) }
+				if let m = self.mediator {
+					Task { @MainActor in m.showOrMessage(peerID) }
+				}
 			case UNNotificationDismissActionIdentifier:
 				return
 			default:
@@ -127,10 +104,10 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				}
 			}
 		case .peerAppearedPin:
-			Mediator.shared.readPeer(peerID) { peer in
-				guard let id = peer?.id else { return }
+			guard let m = self.mediator else { return }
 
-				AccountControllerFactory.shared.use { $0.pin(id) }
+			Task {
+				await m.pinToggle(peerID: peerID)
 			}
 		}
 
@@ -165,7 +142,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
 	// - MARK: Private
 
-	private enum NotificationCategory: String {
+	enum NotificationCategory: String {
 		case peerAppeared, pinMatch, message, none
 	}
 	private enum NotificationActions: String {
@@ -184,7 +161,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	// MARK: Methods
 
 	/// shows an in-app or system (local) notification related to a peer
-	private static func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory) {
+	static func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory) {
 			let center = UNUserNotificationCenter.current()
 			let content = UNMutableNotificationContent()
 			content.title = title
@@ -228,52 +205,6 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		Self.dismissRemoteNotifications()
 	}
 
-	@MainActor
-	private func received(message: String, from peerID: PeerID) {
-		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
-
-		let title: String
-		if #available(iOS 10.0, *) {
-			// The localizedUserNotificationString(forKey:arguments:) method delays the loading of the localized string until the notification is delivered. Thus, if the user changes language settings before a notification is delivered, the alert text is updated to the user’s current language instead of the language that was set when the notification was scheduled.
-			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [name])
-		} else {
-			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
-			title = String(format: titleFormat, name)
-		}
-
-		let messagesNotVisible = self.serverChatViewState.displayedPeerID != peerID
-
-		guard messagesNotVisible || !AppViewState.shared.isActive else { return }
-
-		Self.displayPeerRelatedNotification(title: title, body: message, peerID: peerID, category: .message)
-	}
-
-	@MainActor
-	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let model = discoveryViewState.people[peerID],
-			  let idModel = socialViewState.people[peerID],
-			  discoveryViewState.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
-
-		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
-
-		let category: NotificationCategory = idModel.pinState == .pinMatch ? .none : .peerAppeared
-		Self.displayPeerRelatedNotification(title: String(format: alertBodyFormat, model.info.nickname), body: "", peerID: peerID, category: category)
-	}
-
-	@MainActor
-	private func pinMatchOccured(_ peerID: PeerID) {
-		if AppViewState.shared.isActive {
-			// this will show pin match animation
-			Mediator.shared.show(peerID)
-		} else {
-			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
-			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString)
-
-			Self.displayPeerRelatedNotification(title: title, body: alertBody, peerID: peerID, category: .pinMatch)
-		}
-	}
-
 	/// Unschedules all remote notifications.
 	private static func dismissRemoteNotifications() {
 		let center = UNUserNotificationCenter.current()
@@ -286,24 +217,6 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			}
 
 			center.removeDeliveredNotifications(withIdentifiers: remoteNotificationIdentifiers)
-		}
-	}
-
-	/// Listen on `NotificationCenter`.
-	private func observeNotifications() {
-		_ = PeeringController.Notifications.peerAppeared.addAnyPeerObserver { peerID, notification  in
-			let again = notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool
-			self.peerAppeared(peerID, again: again ?? false)
-		}
-
-		_ = AccountController.NotificationName.pinMatch.addAnyPeerObserver { peerID, _  in
-			self.pinMatchOccured(peerID)
-		}
-
-		_ = ServerChatViewState.NotificationName.messageReceived.addAnyPeerObserver { peerID, notification in
-			guard let message = notification.userInfo?[ServerChatViewState.NotificationInfoKey.message.rawValue] as? String else { return }
-
-			self.received(message: message, from: peerID)
 		}
 	}
 }

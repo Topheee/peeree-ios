@@ -14,7 +14,10 @@ import PeereeCore
 
 /// Interface between the discovery module and the UI.
 @MainActor
-public protocol DiscoveryViewModelDelegate: AnyObject, PersonAspectState where Aspect: DiscoveryPersonAspect, RequiredData == PeerInfo {
+public protocol DiscoveryViewModelDelegate:
+	AnyObject, Sendable, PersonAspectState
+	where Aspect:
+		DiscoveryPersonAspect, RequiredData == PeerInfo {
 
 	/// The `PeeringController.peering` state for the main thread.
 	var peering: Bool { get set }
