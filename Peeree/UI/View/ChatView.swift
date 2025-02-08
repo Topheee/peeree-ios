@@ -191,12 +191,8 @@ struct ChatView: View {
 					isPresented: $showRoomAlert,
 					presenting: chatPersona
 				) { details in
-					Button("Re-create room", role: .destructive) {
-						DispatchQueue.main.async { chatPersona.roomError = nil }
-						ServerChatFactory.chat { sc in
-							sc?.recreateRoom(with: details.peerID)
-						}
-					}
+					Button("Re-create room", role: .destructive,
+						   action: actionReCreateRoom)
 					Button("Cancel", role: .cancel) {
 
 					}
@@ -222,17 +218,39 @@ struct ChatView: View {
 		.navigationBarTitleDisplayMode(.inline)
 	}
 
+	private func actionReCreateRoom() {
+		guard let backend = self.serverChatViewState.backend else { return }
+		chatPersona.roomError = nil
+		Task {
+			do {
+				try await backend.recreateRoom(with: self.peerID)
+			} catch let error as ServerChatError {
+				Task { @MainActor in
+					let title = NSLocalizedString("broken_chatroom_title", comment: "Error message title")
+					self.show(error: error, localizedTitle: title)
+				}
+			}
+		}
+	}
+
 	private func sendMessage() {
+		guard let backend = self.serverChatViewState.backend else { return }
+
 		let title = NSLocalizedString("Sending Message Failed", comment: "Title of alert dialog")
 		let message = self.composingMessage
 		let peerID = self.peerID
 		let dvs = self.discoveryViewState
 		let nvs = self.inAppNotificationState
 
-		ServerChatFactory.getOrSetupInstance { instanceResult in
-			act(on: instanceResult, dvs: dvs, nvs: nvs, localizedErrorTitle: title) { serverChat in
-				serverChat.send(message: message, to: peerID) { result in
-					act(on: result, dvs: dvs, nvs: nvs, localizedErrorTitle: title) { _ in }
+		Task {
+			do {
+				try await backend.send(message: message, to: peerID)
+			} catch let error as ServerChatError {
+				Task { @MainActor in
+					let message = serverChatModuleErrorMessage(from: error, on: dvs)
+					nvs.display(InAppNotification(
+						localizedTitle: title, localizedMessage: message,
+						severity: .error, furtherDescription: nil))
 				}
 			}
 		}
@@ -244,17 +262,31 @@ struct ChatView: View {
 	}
 
 	private func loadOlderMessages() {
-		ServerChatFactory.chat { sc in
-			sc?.fetchMessagesFromStore(peerID: peerID, count: 30)
+		guard let backend = self.serverChatViewState.backend else { return }
+
+		Task {
+			await backend.fetchMessagesFromStore(peerID: peerID, count: 30)
 		}
 	}
 
 	/// Declare all messages in this thread as being read.
 	private func markRead() {
+		guard let backend = self.serverChatViewState.backend else { return }
+
 		let peerID = self.peerID
-		ServerChatFactory.chat { sc in
-			sc?.set(lastRead: Date(), of: peerID)
+		Task {
+			await backend.set(lastRead: Date(), of: peerID)
 		}
+	}
+
+	private func show(error: ServerChatError, localizedTitle: String) {
+		let dvs = self.discoveryViewState
+		let nvs = self.inAppNotificationState
+
+		let message = serverChatModuleErrorMessage(from: error, on: dvs)
+		nvs.display(InAppNotification(
+			localizedTitle: localizedTitle, localizedMessage: message,
+			severity: .error, furtherDescription: nil))
 	}
 }
 

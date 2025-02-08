@@ -10,41 +10,49 @@ import Foundation
 import MatrixSDK
 import PeereeCore
 
+// Declare a global actor
+@globalActor actor ChatActor {
+	static let shared = ChatActor()
+}
+
 /// Communications through a matrix session (`MXSession`); only access directly through `ServerChatFactory.chat()` to be on the right dispatch queue!
-public protocol ServerChat {
+public protocol ServerChat: Sendable {
 	/// Checks whether `peerID` can receive or messages.
-	func canChat(with peerID: PeerID, _ completion: @escaping (ServerChatError?) -> Void)
+	/// - Throws: `ServerChatError`.
+	func canChat(with peerID: PeerID) async throws
 
 	/// Send a message to recipient identified by `peerID`.
-	func send(message: String, to peerID: PeerID, _ completion: @escaping (Result<String?, ServerChatError>) -> Void)
+	/// - Throws: `ServerChatError`.
+	func send(message: String, to peerID: PeerID) async throws
 
 	/// Load old, offline available messages.
-	func fetchMessagesFromStore(peerID: PeerID, count: Int)
+	func fetchMessagesFromStore(peerID: PeerID, count: Int) async
 
 	/// Load old messages.
-	func paginateUp(peerID: PeerID, count: Int, _ completion: @escaping (Error?) -> ())
+	/// - Throws: `Error`.
+	func paginateUp(peerID: PeerID, count: Int) async throws
 
 	/// Configure remote push notifications.
-	func configurePusher(deviceToken: Data)
+	func configurePusher(deviceToken: Data) async
 
 	/// Sends read receipts for all messages with `peerID`.
-	func markAllMessagesRead(of peerID: PeerID)
+	func markAllMessagesRead(of peerID: PeerID) async
 
 	/// Sets the last read date of one specific chat.
-	func set(lastRead date: Date, of peerID: PeerID)
+	func set(lastRead date: Date, of peerID: PeerID) async
 
 	/// Create chat room with `peerID`, after we have a pin match.
-	func initiateChat(with peerID: PeerID)
+	func initiateChat(with peerID: PeerID) async
 
 	/// Leave chat room with `peerID`, after it was unmatched.
-	func leaveChat(with peerID: PeerID)
+	func leaveChat(with peerID: PeerID) async
 
 	/// Re-create a room after an unrecoverable error occurred.
-	func recreateRoom(with peerID: PeerID)
+	func recreateRoom(with peerID: PeerID) async throws
 }
 
 /// Information provider for the server chat.
-public protocol ServerChatDataSource {
+public protocol ServerChatDataSource: Sendable {
 	/// Queries pin state of peers.
 	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async throws -> Bool
 
@@ -53,7 +61,7 @@ public protocol ServerChatDataSource {
 }
 
 /// Server chat informed party.
-public protocol ServerChatDelegate: AnyObject {
+public protocol ServerChatDelegate: AnyObject, Sendable {
 	/// Configuring the Pusher on the server chat server failed.
 	func configurePusherFailed(_ error: Error) async
 

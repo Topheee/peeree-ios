@@ -10,8 +10,9 @@ import PeereeCore
 
 /// Interface between the server chat module and the UI.
 @MainActor
-public protocol ServerChatViewModelDelegate: PersonAspectState where Aspect: ServerChatPersonAspect, RequiredData == Void {
-	
+public protocol ServerChatViewModelDelegate: Sendable, PersonAspectState
+where Aspect: ServerChatPersonAspect, RequiredData == Void {
+
 	/// Sent or received a new message.
 	func new(message: ChatMessage, inChatWithConversationPartner peerID: PeerID)
 

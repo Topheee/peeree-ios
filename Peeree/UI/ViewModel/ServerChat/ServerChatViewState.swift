@@ -59,6 +59,8 @@ final class ServerChatViewState: ObservableObject {
 
 	var lastMessageDisplayed = false
 
+	var backend: ServerChat?
+
 	// MARK: Methods
 
 	func addPersona(of peerID: PeerID, with data: Void) -> ServerChatPerson {

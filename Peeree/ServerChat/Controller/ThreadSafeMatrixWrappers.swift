@@ -10,14 +10,13 @@
 
 import MatrixSDK
 
-/// This class is not completely thread-safe, but it guarantees that at least the callbacks are all called on the same queue.
-class ThreadSafeCallbacksMatrixSession {
-	init(session: MXSession, queue: DispatchQueue) {
-		self.session = session
-		self.queue = queue
-	}
+import PeereeCore
 
-	private let queue: DispatchQueue
+@ChatActor
+final class ThreadSafeCallbacksMatrixSession {
+	init(session: MXSession) {
+		self.session = session
+	}
 
 	private let session: MXSession
 
@@ -35,68 +34,101 @@ class ThreadSafeCallbacksMatrixSession {
 
 	var store: MXStore? { return session.store }
 
-	func deactivateAccount(withAuthParameters: [String : Any], eraseAccount: Bool, completion: @escaping (MXResponse<Void>) -> Void) {
-		session.deactivateAccount(withAuthParameters: withAuthParameters, eraseAccount: eraseAccount) { response in
-			self.queue.async { completion(response) }
+	func deactivateAccount(withAuthParameters: [String : Any],
+						   eraseAccount: Bool) async throws {
+		let response = await withCheckedContinuation { continuation in
+			self.session.deactivateAccount(
+				withAuthParameters: withAuthParameters,
+				eraseAccount: eraseAccount) { response in
+				continuation.resume(returning: response)
+			}
 		}
+
+		if case .failure(let error) = response { throw error }
 	}
 
 	func close() {
 		session.close()
 	}
 
-	func canEnableE2EByDefaultInNewRoom(withUsers: [String]!, success: @escaping (Bool) -> Void, failure: @escaping (Error?) -> Void) {
-		session.canEnableE2EByDefaultInNewRoom(withUsers: withUsers) { canEnable in
-			self.queue.async { success(canEnable) }
-		} failure: { error in
-			self.queue.async { failure(error) }
+	func canEnableE2EByDefaultInNewRoom(withUsers users: [String]!) async throws -> Bool {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.canEnableE2EByDefaultInNewRoom(withUsers: users) { canEnable in
+				continuation.resume(returning: canEnable)
+			} failure: { error in
+				continuation.resume(throwing: error ?? unexpectedNilError())
+			}
 		}
 	}
 
-	func createRoom(parameters: MXRoomCreationParameters, completion: @escaping (MXResponse<MXRoom>) -> Void) {
-		session.createRoom(parameters: parameters) { response in
-			self.queue.async { completion(response) }
+	func createRoom(parameters: MXRoomCreationParameters) async throws -> Room {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.createRoom(parameters: parameters) { response in
+				continuation.resume(with: response.map{ mxRoom in
+					Room(mxRoom)
+				})
+			}
 		}
 	}
 
-	func leaveRoom(_ roomId: String, completion: @escaping (MXResponse<Void>) -> Void) {
-		session.leaveRoom(roomId) { response in
-			self.queue.async { completion(response) }
+	func leaveRoom(_ roomId: String) async throws {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.leaveRoom(roomId) { response in
+				continuation.resume(with: response)
+			}
 		}
 	}
 
 	func listenToEvents(_ types: [MXEventType]? = nil, block: @escaping MXOnSessionEvent) -> Any {
+		// TODO: convert to async sequence
 		return session.listenToEvents(types) { event, direction, customObject in
-			self.queue.async { block(event, direction, customObject) }
+			block(event, direction, customObject)
 		}
 	}
 
-	func setStore(_ store: MXStore, completion: @escaping (MXResponse<Void>) -> Void) {
-		session.setStore(store) { response in
-			self.queue.async { completion(response) }
+	func setStore(_ store: MXStore) async throws {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.setStore(store) { response in
+				continuation.resume(with: response)
+			}
 		}
 	}
 
-	func start(withSyncFilter: MXFilterJSONModel, completion: @escaping (MXResponse<Void>) -> Void) {
-		session.start(withSyncFilter: withSyncFilter) { response in
-			self.queue.async { completion(response) }
+	func start(withSyncFilter: MXFilterJSONModel) async throws {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.start(withSyncFilter: withSyncFilter) { response in
+				continuation.resume(with: response)
+			}
 		}
 	}
 
-	func decryptEvents(_ events: [MXEvent]!, inTimeline: String, onComplete: @escaping (([MXEvent]?) -> Void)) {
-		session.decryptEvents(events, inTimeline: inTimeline) { events in
-			self.queue.async { onComplete(events) }
+	func decryptEvents(_ events: [Event],
+					   inTimeline: String) async -> [Event]? {
+		return await withCheckedContinuation { continuation in
+			self.session.decryptEvents(events.map { $0.event },
+									   inTimeline: inTimeline) { mxEvents in
+				guard let mxEvents else {
+					continuation.resume(returning: nil)
+					return
+				}
+
+				continuation.resume(returning: mxEvents.map { Event($0) })
+			}
 		}
 	}
 
-	func joinRoom(_ roomIdOrAlias: String, completion: @escaping (MXResponse<MXRoom>) -> Void) {
-		session.joinRoom(roomIdOrAlias) { response in
-			self.queue.async { completion(response) }
+	func joinRoom(_ roomIdOrAlias: String) async throws -> Room {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.joinRoom(roomIdOrAlias) { response in
+				continuation.resume(with: response.map{ mxRoom in
+					Room(mxRoom)
+				})
+			}
 		}
 	}
 
-	func room(withRoomId: String) -> MXRoom! {
-		return session.room(withRoomId: withRoomId)
+	func room(withRoomId roomId: String) -> Room? {
+		return session.room(withRoomId: roomId).map { Room($0) }
 	}
 
 	func roomSummary(withRoomId: String) -> MXRoomSummary! {
@@ -105,28 +137,39 @@ class ThreadSafeCallbacksMatrixSession {
 
 	// MARK: Peeree Extensions
 
-	func directRooms(with userId: String) -> [MXRoom] {
+	func directRooms(with userId: String) -> [Room] {
 		return session.directRooms?[userId]?.compactMap {
 			let room = self.session.room(withRoomId: $0)
-			return room?.summary?.membership == .join ? room : nil
+			return room?.summary?.membership == .join ?
+				room.map { Room($0) } : nil
 		} ?? []
 	}
 
-	func directRoomInfos(with: String,  completion: @escaping ([DirectRoomInfo]) -> Void) {
-		session.directRoomInfos(with: with) { infos in
-			self.queue.async { completion(infos) }
+	func directRoomInfos(with: String) async -> [DirectRoomInfo] {
+		return await withCheckedContinuation { continuation in
+			self.session.directRoomInfos(with: with) { infos in
+				continuation.resume(returning: infos)
+			}
 		}
 	}
 
-	func getJoinedOrInvitedRoom(with: String, bothJoined: Bool, completion: @escaping (MXRoom?) -> Void) {
-		session.getJoinedOrInvitedRoom(with: with, bothJoined: bothJoined) { room in
-			self.queue.async { completion(room) }
+	func getJoinedOrInvitedRoom(with: String, bothJoined: Bool) async -> Room? {
+		return await withCheckedContinuation { continuation in
+			self.session.getJoinedOrInvitedRoom(with: with, bothJoined: bothJoined) { room in
+				continuation.resume(returning: room.map { Room($0) })
+			}
 		}
 	}
 
-	func extensiveLogout(completion: @escaping (Error?) -> ()) {
-		session.extensiveLogout { error in
-			self.queue.async { completion(error) }
+	func extensiveLogout() async throws {
+		return try await withCheckedThrowingContinuation { continuation in
+			self.session.extensiveLogout { error in
+				if let error {
+					continuation.resume(throwing: error)
+				} else {
+					continuation.resume(returning: ())
+				}
+			}
 		}
 	}
 }

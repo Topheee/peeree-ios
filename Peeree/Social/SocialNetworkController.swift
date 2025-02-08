@@ -186,7 +186,7 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 	}
 
 	/// Downloads objectionable content hashes.
-	public func refreshBlockedContent(_ errorCallback: @escaping (Error) -> Void) async throws {
+	public func refreshBlockedContent() async throws {
 		guard self.lastObjectionableContentRefresh
 			.addingTimeInterval(Self.ObjectionableContentRefreshThreshold) < Date() else { return }
 

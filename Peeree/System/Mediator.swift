@@ -28,6 +28,7 @@ final class Mediator {
 	// Log tag.
 	private static let LogTag = "Mediator"
 
+	/// Task holding notification observers.
 	private var notificationTask: Task<Void, Never>?
 
 	private let notificationManager = NotificationManager()
@@ -35,6 +36,8 @@ final class Mediator {
 	private let accountControllerFactory: AccountControllerFactory
 
 	private let socialController: SocialNetworkController
+
+	private var serverChatFactory: ServerChatFactory?
 
 	let appViewState = AppViewState()
 
@@ -71,8 +74,8 @@ final class Mediator {
 		let scvs = self.serverChatViewState
 
 		let pinStateChangeHandler: @Sendable (PeerID) -> Void = { peerID in
-			ServerChatFactory.chat { sc in
-				sc?.leaveChat(with: peerID)
+			Task {
+				await self.serverChatFactory?.chat()?.leaveChat(with: peerID)
 			}
 
 			Task { @MainActor in
@@ -148,9 +151,8 @@ final class Mediator {
 						.observe(transform: { notification in
 							return notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
 						}) {
-						ServerChatFactory.chat { sc in
-							sc?.initiateChat(with: peerID)
-						}
+						let sc = await self.serverChatFactory?.chat()
+						await sc?.initiateChat(with: peerID)
 						await self.peerAppeared(peerID, again: again)
 					}
 				}
@@ -206,9 +208,11 @@ final class Mediator {
 	}
 
 	private func pinMatchOccured(_ peerID: PeerID) {
-		ServerChatFactory.chat { sc in
-			sc?.initiateChat(with: peerID)
+		Task {
+			let sc = await self.serverChatFactory?.chat()
+			await sc?.initiateChat(with: peerID)
 		}
+
 		if self.appViewState.isActive {
 			// this will show pin match animation
 			self.show(peerID)
@@ -243,7 +247,6 @@ final class Mediator {
 		self.load(peerID)
 	}
 
-	/// Observes notifications.
 	init() {
 		accountControllerFactory = .init(viewModel: socialViewState)
 		socialController = SocialNetworkController(
@@ -251,16 +254,46 @@ final class Mediator {
 			viewModel: socialViewState)
 	}
 
-	func start() {
-		// Configure singletons
+	/// Run this on application startup.
+	func start() async throws {
 		Task { @MainActor in
 			self.socialViewState.delegate = self
 		}
-		notificationTask = observeNotifications()
+
+		if notificationTask == nil {
+			notificationTask = observeNotifications()
+		}
+
+		// start Bluetooth and server chat, but only if account exists
+		if let ac = try await self.accountControllerFactory.use() {
+			try await self.setup(ac: ac, errorTitle: NSLocalizedString(
+				"Login to Chat Server Failed", comment: "Error message title"))
+			try await self.togglePeering(on: true)
+		}
+
+		try await self.discoveryViewState.load()
 	}
 
-	/// All references to NotificationCenter observers by this object.
-	private var notificationObservers: [Any] = []
+	/// Call this method on `applicationWillTerminate`.
+	func stop() {
+		Task {
+			await self.serverChatFactory?.closeServerChat()
+			try? await self.togglePeering(on: false)
+		}
+	}
+
+	func configureRemoteNotifications(deviceToken: Data) {
+		Task {
+			await self.serverChatFactory?
+				.configureRemoteNotificationsDeviceToken(deviceToken)
+		}
+	}
+
+	func applicationDidReceiveMemoryWarning() {
+		Task {
+			try? await self.togglePeering(on: false)
+		}
+	}
 }
 
 // View states.
@@ -379,7 +412,7 @@ extension Mediator: PeeringControllerDelegate {
 	}
 
 	func bluetoothNetwork(isAvailable: Bool) {
-		guard let pc = peeringController else { return }
+		guard peeringController != nil else { return }
 		Task {
 			await go(peering: isAvailable)
 		}
@@ -458,12 +491,14 @@ extension Mediator {
 // MARK: - Social Graph
 
 extension Mediator {
-	/// Sets up an `AccountController` after it was created; must be called on its `dQueue`.
-	func setup(ac: AccountController, errorTitle: String) async throws {
+	/// Sets up an `AccountController` after it was created.
+	private func setup(ac: AccountController, errorTitle: String) async throws {
 		let nm = self.notificationManager
 		let dvs = self.discoveryViewState
 
-		try await socialController.refreshBlockedContent { error in
+		do {
+			try await socialController.refreshBlockedContent()
+		} catch {
 			let title = NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed.")
 			let message = socialModuleErrorMessage(from: error)
 			Task { @MainActor in
@@ -471,20 +506,21 @@ extension Mediator {
 			}
 		}
 
-		await ServerChatFactory.initialize(ourPeerID: ac.peerID, dataSource: self) { factory in
-			factory.delegate = self
-			factory.conversationDelegate = self.serverChatViewState
+		let factory = await ServerChatFactory(
+			ourPeerID: ac.peerID, delegate: self,
+			conversationDelegate: self.serverChatViewState)
+		self.serverChatFactory = factory
 
-			factory.setup { result in
-				switch result {
-				case .success(_):
-					nm.setupNotifications(mediator: self)
-				case .failure(let failure):
-					Task { @MainActor in
-						let message = serverChatModuleErrorMessage(from: failure, on: dvs)
-						InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: errorTitle, localizedMessage: message, severity: .error, furtherDescription: nil))
-					}
-				}
+		do {
+			let sc = try await factory.use(onlyLogin: false, dataSource: self)
+			self.serverChatViewState.backend = sc
+			nm.setupNotifications(mediator: self)
+		} catch {
+			if let scError = error as? ServerChatError {
+				let message = serverChatModuleErrorMessage(from: scError, on: dvs)
+				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: errorTitle, localizedMessage: message, severity: .error, furtherDescription: nil))
+			} else {
+				self.display(error: error, title: errorTitle)
 			}
 		}
 	}
@@ -528,17 +564,20 @@ extension Mediator: SocialViewDelegate {
 		do {
 			try await self.togglePeering(on: false)
 
-			// TODO: make this method atomic
+			if let f = self.serverChatFactory {
+				do {
+					try await f.deleteAccount()
+				} catch let error as ServerChatError {
+					let title = NSLocalizedString(
+					 "Chat Account Deletion Failed",
+					 comment: "Title of in-app alert.")
 
-			ServerChatFactory.use { f in
-				f?.deleteAccount() { error in
-					error.map { error in
-						let title = NSLocalizedString("Chat Account Deletion Failed", comment: "Title of in-app alert.")
-						Task { @MainActor in
-							let message = serverChatModuleErrorMessage(from: error, on: self.discoveryViewState)
-							InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-						}
-					}
+					let message = serverChatModuleErrorMessage(
+						from: error, on: self.discoveryViewState)
+					InAppNotificationStackViewState.shared.display(
+						InAppNotification(
+							localizedTitle: title, localizedMessage: message,
+							severity: .error, furtherDescription: nil))
 				}
 			}
 

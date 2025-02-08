@@ -6,12 +6,11 @@
 //  Copyright (c) 2015 Kobusch. All rights reserved.
 //
 
+// Platform dependencies
 import SwiftUI
 
+// Internal dependencies
 import PeereeCore
-import PeereeServerChat
-import PeereeIdP
-import PeereeDiscovery
 
 @main
 struct PeereeApp: App {
@@ -33,14 +32,10 @@ struct PeereeApp: App {
 					InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
 				}
 				.task {
-					do {
-						try await self.mediator.discoveryViewState.load()
+					appDelegate.mediator = mediator
 
-						// start Bluetooth and server chat, but only if account exists
-						if let ac = try await self.mediator.accountControllerFactory.use() {
-							try await self.mediator.setup(ac: ac, errorTitle: NSLocalizedString("Login to Chat Server Failed", comment: "Error message title"))
-							try await self.mediator.togglePeering(on: true)
-						}
+					do {
+						try await self.mediator.start()
 					} catch {
 						InAppNotificationStackViewState.shared.display(genericError: error)
 					}
@@ -78,27 +73,20 @@ struct PeereeApp: App {
 
 final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 
+	var mediator: Mediator?
+
 	// MARK: UIApplicationDelegate
-
-	/**
-	 *  Registers for notifications, presents onboarding on first launch and applies GUI theme
-	 */
-	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-		return true
-	}
 
 	/**
 	 *  Stops networking and synchronizes preferences
 	 */
 	func applicationWillTerminate(_ application: UIApplication) {
-		ServerChatFactory.use { $0?.closeServerChat() }
-		//mediator.togglePeering(on: false)
+		mediator?.stop()
 		UserDefaults.standard.synchronize()
 	}
 
 	func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-		//mediator.togglePeering(on: false)
+		mediator?.applicationDidReceiveMemoryWarning()
 	}
 
 	/// MARK: Notifications
@@ -109,7 +97,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 	}
 
 	func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-		ServerChatFactory.use { $0?.configureRemoteNotificationsDeviceToken(deviceToken) }
+		mediator?.configureRemoteNotifications(deviceToken: deviceToken)
 	}
 
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {

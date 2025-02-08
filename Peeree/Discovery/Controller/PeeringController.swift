@@ -351,12 +351,6 @@ public final class PeeringController:
 		}
 	}
 
-	deinit {
-		for observer in notificationObservers {
-			NotificationCenter.default.removeObserver(observer)
-		}
-	}
-
 	// MARK: - Private
 
 	// MARK: Static Constants
@@ -390,9 +384,6 @@ public final class PeeringController:
 
 	/// when was a specific PeerID last encountered via Bluetooth.
 	private var lastSeenDates: [PeerID : Date] = [:]
-
-	/// all references to NotificationCenter observers
-	private var notificationObservers: [NSObjectProtocol] = []
 
 	// MARK: Methods
 

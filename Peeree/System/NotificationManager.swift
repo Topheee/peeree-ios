@@ -96,11 +96,19 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		switch action {
 		case .pinMatchMessage, .messageReply:
 			guard let textResponse = response as? UNTextInputNotificationResponse,
+				  let scvs = self.mediator?.serverChatViewState,
 				  textResponse.userText != "" else { return }
 
-			ServerChatFactory.getOrSetupInstance { instanceResult in
-				instanceResult.value?.send(message: textResponse.userText, to: peerID) { messageResult in
-					messageResult.error.map { elog(Self.LogTag, "failed to send message from notification: \($0.localizedDescription)") }
+			let message = textResponse.userText
+
+			Task {
+				do {
+					try await scvs.backend?
+						.send(message: message, to: peerID)
+				} catch {
+					elog("NotificationManager.Task",
+						 "failed to send message from notification: "
+						 + error.localizedDescription)
 				}
 			}
 		case .peerAppearedPin:

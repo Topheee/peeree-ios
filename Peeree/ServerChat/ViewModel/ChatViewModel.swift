@@ -27,11 +27,11 @@ private let headerFormatter: DateFormatter = {
 	return formatter
 }()
 
-public enum ChatMessageType {
+public enum ChatMessageType: Sendable {
 	case sent, received, broken, pending
 }
 
-public struct ChatMessage {
+public struct ChatMessage: Sendable {
 	public let eventID: String
 
 	public let type: ChatMessageType

@@ -76,7 +76,7 @@ public actor AccountController {
 	// MARK: Variables
 
 	/// UI delegate.
-	public var viewModel: AccountViewModelDelegate
+	private let viewModel: AccountViewModelDelegate
 
 	// MARK: Constants
 

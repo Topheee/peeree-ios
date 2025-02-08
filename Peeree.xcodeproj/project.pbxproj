@@ -110,6 +110,7 @@
 		9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */ = {isa = PBXBuildFile; fileRef = 9DCA59E42932173F008A4853 /* LLDBInitFile */; };
 		9DCC48882D4F962800EC5BED /* AuthenticationMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48852D4F6DEF00EC5BED /* AuthenticationMiddleware.swift */; };
 		9DCC488A2D4F963F00EC5BED /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48892D4F963D00EC5BED /* Authenticator.swift */; };
+		9DCC48A22D560EC600EC5BED /* MXWrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48A12D560EC400EC5BED /* MXWrappers.swift */; };
 		9DD33BD029FEACA70046165E /* PeereeServerChat.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD33BCF29FEACA70046165E /* PeereeServerChat.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9DD33BD329FEACA70046165E /* PeereeServerChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; };
 		9DD33BD429FEACA70046165E /* PeereeServerChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -358,6 +359,7 @@
 		9DCA59E42932173F008A4853 /* LLDBInitFile */ = {isa = PBXFileReference; lastKnownFileType = text; path = LLDBInitFile; sourceTree = "<group>"; };
 		9DCC48852D4F6DEF00EC5BED /* AuthenticationMiddleware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationMiddleware.swift; sourceTree = "<group>"; };
 		9DCC48892D4F963D00EC5BED /* Authenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authenticator.swift; sourceTree = "<group>"; };
+		9DCC48A12D560EC400EC5BED /* MXWrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXWrappers.swift; sourceTree = "<group>"; };
 		9DCE94631F30EDBA00F31330 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9DD33B3F29FC25200046165E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		9DD33BA829FEA9470046165E /* PeereeServerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PeereeServerAPI.h; sourceTree = "<group>"; };
@@ -789,6 +791,7 @@
 		9D79074B27F3A05600920D38 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				9DCC48A12D560EC400EC5BED /* MXWrappers.swift */,
 				9D544F56280D9B51008E7CDF /* ServerChat.swift */,
 				9D6AFE58264C23E90065262D /* ServerChatController.swift */,
 				9D544F58280D9DE4008E7CDF /* ServerChatFactory.swift */,
@@ -1530,6 +1533,7 @@
 				9D0017042B574126004A8999 /* ServerChatPersonAspect.swift in Sources */,
 				9DD33BDA29FEAEEA0046165E /* ThreadSafeMatrixWrappers.swift in Sources */,
 				9DD33BDD29FEAEEA0046165E /* MXSessionExtensions.swift in Sources */,
+				9DCC48A22D560EC600EC5BED /* MXWrappers.swift in Sources */,
 				9D0017022B57410B004A8999 /* ServerChatViewModelDelegate.swift in Sources */,
 				9DD33BDE29FEAEEA0046165E /* ServerChat.swift in Sources */,
 				9D0017062B587D6E004A8999 /* ChatViewModel.swift in Sources */,
@@ -2252,7 +2256,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -2296,7 +2300,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
