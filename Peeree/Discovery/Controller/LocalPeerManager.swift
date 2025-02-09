@@ -282,7 +282,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				_nonce = (request.central, data)
 			} else if request.characteristic.uuid == CBUUID.RemoteAuthenticationCharacteristicID {
 				guard let peerID = _availableCentrals[request.central.identifier],
-					  let nonce = remoteNonces.removeValue(forKey: peerID) else {
+					  let _ = remoteNonces.removeValue(forKey: peerID) else {
 					error = .insufficientResources
 					break
 				}

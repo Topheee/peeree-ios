@@ -111,6 +111,7 @@
 		9DCC48882D4F962800EC5BED /* AuthenticationMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48852D4F6DEF00EC5BED /* AuthenticationMiddleware.swift */; };
 		9DCC488A2D4F963F00EC5BED /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48892D4F963D00EC5BED /* Authenticator.swift */; };
 		9DCC48A22D560EC600EC5BED /* MXWrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48A12D560EC400EC5BED /* MXWrappers.swift */; };
+		9DCC48AC2D57680D00EC5BED /* AdvertiseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48AB2D57680A00EC5BED /* AdvertiseData.swift */; };
 		9DD33BD029FEACA70046165E /* PeereeServerChat.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DD33BCF29FEACA70046165E /* PeereeServerChat.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9DD33BD329FEACA70046165E /* PeereeServerChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; };
 		9DD33BD429FEACA70046165E /* PeereeServerChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -360,6 +361,7 @@
 		9DCC48852D4F6DEF00EC5BED /* AuthenticationMiddleware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationMiddleware.swift; sourceTree = "<group>"; };
 		9DCC48892D4F963D00EC5BED /* Authenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authenticator.swift; sourceTree = "<group>"; };
 		9DCC48A12D560EC400EC5BED /* MXWrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXWrappers.swift; sourceTree = "<group>"; };
+		9DCC48AB2D57680A00EC5BED /* AdvertiseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvertiseData.swift; sourceTree = "<group>"; };
 		9DCE94631F30EDBA00F31330 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9DD33B3F29FC25200046165E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		9DD33BA829FEA9470046165E /* PeereeServerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PeereeServerAPI.h; sourceTree = "<group>"; };
@@ -729,6 +731,7 @@
 		9D5D46F1280C6CEE002174DB /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				9DCC48AB2D57680A00EC5BED /* AdvertiseData.swift */,
 				9D8A593A1B92F2B600164C9F /* PeerDescription.swift */,
 				9D56535E279A1014003F31A2 /* UserPeer.swift */,
 				9DD33BE229FF029D0046165E /* DiscoveryExtensions.swift */,
@@ -1549,6 +1552,7 @@
 				9DD33C0C29FFA9FF0046165E /* DiscoveryExtensions.swift in Sources */,
 				9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */,
 				9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */,
+				9DCC48AC2D57680D00EC5BED /* AdvertiseData.swift in Sources */,
 				9D11B67A2B54A1AC002C2806 /* DiscoveryPersonAspect.swift in Sources */,
 				9DD33C1629FFBF400046165E /* PeeringController.swift in Sources */,
 				9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */,

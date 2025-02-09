@@ -49,19 +49,51 @@ final class Mediator {
 
 	private var peeringController: PeeringController?
 
-	private func restartAdvertising() async throws {
-		guard let pc = self.peeringController else { return }
-		try await pc.restartAdvertising()
+	private func advertiseDataSync(_ completion: @MainActor @escaping
+								   (Result<AdvertiseData, Error>) -> Void) {
+		Task {
+			do {
+				let data = try await self.advertiseData()
+				completion(.success(data))
+			} catch {
+				completion(.failure(error))
+			}
+		}
 	}
 
-	private func startAdvertising() async {
+	private func restartAdvertising() throws {
+		advertiseDataSync { result in
+			// TODO: error handling
+			switch result {
+			case .success(let data):
+				guard let pc = self.peeringController else { return }
+				do {
+					try pc.restartAdvertising(data: data)
+				} catch {
+					elog(Self.LogTag, "restartAdvertising fail: \(error)")
+				}
+			case .failure(let error):
+				elog(Self.LogTag, "advertiseDataSync: \(error)")
+			}
+		}
+	}
+
+	private func startAdvertising() {
 		guard let pc = self.peeringController else { return }
 
-		guard await pc.checkPeering() else { return }
+		guard pc.checkPeering() else { return }
 
-		Task {
-			// TODO: error handling
-			try await pc.startAdvertising(restartOnly: false)
+		self.advertiseDataSync { result in
+			switch result {
+			case .success(let data):
+				do {
+					try pc.startAdvertising(data: data, restartOnly: false)
+				} catch {
+					elog(Self.LogTag, "startAdvertising fail: \(error)")
+				}
+			case .failure(let error):
+				elog(Self.LogTag, "advertiseDataSync2: \(error)")
+			}
 		}
 	}
 
@@ -268,7 +300,7 @@ final class Mediator {
 		if let ac = try await self.accountControllerFactory.use() {
 			try await self.setup(ac: ac, errorTitle: NSLocalizedString(
 				"Login to Chat Server Failed", comment: "Error message title"))
-			try await self.togglePeering(on: true)
+			try self.togglePeering(on: true)
 		}
 
 		try await self.discoveryViewState.load()
@@ -278,7 +310,7 @@ final class Mediator {
 	func stop() {
 		Task {
 			await self.serverChatFactory?.closeServerChat()
-			try? await self.togglePeering(on: false)
+			try? self.togglePeering(on: false)
 		}
 	}
 
@@ -290,9 +322,7 @@ final class Mediator {
 	}
 
 	func applicationDidReceiveMemoryWarning() {
-		Task {
-			try? await self.togglePeering(on: false)
-		}
+		try? self.togglePeering(on: false)
 	}
 }
 
@@ -387,12 +417,16 @@ extension Mediator: ServerChatDataSource {
 // MARK: PeeringControllerDataSource
 extension Mediator: PeeringControllerDataSource {
 
-	func cleanup(allPeers: [PeereeIdentity]) async -> [PeerID] {
+	func cleanup(allPeers: Set<Peer>) async {
 		// never remove our own view model or the view model of pinned peers
-		return await socialController.unpinnedPeers(allPeers)
+		let cleanupPeerIDs = await socialController.unpinnedPeers(
+			allPeers.map { $0.id })
+
+		peeringController?.cleanupPersistedPeers(
+				  allPeers: allPeers, cleanupPeerIDs: cleanupPeerIDs)
 	}
 
-	func advertiseData() async throws -> (PeerID, KeyPair, PeerInfo, String, URL) {
+	func advertiseData() async throws -> AdvertiseData {
 		let ds = self.discoveryViewState
 		let info = ds.profile.info
 		let bio = ds.profile.biography
@@ -401,7 +435,9 @@ extension Mediator: PeeringControllerDataSource {
 			throw unexpectedNilError()
 		}
 
-		return (await ac.peerID, await ac.keyPair, info, bio, UserPeer.pictureResourceURL)
+		return .init(peerID: await ac.peerID, keyPair: await ac.keyPair,
+					 peerInfo: info, biography: bio,
+					 pictureResourceURL: UserPeer.pictureResourceURL)
 	}
 }
 
@@ -413,9 +449,7 @@ extension Mediator: PeeringControllerDelegate {
 
 	func bluetoothNetwork(isAvailable: Bool) {
 		guard peeringController != nil else { return }
-		Task {
-			await go(peering: isAvailable)
-		}
+		go(peering: isAvailable)
 	}
 
 	func encodingPeersFailed(with error: Error) {
@@ -430,36 +464,47 @@ extension Mediator: PeeringControllerDelegate {
 extension Mediator {
 
 	/// Turn `PeeringController` on or off.
-	@MainActor
-	func go(peering: Bool) async {
+	func go(peering: Bool) {
 		guard let pc = peeringController else { return }
 
-		do {
-			let fb = UIImpactFeedbackGenerator()
-			fb.prepare()
+		self.advertiseDataSync { result in
+			let title = NSLocalizedString("Going Online Failed",
+										  comment: "Low-level error")
 
-			try await pc.change(peering: peering)
+			switch result {
+			case .success(let data):
+				do {
+					let fb = UIImpactFeedbackGenerator()
+					fb.prepare()
 
-			fb.impactOccurred()
-		} catch {
-			UINotificationFeedbackGenerator()
-				.notificationOccurred(.error)
+					try pc.change(peering: peering, data: data)
 
-			let title = NSLocalizedString(
-				"Going Online Failed",
-				comment: "Low-level error")
+					fb.impactOccurred()
+				} catch {
+					UINotificationFeedbackGenerator()
+						.notificationOccurred(.error)
 
-			self.display(error: error, title: title)
+					self.display(error: error, title: title)
+				}
+			case .failure(let failure):
+				self.display(error: failure, title: title)
+			}
 		}
 	}
 
 	/// Read-only access to persisted peers.
 	func readPeer(_ peerID: PeerID) async -> Peer? {
-		return await self.peeringController?.readPeer(peerID)
+		guard let pc = self.peeringController else { return nil }
+
+		return await withCheckedContinuation { continuation in
+			pc.readPeer(peerID) { peer in
+				continuation.resume(returning: peer)
+			}
+		}
 	}
 
 	/// Toggle the bluetooth network between _on_ and _off_.
-	func togglePeering(on: Bool) async throws {
+	func togglePeering(on: Bool) throws {
 		let dvs = self.discoveryViewState
 
 		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
@@ -470,19 +515,17 @@ extension Mediator {
 			// PeeringController.isBluetoothOn is `false` in all cases here!
 			// Creating a PeeringController will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
 			let newPC = PeeringController(viewModel: dvs, dataSource: self, delegate: self)
-			try await newPC.initialize()
+			try newPC.initialize()
 
 			peeringController = newPC
 
 			return
 		}
 
-		Task { @MainActor in
-			if dvs.isBluetoothOn {
-				await go(peering: on)
-			} else {
-				open(urlString: UIApplication.openSettingsURLString)
-			}
+		if dvs.isBluetoothOn {
+			go(peering: on)
+		} else {
+			open(urlString: UIApplication.openSettingsURLString)
 		}
 	}
 }
@@ -562,7 +605,7 @@ extension Mediator: SocialViewDelegate {
 
 	private func deleteIdentityAsync() async {
 		do {
-			try await self.togglePeering(on: false)
+			try self.togglePeering(on: false)
 
 			if let f = self.serverChatFactory {
 				do {

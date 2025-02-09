@@ -19,11 +19,8 @@ public enum PeerDistance {
 
 /// Main information provider for the PeereeDiscovery module.
 public protocol PeeringControllerDataSource: Sendable {
-	/// Return our information, s.t. we can present ourselves.
-	func advertiseData() async throws -> (PeerID, KeyPair, PeerInfo, String, URL)
-
 	/// Asks for a list of `PeerID`s which can be safely removed from disk.
-	func cleanup(allPeers: [PeereeIdentity]) async -> [PeerID]
+	func cleanup(allPeers: Set<Peer>) async
 }
 
 /// Receiver of `PeeringController` events.
@@ -74,17 +71,17 @@ public final class PeeringController:
 	// MARK: Methods
 
 	/// Queries whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
-	public func checkPeering() async -> Bool {
+	public func checkPeering() -> Bool {
 		return self.discoveryManager.isScanning
 	}
 
 	/// Controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
-	public func change(peering newValue: Bool) async throws {
+	public func change(peering newValue: Bool, data: AdvertiseData) throws {
 		guard newValue != self.discoveryManager.isScanning else { return }
 
 		if newValue {
 			self.discoveryManager.scan()
-			try await self.startAdvertising(restartOnly: false)
+			try self.startAdvertising(data: data, restartOnly: false)
 		} else {
 			self.stopAdvertising()
 			self.discoveryManager.stopScan()
@@ -94,8 +91,8 @@ public final class PeeringController:
 	}
 
 	/// Restart advertising if it is currently on, e.g. when the user peer data changed.
-	public func restartAdvertising() async throws {
-		try await startAdvertising(restartOnly: true)
+	public func restartAdvertising(data: AdvertiseData) throws {
+		try startAdvertising(data: data, restartOnly: true)
 	}
 
 	/// Stop all peering activity.
@@ -130,8 +127,12 @@ public final class PeeringController:
 	}
 
 	/// Read-only access to persisted peers.
-	public func readPeer(_ peerID: PeerID) async -> Peer? {
-		return await persistence.readPeer(peerID)
+	public func readPeer(_ peerID: PeerID,
+						 _ completion: @Sendable @escaping (Peer?) -> Void) {
+		let p = self.persistence
+		Task {
+			completion(await p.readPeer(peerID))
+		}
 	}
 
 	// MARK: LocalPeerManagerDelegate
@@ -322,8 +323,17 @@ public final class PeeringController:
 		discoveryManager.delegate = self
 	}
 
+	private func readPeers(_ completion: @escaping @Sendable
+						   ([(Peer, PeerBlobData)]) -> Void) {
+		let p = self.persistence
+		Task {
+			let peers = try await p.loadInitialData()
+			completion(peers)
+		}
+	}
+
 	/// Load data from disk and publish it to the view model.
-	public func initialize() async throws {
+	public func initialize() throws {
 		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(
 			PeeringController.LastSeenKey,
 			containing: [NSUUID.self, NSDate.self])
@@ -331,22 +341,10 @@ public final class PeeringController:
 		let lsDates = nsLastSeenDates as? [PeerID : Date] ?? [PeerID : Date]()
 		self.lastSeenDates = lsDates
 
-		let peers = try await persistence.loadInitialData()
-
-		await self.cleanupPersistedPeers(allPeers: Set(peers.map { $0.0 }),
-										 lastSeens: lsDates)
-
-		let vm = self.viewModel
-
-		Task { @MainActor in
-
-			for peer in peers {
-				Self.updateViewModels(
-					of: peer.0,
-					lastSeen: lsDates[peer.0.id.peerID] ?? Date.distantPast,
-					on: vm)
-
-				vm.persona(of: peer.0.id.peerID).biography = peer.1.biography
+		let ds = self.dataSource
+		self.readPeers { peers in
+			Task {
+				await ds.cleanup(allPeers: Set(peers.map { $0.0 }))
 			}
 		}
 	}
@@ -388,18 +386,23 @@ public final class PeeringController:
 	// MARK: Methods
 
 	/// Starts advertising our data via Bluetooth.
-	public func startAdvertising(restartOnly: Bool) async throws {
-		let (peerID, keyPair, info, biography, pictureResourceURL) = try await dataSource.advertiseData()
-
+	public func startAdvertising(data: AdvertiseData,
+								 restartOnly: Bool) throws {
 		// these values MAY arrive a little late, but that is very unlikely
-		self.discoveryManager.set(userIdentity: (peerID, keyPair))
+		self.discoveryManager.set(userIdentity: (data.peerID, data.keyPair))
 
 		guard !restartOnly || self.localPeerManager != nil else { return }
 
 		self.localPeerManager?.stopAdvertising()
 
-		let l = LocalPeerManager(peer: Peer(id: try PeereeIdentity(peerID: peerID, publicKey: keyPair.publicKey), info: info),
-								 biography: biography, keyPair: keyPair, pictureResourceURL: pictureResourceURL)
+		let l = LocalPeerManager(
+			peer: Peer(
+				id: try PeereeIdentity(
+					peerID: data.peerID, publicKey: data.keyPair.publicKey),
+				info: data.peerInfo),
+			biography: data.biography, keyPair: data.keyPair,
+			pictureResourceURL: data.pictureResourceURL)
+
 		self.localPeerManager = l
 		l.delegate = self
 		l.startAdvertising()
@@ -427,25 +430,49 @@ public final class PeeringController:
 	}
 
 	/// Remove peers from disk which haven't been seen for `MaxRememberedHours` and are not pin matched.
-	private func cleanupPersistedPeers(allPeers: Set<Peer>, lastSeens: [PeerID : Date]) async {
+	public func cleanupPersistedPeers(allPeers: Set<Peer>,
+									  cleanupPeerIDs: [PeerID]) {
 		let now = Date()
 		let never = Date.distantPast
 		let cal = Calendar.current as NSCalendar
 
-		let cleanupPeerIDs = await dataSource.cleanup(allPeers: allPeers.map { $0.id })
+		let lsDates = self.lastSeenDates
 
 		let removePeerIDs = cleanupPeerIDs.filter { peerID in
-			let lastSeenAgoCalc = cal.components(NSCalendar.Unit.hour, from: lastSeens[peerID] ?? never, to: now, options: []).hour
+			let lastSeenAgoCalc = cal.components(
+				NSCalendar.Unit.hour,
+				from: lsDates[peerID] ?? never,
+				to: now, options: []).hour
+
 			let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
 			return lastSeenAgo > PeeringController.MaxRememberedHours
 		}
 
-		do {
-			try await self.persistence.removePeers(allPeers.filter { peer in
-				removePeerIDs.contains(peer.id.peerID)
-			})
-		} catch {
-			await self.delegate.encodingPeersFailed(with: error)
+		let remainingPeers = allPeers.filter { peer in
+			removePeerIDs.contains(peer.id.peerID)
+		}
+
+		let p = self.persistence
+		let d = self.delegate
+		Task {
+			do {
+				try await p.removePeers(remainingPeers)
+			} catch {
+				await d.encodingPeersFailed(with: error)
+			}
+		}
+
+		let vm = self.viewModel
+
+		Task { @MainActor in
+			for peer in remainingPeers {
+				Self.updateViewModels(
+					of: peer,
+					lastSeen: lsDates[peer.id.peerID] ?? Date.distantPast,
+					on: vm)
+
+				// TODO: vm.persona(of: peer.id.peerID).biography = peer.biography
+			}
 		}
 	}
 
