@@ -61,6 +61,7 @@ final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 
 	// MARK: Methods
 
+	// TODO: this should be done on a non-main-actor for better app startup performance
 	func load() async throws {
 		guard !isLoaded else { return }
 
@@ -69,7 +70,13 @@ final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 			isLoaded = true
 		}
 
-		try await profile.load()
+		let profileData = try await withCheckedThrowingContinuation { continuation in
+			profile.loadAsync { result in
+				continuation.resume(with: result)
+			}
+		}
+
+		profile.load(data: profileData)
 
 		browseFilter = try await BrowseFilter.load()
 	}

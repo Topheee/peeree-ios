@@ -13,8 +13,21 @@ import PeereeDiscovery
 
 final class Profile: DiscoveryPerson {
 
-	func load() async throws {
-		let data = try await Self.userPeer.readProfileFromDisk()
+	/// Call ``load(data:)`` with the result of this function.
+	func loadAsync(_ completion: (@Sendable @escaping (Result<ProfileData, Error>) -> Void)) {
+		let up = self.userPeer
+		Task {
+			do {
+				let data = try await up.readProfileFromDisk()
+				completion(.success(data))
+			} catch {
+				completion(.failure(error))
+			}
+		}
+	}
+
+	/// Call with the result from ``loadAsync(_:)``.
+	func load(data: ProfileData) {
 		data.peerInfo.map { self.info = $0 }
 		self.picture = data.picture
 		self.birthday = data.birthday
@@ -24,8 +37,9 @@ final class Profile: DiscoveryPerson {
 	override var info: PeerInfo {
 		didSet {
 			let pi = info
+			let up = userPeer
 			Task {
-				await Self.userPeer.modify(peerInfo: pi)
+				await up.modify(peerInfo: pi)
 			}
 		}
 	}
@@ -34,12 +48,13 @@ final class Profile: DiscoveryPerson {
 		didSet {
 			//image = picture.map { Image(uiImage: $0) } ?? Image("PortraitPlaceholder")
 			cgPicture = picture?.cgImage
-			let pi = picture
+			guard let pi = picture else { return }
+			let up = userPeer
 			Task {
 				do {
-					try await Self.userPeer.modify(portrait: pi?.cgImage)
+					try await up.modify(portrait: pi.cgImage)
 				} catch {
-					InAppNotificationStackViewState.shared.display(genericError: error)
+					await InAppNotificationStackViewState.shared.display(genericError: error)
 				}
 			}
 
@@ -50,8 +65,9 @@ final class Profile: DiscoveryPerson {
 	override var biography: String {
 		didSet {
 			let pi = biography
+			let up = userPeer
 			Task {
-				await Self.userPeer.modify(biography: pi)
+				await up.modify(biography: pi)
 			}
 		}
 	}
@@ -61,8 +77,9 @@ final class Profile: DiscoveryPerson {
 			let birth = birthday
 			guard oldValue != birth else { return }
 
+			let up = userPeer
 			Task {
-				await Self.userPeer.modify(birthday: birth)
+				await up.modify(birthday: birth)
 			}
 
 			syncAge()
@@ -74,7 +91,7 @@ final class Profile: DiscoveryPerson {
 		self.isUser = true
 	}
 
-	private static let userPeer = UserPeer()
+	private let userPeer = UserPeer()
 }
 
 // For SwiftUI

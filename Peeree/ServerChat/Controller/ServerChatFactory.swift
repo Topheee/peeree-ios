@@ -12,8 +12,6 @@ import KeychainWrapper
 import PeereeCore
 
 private class CryptDelegate: MXCryptoV2MigrationDelegate {
-	nonisolated(unsafe) static let shared = CryptDelegate()
-
 	init() {
 		needsVerificationUpgrade = true
 	}
@@ -29,7 +27,7 @@ private class CryptDelegate: MXCryptoV2MigrationDelegate {
 }
 
 /// Must be called as soon as possible.
-private func configureServerChat() {
+private func configureServerChat(cryptDelegate: CryptDelegate) {
 	let options = MXSDKOptions.sharedInstance()
 	options.enableCryptoWhenStartingMXSession = true
 	options.disableIdenticonUseForUserAvatar = true
@@ -39,7 +37,7 @@ private func configureServerChat() {
 	options.applicationGroupIdentifier = messagingAppGroup
 	// it currently works without this so let's keep it that way: options.authEnableRefreshTokens = true
 	options.wellknownDomainUrl = "https://\(serverChatDomain)"
-	options.cryptoMigrationDelegate = CryptDelegate.shared
+	options.cryptoMigrationDelegate = cryptDelegate
 
 	MXKeyProvider.sharedInstance().delegate = EncryptionKeyManager()
 }
@@ -68,7 +66,7 @@ public actor ServerChatFactory {
 		self.delegate = delegate
 		self.conversationDelegate = conversationDelegate
 		globalRestClient.completionQueue = self.dQueue
-		configureServerChat()
+		configureServerChat(cryptDelegate: self.cryptDelegate)
 	}
 
 	/// Retrieves server chat interaction singleton.
@@ -189,6 +187,9 @@ public actor ServerChatFactory {
 		flog(ServerChatFactory.LogTag, "matrix certificate rejected: \(String(describing: _data))")
 		return false
 	}
+
+	/// Necessary for Matrix migrations.
+	private let cryptDelegate = CryptDelegate()
 
 	// MARK: Variables
 

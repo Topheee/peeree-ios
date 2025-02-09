@@ -9,7 +9,9 @@
 import SwiftUI
 
 // https://stackoverflow.com/a/68965407
-struct ForEachIndexed<Data: MutableCollection&RandomAccessCollection, RowContent: View, ID: Hashable>: View, DynamicViewContent where Data.Index : Hashable
+struct ForEachIndexed
+<Data: MutableCollection&RandomAccessCollection, RowContent: View, ID: Hashable>:
+	View, @preconcurrency DynamicViewContent where Data.Index : Hashable
 {
 	var data: [(Data.Index, Data.Element)] {
 		forEach.data
