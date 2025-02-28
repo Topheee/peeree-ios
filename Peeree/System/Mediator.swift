@@ -50,7 +50,7 @@ final class Mediator {
 	private var peeringController: PeeringController?
 
 	private func advertiseDataSync(_ completion: @MainActor @escaping
-								   (Result<AdvertiseData, Error>) -> Void) {
+								   (Result<AdvertiseData?, Error>) -> Void) {
 		Task {
 			do {
 				let data = try await self.advertiseData()
@@ -62,11 +62,13 @@ final class Mediator {
 	}
 
 	private func restartAdvertising() throws {
+		guard let pc = self.peeringController else { return }
 		advertiseDataSync { result in
 			// TODO: error handling
 			switch result {
 			case .success(let data):
-				guard let pc = self.peeringController else { return }
+				guard let data else { return }
+
 				do {
 					try pc.restartAdvertising(data: data)
 				} catch {
@@ -86,6 +88,7 @@ final class Mediator {
 		self.advertiseDataSync { result in
 			switch result {
 			case .success(let data):
+				guard let data else { return }
 				do {
 					try pc.startAdvertising(data: data, restartOnly: false)
 				} catch {
@@ -280,17 +283,18 @@ final class Mediator {
 	}
 
 	init() {
-		accountControllerFactory = .init(viewModel: socialViewState)
+		let isTest = true
+		accountControllerFactory = .init(viewModel: socialViewState,
+										 isTest: isTest)
 		socialController = SocialNetworkController(
 			authenticator: accountControllerFactory,
-			viewModel: socialViewState)
+			viewModel: socialViewState, isTest: isTest)
 	}
 
 	/// Run this on application startup.
 	func start() async throws {
-		Task { @MainActor in
-			self.socialViewState.delegate = self
-		}
+		self.socialViewState.delegate = self
+		self.discoveryViewState.backend = self
 
 		if notificationTask == nil {
 			notificationTask = observeNotifications()
@@ -298,9 +302,15 @@ final class Mediator {
 
 		// start Bluetooth and server chat, but only if account exists
 		if let ac = try await self.accountControllerFactory.use() {
-			try await self.setup(ac: ac, errorTitle: NSLocalizedString(
+
+			let factory = await ServerChatFactory(
+				ourPeerID: ac.peerID, delegate: self,
+				conversationDelegate: self.serverChatViewState)
+
+			try await self.setup(
+				factory: factory, errorTitle: NSLocalizedString(
 				"Login to Chat Server Failed", comment: "Error message title"))
-			try self.togglePeering(on: true)
+			self.togglePeering(on: true)
 		}
 
 		try await self.discoveryViewState.load()
@@ -310,7 +320,7 @@ final class Mediator {
 	func stop() {
 		Task {
 			await self.serverChatFactory?.closeServerChat()
-			try? self.togglePeering(on: false)
+			self.togglePeering(on: false)
 		}
 	}
 
@@ -322,18 +332,32 @@ final class Mediator {
 	}
 
 	func applicationDidReceiveMemoryWarning() {
-		try? self.togglePeering(on: false)
+		self.togglePeering(on: false)
 	}
 }
 
 // View states.
 extension Mediator {
 
-	/// Displays `error` to the user. `title` and `furtherDescription` must be localized.
-	func display(error: Error, title: String, furtherDescription: String? = nil) {
-		Task { @MainActor in
-			InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: error.localizedDescription, severity: .error, furtherDescription: nil))
-		}
+	/// Displays `message` to the user. `message`, `title`, and
+	/// `furtherDescription` must be localized.
+	func display(message: String, title: String,
+				 furtherDescription: String? = nil) {
+		elog(Self.LogTag, "\(title): \(message)")
+
+		InAppNotificationStackViewState.shared.display(
+			InAppNotification(
+				localizedTitle: title,
+				localizedMessage: message,
+				severity: .error, furtherDescription: furtherDescription))
+	}
+
+	/// Displays `error` to the user. `title` and `furtherDescription` must
+	/// be localized.
+	func display(error: Error, title: String,
+				 furtherDescription: String? = nil) {
+		self.display(message: error.localizedDescription, title: title,
+					 furtherDescription: furtherDescription)
 	}
 
 	@MainActor
@@ -426,13 +450,13 @@ extension Mediator: PeeringControllerDataSource {
 				  allPeers: allPeers, cleanupPeerIDs: cleanupPeerIDs)
 	}
 
-	func advertiseData() async throws -> AdvertiseData {
+	func advertiseData() async throws -> AdvertiseData? {
 		let ds = self.discoveryViewState
 		let info = ds.profile.info
 		let bio = ds.profile.biography
 
 		guard let ac = try await accountControllerFactory.use() else {
-			throw unexpectedNilError()
+			return nil
 		}
 
 		return .init(peerID: await ac.peerID, keyPair: await ac.keyPair,
@@ -461,10 +485,10 @@ extension Mediator: PeeringControllerDelegate {
 	}
 }
 
-extension Mediator {
+extension Mediator: DiscoveryBackend {
 
 	/// Turn `PeeringController` on or off.
-	func go(peering: Bool) {
+	private func go(peering: Bool) {
 		guard let pc = peeringController else { return }
 
 		self.advertiseDataSync { result in
@@ -504,7 +528,7 @@ extension Mediator {
 	}
 
 	/// Toggle the bluetooth network between _on_ and _off_.
-	func togglePeering(on: Bool) throws {
+	func togglePeering(on: Bool) {
 		let dvs = self.discoveryViewState
 
 		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
@@ -515,7 +539,14 @@ extension Mediator {
 			// PeeringController.isBluetoothOn is `false` in all cases here!
 			// Creating a PeeringController will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
 			let newPC = PeeringController(viewModel: dvs, dataSource: self, delegate: self)
-			try newPC.initialize()
+			do {
+				try newPC.initialize()
+			} catch {
+				let title = NSLocalizedString(
+					"Bluetooth Initialization Failed",
+					comment: "Low-level error")
+				self.display(error: error, title: title)
+			}
 
 			peeringController = newPC
 
@@ -524,7 +555,7 @@ extension Mediator {
 
 		if dvs.isBluetoothOn {
 			go(peering: on)
-		} else {
+		} else if on {
 			open(urlString: UIApplication.openSettingsURLString)
 		}
 	}
@@ -534,37 +565,35 @@ extension Mediator {
 // MARK: - Social Graph
 
 extension Mediator {
-	/// Sets up an `AccountController` after it was created.
-	private func setup(ac: AccountController, errorTitle: String) async throws {
+	/// Sets up an `ServerChatFactory` after it was created.
+	private func setup(factory: ServerChatFactory, errorTitle: String) async throws {
 		let nm = self.notificationManager
 		let dvs = self.discoveryViewState
 
-		do {
-			try await socialController.refreshBlockedContent()
-		} catch {
-			let title = NSLocalizedString("Objectionable Content Refresh Failed", comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed.")
-			let message = socialModuleErrorMessage(from: error)
-			Task { @MainActor in
-				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-			}
-		}
-
-		let factory = await ServerChatFactory(
-			ourPeerID: ac.peerID, delegate: self,
-			conversationDelegate: self.serverChatViewState)
 		self.serverChatFactory = factory
 
 		do {
-			let sc = try await factory.use(onlyLogin: false, dataSource: self)
+			let sc = try await factory.use(with: self)
 			self.serverChatViewState.backend = sc
 			nm.setupNotifications(mediator: self)
 		} catch {
 			if let scError = error as? ServerChatError {
 				let message = serverChatModuleErrorMessage(from: scError, on: dvs)
-				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: errorTitle, localizedMessage: message, severity: .error, furtherDescription: nil))
+				self.display(message: message, title: errorTitle)
 			} else {
 				self.display(error: error, title: errorTitle)
 			}
+		}
+
+		do {
+			try await socialController.refreshBlockedContent()
+		} catch {
+			// Do not completely fail; since account setup was successful.
+			let title = NSLocalizedString(
+				"Objectionable Content Refresh Failed",
+				comment: "Title of alert when the remote API call to refresh objectionable portrait hashes failed.")
+			let message = socialModuleErrorMessage(from: error)
+			self.display(message: message, title: title)
 		}
 	}
 }
@@ -577,25 +606,32 @@ extension Mediator: SocialViewDelegate {
 
 	private func createIdentityAsync() async {
 		do {
-			let ac = try await accountControllerFactory.createAccount()
+			let (ac, ca) = try await self.accountControllerFactory
+				.createAccount()
 
 			let title = NSLocalizedString("Chat Account Creation Failed",
 										  comment: "Error message title")
 
-			try await self.setup(ac: ac, errorTitle: title)
+			let sca = ServerChatAccount(
+				userID: ca.userID, accessToken: ca.accessToken,
+				homeServer: ca.homeServer, deviceID: ca.deviceID,
+				initialPassword: ca.initialPassword)
+
+			let factory = try await ServerChatFactory(
+				account: sca, ourPeerID: ac.peerID, delegate: self,
+				conversationDelegate: self.serverChatViewState)
+
+			try await self.setup(factory: factory, errorTitle: title)
 		} catch {
 			let title = NSLocalizedString("Account Creation Failed",
 										  comment: "Title of alert")
 			let message = socialModuleErrorMessage(from: error)
-			Task { @MainActor in
-				let desc = NSLocalizedString("Please go to the bottom of your profile to try again.", comment: "Further description of account creation failure error")
+			let desc = NSLocalizedString(
+				"Please go to the bottom of your profile to try again.",
+				comment: "Further description of account creation failure error")
 
-				InAppNotificationStackViewState.shared.display(
-					InAppNotification(localizedTitle: title,
-									  localizedMessage: message,
-									  severity: .error,
-									  furtherDescription: desc))
-			}
+			self.display(message: message, title: title,
+						 furtherDescription: desc)
 		}
 	}
 
@@ -605,7 +641,7 @@ extension Mediator: SocialViewDelegate {
 
 	private func deleteIdentityAsync() async {
 		do {
-			try self.togglePeering(on: false)
+			self.togglePeering(on: false)
 
 			if let f = self.serverChatFactory {
 				do {
@@ -614,13 +650,9 @@ extension Mediator: SocialViewDelegate {
 					let title = NSLocalizedString(
 					 "Chat Account Deletion Failed",
 					 comment: "Title of in-app alert.")
-
 					let message = serverChatModuleErrorMessage(
 						from: error, on: self.discoveryViewState)
-					InAppNotificationStackViewState.shared.display(
-						InAppNotification(
-							localizedTitle: title, localizedMessage: message,
-							severity: .error, furtherDescription: nil))
+					self.display(message: message, title: title)
 				}
 			}
 
@@ -628,11 +660,11 @@ extension Mediator: SocialViewDelegate {
 
 			await socialController.clearLocalData()
 		} catch {
-			let title = NSLocalizedString("Connection Error", comment: "Standard title message of alert for internet connection errors.")
+			let title = NSLocalizedString(
+				"Connection Error",
+				comment: "Standard title message of alert for internet connection errors.")
 			let message = socialModuleErrorMessage(from: error)
-			Task { @MainActor in
-				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-			}
+			self.display(message: message, title: title)
 		}
 	}
 
@@ -651,9 +683,13 @@ extension Mediator: SocialViewDelegate {
 			}
 
 			if socialViewState.accountExists != .on {
-				let title = NSLocalizedString("Peeree Identity Required", comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed.")
-				let message = NSLocalizedString("Tap on 'Profile' to create your Peeree identity.", comment: "The user lacks a Peeree account")
-				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
+				let title = NSLocalizedString(
+					"Peeree Identity Required",
+					comment: "Title of alert when the user wants to go online but lacks an account and it's creation failed.")
+				let message = NSLocalizedString(
+					"Tap on 'Profile' to create your Peeree identity.",
+					comment: "The user lacks a Peeree account")
+				self.display(message: message, title: title)
 			} else {
 				let peer = await self.readPeer(peerID)
 				guard let id = peer?.id else { return }
@@ -695,10 +731,9 @@ extension Mediator: SocialViewDelegate {
 			try await socialController.report(peerID: peerID, portrait: portrait, portraitHash: hash, hashSignature: Data())
 		} catch {
 			let message = socialModuleErrorMessage(from: error)
-			Task { @MainActor in
-				let title = NSLocalizedString("Reporting Portrait Failed", comment: "Title of alert dialog")
-				InAppNotificationStackViewState.shared.display(InAppNotification(localizedTitle: title, localizedMessage: message, severity: .error, furtherDescription: nil))
-			}
+			let title = NSLocalizedString("Reporting Portrait Failed",
+										  comment: "Title of alert dialog")
+			self.display(message: message, title: title)
 		}
 	}
 }

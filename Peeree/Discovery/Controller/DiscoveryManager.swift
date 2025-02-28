@@ -59,8 +59,10 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	}
 
 	/// Stop the discovery process.
-	func stopScan() {
-		self.centralManager.stopScan()
+	func stopScan(turnOff: Bool = true) {
+		if turnOff {
+			self.centralManager.stopScan()
+		}
 
 		// We may NOT do `self.encounteredPeripherals.removeAll()` here,
 		// as this deallocates the CBPeripheral and thus didDisconnect is never
@@ -218,7 +220,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			// just wait
 			break
 		case .poweredOff, .unsupported, .unauthorized:
-			stopScan()
+			stopScan(turnOff: false)
 		case .poweredOn:
 			break
 			// TODO: resume opManager

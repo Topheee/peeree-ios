@@ -7,7 +7,7 @@
 //
 
 // Platform Dependencies
-import UIKit
+import Foundation
 
 // Internal Dependencies
 import PeereeCore
@@ -61,7 +61,9 @@ func serverChatModuleErrorMessage(from error: ServerChatError, on discoveryViewS
 		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
 		return String(format: format, name)
 	case .noAccount:
-		return NSLocalizedString("No server chat account yet.", comment: "A chat function was used, but the account is not available.")
+		return NSLocalizedString(
+			"No chat account yet.",
+			comment: "A chat function was used but the account is not available.")
 	}
 }
 

@@ -44,49 +44,10 @@ public actor AccountControllerFactory {
 		)
 	}
 
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.ClientSideErrorResponse
-	) throws -> Never {
-		throw createApplicationError(
-			localizedDescription: "Programming error.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.InvalidSignatureResponse
-	) throws -> Never {
-		throw createApplicationError(
-			localizedDescription: "Severe Programming error.")
-	}
-
-	/// Handle API error.
-	private func handle(_ response: Components.Responses.RateLimitResponse
-	) throws -> Never {
-		throw createApplicationError(
-			localizedDescription: "Too many requests.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.ServerSideErrorResponse
-	) throws -> Never {
-		throw createApplicationError(localizedDescription: "Server error.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ statusCode: Int, _ payload: OpenAPIRuntime.UndocumentedPayload
-	) throws -> Never {
-		// TODO: localize
-		throw createApplicationError(
-			localizedDescription: "Unknown IdP error \(statusCode).")
-	}
-
 	// MARK: Methods
 
 	/// Call this as soon as possible.
-	public init(viewModel: AccountViewModelDelegate, isTest: Bool = false) {
+	public init(viewModel: AccountViewModelDelegate, isTest: Bool) {
 		self.viewModel = viewModel
 		self.isTest = isTest
 	}
@@ -111,9 +72,10 @@ public actor AccountControllerFactory {
 	}
 
 	/// Creates a new `PeereeIdentity` for the user.
-	public func createAccount() async throws -> AccountController {
-		if let i = instance {
-			return i
+	public func createAccount()
+	async throws -> (AccountController, ChatAccount) {
+		if instance != nil {
+			throw AccountError.accountAlreadyExists
 		}
 
 		let vm = self.viewModel
@@ -142,40 +104,56 @@ public actor AccountControllerFactory {
 
 			let publicKeyData = try keyPair.publicKey.externalRepresentation()
 
+			// TODO: we need to currently pass this, since swift server is broken
+			let channel = Components.Schemas.OutOfBandChannel(
+				channel: .init(name: "Bla"),
+				endpoint: "Blub"
+			)
+
 			let response = try await client()
-				.postAccount(query: .init(publicKey: .init(publicKeyData)))
+				.postAccount(query: .init(publicKey: .init(publicKeyData)),
+							 body: .json(channel))
 
 			switch response {
 			case .badRequest(let response):
-				try self.handle(response)
+				try await handle(response, logTag: Self.LogTag)
 			case .tooManyRequests(let response):
-				try self.handle(response)
+				try await handle(response, logTag: Self.LogTag)
 			case .internalServerError(let response):
-				try self.handle(response)
+				try await handle(response, logTag: Self.LogTag)
 			case .undocumented(statusCode: let statusCode, let payload):
-				try self.handle(statusCode, payload)
+				try await handle(statusCode, payload, logTag: Self.LogTag)
 			case .created(let response):
 				let account = try response.body.json
 				guard let peerID = UUID(uuidString: account.userID) else {
-					throw createApplicationError(
-						localizedDescription:
-							"Malformed peerID \(account.userID)")
+					try programmingError("Malformed peerID \(account.userID)")
 				}
 				let a = AccountController.create(
-					isTest: isTest, peerID: peerID, keyPair: keyPair,
-					viewModel: vm)
+					isTest: isTest, peerID: peerID, keyPair: keyPair)
 				self.setInstance(a)
 				self.reportCreatingInstance(result: .success(a), vm: vm)
+
+				let chatAccount = ChatAccount(
+					userID: account.chatAccount.userID,
+					accessToken: account.chatAccount.accessToken,
+					homeServer: account.chatAccount.serverURL,
+					deviceID: account.chatAccount.deviceID,
+					initialPassword: account.chatAccount.initialPassword)
 
 				Notification.Name.accountCreated
 					.post(on: a,
 						  userInfo: [PeerID.NotificationInfoKey : peerID])
 
-				return a
+				return (a, chatAccount)
 			}
 		} catch let error {
 			reportCreatingInstance(result: .failure(error), vm: vm)
-			throw error
+			if let apiError = error as? OpenAPIRuntime.ClientError {
+				// not beautiful, but easiest way to show transport errors
+				throw apiError.underlyingError
+			} else {
+				throw error
+			}
 		}
 	}
 
@@ -189,7 +167,14 @@ public actor AccountControllerFactory {
 			vm.accountExists = .turningOff
 		}
 
-		try await ac.deleteAccount()
+		do {
+			try await ac.deleteAccount()
+		} catch {
+			Task { @MainActor in
+				vm.accountExists = .on
+			}
+			throw error
+		}
 
 		await ac.clearLocalData()
 
@@ -231,6 +216,13 @@ public actor AccountControllerFactory {
 	/// Establish the singleton instance.
 	private func setInstance(_ ac: AccountController) {
 		instance = ac
+
+		let peerID = ac.peerID
+
+		Task { @MainActor in
+			viewModel.userPeerID = peerID
+			viewModel.accountExists = .on
+		}
 	}
 
 	/// Concludes registration process; must be called on `dQueue`!
@@ -251,8 +243,7 @@ public actor AccountControllerFactory {
 extension AccountControllerFactory: PeereeCore.Authenticator {
 	public func accessToken() async throws -> String {
 		guard let ac = try self.use() else {
-			throw createApplicationError(
-				localizedDescription: "Tried to access API without account.")
+			throw AccountError.noAccount
 		}
 
 		return try await ac.getAccessToken()

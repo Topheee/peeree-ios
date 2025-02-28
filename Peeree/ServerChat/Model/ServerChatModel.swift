@@ -15,10 +15,37 @@ import PeereeCore
 /// The Matrix domain.
 let serverChatDomain = "chat.peeree.de"
 
-let homeServerURL = URL(string: "https://\(serverChatDomain):8448/")!
-
 /// The app group.
 let messagingAppGroup = "group.86J6LQ96WM.de.peeree.messaging"
+
+/// Initial account information.
+public struct ServerChatAccount: Sendable {
+	public let userID: String
+	public let accessToken: String
+	public let homeServer: String
+	public let deviceID: String
+	public let initialPassword: String
+
+	public init(userID: String, accessToken: String, homeServer: String,
+				deviceID: String, initialPassword: String) {
+		self.userID = userID
+		self.accessToken = accessToken
+		self.homeServer = homeServer
+		self.deviceID = deviceID
+		self.initialPassword = initialPassword
+	}
+}
+
+extension ServerChatAccount {
+	/// Creates Matrix credentials for API use.
+	var credentials: MXCredentials {
+		let creds = MXCredentials(homeServer: self.homeServer,
+								  userId: self.userID,
+								  accessToken: self.accessToken)
+		creds.deviceId = self.deviceID
+		return creds
+	}
+}
 
 extension PeerID {
 	/// Use our string representation as a server chat username.

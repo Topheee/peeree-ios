@@ -86,6 +86,15 @@ public func createApplicationError(localizedDescription: String, code: Int = -1)
 	return NSError(domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath, code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
 }
 
+/// Always throws an error; use in situations where there must be a developer mistake.
+public func programmingError(_ description: String,
+							 code: Int = -1) throws -> Never {
+	throw NSError(
+		domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath,
+		code: code,
+		userInfo: [NSLocalizedDescriptionKey : description])
+}
+
 /// Creates an unrecoverable error describing an unexpected nil value.
 public func unexpectedNilError() -> Error {
 	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)

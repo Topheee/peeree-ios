@@ -110,20 +110,6 @@ struct ProfileView: View {
 
 				VStack {
 					VStack {
-						Text(socialViewState.userPeerID?.uuidString ?? "No identity.")
-							.font(.caption)
-							.fontWeight(.light)
-							.modify {
-								if #available(iOS 16, *) {
-									$0.italic(!socialViewState.accountExists.isOn)
-								} else {
-									if !socialViewState.accountExists.isOn {
-										$0.italic()
-									}
-								}
-							}
-							.padding(.top, 0.5)
-
 						Button(role: socialViewState.accountExists.isOn ? .destructive : .none) {
 							showCreateDeleteAccountDialog.toggle()
 						} label: {
@@ -196,7 +182,20 @@ struct ProfileView: View {
 								}
 							}
 						}
-						
+						Text(socialViewState.userPeerID?.uuidString ?? NSLocalizedString("No identity.", comment: "Placeholder for PeerID"))
+							.font(.caption)
+							.fontWeight(.light)
+							.modify {
+								if #available(iOS 16, *) {
+									$0.italic(!socialViewState.accountExists.isOn)
+								} else {
+									if !socialViewState.accountExists.isOn {
+										$0.italic()
+									}
+								}
+							}
+							.padding(.bottom, 0.5)
+
 						HStack(spacing: 24.0) {
 						 if #available(iOS 14, *) {
 							 Link("Website", destination: mainWebsite)
@@ -223,6 +222,10 @@ struct ProfileView: View {
 				}
 			}
 			.background(.regularMaterial)
+			.overlay(alignment: .top) {
+				InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
+					.padding()
+			}
 			.navigationBarTitle("Profile")
 			.toolbar {
 				ToolbarItem(placement: .navigationBarTrailing) {

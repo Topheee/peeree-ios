@@ -1,3 +1,11 @@
+---
+#
+#  peeree.yaml
+#  Peeree
+#
+#  Created by Christopher Kobusch on 22.01.25.
+#  Copyright © 2025 Kobusch. All rights reserved.
+#
 openapi: "3.0.3"
 
 ###############################################################################
@@ -14,10 +22,10 @@ info:
     url: https://www.peeree.de/en/about.html
     email: support@peeree.de
 servers:
-- url: https://api.peeree.de/v2
-  description: Production endpoint.
-- url: https://test-api.peeree.de/v2
-  description: Test endpoint.
+  - url: https://api.peeree.de/v2
+    description: Production endpoint.
+  - url: https://test-api.peeree.de/v2
+    description: Test endpoint.
 tags:
 - name: Contentfilter
 - name: Healthcheck
@@ -110,7 +118,8 @@ components:
             type: string
     MissingAccessTokenResponse:
       description: |
-        The `Authorization` header is not present or malformed. Must be HTTP code `401`.
+        The `Authorization` header is not present or malformed. Must be HTTP
+        code `401`.
     PinStateResponse:
       description: |
         The access token is invalid. Must be HTTP code `403`.

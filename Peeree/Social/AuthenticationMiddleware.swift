@@ -38,7 +38,7 @@ extension AuthenticationMiddleware: ClientMiddleware {
 		// Inject the token into the header.
 		var requestCopy = request
 		requestCopy.headerFields[.authorization] =
-			try await authenticator.accessToken()
+			"Bearer \(try await authenticator.accessToken())"
 
 		// Inject the token into the request and call the next middleware.
 		return try await next(requestCopy, body, baseURL)

@@ -34,18 +34,13 @@ extension Notification.Name {
 
 // https://swiftpackageindex.com/apple/swift-openapi-generator/1.6.0/tutorials/swift-openapi-generator/clientxcode
 public actor SocialNetworkController: PeereeCore.Authenticator {
-	/// The last issued access token.
-	private var cachedAccessToken: String?
-
-	/// Delegate to provide a fresh access token.
-	private let authenticator: PeereeCore.Authenticator
 
 	public var viewModel: any SocialViewModelDelegate
 
 	public var pinMatches: Set<PeerID> { return self.pinnedByPeers }
 
 	public init(authenticator: PeereeCore.Authenticator,
-				viewModel: any SocialViewModelDelegate, isTest: Bool = false) {
+				viewModel: any SocialViewModelDelegate, isTest: Bool) {
 		self.isTest = isTest
 		self.viewModel = viewModel
 		self.authenticator = authenticator
@@ -115,11 +110,11 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			self.pin(id: id, isPinMatch: isPinMatch)
 			self.updateModels(of: [id.peerID])
 		case .badRequest(let clientSideError):
-			try self.handle(clientSideError)
+			try await handle(clientSideError, logTag: Self.LogTag)
 		case .unauthorized(let error):
-			try self.handle(error)
+			try handle(error, logTag: Self.LogTag)
 		case .undocumented(let statusCode, let payload):
-			try self.handle(statusCode, payload)
+			try await handle(statusCode, payload, logTag: Self.LogTag)
 		}
 	}
 
@@ -142,11 +137,11 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			self.removePin(from: id)
 			self.updateModels(of: [id.peerID])
 		case .badRequest(let clientSideError):
-			try self.handle(clientSideError)
+			try await handle(clientSideError, logTag: Self.LogTag)
 		case .unauthorized(let error):
-			try self.handle(error)
+			try handle(error, logTag: Self.LogTag)
 		case .undocumented(let statusCode, let payload):
-			try self.handle(statusCode, payload)
+			try await handle(statusCode, payload, logTag: Self.LogTag)
 		}
 	}
 
@@ -161,7 +156,6 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			.init(path: .init(userID: userID),
 				  query: .init(signature: Base64EncodedData(hashSignature)),
 				  body: .jpeg(.init(jpgData))))
-
 		switch result {
 		case .accepted(_):
 			let vm = self.viewModel
@@ -177,11 +171,11 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 				Notification.Name.peerReported.post(for: peerID)
 			}
 		case .badRequest(let clientSideError):
-			try self.handle(clientSideError)
+			try await handle(clientSideError, logTag: Self.LogTag)
 		case .unauthorized(let error):
-			try self.handle(error)
+			try handle(error, logTag: Self.LogTag)
 		case .undocumented(let statusCode, let payload):
-			try self.handle(statusCode, payload)
+			try await handle(statusCode, payload, logTag: Self.LogTag)
 		}
 	}
 
@@ -218,7 +212,7 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			}
 
 		case .undocumented(let statusCode, let payload):
-			try self.handle(statusCode, payload)
+			try await handle(statusCode, payload, logTag: Self.LogTag)
 		}
 	}
 
@@ -298,11 +292,11 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			}
 
 		case .badRequest(let clientSideError):
-			try self.handle(clientSideError)
+			try await handle(clientSideError, logTag: Self.LogTag)
 		case .unauthorized(let error):
-			try self.handle(error)
+			try handle(error, logTag: Self.LogTag)
 		case .undocumented(let statusCode, let payload):
-			try self.handle(statusCode, payload)
+			try await handle(statusCode, payload, logTag: Self.LogTag)
 		}
 	}
 
@@ -329,14 +323,36 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 	// MARK: Authenticator
 
 	public func accessToken() async throws -> String {
-		if let cachedAccessToken { return cachedAccessToken }
+		if let (token, expiry) = self.cachedAccessToken, expiry > Date() {
+			return token
+		}
 
 		let token = try await authenticator.accessToken()
-		cachedAccessToken = token
+
+		let parts = token.split(
+			separator: Character("."), omittingEmptySubsequences: false
+		)
+
+		let expires: Date
+
+		if parts.count == 3,
+		   let json = Data(base64Encoded: String(parts[1])),
+		   let values = try? JSONDecoder().decode(AccessTokenJWT.self, from: json) {
+			// TODO: test
+			expires = values.exp
+		} else {
+			wlog(Self.LogTag, "Failed to parse access token.")
+			expires = Date.distantPast
+		}
+
+		cachedAccessToken = (token, expires)
 		return token
 	}
 
 	// MARK: - Private
+
+	/// Logging tag.
+	private static let LogTag = "SocialNetworkController"
 
 	/// User defaults key for pinned peers dictionary
 	private static let PinnedPeersKey = "PinnedPeers"
@@ -357,6 +373,9 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 	// MARK: Constants
 
 	private let isTest: Bool
+
+	/// Delegate to provide a fresh access token.
+	private let authenticator: PeereeCore.Authenticator
 
 	// MARK: Variables
 
@@ -382,6 +401,9 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 	/// Timestamp of last successful refresh of objectionable content.
 	private var lastObjectionableContentRefresh: Date
 
+	/// The last issued access token and its expiration date.
+	private var cachedAccessToken: (String, Date)?
+
 	// MARK: Methods
 
 	private func client() throws -> Client {
@@ -391,22 +413,6 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 			transport: URLSessionTransport(),
 			middlewares: [AuthenticationMiddleware(authenticator: self)]
 		)
-	}
-
-	private func handle(_ response: Components.Responses.ClientSideErrorResponse) throws -> Never {
-		// TODO: log response
-		throw createApplicationError(localizedDescription: "Programming error.")
-	}
-
-	private func handle(_ response: Components.Responses.MissingAccessTokenResponse) throws -> Never {
-		// TODO: log response
-		throw createApplicationError(localizedDescription: "Severe Programming error.")
-	}
-
-	private func handle(_ statusCode: Int, _ payload: OpenAPIRuntime.UndocumentedPayload) throws -> Never {
-		// TODO: localize and log
-		throw createApplicationError(
-			localizedDescription: "Unknown error \(statusCode).")
 	}
 
 	/// Calculates the current pin state machine state for `peerID`.

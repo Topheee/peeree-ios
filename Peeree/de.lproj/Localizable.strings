@@ -160,6 +160,9 @@
 /* Subhead of placeholder cell in Pin Matches view. */
 "Go online and pin new people!" = "Gehe online und pinne neue Leute!";
 
+/* Low-level error */
+"Going Online Failed" = "Online-gehen fehlgeschlagen";
+
 /* Peeree Homepage */
 "https://www.peeree.de/en/index.html" = "https://www.peeree.de/de/index.html";
 
@@ -235,11 +238,17 @@
 /* For whatever reason there is no description available for this Character Trait. */
 "No description available." = "No description available.";
 
+/* Placeholder for PeerID */
+"No identity." = "Fehlende Identität.";
+
 /* Subhead of the placeholder shown in browse view if no peers are around. */
 "No Peeree users around." = "Keine Peeree-Benutzer in der Nähe.";
 
 /* Heading of placeholder cell in Pin Matches view. */
 "No Pin Matches Yet" = "Noch keine Pin Matches";
+
+/* A chat function was used but the account is not available. */
+"No chat account yet." = "Noch kein Chat Account.";
 
 /* Low level error. */
 "no public key derivable" = "kein öffentlicher Schlüssel ableitbar";
@@ -558,7 +567,7 @@
 
 "Filter based on gender." = "Filtert nach Geschlecht.";
 
-"Age" = "Age";
+"Age" = "Alter";
 
 "Filter based on age." = "Filtert nach Alter.";
 

@@ -11,8 +11,39 @@ import MatrixSDK
 import PeereeCore
 
 // Declare a global actor
-@globalActor actor ChatActor {
-	static let shared = ChatActor()
+@globalActor public actor ChatActor {
+	// https://forums.swift.org/t/actor-assumeisolated-erroneously-crashes-when-using-a-dispatch-queue-as-the-underlying-executor/72434
+	final class DispatchQueueExecutor: SerialExecutor {
+		private let queue: DispatchQueue
+
+		init(queue: DispatchQueue) {
+			self.queue = queue
+		}
+
+		func enqueue(_ job: UnownedJob) {
+			self.queue.async {
+				job.runSynchronously(on: self.asUnownedSerialExecutor())
+			}
+		}
+
+		func asUnownedSerialExecutor() -> UnownedSerialExecutor {
+			UnownedSerialExecutor(ordinary: self)
+		}
+	}
+
+	public static let shared = ChatActor()
+
+	public static var sharedUnownedExecutor: UnownedSerialExecutor {
+		return UnownedSerialExecutor(
+			ordinary: DispatchQueueExecutor(queue: self.dQueue))
+	}
+
+	/// DispatchQueue for all actions on a `ServerChatFactory`.
+	static let dQueue: DispatchQueue = DispatchQueue(label: "de.peeree.ServerChat", qos: .default)
+
+//	public nonisolated var unownedExecutor: UnownedSerialExecutor {
+//		return Self.sharedUnownedExecutor
+//	}
 }
 
 /// Communications through a matrix session (`MXSession`); only access directly through `ServerChatFactory.chat()` to be on the right dispatch queue!

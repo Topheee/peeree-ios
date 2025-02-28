@@ -6,10 +6,16 @@
 //  Copyright © 2024 Kobusch. All rights reserved.
 //
 
+// Platform Dependencies
 import SwiftUI
+
+// Internal Dependencies
+import PeereeCore
 
 @MainActor
 final class InAppNotificationStackViewState: ObservableObject {
+	private static let LogTag = "InAppNotificationStackViewState"
+
 	static let shared = InAppNotificationStackViewState()
 
 	@Published private(set) var notifications: [InAppNotification] = []
@@ -20,10 +26,6 @@ final class InAppNotificationStackViewState: ObservableObject {
 		let now = Date()
 		return target.timeIntervalSince(now)
 	}
-
-//	func display(localizedTitle: String, localizedMessage: String, severity: InAppNotification.Severity, furtherDescription: String? = nil) {
-//		notifications.append(InAppNotification(localizedTitle: localizedTitle, localizedMessage: localizedMessage, severity: severity, furtherDescription: furtherDescription))
-//	}
 
 	func display(_ notification: InAppNotification) {
 		notifications.append(notification)
@@ -72,6 +74,11 @@ final class InAppNotificationStackViewState: ObservableObject {
 
 extension InAppNotificationStackViewState {
 	func display(genericError error: Error) {
-		self.display(InAppNotification(localizedTitle: NSLocalizedString("Unexpected Error", comment: "Title of alert"), localizedMessage: error.localizedDescription, severity: .error, furtherDescription: nil))
+		elog(Self.LogTag, "Displaying \(error)")
+		self.display(InAppNotification(
+			localizedTitle: NSLocalizedString("Unexpected Error",
+											  comment: "Title of alert"),
+			localizedMessage: error.localizedDescription,
+			severity: .error, furtherDescription: nil))
 	}
 }

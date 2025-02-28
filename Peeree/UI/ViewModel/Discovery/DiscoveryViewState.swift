@@ -13,6 +13,11 @@ import PeereeDiscovery
 
 import KeychainWrapper
 
+@MainActor
+protocol DiscoveryBackend {
+	func togglePeering(on: Bool)
+}
+
 // Global UI state.
 @MainActor
 final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
@@ -55,6 +60,8 @@ final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 
 	/// Display this peer in an overlay.
 	@Published var displayedPersona: DiscoveryPerson? = nil
+
+	var backend: DiscoveryBackend?
 
 	/// All encountered people.
 	private(set) var people: [PeerID : DiscoveryPerson] = [:]

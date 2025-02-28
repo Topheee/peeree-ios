@@ -28,10 +28,11 @@ struct InAppNotificationView: View {
 		VStack {
 			Text(notification.localizedTitle)
 				.font(.title3)
-				.lineLimit(1)
+				.lineLimit(expanded ? 2 : 3)
+				.foregroundColor(self.notification.severity == .info ? .black : .red)
 			Text(notification.localizedMessage)
 				.font(.body)
-				.lineLimit(expanded ? 3 : 1)
+				.lineLimit(expanded ? 4 : 3)
 			Text(notification.furtherDescription ?? "")
 				.font(.caption)
 				.lineLimit(expanded ? 6 : 1)

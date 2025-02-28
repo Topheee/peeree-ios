@@ -23,11 +23,11 @@ import OpenAPIRuntime
 public actor AccountController {
 
 	/// Creates a new `AccountController` for the user.
-	internal static func create(isTest: Bool, peerID: PeerID, keyPair: KeyPair,
-								viewModel: AccountViewModelDelegate) -> AccountController {
+	internal static func create(isTest: Bool, peerID: PeerID, keyPair: KeyPair
+	) -> AccountController {
 		UserDefaults.standard.set(peerID.uuidString, forKey: Self.PeerIDKey)
 
-		return AccountController(isTest: isTest, peerID: peerID, keyPair: keyPair, viewModel: viewModel)
+		return AccountController(isTest: isTest, peerID: peerID, keyPair: keyPair)
 	}
 
 	/// Load account data from disk; factory method for `AccountController`.
@@ -40,7 +40,8 @@ public actor AccountController {
 			return nil
 		}
 
-		return AccountController(isTest: isTest, peerID: peerID, keyPair: keyPair, viewModel: viewModel)
+		return AccountController(isTest: isTest, peerID: peerID,
+								 keyPair: keyPair)
 	}
 
 	/// Remove the Peeree account.
@@ -55,11 +56,6 @@ public actor AccountController {
 		try keyPair.removeFromKeychain()
 
 		UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
-
-		let vm = self.viewModel
-		Task { @MainActor in
-			vm.accountExists = .off
-		}
 	}
 
 	/// Retrieve an access token for API access.
@@ -73,11 +69,6 @@ public actor AccountController {
 		return try await String(collecting: body, upTo: 4096)
 	}
 
-	// MARK: Variables
-
-	/// UI delegate.
-	private let viewModel: AccountViewModelDelegate
-
 	// MARK: Constants
 
 	/// The crown juwels of the user and the second part of the user's identity.
@@ -89,17 +80,10 @@ public actor AccountController {
 	// MARK: - Private
 
 	/// Creates the AccountController singleton and installs it in the rest of the app.
-	private init(isTest: Bool, peerID: PeerID, keyPair: KeyPair,
-				 viewModel: AccountViewModelDelegate) {
+	private init(isTest: Bool, peerID: PeerID, keyPair: KeyPair) {
 		self.peerID = peerID
 		self.keyPair = keyPair
-		self.viewModel = viewModel
 		self.isTest = isTest
-
-		Task { @MainActor in
-			viewModel.userPeerID = peerID
-			viewModel.accountExists = .on
-		}
 	}
 
 	// MARK: Static Constants
@@ -122,47 +106,11 @@ public actor AccountController {
 	private var client: Client {
 		get throws {
 			Client(
-				serverURL: isTest ? try Servers.Server2.url() :
+				serverURL: isTest ? URL(string: "http://192.168.0.157:8080/v1")! : //try Servers.Server3.url() :
 					try Servers.Server1.url(),
 				transport: URLSessionTransport()
 			)
 		}
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.ClientSideErrorResponse
-	) throws -> Never {
-		throw createApplicationError(localizedDescription: "Programming error.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.InvalidSignatureResponse
-	) throws -> Never {
-		throw createApplicationError(localizedDescription: "Severe Programming error.")
-	}
-
-	/// Handle API error.
-	private func handle(_ response: Components.Responses.RateLimitResponse
-	) throws -> Never {
-		throw createApplicationError(localizedDescription: "Too many requests.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ response: Components.Responses.ServerSideErrorResponse
-	) throws -> Never {
-		throw createApplicationError(localizedDescription: "Server error.")
-	}
-
-	/// Handle API error.
-	private func handle(
-		_ statusCode: Int, _ payload: OpenAPIRuntime.UndocumentedPayload
-	) throws -> Never {
-		// TODO: localize
-		throw createApplicationError(
-			localizedDescription: "Unknown IdP error \(statusCode).")
 	}
 
 	/// Retrieve challenge and calculate response.
@@ -195,11 +143,6 @@ public actor AccountController {
 			try keyPair.removeFromKeychain()
 		} catch let error {
 			flog(Self.LogTag, "Could not delete keychain items. Creation of new identity will probably fail. Error: \(error.localizedDescription)")
-		}
-
-		let vm = self.viewModel
-		Task { @MainActor in
-			vm.accountExists = .off
 		}
 	}
 }

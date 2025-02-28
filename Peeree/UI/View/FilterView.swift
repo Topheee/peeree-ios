@@ -115,7 +115,7 @@ struct FilterView: View {
 					Toggle(isOn: $filter.onlyWithPicture) { Text("Only with picture available") }
 				}
 
-				Section(header: Text("Portrait"), footer: Text("Display people although they are filtered out. Notifications are still not triggered.")) {
+				Section(header: Text("Filter"), footer: Text("Display people although they are filtered out. Notifications are still not triggered.")) {
 					Toggle("Display filtered people", isOn: $filter.displayFilteredPeople)
 				}
 			}

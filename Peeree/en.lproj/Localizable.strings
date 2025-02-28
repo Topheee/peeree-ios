@@ -160,6 +160,9 @@
 /* Subhead of placeholder cell in Pin Matches view. */
 "Go online and pin new people!" = "Go online and pin new people!";
 
+/* Low-level error */
+"Going Online Failed" = "Going Online Failed";
+
 /* Peeree Homepage */
 "https://www.peeree.de/en/index.html" = "https://www.peeree.de/en/index.html";
 
@@ -235,11 +238,17 @@
 /* For whatever reason there is no description available for this Character Trait. */
 "No description available." = "No description available.";
 
+/* Placeholder for PeerID */
+"No identity." = "No identity.";
+
 /* Subhead of the placeholder shown in browse view if no peers are around. */
 "No Peeree users around." = "No Peeree users around.";
 
 /* Heading of placeholder cell in Pin Matches view. */
 "No Pin Matches Yet" = "No Pin Matches Yet";
+
+/* A chat function was used but the account is not available. */
+"No chat account yet." = "No chat account yet.";
 
 /* Low level error. */
 "no public key derivable" = "no public key derivable";

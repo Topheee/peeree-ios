@@ -11,7 +11,7 @@ import Foundation
 class UserDefaultsMock {
 	static let standard = UserDefaultsMock()
 
-	private var values = [String : Any]()
+	private var values = [String: Any]()
 
 	func set(_ value: Any?, forKey defaultName: String) {
 		if let value = value {

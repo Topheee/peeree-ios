@@ -136,7 +136,8 @@ struct MainView: View {
 					}
 				}
 				.onTapGesture {
-					//TODO: dis Mediator.shared.togglePeering(on: !discoveryViewState.peering)
+					self.discoveryViewState.backend?
+						.togglePeering(on: !discoveryViewState.peering)
 				}
 				.gesture(lookoutDragGesture)
 				.overlay(

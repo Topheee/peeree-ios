@@ -76,12 +76,14 @@ public final class PeeringController:
 	}
 
 	/// Controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
-	public func change(peering newValue: Bool, data: AdvertiseData) throws {
+	public func change(peering newValue: Bool, data: AdvertiseData?) throws {
 		guard newValue != self.discoveryManager.isScanning else { return }
 
 		if newValue {
 			self.discoveryManager.scan()
-			try self.startAdvertising(data: data, restartOnly: false)
+			if let data {
+				try self.startAdvertising(data: data, restartOnly: false)
+			}
 		} else {
 			self.stopAdvertising()
 			self.discoveryManager.stopScan()

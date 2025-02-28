@@ -46,7 +46,44 @@ private func configureServerChat(cryptDelegate: CryptDelegate) {
  * Similarly, all static variables must be accessed from that queue. Use `use()` to get on the queue. */
 
 /// Manages the server chat account and creates sessions (`ServerChat` instances).
-public actor ServerChatFactory {
+@ChatActor
+public final class ServerChatFactory {
+
+	/// Takes a freshly created account.
+	public convenience
+	init(account: ServerChatAccount, ourPeerID peerID: PeerID,
+		 delegate: ServerChatDelegate?,
+		 conversationDelegate: (any ServerChatViewModelDelegate)?
+	) async throws {
+		self.init(ourPeerID: peerID, delegate: delegate,
+				  conversationDelegate: conversationDelegate)
+
+		guard let passwordData = account.initialPassword
+			.data(prefixedEncoding: .utf8) else {
+			throw ServerChatError.fatal(ServerChatError
+				.parsing("Invalid initial password."))
+		}
+
+		do {
+			try persistPasswordInKeychain(passwordData)
+		} catch let error {
+			do {
+				try removePasswordFromKeychain()
+			} catch let removeError {
+				wlog(Self.LogTag,
+					 "Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
+			}
+
+			throw ServerChatError.fatal(error)
+		}
+
+		UserDefaults.standard.set(account.homeServer,
+								  forKey: Self.HomeServerKey)
+
+		try self.storeCredentialsInKeychain(account.credentials)
+
+		try await self.changePassword(of: account)
+	}
 
 	// MARK: Variables
 
@@ -65,7 +102,6 @@ public actor ServerChatFactory {
 		self.peerID = peerID
 		self.delegate = delegate
 		self.conversationDelegate = conversationDelegate
-		globalRestClient.completionQueue = self.dQueue
 		configureServerChat(cryptDelegate: self.cryptDelegate)
 	}
 
@@ -75,19 +111,15 @@ public actor ServerChatFactory {
 	}
 
 	/// Login, create account or get readily configured `ServerChatController`.
-	public func use(onlyLogin: Bool = true,
-					dataSource: ServerChatDataSource
-	) async throws -> ServerChat {
+	public func use(with dataSource: ServerChatDataSource)
+	async throws -> ServerChat {
+		if let scc = self.serverChatController { return scc }
 
-		if let scc = serverChatController { return scc }
-
-		// TODO: test this
 		do {
 			return try await resumeSession(dataSource: dataSource)
 		} catch {
 			// after we try to log in with the access token, proceed with password-based login
-			return try await self.loginProcess(
-				onlyLogin: onlyLogin, dataSource: dataSource)
+			return try await self.loginProcess(dataSource: dataSource)
 		}
 	}
 
@@ -99,7 +131,7 @@ public actor ServerChatFactory {
 
 	/// Closes the underlying session and invalidates the global ServerChatController instance.
 	public func closeServerChat(with error: Error? = nil) async {
-		await serverChatController?.close()
+		serverChatController?.close()
 		serverChatController = nil
 
 		Task { await self.delegate?.serverChatClosed(error: error) }
@@ -154,8 +186,11 @@ public actor ServerChatFactory {
 
 	// MARK: Static Constants
 
-	// Log tag.
+	/// Log tag.
 	private static let LogTag = "ServerChatFactory"
+
+	/// Home server URL key in user defaults.
+	private static let HomeServerKey = "HomeServerKey"
 
 	/// Matrix refresh token service attribute in keychain.
 	private static let RefreshTokenKeychainService = "RefreshTokenKeychainService"
@@ -174,19 +209,10 @@ public actor ServerChatFactory {
 
 	// MARK: Static Variables
 
-	/// DispatchQueue for all actions on a `ServerChatFactory`.
-	private let dQueue: DispatchQueue = DispatchQueue(label: "de.peeree.ServerChat", qos: .default)
-
 	// MARK: Constants
 
 	/// PeerID of the user.
 	private let peerID: PeerID
-
-	/// We need to keep a strong reference to the client s.t. it is not destroyed while requests are in flight
-	private let globalRestClient = MXRestClient(homeServer: homeServerURL) { _data in
-		flog(ServerChatFactory.LogTag, "matrix certificate rejected: \(String(describing: _data))")
-		return false
-	}
 
 	/// Necessary for Matrix migrations.
 	private let cryptDelegate = CryptDelegate()
@@ -209,36 +235,16 @@ public actor ServerChatFactory {
 
 
 	/// Perform the login.
-	private func loginProcess(
-		onlyLogin: Bool,
-		dataSource: ServerChatDataSource
-	) async throws -> ServerChatController {
-		do {
-			let credentials = try await login()
-			return try await self.setupInstance(with: credentials,
-												dataSource: dataSource)
-		} catch {
-			guard !onlyLogin else {
-				throw error
-			}
-
-			switch error {
-			case ServerChatError.noAccount:
-				let credentials = try await self.createAccount()
-				return try await self.setupInstance(with: credentials,
-													dataSource: dataSource)
-
-			default:
-				throw error
-			}
-		}
+	private func loginProcess(dataSource: ServerChatDataSource)
+	async throws -> ServerChatController {
+		let credentials = try await login()
+		return try await self.setupInstance(with: credentials,
+											dataSource: dataSource)
 	}
 
 	/// Creates an account on the chat server.
 	/// - Throws: `ServerChatError`
-	private func createAccount() async throws -> MXCredentials {
-		let username = peerID.serverChatUserName
-
+	private func changePassword(of account: ServerChatAccount) async throws {
 		var passwordRawData: Data
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
@@ -256,6 +262,7 @@ public actor ServerChatFactory {
 		assert(String(data: passwordData, encoding: .utf8) == passwordRawData.base64EncodedString())
 
 		do {
+			// TODO: do not overwrite old password here yet
 			try persistPasswordInKeychain(passwordData)
 		} catch let error {
 			do {
@@ -267,59 +274,31 @@ public actor ServerChatFactory {
 			throw ServerChatError.fatal(error)
 		}
 
-		let registerParameters: [String: Any] = ["auth" : ["type" : kMXLoginFlowTypeDummy],
-												 "username" : username,
-												 "password" : passwordRawData.base64EncodedString()]
+		let changePasswordClient = MXRestClient(credentials: account.credentials)
 
 		return try await withCheckedThrowingContinuation { continuation in
-			globalRestClient.register(
-				parameters: registerParameters) { registerResponse in
+			changePasswordClient.changePassword(
+				from: account.initialPassword,
+				to: passwordRawData.base64EncodedString(),
+				logoutDevices: true) { response in
 
-				switch registerResponse {
+				switch response {
 				case .failure(let error):
+					defer {
+						continuation
+							.resume(throwing: ServerChatError.sdk(error))
+					}
+
 					do {
 						try self.removePasswordFromKeychain()
 					} catch {
-						elog(Self.LogTag, "Could not remove password from"
+						flog(Self.LogTag, "Could not remove password from"
 							 + " keychain after failed registration: "
 							 + error.localizedDescription)
 					}
-					continuation.resume(throwing: ServerChatError.sdk(error))
 
-				case .success(let responseJSON):
-					guard let mxLoginResponse = MXLoginResponse(fromJSON: responseJSON) else {
-						continuation.resume(
-							throwing: ServerChatError.parsing(
-								"register response was no JSON: \(responseJSON)"))
-						return
-					}
-
-					let credentials = MXCredentials(
-						loginResponse: mxLoginResponse,
-						andDefaultCredentials: nil)
-
-					// Sanity check as done in MatrixSDK
-					guard credentials.userId != nil
-							|| credentials.accessToken != nil else {
-						continuation.resume(throwing: ServerChatError
-							.fatal(unexpectedNilError()))
-						return
-					}
-
-					do {
-						try self.storeCredentialsInKeychain(credentials)
-					} catch {
-						continuation.resume(
-							throwing: ServerChatError.fatal(error))
-						return
-					}
-
-					// this cost me at least one week: the credentials have the
-					// port stripped, because the `home_server` field in
-					// mxLoginResponse does not contain the port …
-					credentials.homeServer = homeServerURL.absoluteString
-
-					continuation.resume(returning: credentials)
+				case .success:
+					continuation.resume()
 				}
 			}
 		}
@@ -328,10 +307,28 @@ public actor ServerChatFactory {
 	/// Set always same parameters on `credentials`.
 	private func prepare(credentials: MXCredentials) throws {
 		// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
-		credentials.homeServer = homeServerURL.absoluteString
+		// TODO: credentials.homeServer = homeServerURL.absoluteString
 
 		// we currently only support one device
 		credentials.deviceId = try genericPasswordFromKeychain(account: self.keychainAccount, service: Self.DeviceIDKeychainService, encoding: Self.KeychainEncoding)
+	}
+
+	/// Log into server chat account, previously created with `createAccount()`.
+	private var homeServerURL: URL {
+		get {
+			let fallback = "https://\(serverChatDomain):8448/"
+
+			if let homeServer = UserDefaults.standard
+				.string(forKey: Self.HomeServerKey) {
+				if let url = URL(string: homeServer) {
+					return url
+				} else {
+					return URL(string: fallback)!
+				}
+			} else {
+				return URL(string: fallback)!
+			}
+		}
 	}
 
 	/// Log into server chat account, previously created with `createAccount()`.
@@ -350,7 +347,17 @@ public actor ServerChatFactory {
 			}
 		}
 
-		return try await withCheckedThrowingContinuation { continuation in
+		// We need to keep a strong reference to the client s.t. it is not
+		// destroyed while requests are in flight
+		let bootstrapMXClient = MXRestClient(homeServer: homeServerURL)
+		{ _data in
+			flog(ServerChatFactory.LogTag,
+				 "matrix certificate rejected: \(String(describing: _data))")
+			return false
+		}
+		bootstrapMXClient.completionQueue = ChatActor.dQueue
+
+		return try await withCheckedThrowingContinuation(isolation: ChatActor.shared) { continuation in
 			let parameters: [String : Any] = [
 				"type" : kMXLoginFlowTypePassword,
 				"identifier" : ["type" : kMXLoginIdentifierTypeUser,
@@ -360,22 +367,26 @@ public actor ServerChatFactory {
 				"user" : userId
 			]
 
-			globalRestClient.login(parameters: parameters) { response in
-				if let error = response.error as NSError?,
-				   let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
-					if mxErrCode == kMXErrCodeStringInvalidUsername {
-						elog(Self.LogTag, "Our account seems to be deleted."
-							 + " Removing password to be able to re-register.")
-						do {
-							try self.removePasswordFromKeychain()
-						} catch let pwError {
-							wlog(Self.LogTag, "Removing local password failed."
-								 + " This is not an issue if not existant."
-								 + pwError.localizedDescription)
+			bootstrapMXClient.login(parameters: parameters) { response in
+				if let error = response.error as NSError? {
+					defer {
+						continuation.resume(throwing: ServerChatError.sdk(error))
+					}
+
+					if let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
+						if mxErrCode == kMXErrCodeStringInvalidUsername {
+							elog(Self.LogTag, "Our account seems to be deleted."
+								 + " Removing password to be able to re-register.")
+							do {
+								try self.removePasswordFromKeychain()
+							} catch let pwError {
+								wlog(Self.LogTag, "Removing local password failed."
+									 + " This is not an issue if not existant."
+									 + pwError.localizedDescription)
+							}
 						}
 					}
 
-					continuation.resume(throwing: ServerChatError.sdk(error))
 					return
 				}
 
@@ -393,7 +404,7 @@ public actor ServerChatFactory {
 
 				let credentials = MXCredentials(
 					loginResponse: loginResponse,
-					andDefaultCredentials: self.globalRestClient.credentials)
+					andDefaultCredentials: nil)
 
 				do {
 					try self.storeCredentialsInKeychain(credentials)
@@ -406,7 +417,7 @@ public actor ServerChatFactory {
 				// this cost me at least one week: the credentials have the
 				// port stripped, because the `home_server` field in
 				// mxLoginResponse does not contain the port …
-				credentials.homeServer = homeServerURL.absoluteString
+				credentials.homeServer = self.homeServerURL.absoluteString
 
 				continuation.resume(returning: credentials)
 			}
@@ -432,10 +443,8 @@ public actor ServerChatFactory {
 
 	/// Tries to create a new session with a previous access token; prevents from creating new devices in Dendrite.
 	/// - Throws: `ServerChatError`
-	private func resumeSession(
-		dataSource: ServerChatDataSource
-	) async throws -> ServerChatController {
-
+	private func resumeSession(dataSource: ServerChatDataSource)
+	async throws -> ServerChatController {
 		do {
 			let token = try genericPasswordFromKeychain(account: keychainAccount, service:  Self.AccessTokenKeychainService, encoding: Self.KeychainEncoding)
 			let creds = MXCredentials(homeServer: homeServerURL.absoluteString, userId: userId, accessToken: token)
@@ -499,7 +508,7 @@ public actor ServerChatFactory {
 					// Our token was removed, probably due to an upgrade of the Matrix server.
 					// We need to remove it, s.t. password auth is again used to log in.
 					do {
-						try await removeGenericPasswordFromKeychain(
+						try removeGenericPasswordFromKeychain(
 							account: strongSelf.keychainAccount,
 							service: Self.AccessTokenKeychainService)
 					} catch {
@@ -508,7 +517,7 @@ public actor ServerChatFactory {
 					}
 
 					do {
-						try await removeGenericPasswordFromKeychain(
+						try removeGenericPasswordFromKeychain(
 							account: strongSelf.keychainAccount,
 							service: Self.RefreshTokenKeychainService)
 					} catch {
@@ -524,15 +533,15 @@ public actor ServerChatFactory {
 			completion?()
 		})
 
-		restClient.completionQueue = self.dQueue
+		restClient.completionQueue = ChatActor.dQueue
 
-		let c = await ServerChatController(
+		let c = ServerChatController(
 			peerID: self.peerID, restClient: restClient,
 			dataSource: dataSource)
 
 		let _ = await Task { @ChatActor in
-			c.conversationDelegate = await self.conversationDelegate
-			c.delegate = await self.delegate
+			c.conversationDelegate = self.conversationDelegate
+			c.delegate = self.delegate
 		}.value
 
 		do {
@@ -549,7 +558,7 @@ public actor ServerChatFactory {
 
 			return c
 		} catch {
-			await c.close()
+			c.close()
 			throw ServerChatError.sdk(error)
 		}
 	}
