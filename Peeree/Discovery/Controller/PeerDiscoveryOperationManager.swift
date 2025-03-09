@@ -20,8 +20,6 @@ import CSProgress
 
 /// Provides a means to react on key steps of the discovery process.
 protocol PeerDiscoveryOperationManagerDelegate: AnyObject {
-	/// The person was able to proof that they are in possession of the private key belonging to their public key.
-	func verified(_ peereeIdentity: PeereeIdentity)
 
 	/// The portrait transmit process has begun.
 	func beganLoadingPortrait(_ progress: CSProgress, of peerID: PeerID)
@@ -48,36 +46,11 @@ protocol PeerDiscoveryOperationManagerDelegate: AnyObject {
 /// Main class to handle the information retrieval process of a remote peer.
 final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegate {
 
-	/// State of authentication with remote peer.
-	public struct AuthenticationStatus: OptionSet {
-		public let rawValue: Int
-
-		/// We authenticated ourself to the peer.
-		public static let to   = AuthenticationStatus(rawValue: 1 << 0)
-
-		/// The peer authenticated to us.
-		public static let from = AuthenticationStatus(rawValue: 1 << 1)
-
-		/// The authentication is mutual.
-		public static let full: AuthenticationStatus = [.to, .from]
-
-		/// Create the status from a raw value.
-		public init(rawValue: Int) {
-			self.rawValue = rawValue
-		}
-	}
-
 	/// The PeerID of the remote peer we are discovering.
 	let peerID: PeerID
 
 	/// The account of the user, if available.
 	private(set) var userIdentity: (PeerID, KeyPair)? = nil
-
-	/// Needed for writing nonces.
-	let blockSize: Int
-
-	/// The state of authentication.
-	var authenticationStatus: AuthenticationStatus = []
 
 	/// Informed party of the discovery process.
 	weak var delegate: PeerDiscoveryOperationManagerDelegate?
@@ -86,40 +59,15 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	private(set) var state: PeerDiscoveryState
 
 	/// Create an the operation manager. Start it by using `beginDiscovery()`.
-	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue, blockSize: Int, userIdentity: (PeerID, KeyPair)?) {
+	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue,
+		 userIdentity: (PeerID, KeyPair)?) {
 		self.peerID = peerID
 		self.state = .discovered(lastChanged)
 		self.dQueue = dQueue
-		self.blockSize = blockSize
 		self.userIdentity = userIdentity
 
-		let opTreeGraph: [KeyValueTree<PeripheralOperation, Void>]
-
-		if userIdentity != nil {
-			opTreeGraph = [
-				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth1), nodes: [
-					.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeRemoteAuth2), value: ())
-				]),
-				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth1), nodes: [
-					.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth2), nodes: [
-						.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreePeerInfo), value: ())
-					])
-				])
-			]
-		} else {
-			// omit authenticating ourselves - since we can't without our own identity
-			opTreeGraph = [
-				.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth1), nodes: [
-					.branch(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreeAuth2), nodes: [
-						.leaf(key: PeripheralOperation(characteristicOperationTree: PeerDiscoveryOperationManager.opTreePeerInfo), value: ())
-					])
-				])
-			]
-		}
-
-		self.opTreeGraphDiscovery = opTreeGraph
-
-		self.opManager = PeripheralOperationTreeManager(operationTrees: opTreeGraphDiscovery, queue: dQueue)
+		self.opManager = PeripheralOperationTreeManager(
+			operationTrees: [self.opTreeGraph], queue: dQueue)
 	}
 
 	/// Begin the discovery process for a given peripheral.
@@ -215,21 +163,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 			return userPeerID.encode()
 
-		case CBUUID.AuthenticationCharacteristicID:
-			let writeType = CBCharacteristicWriteType.withResponse
-			let randomByteCount = min(peripheral.maximumWriteValueLength(for: writeType), self.blockSize)
-			let nonce = try generateRandomData(length: randomByteCount)
-			self.nonce = nonce
-			return nonce
-
-
-		case CBUUID.RemoteAuthenticationCharacteristicID:
-			guard let keyPair = self.userIdentity?.1 else {
-				throw unexpectedNilError()
-			}
-
-			return try keyPair.sign(message: self.remoteNonce)
-
 		default:
 			throw createApplicationError(localizedDescription: "unknown peripheral write operation")
 		}
@@ -237,56 +170,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 
 	func peripheralOperationFinished(_ operation: PeripheralOperation, model: KeyValueTree<CBUUID, Data>, of peripheral: CBPeripheral) {
 		switch operation.id {
-
-		case Self.idOpTreeAuth1:
-			// no-op
-			break
-
-		case Self.idOpTreeAuth2:
-			guard case let .discovered(lastChanged) = self.state else {
-				assertionFailure("wrong state \(self.state) after retrieving idOpTreeAuth2.")
-				delegate?.peerDiscoveryFailed(createApplicationError(localizedDescription: "Internal state inconsisteny."))
-				return
-			}
-
-			let identity: PeereeIdentity
-			let pubKey: AsymmetricPublicKey
-			do {
-				let verificationData = try self.decoder
-					.decode(VerificationData.self, from: sub(model: model))
-
-				identity = PeereeIdentity(peerID: self.peerID, publicKeyData: verificationData.publicKeyData)
-
-				pubKey = try identity.publicKey()
-				try pubKey.verify(message: nonce, signature: verificationData.nonceSignature)
-				try pubKey.verify(message: self.peerID.encode(), signature: verificationData.peerIDSignature)
-			} catch {
-				delegate?.peerDiscoveryFailed(error)
-				self.opManager.cancel()
-				return
-			}
-
-			self.state = .identified(Identified(publicKey: pubKey, lastChanged: lastChanged))
-
-			self.authenticationStatus.insert(AuthenticationStatus.from)
-
-			delegate?.verified(identity)
-
-		case Self.idOpTreeRemoteAuth1:
-			do {
-				let remoteIdentificationData = try self.decoder
-					.decode(RemoteIdentificationData.self,
-							from: sub(model: model))
-
-				self.remoteNonce = remoteIdentificationData.remoteNonce
-			} catch {
-				delegate?.peerDiscoveryFailed(error)
-				self.opManager.cancel()
-				return
-			}
-
-		case Self.idOpTreeRemoteAuth2:
-			self.authenticationStatus.insert(AuthenticationStatus.to)
 
 		case Self.idOpTreePeerData:
 			guard case let .identified(identified) = self.state else {
@@ -388,16 +271,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// The Decoder to unmarshal the results of the sub-operations.
 	private let decoder = KeyValueTreeCoding.DataTreeDecoder()
 
-	/// The ID of the first authentication step.
-	private static let idOpTreeAuth1UUID = UUID()
-	private static
-	var idOpTreeAuth1: CBUUID { CBUUID(nsuuid: idOpTreeAuth1UUID) }
-
-	/// The ID of the second authentication step.
-	private static let idOpTreeAuth2UUID = UUID()
-	private static
-	var idOpTreeAuth2: CBUUID { CBUUID(nsuuid: idOpTreeAuth2UUID) }
-
 	/// The ID of the first remote authentication step.
 	private static let idOpTreeRemoteAuth1UUID = UUID()
 	private static
@@ -422,67 +295,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	private static let idOpTreeBioUUID = UUID()
 	private static
 	var idOpTreeBio: CBUUID { CBUUID(nsuuid: idOpTreeBioUUID) }
-
-	/// The first authentication step.
-	private static
-	var opTreeAuth1: KeyValueTree<CBUUID, CharacteristicOperation> {
-		KeyValueTree<CBUUID, CharacteristicOperation>
-			.branch(key: idOpTreeAuth1, nodes: [
-				.branch(key: CBUUID.PeereeServiceID, nodes: [
-					.leaf(key: CBUUID.AuthenticationCharacteristicID,
-						  value: CharacteristicOperation(task: .write,
-														 mandatory: true))
-				])
-			])
-	}
-
-	/// The second authentication step.
-	private static
-	var opTreeAuth2: KeyValueTree<CBUUID, CharacteristicOperation> {
-		KeyValueTree<CBUUID, CharacteristicOperation>
-			.branch(key: idOpTreeAuth2, nodes: [
-				.branch(key: CBUUID.PeereeServiceID, nodes: [
-					.leaf(key: CBUUID.AuthenticationCharacteristicID,
-						  value: CharacteristicOperation(task: .read,
-														 mandatory: true)),
-					.leaf(key: CBUUID.PublicKeyCharacteristicID,
-						  value: CharacteristicOperation(task: .read,
-														 mandatory: true)),
-					.leaf(key: CBUUID.PeerIDSignatureCharacteristicID,
-						  value: CharacteristicOperation(task: .read,
-														 mandatory: true))
-				])
-			])
-	}
-
-	/// The  first remote authentication step.
-	private static
-	var opTreeRemoteAuth1: KeyValueTree<CBUUID, CharacteristicOperation> {
-		KeyValueTree<CBUUID, CharacteristicOperation>
-			.branch(key: idOpTreeRemoteAuth1, nodes: [
-				.branch(key: CBUUID.PeereeServiceID, nodes: [
-					.leaf(key: CBUUID.RemoteUUIDCharacteristicID,
-						  value: CharacteristicOperation(task: .write,
-														 mandatory: false)),
-					.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID,
-						  value: CharacteristicOperation(task: .read,
-														 mandatory: false))
-				])
-			])
-	}
-
-	/// The second remote authentication step.
-	private static
-	var opTreeRemoteAuth2: KeyValueTree<CBUUID, CharacteristicOperation> {
-		KeyValueTree<CBUUID, CharacteristicOperation>
-			.branch(key: idOpTreeRemoteAuth2, nodes: [
-				.branch(key: CBUUID.PeereeServiceID, nodes: [
-					.leaf(key: CBUUID.RemoteAuthenticationCharacteristicID,
-						  value: CharacteristicOperation(task: .write,
-														 mandatory: false))
-				])
-			])
-	}
 
 	/// The main information retrieval step.
 	private static
@@ -541,20 +353,16 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// Dependencies of the operations. The root node is the start state. Once all leaf nodes finish, the connection is closed.
 	///
 	/// Must not be static, because `PeripheralOperation` is a reference type!
-	private let opTreeGraphDiscovery: [KeyValueTree<PeripheralOperation, Void>]
+	private let opTreeGraph = KeyValueTree<PeripheralOperation, Void>
+		.leaf(key: PeripheralOperation(
+			characteristicOperationTree: PeerDiscoveryOperationManager
+				.opTreePeerInfo), value: ())
 
 	/// The callback dispatch queue of the `CBCentralManager`.
 	private let dQueue: DispatchQueue
 
 	/// The operation manager handling the process.
 	private var opManager: PeripheralOperationTreeManager
-
-	
-	/// Challenge sent during the authentication process.
-	private var nonce = Data()
-
-	/// Challenge received during the authentication process.
-	private var remoteNonce = Data()
 
 	/// Amount of recoverable failures encountered.
 	private var failures = -1
@@ -566,26 +374,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 		}
 
 		return modelNode.mapTypes({ CBUUIDCodingKey($0) }, { $0 })
-	}
-}
-
-fileprivate struct VerificationData: Codable {
-	let nonceSignature: Data
-	let publicKeyData: Data
-	let peerIDSignature: Data
-
-	enum CodingKeys: String, CodingKey {
-		case nonceSignature = "79427315-3071-4EA1-AD76-3FF04FCD51CF"
-		case publicKeyData = "2EC65417-7DE7-459B-A9CC-67AD01842A4F"
-		case peerIDSignature = "D05A4FA4-F203-4A76-A6EA-560152AD74A5"
-	}
-}
-
-fileprivate struct RemoteIdentificationData: Codable {
-	let remoteNonce: Data
-
-	enum CodingKeys: String, CodingKey {
-		case remoteNonce = "21AA8B5C-34E7-4694-B3E6-8F51A79811F3"
 	}
 }
 

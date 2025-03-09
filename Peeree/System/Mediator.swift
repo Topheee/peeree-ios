@@ -459,7 +459,12 @@ extension Mediator: PeeringControllerDataSource {
 			return nil
 		}
 
-		return .init(peerID: await ac.peerID, keyPair: await ac.keyPair,
+		let idToken = try await self.accountControllerFactory
+			.getIdentityToken(of: ac.peerID.uuidString)
+
+		return .init(peerID: await ac.peerID,
+					 identityToken: Data(idToken),
+					 keyPair: await ac.keyPair,
 					 peerInfo: info, biography: bio,
 					 pictureResourceURL: UserPeer.pictureResourceURL)
 	}
@@ -482,6 +487,23 @@ extension Mediator: PeeringControllerDelegate {
 
 	func decodingPeersFailed(with error: Error) {
 		self.display(error: error, title: NSLocalizedString("Decoding Recent Peers Failed", comment: "Low-level error"))
+	}
+
+	func proof(_ peerID: PeereeCore.PeerID,
+			   publicKey: any KeychainWrapper.AsymmetricPublicKey,
+			   identityToken: Data?) async {
+		// verify this peer is from the Peeree network
+
+		do {
+			try await self.accountControllerFactory.verify(
+				peerID, publicKey: publicKey, identityToken: identityToken)
+
+			// continue discovery
+
+			self.peeringController?.discover(peerID)
+		} catch {
+			elog(Self.LogTag, "Peer verification failed: \(error)")
+		}
 	}
 }
 

@@ -14,7 +14,8 @@ import PeereeCore
 import BLEPeripheralOperations
 
 /// Central delegate for discovery operations.
-protocol DiscoveryManagerDelegate: PeerDiscoveryOperationManagerDelegate {
+protocol DiscoveryManagerDelegate: PeerDiscoveryOperationManagerDelegate,
+								   PeerVerificationOperationManagerDelegate {
 	/// Bluetooth network state change indicator.
 	///
 	/// - Parameter isReady: If `true`, Bluetooth is up and we have permission to access it, otherwise `false`.
@@ -127,17 +128,39 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			return
 		}
 
-		if let peereeService = peripheral.peereeService {
-			// This characteristic is optional (only present on Android).
-			// Since the operation tree does not yet support optional characteristics, we handle this exception here by hand.
-			peripheral.discoverCharacteristics([CBUUID.ConnectBackCharacteristicID], for: peereeService)
+		// TODO: test if we can delete this if statement
+//		if let peereeService = peripheral.peereeService {
+//			// This characteristic is optional (only present on Android).
+//			// Since the operation tree does not yet support optional characteristics, we handle this exception here by hand.
+//			peripheral.discoverCharacteristics([CBUUID.ConnectBackCharacteristicID], for: peereeService)
+//		}
+
+		let opManager: PeerVerificationOperationManager
+		if let opm = self.verifyOperations[peerID] {
+			opManager = opm
+		} else {
+			opManager = PeerVerificationOperationManager(
+				peerID: peerID, nonceLength: self.blockSize,
+				dQueue: self.dQueue)
+			self.verifyOperations[peerID] = opManager
 		}
+
+		opManager.delegate = self.delegate
+		opManager.begin(on: peripheral)
+	}
+
+	func beginDiscovery(on peerID: PeereeCore.PeerID) {
+		guard let peripheral = self.peripheralPeerIDs[peerID] else { return }
 
 		let opManager: PeerDiscoveryOperationManager
 		if let opm = self.discoveryOperations[peerID] {
 			opManager = opm
 		} else {
-			opManager = PeerDiscoveryOperationManager(peerID: peerID, lastChanged: lastChangedDate, dQueue: self.dQueue, blockSize: self.blockSize, userIdentity: self.userIdentity)
+			opManager = PeerDiscoveryOperationManager(
+				peerID: peerID,
+				// hack: to not pass around the last changed date, just use now
+				lastChanged: Date(),
+				dQueue: self.dQueue, userIdentity: self.userIdentity)
 			self.discoveryOperations[peerID] = opManager
 		}
 
@@ -178,6 +201,10 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	/// First operation carried out when a peer is encountered.
 	private var identifyOperations = [CBPeripheral : PeerIdentificationOperationManager]()
 
+	/// First operation carried out when a peer is encountered.
+	private
+	var verifyOperations = [PeerID : PeerVerificationOperationManager]()
+
 	/// Manager to retrieve data from a peer.
 	private var discoveryOperations = [PeerID : PeerDiscoveryOperationManager]()
 
@@ -207,6 +234,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		self.identifyOperations[peripheral]?.cancel()
 		self.encounteredPeripherals[peripheral]?.map {
 			self.discoveryOperations[$0]?.cancel()
+			self.verifyOperations[$0]?.cancel()
 		}
 		centralManager.cancelPeripheralConnection(peripheral)
 	}
@@ -276,6 +304,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		guard let peerID = encounteredPeripherals.removeValue(forKey: peripheral), let peerID else { return }
 		self.peripheralPeerIDs.removeValue(forKey: peerID)
 		self.discoveryOperations.removeValue(forKey: peerID)
+		self.verifyOperations.removeValue(forKey: peerID)
 		delegate?.peerDisappeared(peerID, cbPeerID: peripheral.identifier)
 	}
 }

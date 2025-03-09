@@ -35,11 +35,17 @@ public actor AccountControllerFactory {
 	/// Whether the test backend should be used.
 	private let isTest: Bool
 
+	private var apiURL: URL {
+		get throws {
+			isTest ? URL(string: "http://192.168.0.157:8080/v1")! : //try Servers.Server2.url() :
+			try Servers.Server1.url()
+		}
+	}
+
 	/// Network client for IdP API access.
 	private func client() throws -> Client {
 		Client(
-			serverURL: isTest ? try Servers.Server2.url() :
-				try Servers.Server1.url(),
+			serverURL: try self.apiURL,
 			transport: URLSessionTransport()
 		)
 	}
@@ -203,10 +209,27 @@ public actor AccountControllerFactory {
 	private static let PublicKeyTag = "com.peeree.keys.restkey.public"
 		.data(using: .utf8)!
 
+	// From where to get JKS
+	private var jksURL: URL {
+		get throws {
+			// TODO: host JKS on another party
+			guard let result = URL(
+				self.isTest ? "https://peeree.de/.well-known/jwks-test" :
+					"https://peeree.de/.well-known/jwks") else {
+				throw unexpectedNilError()
+			}
+
+			return result
+		}
+	}
+
 	// MARK: Variables
 
 	/// Singleton instance of this class.
 	private var instance: AccountController?
+
+	/// Verifies the identity of other peers.
+	private var idTokenVerifier: TokenVerifier?
 
 	@MainActor
 	private let viewModel: AccountViewModelDelegate
@@ -236,6 +259,61 @@ public actor AccountControllerFactory {
 			case .failure(_):
 				vm.accountExists = .off
 			}
+		}
+	}
+}
+
+extension AccountControllerFactory {
+	public func getIdentityToken(of userID: String
+	) async throws -> ArraySlice<UInt8> {
+		guard let ac = try self.use() else {
+			throw AccountError.noAccount
+		}
+
+		return try await ac.getIdentityToken(of: userID)
+	}
+
+	public func verify(_ peerID: PeereeCore.PeerID,
+					   publicKey: any KeychainWrapper.AsymmetricPublicKey,
+					   identityToken: Data?) async throws {
+		let idTokenData: Data
+
+		if let identityToken {
+			idTokenData = identityToken
+		} else {
+			let identityToken = try await self
+				.getIdentityToken(of: peerID.uuidString)
+
+			idTokenData = Data(identityToken)
+		}
+
+		// verify that the token comes from the Peeree server
+
+		let verifier: TokenVerifier
+
+		if let v = self.idTokenVerifier {
+			verifier = v
+		} else {
+			verifier = .init(issuerURL: try self.apiURL)
+			// TODO: cache JKS
+			try await verifier.initialize(from: try self.jksURL)
+		}
+
+		let token = try await verifier.verifyIdentityToken(idTokenData)
+
+		guard let tokenPublicKeyData = token.pbk.value.data(using: .utf8),
+			  let tokenPublicKey = Data(base64Encoded: tokenPublicKeyData) else
+		{
+			throw unexpectedNilError()
+		}
+
+		// check if public key matches the one from the token
+
+		guard try publicKey.externalRepresentation() == tokenPublicKey else {
+			throw createApplicationError(
+				localizedDescription: NSLocalizedString(
+				"Someone is not who they say they are.",
+				comment: "Public key mismatch"))
 		}
 	}
 }

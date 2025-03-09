@@ -67,6 +67,9 @@
 		9D5B4AF12D6B644B00BE5D7A /* ChatAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4AF02D6B644800BE5D7A /* ChatAccount.swift */; };
 		9D5B4AFA2D6E5C7500BE5D7A /* AccessTokenJWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4AF92D6E5C7400BE5D7A /* AccessTokenJWT.swift */; };
 		9D5B4B222D71C8B000BE5D7A /* AccountError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */; };
+		9D5B4B2C2D75B40300BE5D7A /* PeerVerificationOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4B2B2D75B3FD00BE5D7A /* PeerVerificationOperationManager.swift */; };
+		9D5B4B2F2D76588400BE5D7A /* TokenVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */; };
+		9D5B4B322D7658BE00BE5D7A /* JWTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5B4B312D7658BE00BE5D7A /* JWTKit */; };
 		9D6A8C192ADF241700C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C182ADF241700C8239D /* CSProgress */; };
 		9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C1A2ADF244100C8239D /* CSProgress */; };
 		9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */; };
@@ -332,6 +335,8 @@
 		9D5B4AF02D6B644800BE5D7A /* ChatAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAccount.swift; sourceTree = "<group>"; };
 		9D5B4AF92D6E5C7400BE5D7A /* AccessTokenJWT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessTokenJWT.swift; sourceTree = "<group>"; };
 		9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountError.swift; sourceTree = "<group>"; };
+		9D5B4B2B2D75B3FD00BE5D7A /* PeerVerificationOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerVerificationOperationManager.swift; sourceTree = "<group>"; };
+		9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenVerifier.swift; sourceTree = "<group>"; };
 		9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentity.swift; sourceTree = "<group>"; };
 		9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountControllerFactory.swift; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
@@ -466,6 +471,7 @@
 				9DB4D6DC2D47E818004F3B48 /* KeychainWrapper in Frameworks */,
 				9DB4D6DE2D47E81E004F3B48 /* HTTPTypes in Frameworks */,
 				9DB4D6932D44F40C004F3B48 /* PeereeCore.framework in Frameworks */,
+				9D5B4B322D7658BE00BE5D7A /* JWTKit in Frameworks */,
 				9DB4D6922D44F40C004F3B48 /* OpenAPIURLSession in Frameworks */,
 				9DB4D6902D44F40C004F3B48 /* OpenAPIRuntime in Frameworks */,
 			);
@@ -683,6 +689,15 @@
 			path = PeereeUtility;
 			sourceTree = "<group>";
 		};
+		9D5B4B2D2D76584A00BE5D7A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */,
+				9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		9D5D46E9280C6BFF002174DB /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -697,7 +712,7 @@
 		9D5D46EA280C6C2C002174DB /* Account */ = {
 			isa = PBXGroup;
 			children = (
-				9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */,
+				9D5B4B2D2D76584A00BE5D7A /* Model */,
 				9D5B4AE62D6B42E400BE5D7A /* Utitlity.swift */,
 				9DC7E6EC2D41748B001F0C51 /* openapi.yaml */,
 				9DC7E6EA2D41746E001F0C51 /* openapi-generator-config.yaml */,
@@ -735,6 +750,7 @@
 				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
 				9D9F39EA2A34C7FA003115D3 /* DiscoveryManager.swift */,
 				9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */,
+				9D5B4B2B2D75B3FD00BE5D7A /* PeerVerificationOperationManager.swift */,
 				9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */,
 			);
 			path = Controller;
@@ -1135,6 +1151,7 @@
 				9DB4D6912D44F40C004F3B48 /* OpenAPIURLSession */,
 				9DB4D6DB2D47E818004F3B48 /* KeychainWrapper */,
 				9DB4D6DD2D47E81E004F3B48 /* HTTPTypes */,
+				9D5B4B312D7658BE00BE5D7A /* JWTKit */,
 			);
 			productName = PeereeIdP;
 			productReference = 9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */;
@@ -1325,6 +1342,7 @@
 				9DD57F9A2D308315005090FC /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
 				9DD57F9D2D30832E005090FC /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
 				9DB4D6D42D47E728004F3B48 /* XCRemoteSwiftPackageReference "swift-http-types" */,
+				9D5B4B302D7658BE00BE5D7A /* XCRemoteSwiftPackageReference "jwt-kit" */,
 			);
 			productRefGroup = 9DA0F7B61B5C3AB800F3BA87 /* Products */;
 			projectDirPath = "";
@@ -1524,6 +1542,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D5B4B2F2D76588400BE5D7A /* TokenVerifier.swift in Sources */,
 				9DB4D68A2D44F3E8004F3B48 /* AccountViewModelDelegate.swift in Sources */,
 				9D5B4AF12D6B644B00BE5D7A /* ChatAccount.swift in Sources */,
 				9D5B4AE72D6B42E800BE5D7A /* Utitlity.swift in Sources */,
@@ -1568,6 +1587,7 @@
 			files = (
 				9DD33C0F29FFA9FF0046165E /* PeerDescription.swift in Sources */,
 				9DD33C0C29FFA9FF0046165E /* DiscoveryExtensions.swift in Sources */,
+				9D5B4B2C2D75B40300BE5D7A /* PeerVerificationOperationManager.swift in Sources */,
 				9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */,
 				9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */,
 				9DCC48AC2D57680D00EC5BED /* AdvertiseData.swift in Sources */,
@@ -2727,6 +2747,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		9D5B4B302D7658BE00BE5D7A /* XCRemoteSwiftPackageReference "jwt-kit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vapor/jwt-kit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.2;
+			};
+		};
 		9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/CharlesJS/CSProgress.git";
@@ -2810,6 +2838,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */;
 			productName = KeyValueTree;
+		};
+		9D5B4B312D7658BE00BE5D7A /* JWTKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D5B4B302D7658BE00BE5D7A /* XCRemoteSwiftPackageReference "jwt-kit" */;
+			productName = JWTKit;
 		};
 		9D6A8C182ADF241700C8239D /* CSProgress */ = {
 			isa = XCSwiftPackageProductDependency;

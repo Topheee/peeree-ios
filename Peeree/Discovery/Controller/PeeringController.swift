@@ -36,6 +36,10 @@ public protocol PeeringControllerDelegate: Sendable {
 
 	/// If `isAvailable`, you might call `PeeringController.change(peering: true)`.
 	func bluetoothNetwork(isAvailable: Bool) async
+
+	/// Verify that this identity is actually part of the Peeree network.
+	func proof(_ peerID: PeerID, publicKey: AsymmetricPublicKey,
+			   identityToken: Data?) async
 }
 
 /// Names of notifications sent by `PeeringController`.
@@ -137,6 +141,11 @@ public final class PeeringController:
 		}
 	}
 
+	/// Call this after you verified the identity in `PeeringControllerDelegate.proof()`.
+	public func discover(_ peerID: PeerID) {
+		self.discoveryManager.beginDiscovery(on: peerID)
+	}
+
 	// MARK: LocalPeerManagerDelegate
 
 	func advertisingStarted() {}
@@ -162,6 +171,39 @@ public final class PeeringController:
 	}
 
 	// MARK: DiscoveryManagerDelegate
+
+	func discoveryManager(isReady: Bool) {
+		let vm = self.viewModel
+		let d = self.delegate
+		Task { @MainActor in
+			vm.isBluetoothOn = isReady
+			Task {
+				await d.bluetoothNetwork(isAvailable: isReady)
+			}
+		}
+	}
+
+	func scanningStopped() {
+		stopAdvertising()
+		connectionChangedState(false)
+	}
+
+	func peerAppearedAgain(_ peerID: PeerID) {
+		self.updateLastSeen(of: peerID)
+
+		// make sure the notification is sent only after the view model is updated:
+		Notification.Name.peerAppeared.post(for: peerID, userInfo: [Self.NotificationInfoKey.again: true])
+	}
+
+	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
+		localPeerManager?.disconnect(cbPeerID)
+
+		self.updateLastSeen(of: peerID)
+
+		Notification.Name.peerDisappeared.post(for: peerID)
+	}
+
+	// MARK: PeerDiscoveryOperationManagerDelegate
 
 	func beganLoadingPortrait(_ progress: CSProgress, of peerID: PeereeCore.PeerID) {
 		let fractionCompleted = progress.fractionCompleted
@@ -194,22 +236,6 @@ public final class PeeringController:
 		wlog(Self.LogTag, "peer discovery failed: \(error)")
 	}
 
-	func discoveryManager(isReady: Bool) {
-		let vm = self.viewModel
-		let d = self.delegate
-		Task { @MainActor in
-			vm.isBluetoothOn = isReady
-			Task {
-				await d.bluetoothNetwork(isAvailable: isReady)
-			}
-		}
-	}
-
-	func scanningStopped() {
-		stopAdvertising()
-		connectionChangedState(false)
-	}
-
 	private func updateLastSeen(of peerID: PeerID) {
 		let now = Date()
 		self.lastSeenDates[peerID] = now
@@ -219,21 +245,6 @@ public final class PeeringController:
 		Task { @MainActor in
 			vm.updateLastSeen(of: peerID, lastSeen: now)
 		}
-	}
-
-	func peerAppearedAgain(_ peerID: PeerID) {
-		self.updateLastSeen(of: peerID)
-
-		// make sure the notification is sent only after the view model is updated:
-		Notification.Name.peerAppeared.post(for: peerID, userInfo: [Self.NotificationInfoKey.again: true])
-	}
-
-	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
-		localPeerManager?.disconnect(cbPeerID)
-
-		self.updateLastSeen(of: peerID)
-
-		Notification.Name.peerDisappeared.post(for: peerID)
 	}
 
 	func loaded(info: PeerInfo, of identity: PeereeIdentity) {
@@ -312,8 +323,21 @@ public final class PeeringController:
 		}
 	}
 
-	func verified(_ peereeIdentity: PeereeCore.PeereeIdentity) {
-		// ignored
+	// MARK: PeerVerificationOperationManagerDelegate
+
+	/// Verify that this identity is actually part of the Peeree network.
+	func proof(_ peerID: PeerID, publicKey: AsymmetricPublicKey,
+			   identityToken: Data?) {
+		let d = self.delegate
+		Task {
+			await d.proof(peerID, publicKey: publicKey,
+						  identityToken: identityToken)
+		}
+	}
+
+	/// Something went wrong during the discovery.
+	func peerVerificationFailed(_ error: Error, of peerID: PeerID) {
+		wlog(Self.LogTag, "peer verification failed: \(error)")
 	}
 
 	/// Creates the central entry point to the Discovery module.
@@ -397,14 +421,7 @@ public final class PeeringController:
 
 		self.localPeerManager?.stopAdvertising()
 
-		let l = LocalPeerManager(
-			peer: Peer(
-				id: try PeereeIdentity(
-					peerID: data.peerID, publicKey: data.keyPair.publicKey),
-				info: data.peerInfo),
-			biography: data.biography, keyPair: data.keyPair,
-			pictureResourceURL: data.pictureResourceURL)
-
+		let l = LocalPeerManager(advertiseData: data)
 		self.localPeerManager = l
 		l.delegate = self
 		l.startAdvertising()

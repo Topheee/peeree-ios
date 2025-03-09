@@ -390,6 +390,55 @@ extension Data {
 	}
 }
 
+extension UUID {
+	public var binaryRepresentation: [UInt8] {
+		return [
+			uuid.0,
+			uuid.1,
+			uuid.2,
+			uuid.3,
+			uuid.4,
+			uuid.5,
+			uuid.6,
+			uuid.7,
+			uuid.8,
+			uuid.9,
+			uuid.10,
+			uuid.11,
+			uuid.12,
+			uuid.13,
+			uuid.14,
+			uuid.15
+		]
+	}
+
+	public init?<D: DataProtocol>(binaryRepresentation: D) {
+		let b = binaryRepresentation
+		guard b.count > 15 else { return nil }
+
+		let firstIndex = b.startIndex
+
+		self.init(uuid: (
+			b[firstIndex],
+			b[b.index(firstIndex, offsetBy: 1)],
+			b[b.index(firstIndex, offsetBy: 2)],
+			b[b.index(firstIndex, offsetBy: 3)],
+			b[b.index(firstIndex, offsetBy: 4)],
+			b[b.index(firstIndex, offsetBy: 5)],
+			b[b.index(firstIndex, offsetBy: 6)],
+			b[b.index(firstIndex, offsetBy: 7)],
+			b[b.index(firstIndex, offsetBy: 8)],
+			b[b.index(firstIndex, offsetBy: 9)],
+			b[b.index(firstIndex, offsetBy: 10)],
+			b[b.index(firstIndex, offsetBy: 11)],
+			b[b.index(firstIndex, offsetBy: 12)],
+			b[b.index(firstIndex, offsetBy: 13)],
+			b[b.index(firstIndex, offsetBy: 14)],
+			b[b.index(firstIndex, offsetBy: 15)]
+		))
+	}
+}
+
 extension Bool {
 	/// Create an instance initialized to false, if <code>value</code> is zero, and true otherwise.
 	public init<T: BinaryInteger>(_ value: T) {

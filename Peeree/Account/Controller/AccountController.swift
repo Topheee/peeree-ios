@@ -27,13 +27,16 @@ public actor AccountController {
 	) -> AccountController {
 		UserDefaults.standard.set(peerID.uuidString, forKey: Self.PeerIDKey)
 
-		return AccountController(isTest: isTest, peerID: peerID, keyPair: keyPair)
+		return AccountController(isTest: isTest, peerID: peerID,
+								 keyPair: keyPair)
 	}
 
 	/// Load account data from disk; factory method for `AccountController`.
 	internal static func load(isTest: Bool, keyPair: KeyPair,
-							  viewModel: AccountViewModelDelegate) -> AccountController? {
-		guard let str = UserDefaults.standard.string(forKey: Self.PeerIDKey) else { return nil }
+							  viewModel: AccountViewModelDelegate
+	) -> AccountController? {
+		guard let str = UserDefaults.standard.string(
+			forKey: Self.PeerIDKey) else { return nil }
 		guard let peerID = UUID(uuidString: str) else {
 			flog(Self.LogTag, "our peer ID is not a UUID, deleting!")
 			UserDefaults.standard.removeObject(forKey: Self.PeerIDKey)
@@ -49,7 +52,7 @@ public actor AccountController {
 		let signature = try await getSignature()
 
 		let response = try await client.deleteAccount(
-			headers: .init(userID: userID, signature: signature))
+			path: .init(userID: userID), headers: .init(signature: signature))
 
 		let _ = try response.ok
 
@@ -63,10 +66,21 @@ public actor AccountController {
 		let signature = try await getSignature()
 
 		let response = try await client.getAccess(
-			headers: .init(userID: userID, signature: signature))
+			path: .init(userID: userID), headers: .init(signature: signature))
 
 		let body = try response.ok.body.plainText
 		return try await String(collecting: body, upTo: 4096)
+	}
+
+	/// Retrieve an access token for API access.
+	internal func getIdentityToken(of userID: String) async throws -> ArraySlice<UInt8> {
+		let signature = try await getSignature()
+
+		let response = try await client.getIdentity(
+			path: .init(userID: userID))
+
+		let body = try response.ok.body.plainText
+		return try await HTTPBody.ByteChunk(collecting: body, upTo: 4096)
 	}
 
 	// MARK: Constants
@@ -118,7 +132,7 @@ public actor AccountController {
 		let userID = self.peerID.uuidString
 
 		let response = try await client
-			.getChallenge(headers: .init(userID: userID))
+			.getChallenge(path: .init(userID: userID))
 
 		let challengeBody = try response.accepted.body.plainText
 		let base64Challenge = try await String(collecting: challengeBody,

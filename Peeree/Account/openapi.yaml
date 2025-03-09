@@ -180,7 +180,7 @@ components:
   parameters:
     userID:
       name: userID
-      in: header
+      in: path
       description: |
         The identity of a user.
         RFC 4122 version 4 universally unique identifier (UUID) of the user,
@@ -277,7 +277,7 @@ components:
 #                                     Paths                                   #
 ###############################################################################
 paths:
-  /access:
+  /access/{userID}:
     get:
       tags:
         - Account
@@ -326,6 +326,7 @@ paths:
           $ref: '#/components/responses/RateLimitResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
+  /account/{userID}:
     delete:
       tags:
         - Account
@@ -346,7 +347,7 @@ paths:
           $ref: '#/components/responses/InvalidSignatureResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
-  /account/public_key:
+  /account/{userID}/public_key:
     put:
       tags:
         - Account
@@ -377,7 +378,7 @@ paths:
           $ref: '#/components/responses/InvalidSignatureResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
-  /account/recovery_code:
+  /account/{userID}/recovery_code:
     post:
       tags:
         - Account
@@ -413,7 +414,7 @@ paths:
           $ref: '#/components/responses/InvalidSignatureResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
-  /challenge:
+  /challenge/{userID}:
     get:
       tags:
         - Account
@@ -483,7 +484,7 @@ paths:
         '500':
           description: |
             The server is unhealthy.
-  /identity:
+  /identity/{userID}:
     get:
       tags:
         - Account
@@ -491,16 +492,19 @@ paths:
       summary: Get Identity Token
       description: |
         Generates an identity token with limited lifetime.
+        The identity token is intended to be presented to other users. It proves
+        (offline) to other users that the account is valid.
+        Note that it is possible to obtain the identity token for any user -
+        this is mainly for backwards compatibility reasons.
       parameters:
         - $ref: '#/components/parameters/userID'
-        - $ref: '#/components/parameters/signature'
       responses:
         '200':
           $ref: '#/components/responses/IdentityTokenResponse'
         '400':
           $ref: '#/components/responses/ClientSideErrorResponse'
-        '403':
-          $ref: '#/components/responses/InvalidSignatureResponse'
+        '429':
+          $ref: '#/components/responses/RateLimitResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
 

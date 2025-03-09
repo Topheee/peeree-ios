@@ -43,10 +43,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	private static let LogTag = "LocalPeerManager"
 
 	private let dQueue = DispatchQueue(label: "com.peeree.localpeermanager_q", qos: .utility, attributes: [])
-	private let peer: Peer
-	private let biography: String
-	private let keyPair: KeyPair
-	private let pictureResourceURL: URL
+	private let advertiseData: AdvertiseData
 
 	/// Handler for the Bluetooth framework.
 	private var peripheralManager: CBPeripheralManager? = nil
@@ -66,11 +63,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	weak var delegate: LocalPeerManagerDelegate?
 
 	/// Advertises the profile information to other peers.
-	init(peer: Peer, biography: String, keyPair: KeyPair, pictureResourceURL: URL) {
-		self.peer = peer
-		self.biography = biography
-		self.keyPair = keyPair
-		self.pictureResourceURL = pictureResourceURL
+	init(advertiseData: AdvertiseData) {
+		self.advertiseData = advertiseData
 	}
 
 	/// Begin advertising the Bluetooth service to other device around.
@@ -139,10 +133,11 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		dlog(Self.LogTag, "Central \(central.identifier.uuidString.left(8)) did subscribe to \(characteristic.uuid.uuidString.left(8)). Read size: \(central.maximumUpdateValueLength).")
 		switch characteristic.uuid {
 		case CBUUID.BiographyCharacteristicID:
+			let biography = advertiseData.biography
 			send(data: biography.data(prefixedEncoding: biography.smallestEncoding) ?? Data(), via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
 		case CBUUID.PortraitCharacteristicID:
 			do {
-				let data = try Data(contentsOf: pictureResourceURL)
+				let data = try Data(contentsOf: advertiseData.pictureResourceURL)
 				send(data: data, via: peripheral, of: characteristic as! CBMutableCharacteristic, to: central, sendSize: true)
 			} catch {
 				elog(Self.LogTag, "Failed to read user portrait: \(error.localizedDescription)")
@@ -170,7 +165,8 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
 		let centralID = request.central.identifier
 		dlog(Self.LogTag, "Did receive read on \(request.characteristic.uuid.uuidString.left(8)) from central \(centralID)")
-		if let data = peer.getCharacteristicValue(of: request.characteristic.uuid) {
+		if let data = advertiseData.peerInfo
+			.getCharacteristicValue(of: request.characteristic.uuid) {
 			// dead code, as we provided those values when we created the mutable characteristics
 			if (request.offset >= data.count) {
 				peripheral.respond(to: request, withResult: .invalidOffset)
@@ -184,8 +180,9 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 				return
 			}
 			do {
-				let signature = try keyPair.sign(message: nonce)
-				
+				let signature = try self.advertiseData.keyPair
+					.sign(message: nonce)
+
 				if (request.offset >= signature.count) {
 					peripheral.respond(to: request, withResult: .invalidOffset)
 				} else {
@@ -211,7 +208,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			do {
 				let randomByteCount = min(
 					request.central.maximumUpdateValueLength,
-					try keyPair.blockSize)
+					try self.advertiseData.keyPair.blockSize)
 
 				var nonce = try generateRandomData(length: randomByteCount)
 				remoteNonces[peerID] = nonce
@@ -328,54 +325,150 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 
 	/// Generate the to-be-advertised GATT service.
 	private func createService() -> CBMutableService {
+		let peerInfo = advertiseData.peerInfo
+		let peerIDData = Data(advertiseData.peerID.binaryRepresentation)
+		let oldPeerIDData = advertiseData.peerID.encode()
+		let publicKeyData = try? self.advertiseData.keyPair.publicKey
+			.externalRepresentation()
+
 		// value: PeerID of the person using the app.
-		let localPeerIDCharacteristic = CBMutableCharacteristic(type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read], value: peer.id.idData, permissions: [.readable])
+		let oldLocalPeerIDCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.OldLocalPeerIDCharacteristicID, properties: [.read],
+			value: oldPeerIDData, permissions: [.readable])
+
+		// value: PeerID of the person using the app.
+		let localPeerIDCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.LocalPeerIDCharacteristicID, properties: [.read],
+			value: peerIDData, permissions: [.readable])
+
 		// value: remote peer.idData
-		let remoteUUIDCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+		let remoteUUIDCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.RemoteUUIDCharacteristicID, properties: [.write],
+			value: nil, permissions: [.writeable])
+
 		// value: Data(count: 1)
-		let pinnedCharacteristic = CBMutableCharacteristic(type: CBUUID.PinMatchIndicationCharacteristicID, properties: [.write], value: nil, permissions: [.writeable])
+		let pinnedCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.PinMatchIndicationCharacteristicID,
+			properties: [.write], value: nil, permissions: [.writeable])
+
 		// value: Data representation of a CGImage.
-		let portraitCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+		let portraitCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.PortraitCharacteristicID, properties: [.indicate],
+			value: nil, permissions: [])
+
 		// value: aggregateData
-		let aggregateCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateCharacteristicID, properties: [.read], value: peer.info.aggregateData, permissions: [.readable])
+		let aggregateCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.AggregateCharacteristicID, properties: [.read],
+			value: peerInfo.aggregateData,
+			permissions: [.readable])
+
 		// value: lastChangedData
-		let lastChangedCharacteristic = CBMutableCharacteristic(type: CBUUID.LastChangedCharacteristicID, properties: [.read], value: peer.info.lastChangedData, permissions: [.readable])
+		let lastChangedCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.LastChangedCharacteristicID, properties: [.read],
+			value: peerInfo.lastChangedData,
+			permissions: [.readable])
+
 		// value nicknameData
-		let nicknameCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameCharacteristicID, properties: [.read], value: peer.info.nicknameData, permissions: [.readable])
+		let nicknameCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.NicknameCharacteristicID, properties: [.read],
+			value: peerInfo.nicknameData, permissions: [.readable])
+
 		// value: public key of the person using the app.
-		let publicKeyCharacteristic = CBMutableCharacteristic(type: CBUUID.PublicKeyCharacteristicID, properties: [.read], value: peer.id.publicKeyData, permissions: [.readable])
+		let publicKeyCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.PublicKeyCharacteristicID, properties: [.read],
+			value: publicKeyData,
+			permissions: [.readable])
+
 		// value nonce when read, signed nonce when written
-		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
-		let authCharacteristic = CBMutableCharacteristic(type: CBUUID.AuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
-		// Version 2: value with public key of peer encrypted nonce when read, signed nonce encrypted with user's public key when written
-		let remoteAuthCharacteristic = CBMutableCharacteristic(type: CBUUID.RemoteAuthenticationCharacteristicID, properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+		let authCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.AuthenticationCharacteristicID,
+			properties: [.read, .write], value: nil,
+			permissions: [.readable, .writeable])
+
+		let remoteAuthCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.RemoteAuthenticationCharacteristicID,
+			properties: [.read, .write], value: nil,
+			permissions: [.readable, .writeable])
+
 		// value: String.data(prefixedEncoding:)
-		let biographyCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographyCharacteristicID, properties: [.indicate], value: nil, permissions: [])
+		let biographyCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.BiographyCharacteristicID, properties: [.indicate],
+			value: nil, permissions: [])
+
+		let identityTokenCharacteristicID = CBMutableCharacteristic(
+			type: CBUUID.IdentityTokenCharacteristicID,
+			properties: [.read], value: self.advertiseData.identityToken,
+			permissions: [.readable])
 
 		// provide signature characteristics
-		var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil, nicknameSignature: Data? = nil, portraitSignature: Data? = nil, biographySignature: Data? = nil
+		var peerIDSignature: Data? = nil, aggregateSignature: Data? = nil,
+			nicknameSignature: Data? = nil, portraitSignature: Data? = nil,
+			biographySignature: Data? = nil, oldPeerIDSignature: Data? = nil 
+
+		let keyPair = self.advertiseData.keyPair
+		let biography = self.advertiseData.biography
 		do {
-			peerIDSignature = try keyPair.sign(message: peer.id.idData)
-			aggregateSignature = try keyPair.sign(message: peer.info.aggregateData)
-			nicknameSignature = try keyPair.sign(message: peer.info.nicknameData)
-			try biography.data(prefixedEncoding: biography.smallestEncoding).map { biographySignature = try keyPair.sign(message: $0) }
-			if peer.info.hasPicture {
-				let imageData = try Data(contentsOf: pictureResourceURL)
+			oldPeerIDSignature = try keyPair.sign(message: oldPeerIDData)
+			peerIDSignature = try keyPair.sign(message: peerIDData)
+			aggregateSignature = try keyPair
+				.sign(message: peerInfo.aggregateData)
+			nicknameSignature = try keyPair.sign(message: peerInfo.nicknameData)
+
+			try biography.data(prefixedEncoding: biography.smallestEncoding)
+				.map { biographySignature = try keyPair.sign(message: $0) }
+
+			if peerInfo.hasPicture {
+				let imageData = try Data(contentsOf: self.advertiseData
+					.pictureResourceURL)
 				portraitSignature = try keyPair.sign(message: imageData)
 			}
 		} catch {
-			elog(Self.LogTag, "Failed to create signature characteristics. (\(error.localizedDescription))")
+			elog(Self.LogTag, "Failed to create signature characteristics: "
+				 + error.localizedDescription)
 			delegate?.characteristicSigningFailed(with: error)
 		}
 
-		let peerIDSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read], value: peerIDSignature, permissions: [.readable])
-		let portraitSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read], value: portraitSignature, permissions: [.readable])
-		let aggregateSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.AggregateSignatureCharacteristicID, properties: [.read], value: aggregateSignature, permissions: [.readable])
-		let nicknameSignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read], value: nicknameSignature, permissions: [.readable])
-		let biographySignatureCharacteristic = CBMutableCharacteristic(type: CBUUID.BiographySignatureCharacteristicID, properties: [.read], value: biographySignature, permissions: [.readable])
+		let oldPeerIDSignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.OldPeerIDSignatureCharacteristicID,
+			properties: [.read], value: oldPeerIDSignature,
+			permissions: [.readable])
 
-		let peereeService = CBMutableService(type: CBUUID.PeereeServiceID, primary: true)
-		peereeService.characteristics = [localPeerIDCharacteristic, remoteUUIDCharacteristic, pinnedCharacteristic, portraitCharacteristic, aggregateCharacteristic, lastChangedCharacteristic, nicknameCharacteristic, publicKeyCharacteristic, authCharacteristic, remoteAuthCharacteristic, peerIDSignatureCharacteristic, portraitSignatureCharacteristic, aggregateSignatureCharacteristic, nicknameSignatureCharacteristic, biographyCharacteristic, biographySignatureCharacteristic]
+		let peerIDSignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.PeerIDSignatureCharacteristicID, properties: [.read],
+			value: peerIDSignature, permissions: [.readable])
+
+		let portraitSignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.PortraitSignatureCharacteristicID, properties: [.read],
+			value: portraitSignature, permissions: [.readable])
+
+		let aggregateSignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.AggregateSignatureCharacteristicID,
+			properties: [.read], value: aggregateSignature,
+			permissions: [.readable])
+
+		let nicknameSignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.NicknameSignatureCharacteristicID, properties: [.read],
+			value: nicknameSignature, permissions: [.readable])
+
+		let biographySignatureCharacteristic = CBMutableCharacteristic(
+			type: CBUUID.BiographySignatureCharacteristicID,
+			properties: [.read], value: biographySignature,
+			permissions: [.readable])
+
+		let peereeService = CBMutableService(type: CBUUID.PeereeServiceID,
+											 primary: true)
+
+		peereeService.characteristics = [
+			localPeerIDCharacteristic, remoteUUIDCharacteristic,
+			pinnedCharacteristic, portraitCharacteristic,
+			aggregateCharacteristic, lastChangedCharacteristic,
+			nicknameCharacteristic, publicKeyCharacteristic,
+			authCharacteristic, remoteAuthCharacteristic,
+			peerIDSignatureCharacteristic, portraitSignatureCharacteristic,
+			aggregateSignatureCharacteristic, nicknameSignatureCharacteristic,
+			biographyCharacteristic, biographySignatureCharacteristic,
+			oldLocalPeerIDCharacteristic, oldPeerIDSignatureCharacteristic,
+			identityTokenCharacteristicID]
 
 		return peereeService
 	}
@@ -435,20 +528,30 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	}
 }
 
-extension Peer {
-	/// Retrieves the binary data to be sent over Bluetooth for characteristics, which values are stored in a ``Peer``.
+extension PeereeIdentity {
+	/// Retrieves the binary data to be sent over Bluetooth for characteristics.
 	func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
 		switch characteristicID {
 		case CBUUID.LocalPeerIDCharacteristicID:
-			return id.idData
-		case CBUUID.AggregateCharacteristicID:
-			return info.aggregateData
-		case CBUUID.LastChangedCharacteristicID:
-			return info.lastChangedData
-		case CBUUID.NicknameCharacteristicID:
-			return info.nicknameData
+			return self.idData
 		case CBUUID.PublicKeyCharacteristicID:
-			return id.publicKeyData
+			return self.publicKeyData
+		default:
+			return nil
+		}
+	}
+}
+
+extension PeerInfo {
+	/// Retrieves the binary data to be sent over Bluetooth for characteristics.
+	func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
+		switch characteristicID {
+		case CBUUID.AggregateCharacteristicID:
+			return self.aggregateData
+		case CBUUID.LastChangedCharacteristicID:
+			return self.lastChangedData
+		case CBUUID.NicknameCharacteristicID:
+			return self.nicknameData
 		default:
 			return nil
 		}
