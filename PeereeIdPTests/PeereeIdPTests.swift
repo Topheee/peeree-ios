@@ -12,56 +12,101 @@ import Testing
 import KeychainWrapper
 import PeereeCore
 
-final class DummyAccountViewModelDelegate: AccountViewModelDelegate {
+final class MockAccountViewModelDelegate: AccountViewModelDelegate {
 	var userPeerID: PeereeCore.PeerID?
 
 	var accountExists: PeereeCore.RemoteToggle = .off
 }
 
-@MainActor
-struct PeereeIdPTests {
+/// Our underlying Keychain wrapper is shared, so we can't run tests in parallel with different accounts.
+@Suite(.serialized) struct IdPTestSuite {
 
-	/// The number added to the current sequence number after each server chat operation.
-	private let privateTag = "PeereeServerAPITests.Identity.Private"
-		.data(using: .utf8, allowLossyConversion: true)!
+	@MainActor @Suite(.serialized)
+	struct AccountTests {
+		private let viewModelDelegate: MockAccountViewModelDelegate = .init()
 
-	/// The number added to the current sequence number after each server chat operation.
-	private let publicTag = "PeereeServerAPITests.Identity.Public"
-		.data(using: .utf8, allowLossyConversion: true)!
+		private let factory: AccountControllerFactory
 
-	/// The PeerID of the test account in the local database. See `testCreateTestAccount()` on how to obtain this.
-	private let peerID = PeerID(uuidString: "DC20BF4B-02BF-4146-A84E-F6D740DBCFDF")!
-
-	/// The key pair of the test account; initialized in `setUp()`.
-	private let keyPair: KeyPair
-
-	private let factory = AccountControllerFactory(
-		viewModel: DummyAccountViewModelDelegate(), isTest: true)
-
-	init() throws {
-		self.keyPair = try KeyPair(privateTag: self.privateTag,
-								   publicTag: self.publicTag,
-								   algorithm: .ec,
-								   size: PeereeIdentity.KeySize,
-								   persistent: true)
-	}
-
-	@Test func testUnfunctions() async throws {
-		#expect(try await factory.use() == nil)
-		await #expect(throws: Error.self) {
-			try await factory.accessToken()
+		init() throws {
+			self.factory = AccountControllerFactory(
+				viewModel: viewModelDelegate, isTest: true)
 		}
 
+		@Test func testCreateDeleteAccount() async throws {
+			let (ac, ca) = try await self.factory
+				.createOrRecoverAccount(using: nil)
+
+			defer {
+				Task { await ac.clearLocalData() }
+				sleep(1)
+			}
+
+			#expect(ca.userID != "")
+			#expect(ca.accessToken != "")
+			#expect(ca.homeServer != "")
+			#expect(ca.deviceID != "")
+			#expect(ca.initialPassword != "")
+
+			let up = self.viewModelDelegate.userPeerID
+			let acPeerID = await ac.peerID
+
+			#expect(viewModelDelegate.accountExists == .on)
+			#expect(up == acPeerID)
+
+			await #expect(throws: Never.self) {
+				try await ac.getAccessToken()
+			}
+
+			await #expect(throws: Never.self) {
+				try await ac.getIdentityToken(of: ac.peerID)
+			}
+
+			try await self.factory.deleteAccount()
+
+			#expect(self.viewModelDelegate.accountExists == .off)
+			#expect(self.viewModelDelegate.userPeerID == nil)
+		}
 	}
 
-	@Test func testCreateAccount() async throws {
-		let ac = try await factory.createAccount()
+	@MainActor @Suite(.serialized)
+	final class IdPTests {
+		private let viewModelDelegate: MockAccountViewModelDelegate = .init()
 
-		await #expect(throws: Never.self) {
-			try await ac.getAccessToken()
+		private let factory: AccountControllerFactory
+
+		private let accountController: AccountController
+
+		init() async throws {
+			self.factory = AccountControllerFactory(
+				viewModel: viewModelDelegate, isTest: true)
+
+			let (ac, _) = try await self.factory.createOrRecoverAccount(using: nil)
+			self.accountController = ac
 		}
 
-		try await ac.deleteAccount()
-	}
+		deinit {
+			let f = self.factory
+			let ac = self.accountController
 
+			Task {
+				try? await f.deleteAccount()
+				await ac.clearLocalData()
+			}
+
+			sleep(2)
+		}
+
+		@Test func testAccessToken() async throws {
+			let at = try await self.accountController.getAccessToken()
+
+			#expect(!at.isEmpty)
+		}
+
+		@Test func testAccessTokenContent() async throws {
+			let accessTokenData = try await self.factory.accessToken()
+
+			#expect(!accessTokenData.accessToken.isEmpty)
+			#expect(accessTokenData.expiresAt > Date())
+		}
+	}
 }

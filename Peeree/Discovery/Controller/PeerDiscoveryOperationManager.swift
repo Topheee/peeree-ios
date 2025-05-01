@@ -150,7 +150,17 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	}
 
 	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, encounteredRecoverableError error: BLEPeripheralOperations.PeripheralOperationRecoverableError) -> Bool {
-		failures += 1
+		switch error {
+		case .parallelUse:
+			break
+		default:
+			wlog(Self.LogTag, "peripheral operation \(operation.id)"
+				 + " encountered recoverable error \(error.localizedDescription)"
+				 + " (failures: \(failures)).")
+
+			failures += 1
+		}
+
 		return failures < Self.MaxFailures
 	}
 
@@ -264,6 +274,9 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	}
 
 	// MARK: - Private
+
+	// Log tag.
+	private static let LogTag = "PeerDiscoveryOperationManager"
 
 	/// Maximum amount of failed 'recoverable' Bluetooth operations, before the process is aborted.
 	private static let MaxFailures = 3

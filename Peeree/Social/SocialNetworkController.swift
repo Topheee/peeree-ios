@@ -105,9 +105,11 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 
 		switch result {
 		case .ok(let ok):
-			// TODO: test: this is probably always false, since plainText is not a string
-			let isPinMatch = try ok.body.plainText == "true"
+			let body = try await String(
+				collecting: ok.body.plainText, upTo: 12)
+			let isPinMatch = body == "true"
 			self.pin(id: id, isPinMatch: isPinMatch)
+
 			self.updateModels(of: [id.peerID])
 		case .badRequest(let clientSideError):
 			try await handle(clientSideError, logTag: Self.LogTag)
@@ -322,30 +324,15 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 
 	// MARK: Authenticator
 
-	public func accessToken() async throws -> String {
-		if let (token, expiry) = self.cachedAccessToken, expiry > Date() {
+	public func accessToken() async throws -> AccessTokenData {
+		if let token = self.cachedAccessToken, token.expiresAt > Date() {
 			return token
 		}
 
 		let token = try await authenticator.accessToken()
 
-		let parts = token.split(
-			separator: Character("."), omittingEmptySubsequences: false
-		)
+		cachedAccessToken = token
 
-		let expires: Date
-
-		if parts.count == 3,
-		   let json = Data(base64Encoded: String(parts[1])),
-		   let values = try? JSONDecoder().decode(AccessTokenJWT.self, from: json) {
-			// TODO: test
-			expires = values.exp
-		} else {
-			wlog(Self.LogTag, "Failed to parse access token.")
-			expires = Date.distantPast
-		}
-
-		cachedAccessToken = (token, expires)
 		return token
 	}
 
@@ -402,7 +389,7 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 	private var lastObjectionableContentRefresh: Date
 
 	/// The last issued access token and its expiration date.
-	private var cachedAccessToken: (String, Date)?
+	private var cachedAccessToken: AccessTokenData?
 
 	// MARK: Methods
 

@@ -186,8 +186,6 @@ final class Mediator {
 						.observe(transform: { notification in
 							return notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
 						}) {
-						let sc = await self.serverChatFactory?.chat()
-						await sc?.initiateChat(with: peerID)
 						await self.peerAppeared(peerID, again: again)
 					}
 				}
@@ -228,11 +226,25 @@ final class Mediator {
 	}
 
 	private func peerAppeared(_ peerID: PeerID, again: Bool) {
-		guard !again, let model = discoveryViewState.people[peerID],
-			  let idModel = socialViewState.people[peerID],
-			  discoveryViewState.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
+		let dvs = self.discoveryViewState
 
-		let alertBodyFormat = NSLocalizedString("Found %@.", comment: "Notification alert body when a new peer was found on the network.")
+		guard !again, let model = dvs.people[peerID],
+			  let idModel = socialViewState.people[peerID],
+			  dvs.browseFilter.check(
+				info: model.info, pinState: idModel.pinState) else {
+
+			if self.appViewState.isActive ||
+				dvs.browseFilter.displayFilteredPeople {
+				self.load(peerID)
+			}
+
+			return
+		}
+
+		self.load(peerID)
+
+		let alertBodyFormat = NSLocalizedString("Found %@.",
+			comment: "Notification alert body when a new peer was found on the network.")
 
 		let category: NotificationManager.NotificationCategory =
 			idModel.pinState == .pinMatch ? .none : .peerAppeared
@@ -264,22 +276,6 @@ final class Mediator {
 
 	private func load(_ peerID: PeerID) {
 		self.peeringController?.loadAdditionalInfo(of: peerID, loadPortrait: true)
-	}
-
-	private func peerAppeared(_ peerID: PeerID) {
-		let dvs = self.discoveryViewState
-		let svs = self.socialViewState
-
-		if self.appViewState.isActive || dvs.browseFilter.displayFilteredPeople {
-			self.load(peerID)
-			return
-		}
-
-		guard let model = dvs.people[peerID],
-			  let idModel = svs.people[peerID],
-			  dvs.browseFilter.check(info: model.info, pinState: idModel.pinState) else { return }
-
-		self.load(peerID)
 	}
 
 	init() {
@@ -460,7 +456,7 @@ extension Mediator: PeeringControllerDataSource {
 		}
 
 		let idToken = try await self.accountControllerFactory
-			.getIdentityToken(of: ac.peerID.uuidString)
+			.getIdentityToken(of: ac.peerID)
 
 		return .init(peerID: await ac.peerID,
 					 identityToken: Data(idToken),
@@ -623,13 +619,14 @@ extension Mediator {
 // MARK: SocialViewDelegate
 extension Mediator: SocialViewDelegate {
 	func createIdentity() {
-		Task { await self.createIdentityAsync() }
+		Task { await self.createOrRestoreIdentityAsync(using: nil) }
 	}
 
-	private func createIdentityAsync() async {
+	private func createOrRestoreIdentityAsync(using recoveryCode: String?)
+	async {
 		do {
 			let (ac, ca) = try await self.accountControllerFactory
-				.createAccount()
+				.createOrRecoverAccount(using: recoveryCode)
 
 			let title = NSLocalizedString("Chat Account Creation Failed",
 										  comment: "Error message title")

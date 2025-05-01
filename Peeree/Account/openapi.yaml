@@ -16,15 +16,15 @@ info:
 #  summary: Identity provider API of Peeree.
   description: |
     Endpoint to manage Peeree accounts and API access.
-  version: "1.0.0"
+  version: "2.0.0"
   contact:
     name: Peeree Support
     url: https://www.peeree.de/en/about.html
     email: support@peeree.de
 servers:
-  - url: https://api-idp.peeree.de/v1
+  - url: https://api-idp.peeree.de/v2
     description: Production endpoint.
-  - url: https://test-api-idp.peeree.de/v1
+  - url: https://test-api-idp.peeree.de/v2
     description: Test endpoint.
 tags:
   - name: Account
@@ -65,6 +65,18 @@ components:
       description: |
         An account in the app. If `recoveryCode` is omitted, it was sent via a
         second channel.
+    Challenge:
+      type: object
+      required:
+        - operationID
+        - nonce
+      properties:
+        operationID:
+          $ref: '#/components/schemas/OperationID'
+        nonce:
+          $ref: '#/components/schemas/Nonce'
+      description: |
+        Random data to be signed by the requestor to prove their identity. 
     ChatAccount:
       type: object
       required:
@@ -116,6 +128,17 @@ components:
         - nonce: The challenge for the `getIdentity ` request.
         - pbk: The `PublicKey` of the user, base64-encoded.
         - sub: The `UserID` of the user.
+    Nonce:
+      type: string
+      format: byte
+      description: |
+        A random, opaque value.
+    OperationID:
+      type: integer
+      format: int64
+      description: |
+        Unique identifier representing an operation. Issued when requesting a
+        challenge.
     OutOfBandChannel:
       type: object
       description: |
@@ -188,6 +211,14 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/UserID'
+    operationID:
+      name: operationID
+      in: header
+      description: |
+        The operation ID obtained from `getChallenge`.
+      required: true
+      schema:
+        $ref: '#/components/schemas/OperationID'
     publicKey:
       name: publicKey
       in: query
@@ -277,7 +308,7 @@ components:
 #                                     Paths                                   #
 ###############################################################################
 paths:
-  /access/{userID}:
+  /access:
     get:
       tags:
         - Account
@@ -286,7 +317,7 @@ paths:
       description: |
         Generates an access token with limited lifetime.
       parameters:
-        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/operationID'
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
@@ -305,11 +336,31 @@ paths:
       summary: Account Creation
       description: |
         Creates a new user account with the provided public key.
+        Alternatively, if a `recoveryCode` is specified, an account is
+        restored. In this case, a new public key for the user is established.
+        Additionally, the chat account´s password is reset. This can be used
+        when the user moved to a new device.
       parameters:
         - $ref: '#/components/parameters/publicKey'
+        - name: recoveryCode
+          in: header
+          description: |
+            The recovery code generated during account creation.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RecoveryCode'
       requestBody:
         $ref: '#/components/requestBodies/outOfBandChannel'
       responses:
+        '200':
+          description: |
+            The account was restored. The new chat password is sent back.
+            Note that the `ChatAccount` does not contain an access token or 
+            device_id in this case (or, rather, empty strings).
+          content:
+           'application/json':
+              schema:
+                $ref: '#/components/schemas/Account'
         '201':
           description: |
             A new account was created.
@@ -326,7 +377,6 @@ paths:
           $ref: '#/components/responses/RateLimitResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
-  /account/{userID}:
     delete:
       tags:
         - Account
@@ -335,7 +385,7 @@ paths:
       description: |
         Deletes a user account.
       parameters:
-        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/operationID'
         - $ref: '#/components/parameters/signature'
       responses:
         '200':
@@ -347,38 +397,7 @@ paths:
           $ref: '#/components/responses/InvalidSignatureResponse'
         '500':
           $ref: '#/components/responses/ServerSideErrorResponse'
-  /account/{userID}/public_key:
-    put:
-      tags:
-        - Account
-      operationId: putAccountPublicKey
-      summary: Reset Public Key
-      description: |
-        Establishes a new public key for the user.
-        This request can be used when the user moved to a new device.
-        The signature of this request must be computed using the new public
-        key.
-      parameters:
-        - $ref: '#/components/parameters/userID'
-        - $ref: '#/components/parameters/signature'
-        - $ref: '#/components/parameters/publicKey'
-        - name: recoveryCode
-          in: header
-          description: |
-            The recovery code generated during account creation.
-          required: true
-          schema:
-            $ref: '#/components/schemas/RecoveryCode'
-      responses:
-        '200':
-          $ref: '#/components/responses/IdentityTokenResponse'
-        '400':
-          $ref: '#/components/responses/ClientSideErrorResponse'
-        '403':
-          $ref: '#/components/responses/InvalidSignatureResponse'
-        '500':
-          $ref: '#/components/responses/ServerSideErrorResponse'
-  /account/{userID}/recovery_code:
+  /account/recovery_code:
     post:
       tags:
         - Account
@@ -389,7 +408,7 @@ paths:
         This request can be used when the original recovery code is no longer
         trusted.
       parameters:
-        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/operationID'
         - $ref: '#/components/parameters/signature'
       requestBody:
         $ref: '#/components/requestBodies/outOfBandChannel'
@@ -430,10 +449,9 @@ paths:
           description: |
             A generated, temporary challenge is returned.
           content:
-            'text/plain':
+           'application/json':
               schema:
-                type: string
-                format: byte
+                $ref: '#/components/schemas/Challenge'
         '400':
           $ref: '#/components/responses/ClientSideErrorResponse'
         '429':
@@ -492,8 +510,8 @@ paths:
       summary: Get Identity Token
       description: |
         Generates an identity token with limited lifetime.
-        The identity token is intended to be presented to other users. It proves
-        (offline) to other users that the account is valid.
+        The identity token is intended to be presented to other users. It
+        proves (offline) to other users that the account is valid.
         Note that it is possible to obtain the identity token for any user -
         this is mainly for backwards compatibility reasons.
       parameters:

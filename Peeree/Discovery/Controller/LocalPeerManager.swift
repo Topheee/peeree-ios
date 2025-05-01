@@ -208,7 +208,7 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 			do {
 				let randomByteCount = min(
 					request.central.maximumUpdateValueLength,
-					try self.advertiseData.keyPair.blockSize)
+					try self.advertiseData.keyPair.privateKeyBlockSize)
 
 				var nonce = try generateRandomData(length: randomByteCount)
 				remoteNonces[peerID] = nonce

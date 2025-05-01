@@ -80,7 +80,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	func set(userIdentity: (peerID: PeerID, keyPair: KeyPair)?) {
 		self.userIdentity = userIdentity
 		self.blockSize =
-		(try? userIdentity?.keyPair.blockSize) ?? self.blockSize
+		(try? userIdentity?.keyPair.privateKeyBlockSize) ?? self.blockSize
 	}
 
 	/// Call this at best immediately from `PeerDiscoveryOperationManagerDelegate.peerDiscoveryFinished(peerLastChangedDate:, of:)`.

@@ -19,6 +19,15 @@ import KeychainWrapper
 import OpenAPIURLSession
 import OpenAPIRuntime
 
+/// Response data for IdP challenges.
+private struct ChallengeResponse {
+	/// Cryptographic signature.
+	let signature: Base64EncodedData
+
+	/// IdP operation identifier.
+	let operationID: Int64
+}
+
 /// Connector to the IdP API.
 public actor AccountController {
 
@@ -51,8 +60,9 @@ public actor AccountController {
 	internal func deleteAccount() async throws {
 		let signature = try await getSignature()
 
-		let response = try await client.deleteAccount(
-			path: .init(userID: userID), headers: .init(signature: signature))
+		let response = try await client.deleteAccount(headers: .init(
+			operationID: signature.operationID,
+			signature: signature.signature))
 
 		let _ = try response.ok
 
@@ -62,22 +72,33 @@ public actor AccountController {
 	}
 
 	/// Retrieve an access token for API access.
-	internal func getAccessToken() async throws -> String {
+	internal func getAccessToken() async throws -> ArraySlice<UInt8> {
 		let signature = try await getSignature()
 
-		let response = try await client.getAccess(
-			path: .init(userID: userID), headers: .init(signature: signature))
+		let output = try await self.client.getAccess(headers: .init(
+			operationID: signature.operationID,
+			signature: signature.signature))
 
-		let body = try response.ok.body.plainText
-		return try await String(collecting: body, upTo: 4096)
+		switch output {
+		case .badRequest(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .forbidden(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .internalServerError(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .undocumented(statusCode: let statusCode, let payload):
+			try await handle(statusCode, payload, logTag: Self.LogTag)
+		case .ok(let response):
+			return try await HTTPBody.ByteChunk(
+				collecting: response.body.plainText, upTo: 4096)
+		}
 	}
 
 	/// Retrieve an access token for API access.
-	internal func getIdentityToken(of userID: String) async throws -> ArraySlice<UInt8> {
-		let signature = try await getSignature()
-
+	internal func getIdentityToken(of peerID: PeerID)
+	async throws -> ArraySlice<UInt8> {
 		let response = try await client.getIdentity(
-			path: .init(userID: userID))
+			path: .init(userID: peerID.uuidString))
 
 		let body = try response.ok.body.plainText
 		return try await HTTPBody.ByteChunk(collecting: body, upTo: 4096)
@@ -120,7 +141,7 @@ public actor AccountController {
 	private var client: Client {
 		get throws {
 			Client(
-				serverURL: isTest ? URL(string: "http://192.168.0.157:8080/v1")! : //try Servers.Server3.url() :
+				serverURL: isTest ? try Servers.Server2.url() :
 					try Servers.Server1.url(),
 				transport: URLSessionTransport()
 			)
@@ -128,25 +149,29 @@ public actor AccountController {
 	}
 
 	/// Retrieve challenge and calculate response.
-	private func getSignature() async throws -> Base64EncodedData {
-		let userID = self.peerID.uuidString
-
+	private func getSignature() async throws -> ChallengeResponse {
 		let response = try await client
-			.getChallenge(path: .init(userID: userID))
+			.getChallenge(path: .init(userID: self.userID))
 
-		let challengeBody = try response.accepted.body.plainText
-		let base64Challenge = try await String(collecting: challengeBody,
-											   upTo: 1024)
+		switch response {
+		case .badRequest(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .tooManyRequests(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .internalServerError(let response):
+			try await handle(response, logTag: Self.LogTag)
+		case .undocumented(statusCode: let statusCode, let payload):
+			try await handle(statusCode, payload, logTag: Self.LogTag)
+		case .accepted(let response):
+			let challenge = try response.body.json
 
-		guard let challenge = Data(base64Encoded: base64Challenge) else {
-			throw createApplicationError(
-				localizedDescription:
-					"\(base64Challenge) is not base64-encoded.")
+			let signature = try keyPair.sign(
+				message: Data(challenge.nonce.data))
+
+			return .init(
+				signature: .init(signature),
+				operationID: challenge.operationID)
 		}
-
-		let signature = try keyPair.sign(message: challenge)
-
-		return .init(signature)
 	}
 
 	/// Wipes all data after the account was deleted.

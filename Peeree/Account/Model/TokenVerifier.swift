@@ -8,29 +8,8 @@
 
 import JWTKit
 
-/// Claim that contains the public key of a user, that they use to authenticate to others.
-/// - Note: This public key is not necessarily the same
-struct PublicKeyClaim: JWTClaim {
-	var value: String
-}
-
-
-/// JWT definition of the `IdentityToken` type from our API.
-struct IdentityTokenJWT: JWTPayload {
-	var exp: ExpirationClaim
-	var iat: IssuedAtClaim
-	var iss: IssuerClaim
-	var nonce: IDClaim
-	var pbk: PublicKeyClaim
-	var sub: SubjectClaim
-
-	func verify(using key: some JWTAlgorithm) throws {
-		try self.exp.verifyNotExpired()
-	}
-}
-
 enum TokenVerifierError: Error {
-	case keyNotFound, invalidPublicKey(Error)
+	case invalidIssuerURL
 }
 
 enum TokenVerificationError: Error {
@@ -68,16 +47,20 @@ struct TokenVerifier {
 
 	private let iss: String
 
-	init(issuerURL: URL) {
-		self.iss = issuerURL.absoluteString
+	init(issuerURL: URL) throws {
+		guard let host = issuerURL.host, let scheme = issuerURL.scheme else {
+			throw TokenVerifierError.invalidIssuerURL
+		}
+
+		self.iss = "\(scheme)://\(host)"
 	}
 
 	func initialize(from jwksURL: URL) async throws {
-		let (data, response) = try await URLSession.shared.data(from: jwksURL)
+		let (data, _) = try await URLSession.shared.data(from: jwksURL)
 
-		let jwk = try JSONDecoder().decode(JWK.self, from: data)
+		let jwks = try JSONDecoder().decode(JWKS.self, from: data)
 
-		try await keys.add(jwks: JWKS(keys: [jwk]))
+		try await keys.add(jwks: jwks)
 	}
 
 	/// Returns the ID of the user the token was issued to.
@@ -86,6 +69,33 @@ struct TokenVerifier {
 		let payload: IdentityTokenJWT
 		do {
 			payload = try await keys.verify(token, as: IdentityTokenJWT.self)
+		} catch {
+			throw TokenVerificationError.invalidToken(error)
+		}
+
+		guard payload.iss.value == self.iss else {
+			throw TokenVerificationError.invalidIssuer
+		}
+
+		guard UUID(uuidString: payload.sub.value) != nil else {
+			throw TokenVerificationError.invalidSubject
+		}
+
+		do {
+			try payload.exp.verifyNotExpired()
+		} catch {
+			throw TokenVerificationError.expiredToken
+		}
+
+		return payload
+	}
+
+	/// Returns the ID of the user the token was issued to.
+	func verifyAccessToken<D>(_ token: D) async throws -> AccessTokenJWT
+	where D: DataProtocol & Sendable {
+		let payload: AccessTokenJWT
+		do {
+			payload = try await keys.verify(token, as: AccessTokenJWT.self)
 		} catch {
 			throw TokenVerificationError.invalidToken(error)
 		}

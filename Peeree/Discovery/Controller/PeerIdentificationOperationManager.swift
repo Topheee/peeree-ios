@@ -137,7 +137,6 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 	}
 
 	/// The operation tree to identify a remote peer.
-	// This could be static.
 	private static
 	var opTreeIdentification: KeyValueTree<CBUUID, CharacteristicOperation> {
 		KeyValueTree<CBUUID, CharacteristicOperation>

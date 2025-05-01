@@ -32,24 +32,6 @@ extension Notification.Name {
 /// Responsible for creating an ``AccountController`` singleton.
 public actor AccountControllerFactory {
 
-	/// Whether the test backend should be used.
-	private let isTest: Bool
-
-	private var apiURL: URL {
-		get throws {
-			isTest ? URL(string: "http://192.168.0.157:8080/v1")! : //try Servers.Server2.url() :
-			try Servers.Server1.url()
-		}
-	}
-
-	/// Network client for IdP API access.
-	private func client() throws -> Client {
-		Client(
-			serverURL: try self.apiURL,
-			transport: URLSessionTransport()
-		)
-	}
-
 	// MARK: Methods
 
 	/// Call this as soon as possible.
@@ -65,8 +47,7 @@ public actor AccountControllerFactory {
 		}
 
 		let keyPair = KeyPair(
-			fromKeychainWithPrivateTag: Self.PrivateKeyTag,
-			publicTag: Self.PublicKeyTag,
+			fromKeychainWithTag: Self.PrivateKeyTag,
 			algorithm: PeereeIdentity.KeyAlgorithm,
 			size: PeereeIdentity.KeySize)
 
@@ -78,7 +59,7 @@ public actor AccountControllerFactory {
 	}
 
 	/// Creates a new `PeereeIdentity` for the user.
-	public func createAccount()
+	public func createOrRecoverAccount(using recoveryCode: String?)
 	async throws -> (AccountController, ChatAccount) {
 		if instance != nil {
 			throw AccountError.accountAlreadyExists
@@ -94,19 +75,16 @@ public actor AccountControllerFactory {
 		let keyPair: KeyPair
 		do {
 			// try to remove the old key, just to be sure
-			let oldKeyPair = KeyPair(
-				fromKeychainWithPrivateTag: Self.PrivateKeyTag,
-				publicTag: Self.PublicKeyTag,
+			let oldKeyPair = KeyPair(fromKeychainWithTag: Self.PrivateKeyTag,
 				algorithm: PeereeIdentity.KeyAlgorithm,
 				size: PeereeIdentity.KeySize)
 			try? oldKeyPair.removeFromKeychain()
 
 			// this will add the pair to the keychain,
 			// from where it is read later by the constructor
-			keyPair = try KeyPair(
-				privateTag: Self.PrivateKeyTag, publicTag: Self.PublicKeyTag,
+			keyPair = try KeyPair(tag: Self.PrivateKeyTag,
 				algorithm: PeereeIdentity.KeyAlgorithm,
-				size: PeereeIdentity.KeySize, persistent: true)
+				size: PeereeIdentity.KeySize)
 
 			let publicKeyData = try keyPair.publicKey.externalRepresentation()
 
@@ -116,9 +94,22 @@ public actor AccountControllerFactory {
 				endpoint: "Blub"
 			)
 
-			let response = try await client()
-				.postAccount(query: .init(publicKey: .init(publicKeyData)),
-							 body: .json(channel))
+			let response: Operations.PostAccount.Output
+
+			if let recoveryCode {
+				response = try await client()
+					.postAccount(
+						query: .init(publicKey: .init(publicKeyData)),
+						headers: .init(recoveryCode: recoveryCode))
+
+			} else {
+				response = try await client()
+					.postAccount(
+						query: .init(publicKey: .init(publicKeyData)),
+						body: .json(channel))
+			}
+
+			let account: Components.Schemas.Account
 
 			switch response {
 			case .badRequest(let response):
@@ -130,28 +121,32 @@ public actor AccountControllerFactory {
 			case .undocumented(statusCode: let statusCode, let payload):
 				try await handle(statusCode, payload, logTag: Self.LogTag)
 			case .created(let response):
-				let account = try response.body.json
-				guard let peerID = UUID(uuidString: account.userID) else {
-					try programmingError("Malformed peerID \(account.userID)")
-				}
-				let a = AccountController.create(
-					isTest: isTest, peerID: peerID, keyPair: keyPair)
-				self.setInstance(a)
-				self.reportCreatingInstance(result: .success(a), vm: vm)
-
-				let chatAccount = ChatAccount(
-					userID: account.chatAccount.userID,
-					accessToken: account.chatAccount.accessToken,
-					homeServer: account.chatAccount.serverURL,
-					deviceID: account.chatAccount.deviceID,
-					initialPassword: account.chatAccount.initialPassword)
-
-				Notification.Name.accountCreated
-					.post(on: a,
-						  userInfo: [PeerID.NotificationInfoKey : peerID])
-
-				return (a, chatAccount)
+				account = try response.body.json
+			case .ok(let response):
+				account = try response.body.json
 			}
+
+			guard let peerID = UUID(uuidString: account.userID) else {
+				try programmingError("Malformed peerID \(account.userID)")
+			}
+
+			let a = AccountController.create(
+				isTest: isTest, peerID: peerID, keyPair: keyPair)
+			self.setInstance(a)
+			self.reportCreatingInstance(result: .success(a), vm: vm)
+
+			let chatAccount = ChatAccount(
+				userID: account.chatAccount.userID,
+				accessToken: account.chatAccount.accessToken,
+				homeServer: account.chatAccount.serverURL,
+				deviceID: account.chatAccount.deviceID,
+				initialPassword: account.chatAccount.initialPassword)
+
+			Notification.Name.accountCreated
+				.post(on: a,
+					  userInfo: [PeerID.NotificationInfoKey : peerID])
+
+			return (a, chatAccount)
 		} catch let error {
 			reportCreatingInstance(result: .failure(error), vm: vm)
 			if let apiError = error as? OpenAPIRuntime.ClientError {
@@ -205,17 +200,13 @@ public actor AccountControllerFactory {
 	private static let PrivateKeyTag = "com.peeree.keys.restkey.private"
 		.data(using: .utf8)!
 
-	/// Keychain property.
-	private static let PublicKeyTag = "com.peeree.keys.restkey.public"
-		.data(using: .utf8)!
-
 	// From where to get JKS
-	private var jksURL: URL {
+	private var jwksURL: URL {
 		get throws {
 			// TODO: host JKS on another party
-			guard let result = URL(
-				self.isTest ? "https://peeree.de/.well-known/jwks-test" :
-					"https://peeree.de/.well-known/jwks") else {
+			guard let result = URL(string:
+				self.isTest ? "https://www.peeree.de/.well-known/jwks-test" :
+					"https://www.peeree.de/.well-known/jwks") else {
 				throw unexpectedNilError()
 			}
 
@@ -225,11 +216,29 @@ public actor AccountControllerFactory {
 
 	// MARK: Variables
 
+	/// Whether the test backend should be used.
+	private let isTest: Bool
+
+	private var apiURL: URL {
+		get throws {
+			isTest ? try Servers.Server2.url() :
+			try Servers.Server1.url()
+		}
+	}
+
+	/// Network client for IdP API access.
+	private func client() throws -> Client {
+		Client(
+			serverURL: try self.apiURL,
+			transport: URLSessionTransport()
+		)
+	}
+
 	/// Singleton instance of this class.
 	private var instance: AccountController?
 
 	/// Verifies the identity of other peers.
-	private var idTokenVerifier: TokenVerifier?
+	private var tokenVerifier: TokenVerifier?
 
 	@MainActor
 	private let viewModel: AccountViewModelDelegate
@@ -264,15 +273,28 @@ public actor AccountControllerFactory {
 }
 
 extension AccountControllerFactory {
-	public func getIdentityToken(of userID: String
-	) async throws -> ArraySlice<UInt8> {
+	public func getIdentityToken(of peerID: PeerID)
+	async throws -> ArraySlice<UInt8> {
 		guard let ac = try self.use() else {
 			throw AccountError.noAccount
 		}
 
-		return try await ac.getIdentityToken(of: userID)
+		return try await ac.getIdentityToken(of: peerID)
 	}
 
+	fileprivate func initTokenVerfifier() async throws -> TokenVerifier {
+		if let v = self.tokenVerifier {
+			return v
+		} else {
+			let verifier = try TokenVerifier(issuerURL: try self.apiURL)
+
+			// TODO: cache JKS
+			try await verifier.initialize(from: try self.jwksURL)
+			self.tokenVerifier = verifier
+			return verifier
+		}
+	}
+	
 	public func verify(_ peerID: PeereeCore.PeerID,
 					   publicKey: any KeychainWrapper.AsymmetricPublicKey,
 					   identityToken: Data?) async throws {
@@ -282,22 +304,14 @@ extension AccountControllerFactory {
 			idTokenData = identityToken
 		} else {
 			let identityToken = try await self
-				.getIdentityToken(of: peerID.uuidString)
+				.getIdentityToken(of: peerID)
 
 			idTokenData = Data(identityToken)
 		}
 
 		// verify that the token comes from the Peeree server
 
-		let verifier: TokenVerifier
-
-		if let v = self.idTokenVerifier {
-			verifier = v
-		} else {
-			verifier = .init(issuerURL: try self.apiURL)
-			// TODO: cache JKS
-			try await verifier.initialize(from: try self.jksURL)
-		}
+		let verifier = try await initTokenVerfifier()
 
 		let token = try await verifier.verifyIdentityToken(idTokenData)
 
@@ -319,11 +333,22 @@ extension AccountControllerFactory {
 }
 
 extension AccountControllerFactory: PeereeCore.Authenticator {
-	public func accessToken() async throws -> String {
+	public func accessToken() async throws -> AccessTokenData {
 		guard let ac = try self.use() else {
 			throw AccountError.noAccount
 		}
 
-		return try await ac.getAccessToken()
+		let verifier = try await initTokenVerfifier()
+
+		let accessToken = try await ac.getAccessToken()
+
+		let payload = try await verifier.verifyAccessToken(accessToken)
+
+		guard let tokenString = String(
+			data: Data(accessToken), encoding: .utf8) else {
+			throw unexpectedNilError()
+		}
+
+		return .init(accessToken: tokenString, expiresAt: payload.exp.value)
 	}
 }
