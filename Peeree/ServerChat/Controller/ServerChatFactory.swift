@@ -36,7 +36,7 @@ private func configureServerChat(cryptDelegate: CryptDelegate) {
 	options.authEnableRefreshTokens = false
 	options.applicationGroupIdentifier = messagingAppGroup
 	// it currently works without this so let's keep it that way: options.authEnableRefreshTokens = true
-	options.wellknownDomainUrl = "https://\(serverChatDomain)"
+	options.wellknownDomainUrl = "https://www.peeree.de"
 	options.cryptoMigrationDelegate = cryptDelegate
 
 	MXKeyProvider.sharedInstance().delegate = EncryptionKeyManager()
@@ -77,8 +77,8 @@ public final class ServerChatFactory {
 			throw ServerChatError.fatal(error)
 		}
 
-		UserDefaults.standard.set(account.homeServer,
-								  forKey: Self.HomeServerKey)
+		UserDefaults.standard.set(
+			account.homeServer, forKey: Self.HomeServerURLKey)
 
 		try self.storeCredentialsInKeychain(account.credentials)
 
@@ -190,7 +190,7 @@ public final class ServerChatFactory {
 	private static let LogTag = "ServerChatFactory"
 
 	/// Home server URL key in user defaults.
-	private static let HomeServerKey = "HomeServerKey"
+	private static let HomeServerURLKey = "HomeServerURLKey"
 
 	/// Matrix refresh token service attribute in keychain.
 	private static let RefreshTokenKeychainService = "RefreshTokenKeychainService"
@@ -226,7 +226,9 @@ public final class ServerChatFactory {
 	private var remoteNotificationsDeviceToken: Data? = nil
 
 	/// Matrix userId based on user's PeerID.
-	private var userId: String { return peerID.serverChatUserId }
+	private var userId: String {
+		get throws { return peerID.serverChatUserId(try self.homeServerURL) }
+	}
 
 	/// Account used for all keychain operations.
 	private var keychainAccount: String { return peerID.uuidString }
@@ -245,6 +247,13 @@ public final class ServerChatFactory {
 	/// Creates an account on the chat server.
 	/// - Throws: `ServerChatError`
 	private func changePassword(of account: ServerChatAccount) async throws {
+		// In case we need to restore the old password.
+		guard let oldPassword = account.initialPassword
+			.data(using: .utf8) else {
+			throw ServerChatError.fatal(makeProgrammingError(
+				"initial password not utf8-compatible"))
+		}
+
 		var passwordRawData: Data
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
@@ -262,15 +271,10 @@ public final class ServerChatFactory {
 		assert(String(data: passwordData, encoding: .utf8) == passwordRawData.base64EncodedString())
 
 		do {
-			// TODO: do not overwrite old password here yet
-			try persistPasswordInKeychain(passwordData)
+			try self.removePasswordFromKeychain()
+			try self.persistPasswordInKeychain(passwordData)
 		} catch let error {
-			do {
-				try removePasswordFromKeychain()
-			} catch let removeError {
-				wlog(Self.LogTag, "Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
-			}
-
+			self.restore(oldPassword: oldPassword)
 			throw ServerChatError.fatal(error)
 		}
 
@@ -289,18 +293,23 @@ public final class ServerChatFactory {
 							.resume(throwing: ServerChatError.sdk(error))
 					}
 
-					do {
-						try self.removePasswordFromKeychain()
-					} catch {
-						flog(Self.LogTag, "Could not remove password from"
-							 + " keychain after failed registration: "
-							 + error.localizedDescription)
-					}
-
+					self.restore(oldPassword: oldPassword)
 				case .success:
 					continuation.resume()
 				}
 			}
+		}
+	}
+
+	/// Writes `oldPassword` to the keychain.
+	private func restore(oldPassword: Data) {
+		do {
+			try? self.removePasswordFromKeychain()
+			try self.persistPasswordInKeychain(oldPassword)
+		} catch {
+			flog(Self.LogTag, "Could not remove password from"
+				 + " keychain after failed registration: "
+				 + error.localizedDescription)
 		}
 	}
 
@@ -313,20 +322,18 @@ public final class ServerChatFactory {
 		credentials.deviceId = try genericPasswordFromKeychain(account: self.keychainAccount, service: Self.DeviceIDKeychainService, encoding: Self.KeychainEncoding)
 	}
 
-	/// Log into server chat account, previously created with `createAccount()`.
+	/// The full home server URL.
 	private var homeServerURL: URL {
-		get {
-			let fallback = "https://\(serverChatDomain):8448/"
-
+		get throws {
 			if let homeServer = UserDefaults.standard
-				.string(forKey: Self.HomeServerKey) {
+				.string(forKey: Self.HomeServerURLKey) {
 				if let url = URL(string: homeServer) {
 					return url
 				} else {
-					return URL(string: fallback)!
+					throw makeProgrammingError("home server URL unparsable")
 				}
 			} else {
-				return URL(string: fallback)!
+				throw makeProgrammingError("no home server URL set")
 			}
 		}
 	}
@@ -347,9 +354,12 @@ public final class ServerChatFactory {
 			}
 		}
 
+		let hsURL = try self.homeServerURL
+		let ourUserId = try self.userId
+
 		// We need to keep a strong reference to the client s.t. it is not
 		// destroyed while requests are in flight
-		let bootstrapMXClient = MXRestClient(homeServer: homeServerURL)
+		let bootstrapMXClient = MXRestClient(homeServer: hsURL)
 		{ _data in
 			flog(ServerChatFactory.LogTag,
 				 "matrix certificate rejected: \(String(describing: _data))")
@@ -361,10 +371,10 @@ public final class ServerChatFactory {
 			let parameters: [String : Any] = [
 				"type" : kMXLoginFlowTypePassword,
 				"identifier" : ["type" : kMXLoginIdentifierTypeUser,
-								"user" : userId],
+								"user" : ourUserId],
 				"password" : password,
 				// Patch: add the old login api parameters to make dummy login working
-				"user" : userId
+				"user" : ourUserId
 			]
 
 			bootstrapMXClient.login(parameters: parameters) { response in
@@ -417,7 +427,7 @@ public final class ServerChatFactory {
 				// this cost me at least one week: the credentials have the
 				// port stripped, because the `home_server` field in
 				// mxLoginResponse does not contain the port …
-				credentials.homeServer = self.homeServerURL.absoluteString
+				credentials.homeServer = hsURL.absoluteString
 
 				continuation.resume(returning: credentials)
 			}
@@ -446,8 +456,15 @@ public final class ServerChatFactory {
 	private func resumeSession(dataSource: ServerChatDataSource)
 	async throws -> ServerChatController {
 		do {
-			let token = try genericPasswordFromKeychain(account: keychainAccount, service:  Self.AccessTokenKeychainService, encoding: Self.KeychainEncoding)
-			let creds = MXCredentials(homeServer: homeServerURL.absoluteString, userId: userId, accessToken: token)
+			let token = try genericPasswordFromKeychain(
+				account: self.keychainAccount,
+				service: Self.AccessTokenKeychainService,
+				encoding: Self.KeychainEncoding)
+
+			let creds = MXCredentials(
+				homeServer: try self.homeServerURL.absoluteString,
+				userId: try self.userId, accessToken: token)
+
 			try self.prepare(credentials: creds)
 			if let refreshToken = try? genericPasswordFromKeychain(account: keychainAccount, service: Self.RefreshTokenKeychainService, encoding: Self.KeychainEncoding) {
 				creds.refreshToken = refreshToken

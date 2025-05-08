@@ -12,9 +12,6 @@ import PeereeCore
 
 // MARK: Functions
 
-/// The Matrix domain.
-let serverChatDomain = "chat.peeree.de"
-
 /// The app group.
 let messagingAppGroup = "group.86J6LQ96WM.de.peeree.messaging"
 
@@ -54,8 +51,37 @@ extension PeerID {
 	}
 
 	/// Transform `peerID` into a ('fully qualified') server chat user ID.
-	public var serverChatUserId: String {
-		return "@\(serverChatUserName):\(serverChatDomain)"
+	///
+	/// - Parameter homeServerFQDN: Fully-qualified domain name of the home server, i.e. w/o port, scheme, and path.
+	public func serverChatUserId(_ homeServerFQDN: String) -> String {
+		return "@\(self.serverChatUserName):\(homeServerFQDN)"
+	}
+
+	/// - Parameter homeServerURL: Full URL of the home server.
+	public func serverChatUserId(_ homeServerURL: URL) -> String {
+		if let homeServerFQDN = homeServerURL.host {
+			return self.serverChatUserId(homeServerFQDN)
+		} else {
+			return self.serverChatUserName
+		}
+	}
+
+	/// - Parameter restClient: Matrix REST client.
+	func serverChatUserId(_ restClient: MXRestClient) -> String {
+		if let suffix = restClient.homeserverSuffix {
+			return "@\(self.serverChatUserName)" + suffix
+		} else {
+			return self.serverChatUserName
+		}
+	}
+
+	/// - Parameter credentials: Matrix credentials.
+	func serverChatUserId(_ credentials: MXCredentials) -> String {
+		if let fqdn = credentials.homeServerName() {
+			return self.serverChatUserId(fqdn)
+		} else {
+			return self.serverChatUserName
+		}
 	}
 }
 

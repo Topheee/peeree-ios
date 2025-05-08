@@ -19,6 +19,7 @@ final class ServerChatController: ServerChat {
 	init(peerID: PeerID, restClient: MXRestClient, dataSource: ServerChatDataSource) {
 		self.peerID = peerID
 		self.dataSource = dataSource
+		self.mxClient = restClient
 
 		session = ThreadSafeCallbacksMatrixSession(session: MXSession(matrixRestClient: restClient)!)
 	}
@@ -55,18 +56,25 @@ final class ServerChatController: ServerChat {
 		defer { self.close() }
 
 		try await self.session.extensiveLogout()
+
+		await self.persistence.clear()
 	}
 
 	/// Removes the server chat account permanently.
 	func deleteAccount(password: String) async throws {
 		do {
-			try await session.deactivateAccount(
-				withAuthParameters: ["type" : kMXLoginFlowTypePassword,
-									 "user" : self.userId,
-									 "password" : password],
-				eraseAccount: true)
+			let authParams: [String: Any] = [
+				"type" : kMXLoginFlowTypePassword,
+				"user" : self.userId,
+				"password" : password]
 
-			await self.persistence.clear()
+			try await withCheckedThrowingContinuation { continuation in
+				self.mxClient.deactivateAccount(
+					withAuthParameters: authParams,
+					eraseAccount: true) { response in
+						continuation.resume(with: response)
+					}
+			}
 
 			// it seems we need to log out after we deleted the account
 			do {
@@ -90,15 +98,18 @@ final class ServerChatController: ServerChat {
 
 	/// Checks whether `peerID` can receive or messages.
 	func canChat(with peerID: PeerID) async throws {
-		if await session.getJoinedOrInvitedRoom(with: peerID.serverChatUserId,
-												bothJoined: true) == nil {
+		if await session.getJoinedOrInvitedRoom(
+			with: peerID.serverChatUserId(self.mxClient),
+			bothJoined: true) == nil {
 			throw ServerChatError.cannotChat(peerID, .notJoined)
 		}
 	}
 
 	/// Send a `message` to `peerID`.
 	func send(message: String, to peerID: PeerID) async throws {
-		let directRooms = session.directRooms(with: peerID.serverChatUserId)
+		let directRooms = session.directRooms(
+			with: peerID.serverChatUserId(self.mxClient))
+
 		guard !directRooms.isEmpty else {
 			throw ServerChatError.cannotChat(peerID, .notJoined)
 		}
@@ -117,7 +128,8 @@ final class ServerChatController: ServerChat {
 	}
 
 	func fetchMessagesFromStore(peerID: PeerID, count: Int) async {
-		for room in self.session.directRooms(with: peerID.serverChatUserId) {
+		for room in self.session.directRooms(
+			with: peerID.serverChatUserId(self.mxClient)) {
 			await self.loadEventsFromDisk(count, in: room, with: peerID)
 		}
 	}
@@ -125,7 +137,8 @@ final class ServerChatController: ServerChat {
 	/// DOES NOT WORK!
 	func paginateUp(peerID: PeerID, count: Int) async throws {
 		// pagination fails with 'M_INVALID_PARAM': Invalid from parameter: malformed sync token
-		let timelines = self.session.directRooms(with: peerID.serverChatUserId)
+		let timelines = self.session.directRooms(
+			with: peerID.serverChatUserId(self.mxClient))
 			.compactMap { $0.roomId }
 			.compactMap { self.roomTimelines[$0] }
 
@@ -196,7 +209,8 @@ final class ServerChatController: ServerChat {
 
 	/// Sends read receipts for all messages with `peerID`.
 	func markAllMessagesRead(of peerID: PeerID) async {
-		let room = await session.getJoinedOrInvitedRoom(with: peerID.serverChatUserId, bothJoined: true)
+		let room = await session.getJoinedOrInvitedRoom(
+			with: peerID.serverChatUserId(self.mxClient), bothJoined: true)
 		// unfortunately, the MatrixSDK does not support "private" read
 		// receipts at this point, but we need this for a correct application
 		// icon badge count on remote notification receipt
@@ -245,7 +259,7 @@ final class ServerChatController: ServerChat {
 			}
 		}
 		
-		if let rooms = self.session.directRooms?[peerID.serverChatUserId] {
+		if let rooms = self.session.directRooms?[peerID.serverChatUserId(self.mxClient)] {
 			await self.forgetRooms(rooms)
 		}
 
@@ -254,8 +268,8 @@ final class ServerChatController: ServerChat {
 
 	func recreateRoom(with peerID: PeerID) async throws {
 		let oldRoom = await self.session
-			.getJoinedOrInvitedRoom(with: peerID.serverChatUserId,
-									bothJoined: false)
+			.getJoinedOrInvitedRoom(
+				with: peerID.serverChatUserId(self.mxClient), bothJoined: false)
 
 		_ = try await self.reallyCreateRoom(with: peerID)
 		dlog(Self.LogTag, "Created new room to replace broken encryption.")
@@ -289,6 +303,9 @@ final class ServerChatController: ServerChat {
 	/// The PeerID of the user.
 	private let peerID: PeerID
 
+	/// The Matrix REST client.
+	private let mxClient: MXRestClient
+
 	/// Matrix session.
 	private let session: ThreadSafeCallbacksMatrixSession
 
@@ -300,7 +317,7 @@ final class ServerChatController: ServerChat {
 	// MARK: Variables
 
 	/// Matrix userId based on user's PeerID.
-	private var userId: String { return peerID.serverChatUserId }
+	private var userId: String { return self.peerID.serverChatUserId(self.mxClient) }
 
 	/// The rooms we already listen on for message events.
 	private var roomIdsListeningOn = [String : PeerID]()
@@ -315,7 +332,8 @@ final class ServerChatController: ServerChat {
 
 	/// Retrieves or creates a room with `peerID`.
 	private func getOrCreateRoom(with peerID: PeerID) async throws -> Room {
-		let room = await session.getJoinedOrInvitedRoom(with: peerID.serverChatUserId, bothJoined: false)
+		let room = await session.getJoinedOrInvitedRoom(
+			with: peerID.serverChatUserId(self.mxClient), bothJoined: false)
 		if let room = room { return room }
 
 		guard let client = self.session.matrixRestClient else {
@@ -324,7 +342,8 @@ final class ServerChatController: ServerChat {
 
 		do {
 			_ = try await withCheckedThrowingContinuation { continuation in
-				client.profile(forUser: peerID.serverChatUserId) { response in
+				client.profile(forUser: peerID.serverChatUserId(self.mxClient))
+				{ response in
 					continuation.resume(with: response)
 				}
 			}
@@ -337,7 +356,7 @@ final class ServerChatController: ServerChat {
 
 	/// Create a direct room for chatting with `peerID`.
 	private func reallyCreateRoom(with peerID: PeerID) async throws -> Room {
-		let peerUserId = peerID.serverChatUserId
+		let peerUserId = peerID.serverChatUserId(self.mxClient)
 		let roomParameters = MXRoomCreationParameters(forDirectRoomWithUser: peerUserId)
 		roomParameters.visibility = kMXRoomDirectoryVisibilityPrivate
 		do {
@@ -511,7 +530,7 @@ final class ServerChatController: ServerChat {
 			let err = error as NSError
 			if MXError.isMXError(err),
 				  err.userInfo["errcode"] as? String == kMXErrCodeStringUnknown,
-				  err.userInfo["error"] as? String == "user \"\(self.peerID.serverChatUserId)\" is not joined to the room (membership is \"leave\")" {
+				  err.userInfo["error"] as? String == "user \"\(self.peerID.serverChatUserId(self.mxClient))\" is not joined to the room (membership is \"leave\")" {
 				// otherwise, this will keep on as a zombie
 				self.session.store?.deleteRoom(roomId)
 			} else {
@@ -735,7 +754,7 @@ final class ServerChatController: ServerChat {
 	/// Handles all the different room states of all the room with `peerID`.
 	private func fixRooms(with peerID: PeerID) async {
 		let infos = await self.session
-			.directRoomInfos(with: peerID.serverChatUserId)
+			.directRoomInfos(with: peerID.serverChatUserId(self.mxClient))
 
 		// always leave all rooms where the other one already left
 		let theyJoinedOrInvited = infos.filter { info in
@@ -816,8 +835,8 @@ final class ServerChatController: ServerChat {
 		guard let peerID = roomIdsListeningOn[event.roomId ?? ""],
 			  let convDelegate = self.conversationDelegate else { return }
 
-		let ourUserId = self.peerID.serverChatUserId
-		let messageEvent = makeChatMessage(messageEvent: event, ourUserId: ourUserId)
+		let messageEvent = makeChatMessage(
+			messageEvent: event, ourUserId: self.userId)
 
 		Task { @MainActor in
 			convDelegate.new(message: messageEvent, inChatWithConversationPartner: peerID)

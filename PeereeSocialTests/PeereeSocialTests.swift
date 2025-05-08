@@ -12,8 +12,6 @@ import Testing
 import PeereeCore
 import PeereeIdP
 
-import KeychainWrapper
-
 struct DummyAuthenticator: PeereeCore.Authenticator {
 	func accessToken() async throws -> PeereeCore.AccessTokenData {
 		return .init(accessToken: "", expiresAt: Date())
@@ -80,24 +78,20 @@ final class IdentityHolder {
 
 	/// The identifier in the Keychain for the test private key.
 	private let privateTag = "PeereeSocialTests.\(UUID().uuidString)"
-		.data(using: .utf8, allowLossyConversion: true)!
 
 	/// A freshly created account per test.
 	private let peerID = PeerID()
 
-	/// The key pair of the test account; initialized in `setUp()`.
-	private let keyPair: KeyPair
-
-	let factory = AccountControllerFactory(
-		viewModel: MockAccountViewModelDelegate(), isTest: true)
+	let factory: AccountControllerFactory
 
 	let accountController: AccountController
 
 	let chatAccount: ChatAccount
 
 	init() async throws {
-		self.keyPair = try KeyPair(
-			tag: self.privateTag, algorithm: .ec, size: PeereeIdentity.KeySize)
+		self.factory = AccountControllerFactory(
+			config: .testing(.init(privateKeyTag: self.privateTag)),
+			viewModel: MockAccountViewModelDelegate())
 
 		let result = try await factory.createOrRecoverAccount(using: nil)
 
@@ -106,7 +100,9 @@ final class IdentityHolder {
 	}
 
 	deinit {
-		try? self.keyPair.removeFromKeychain()
+		let f = self.factory
+		Task { try? await f.deleteAccount() }
+		sleep(1)
 	}
 }
 

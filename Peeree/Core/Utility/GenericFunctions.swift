@@ -87,9 +87,9 @@ public func createApplicationError(localizedDescription: String, code: Int = -1)
 }
 
 /// Always throws an error; use in situations where there must be a developer mistake.
-public func programmingError(_ description: String,
-							 code: Int = -1) throws -> Never {
-	throw NSError(
+public func makeProgrammingError(_ description: String,
+							 code: Int = -1) -> Error {
+	return NSError(
 		domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath,
 		code: code,
 		userInfo: [NSLocalizedDescriptionKey : description])

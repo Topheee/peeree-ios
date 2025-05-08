@@ -279,12 +279,28 @@ final class Mediator {
 	}
 
 	init() {
+		// go against our testing endpoints in the simulator
+		#if DEBUG
+
 		let isTest = true
-		accountControllerFactory = .init(viewModel: socialViewState,
-										 isTest: isTest)
-		socialController = SocialNetworkController(
-			authenticator: accountControllerFactory,
-			viewModel: socialViewState, isTest: isTest)
+
+		let privateKeyTag = "Peeree.Betatesting.PrivateKey"
+		let accountConfig = AccountModuleConfig
+			.testing(.init(privateKeyTag: privateKeyTag))
+
+		#else
+
+		let isTest = false
+		let accountConfig = AccountModuleConfig.production
+
+		#endif
+
+		self.accountControllerFactory = .init(
+			config: accountConfig, viewModel: self.socialViewState)
+
+		self.socialController = SocialNetworkController(
+			authenticator: self.accountControllerFactory,
+			viewModel: self.socialViewState, isTest: isTest)
 	}
 
 	/// Run this on application startup.

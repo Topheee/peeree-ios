@@ -70,14 +70,14 @@
 		9D5B4B2C2D75B40300BE5D7A /* PeerVerificationOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4B2B2D75B3FD00BE5D7A /* PeerVerificationOperationManager.swift */; };
 		9D5B4B2F2D76588400BE5D7A /* TokenVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */; };
 		9D5B4B322D7658BE00BE5D7A /* JWTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9D5B4B312D7658BE00BE5D7A /* JWTKit */; };
+		9D5C45B32DC6977500258701 /* AccountConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5C45B22DC6977000258701 /* AccountConfiguration.swift */; };
 		9D60D1222DAB971B0012F7C9 /* JWTToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D60D1212DAB97190012F7C9 /* JWTToken.swift */; };
 		9D64F9C42DAA5430006BEB47 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D64F9C32DAA5430006BEB47 /* KeychainWrapper */; };
-		9D64F9D02DAA54AB006BEB47 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D64F9CF2DAA54AB006BEB47 /* KeychainWrapper */; };
 		9D64F9E82DAA653B006BEB47 /* PeereeIdP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */; };
-		9D64F9E92DAA653B006BEB47 /* PeereeIdP.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9D64F9F22DAA654D006BEB47 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D64F9F12DAA654D006BEB47 /* KeychainWrapper */; };
 		9D6A8C192ADF241700C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C182ADF241700C8239D /* CSProgress */; };
 		9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C1A2ADF244100C8239D /* CSProgress */; };
+		9D78B9832DC80FA700CDA589 /* PeereeServerChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; };
+		9D78B9842DC80FA700CDA589 /* PeereeServerChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */; };
 		9D7CB9E02AE7091900DDF10B /* Integrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7CB9DF2AE7091900DDF10B /* Integrator.swift */; };
 		9D86978F2BB5F2250038EA3B /* RemoteState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D86978E2BB5F2250038EA3B /* RemoteState.swift */; };
@@ -178,6 +178,20 @@
 			remoteGlobalIDString = 9DB4D6692D44F3C5004F3B48;
 			remoteInfo = PeereeIdP;
 		};
+		9D78B97A2DC80F9800CDA589 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9DA0F7B41B5C3AB800F3BA87;
+			remoteInfo = Peeree;
+		};
+		9D78B9852DC80FA700CDA589 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9DD33BCC29FEACA70046165E;
+			remoteInfo = PeereeServerChat;
+		};
 		9DB4D62A2D44E61D004F3B48 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
@@ -258,13 +272,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9D64F9EC2DAA653B006BEB47 /* Embed Frameworks */ = {
+		9D78B9872DC80FA700CDA589 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9D64F9E92DAA653B006BEB47 /* PeereeIdP.framework in Embed Frameworks */,
+				9D78B9842DC80FA700CDA589 /* PeereeServerChat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -361,10 +375,12 @@
 		9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountError.swift; sourceTree = "<group>"; };
 		9D5B4B2B2D75B3FD00BE5D7A /* PeerVerificationOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerVerificationOperationManager.swift; sourceTree = "<group>"; };
 		9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenVerifier.swift; sourceTree = "<group>"; };
+		9D5C45B22DC6977000258701 /* AccountConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConfiguration.swift; sourceTree = "<group>"; };
 		9D5D46ED280C6C73002174DB /* PeereeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentity.swift; sourceTree = "<group>"; };
 		9D60D1212DAB97190012F7C9 /* JWTToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWTToken.swift; sourceTree = "<group>"; };
 		9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountControllerFactory.swift; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
+		9D78B9762DC80F9800CDA589 /* PeereeChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D79074D27F3A08B00920D38 /* ServerChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatModel.swift; sourceTree = "<group>"; };
 		9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryState.swift; sourceTree = "<group>"; };
 		9D7CB9DF2AE7091900DDF10B /* Integrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Integrator.swift; sourceTree = "<group>"; };
@@ -443,6 +459,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		9D78B9772DC80F9800CDA589 /* PeereeChatTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PeereeChatTests; sourceTree = "<group>"; };
 		9DB4D6222D44E61C004F3B48 /* PeereeSocial */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DB4D63A2D44E61D004F3B48 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeSocial; sourceTree = "<group>"; };
 		9DB4D62E2D44E61D004F3B48 /* PeereeSocialTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PeereeSocialTests; sourceTree = "<group>"; };
 		9DB4D66B2D44F3C5004F3B48 /* PeereeIdP */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DB4D67F2D44F3C5004F3B48 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeIdP; sourceTree = "<group>"; };
@@ -450,6 +467,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9D78B9732DC80F9800CDA589 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D78B9832DC80FA700CDA589 /* PeereeServerChat.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B21B5C3AB800F3BA87 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -486,7 +511,6 @@
 			files = (
 				9D64F9E82DAA653B006BEB47 /* PeereeIdP.framework in Frameworks */,
 				9DB4D6292D44E61D004F3B48 /* PeereeSocial.framework in Frameworks */,
-				9D64F9F22DAA654D006BEB47 /* KeychainWrapper in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,7 +531,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D64F9D02DAA54AB006BEB47 /* KeychainWrapper in Frameworks */,
 				9DB4D6722D44F3C5004F3B48 /* PeereeIdP.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -720,6 +743,7 @@
 		9D5B4B2D2D76584A00BE5D7A /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				9D5C45B22DC6977000258701 /* AccountConfiguration.swift */,
 				9D60D1212DAB97190012F7C9 /* JWTToken.swift */,
 				9D5B4B2E2D76588000BE5D7A /* TokenVerifier.swift */,
 				9D5B4B212D71C8AD00BE5D7A /* AccountError.swift */,
@@ -887,6 +911,7 @@
 				9DB4D62E2D44E61D004F3B48 /* PeereeSocialTests */,
 				9DB4D66B2D44F3C5004F3B48 /* PeereeIdP */,
 				9DB4D6772D44F3C5004F3B48 /* PeereeIdPTests */,
+				9D78B9772DC80F9800CDA589 /* PeereeChatTests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
 				9DD33C4D2A0063880046165E /* Frameworks */,
 			);
@@ -904,6 +929,7 @@
 				9DB4D6282D44E61D004F3B48 /* PeereeSocialTests.xctest */,
 				9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */,
 				9DB4D6712D44F3C5004F3B48 /* PeereeIdPTests.xctest */,
+				9D78B9762DC80F9800CDA589 /* PeereeChatTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1064,6 +1090,31 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		9D78B9752DC80F9800CDA589 /* PeereeChatTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9D78B97C2DC80F9800CDA589 /* Build configuration list for PBXNativeTarget "PeereeChatTests" */;
+			buildPhases = (
+				9D78B9722DC80F9800CDA589 /* Sources */,
+				9D78B9732DC80F9800CDA589 /* Frameworks */,
+				9D78B9742DC80F9800CDA589 /* Resources */,
+				9D78B9872DC80FA700CDA589 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9D78B97B2DC80F9800CDA589 /* PBXTargetDependency */,
+				9D78B9862DC80FA700CDA589 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9D78B9772DC80F9800CDA589 /* PeereeChatTests */,
+			);
+			name = PeereeChatTests;
+			packageProductDependencies = (
+			);
+			productName = PeereeChatTests;
+			productReference = 9D78B9762DC80F9800CDA589 /* PeereeChatTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		9DA0F7B41B5C3AB800F3BA87 /* Peeree */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9DA0F7D61B5C3AB900F3BA87 /* Build configuration list for PBXNativeTarget "Peeree" */;
@@ -1131,7 +1182,6 @@
 				9DB4D6242D44E61D004F3B48 /* Sources */,
 				9DB4D6252D44E61D004F3B48 /* Frameworks */,
 				9DB4D6262D44E61D004F3B48 /* Resources */,
-				9D64F9EC2DAA653B006BEB47 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1145,7 +1195,6 @@
 			);
 			name = PeereeSocialTests;
 			packageProductDependencies = (
-				9D64F9F12DAA654D006BEB47 /* KeychainWrapper */,
 			);
 			productName = PeereeSocialTests;
 			productReference = 9DB4D6282D44E61D004F3B48 /* PeereeSocialTests.xctest */;
@@ -1199,7 +1248,6 @@
 			);
 			name = PeereeIdPTests;
 			packageProductDependencies = (
-				9D64F9CF2DAA54AB006BEB47 /* KeychainWrapper */,
 			);
 			productName = PeereeIdPTests;
 			productReference = 9DB4D6712D44F3C5004F3B48 /* PeereeIdPTests.xctest */;
@@ -1301,10 +1349,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftMigration = 0700;
-				LastSwiftUpdateCheck = 1610;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
+					9D78B9752DC80F9800CDA589 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
+					};
 					9DA0F7B41B5C3AB800F3BA87 = {
 						CreatedOnToolsVersion = 6.3.2;
 						LastSwiftMigration = 1020;
@@ -1381,11 +1433,19 @@
 				9DD33C2729FFC5200046165E /* PeereeCoreTests */,
 				9DB4D6272D44E61D004F3B48 /* PeereeSocialTests */,
 				9DB4D6702D44F3C5004F3B48 /* PeereeIdPTests */,
+				9D78B9752DC80F9800CDA589 /* PeereeChatTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9D78B9742DC80F9800CDA589 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B31B5C3AB800F3BA87 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1489,6 +1549,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9D78B9722DC80F9800CDA589 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DA0F7B11B5C3AB800F3BA87 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1570,6 +1637,7 @@
 				9DB4D68A2D44F3E8004F3B48 /* AccountViewModelDelegate.swift in Sources */,
 				9D5B4AF12D6B644B00BE5D7A /* ChatAccount.swift in Sources */,
 				9D5B4AE72D6B42E800BE5D7A /* Utitlity.swift in Sources */,
+				9D5C45B32DC6977500258701 /* AccountConfiguration.swift in Sources */,
 				9DB4D68B2D44F3E8004F3B48 /* AccountControllerFactory.swift in Sources */,
 				9D5B4B222D71C8B000BE5D7A /* AccountError.swift in Sources */,
 				9DB4D68C2D44F3E8004F3B48 /* AccountController.swift in Sources */,
@@ -1657,6 +1725,16 @@
 			isa = PBXTargetDependency;
 			target = 9DB4D6692D44F3C5004F3B48 /* PeereeIdP */;
 			targetProxy = 9D64F9EA2DAA653B006BEB47 /* PBXContainerItemProxy */;
+		};
+		9D78B97B2DC80F9800CDA589 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
+			targetProxy = 9D78B97A2DC80F9800CDA589 /* PBXContainerItemProxy */;
+		};
+		9D78B9862DC80FA700CDA589 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9DD33BCC29FEACA70046165E /* PeereeServerChat */;
+			targetProxy = 9D78B9852DC80FA700CDA589 /* PBXContainerItemProxy */;
 		};
 		9DB4D62B2D44E61D004F3B48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1758,6 +1836,66 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		9D78B97D2DC80F9800CDA589 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeChatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
+			};
+			name = Debug;
+		};
+		9D78B97E2DC80F9800CDA589 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 86J6LQ96WM;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeChatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
+			};
+			name = Release;
+		};
 		9DA0F7D41B5C3AB900F3BA87 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2150,7 +2288,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -2446,6 +2583,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9D78B97C2DC80F9800CDA589 /* Build configuration list for PBXNativeTarget "PeereeChatTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D78B97D2DC80F9800CDA589 /* Debug */,
+				9D78B97E2DC80F9800CDA589 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9DA0F7B01B5C3AB800F3BA87 /* Build configuration list for PBXProject "Peeree" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2669,16 +2815,6 @@
 			productName = JWTKit;
 		};
 		9D64F9C32DAA5430006BEB47 /* KeychainWrapper */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
-			productName = KeychainWrapper;
-		};
-		9D64F9CF2DAA54AB006BEB47 /* KeychainWrapper */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
-			productName = KeychainWrapper;
-		};
-		9D64F9F12DAA654D006BEB47 /* KeychainWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
 			productName = KeychainWrapper;

@@ -35,9 +35,10 @@ public actor AccountControllerFactory {
 	// MARK: Methods
 
 	/// Call this as soon as possible.
-	public init(viewModel: AccountViewModelDelegate, isTest: Bool) {
+	public init(
+		config: AccountModuleConfig, viewModel: AccountViewModelDelegate) {
 		self.viewModel = viewModel
-		self.isTest = isTest
+		self.config = config
 	}
 
 	/// Retrieves the singleton.
@@ -47,7 +48,7 @@ public actor AccountControllerFactory {
 		}
 
 		let keyPair = KeyPair(
-			fromKeychainWithTag: Self.PrivateKeyTag,
+			fromKeychainWithTag: self.privateKeyTag,
 			algorithm: PeereeIdentity.KeyAlgorithm,
 			size: PeereeIdentity.KeySize)
 
@@ -75,14 +76,14 @@ public actor AccountControllerFactory {
 		let keyPair: KeyPair
 		do {
 			// try to remove the old key, just to be sure
-			let oldKeyPair = KeyPair(fromKeychainWithTag: Self.PrivateKeyTag,
+			let oldKeyPair = KeyPair(fromKeychainWithTag: self.privateKeyTag,
 				algorithm: PeereeIdentity.KeyAlgorithm,
 				size: PeereeIdentity.KeySize)
 			try? oldKeyPair.removeFromKeychain()
 
 			// this will add the pair to the keychain,
 			// from where it is read later by the constructor
-			keyPair = try KeyPair(tag: Self.PrivateKeyTag,
+			keyPair = try KeyPair(tag: self.privateKeyTag,
 				algorithm: PeereeIdentity.KeyAlgorithm,
 				size: PeereeIdentity.KeySize)
 
@@ -127,7 +128,7 @@ public actor AccountControllerFactory {
 			}
 
 			guard let peerID = UUID(uuidString: account.userID) else {
-				try programmingError("Malformed peerID \(account.userID)")
+				throw makeProgrammingError("Malformed peerID \(account.userID)")
 			}
 
 			let a = AccountController.create(
@@ -177,8 +178,6 @@ public actor AccountControllerFactory {
 			throw error
 		}
 
-		await ac.clearLocalData()
-
 		self.instance = nil
 
 		Task { @MainActor in
@@ -198,7 +197,6 @@ public actor AccountControllerFactory {
 
 	/// Keychain property.
 	private static let PrivateKeyTag = "com.peeree.keys.restkey.private"
-		.data(using: .utf8)!
 
 	// From where to get JKS
 	private var jwksURL: URL {
@@ -217,7 +215,27 @@ public actor AccountControllerFactory {
 	// MARK: Variables
 
 	/// Whether the test backend should be used.
-	private let isTest: Bool
+	private let config: AccountModuleConfig
+
+	/// Whether the test backend should be used.
+	private var isTest: Bool {
+		switch self.config {
+		case .production:
+			return false
+		case .testing(_):
+			return true
+		}
+	}
+
+	/// Whether the test backend should be used.
+	private var privateKeyTag: Data {
+		switch self.config {
+		case .production:
+			return Self.PrivateKeyTag.data(using: .utf8)!
+		case .testing(let testConfig):
+			return testConfig.privateKeyTag.data(using: .utf8)!
+		}
+	}
 
 	private var apiURL: URL {
 		get throws {

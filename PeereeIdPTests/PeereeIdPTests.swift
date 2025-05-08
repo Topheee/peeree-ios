@@ -9,7 +9,6 @@
 import Testing
 @testable import PeereeIdP
 
-import KeychainWrapper
 import PeereeCore
 
 final class MockAccountViewModelDelegate: AccountViewModelDelegate {
@@ -23,13 +22,18 @@ final class MockAccountViewModelDelegate: AccountViewModelDelegate {
 
 	@MainActor @Suite(.serialized)
 	struct AccountTests {
+
+		/// The identifier in the Keychain for the test private key.
+		private let privateTag = "PeereeSocialTests.AccountTests.\(UUID().uuidString)"
+
 		private let viewModelDelegate: MockAccountViewModelDelegate = .init()
 
 		private let factory: AccountControllerFactory
 
 		init() throws {
 			self.factory = AccountControllerFactory(
-				viewModel: viewModelDelegate, isTest: true)
+				config: .testing(.init(privateKeyTag: self.privateTag)),
+				viewModel: viewModelDelegate)
 		}
 
 		@Test func testCreateDeleteAccount() async throws {
@@ -70,6 +74,10 @@ final class MockAccountViewModelDelegate: AccountViewModelDelegate {
 
 	@MainActor @Suite(.serialized)
 	final class IdPTests {
+
+		/// The identifier in the Keychain for the test private key.
+		private let privateTag = "PeereeSocialTests.IdPTests.\(UUID().uuidString)"
+
 		private let viewModelDelegate: MockAccountViewModelDelegate = .init()
 
 		private let factory: AccountControllerFactory
@@ -78,7 +86,8 @@ final class MockAccountViewModelDelegate: AccountViewModelDelegate {
 
 		init() async throws {
 			self.factory = AccountControllerFactory(
-				viewModel: viewModelDelegate, isTest: true)
+				config: .testing(.init(privateKeyTag: self.privateTag)),
+				viewModel: viewModelDelegate)
 
 			let (ac, _) = try await self.factory.createOrRecoverAccount(using: nil)
 			self.accountController = ac

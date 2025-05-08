@@ -10,7 +10,7 @@ import Foundation
 import MatrixSDK
 import PeereeCore
 
-// Declare a global actor
+/// The actor of the Server Chat module.
 @globalActor public actor ChatActor {
 	// https://forums.swift.org/t/actor-assumeisolated-erroneously-crashes-when-using-a-dispatch-queue-as-the-underlying-executor/72434
 	final class DispatchQueueExecutor: SerialExecutor {

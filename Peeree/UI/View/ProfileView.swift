@@ -29,6 +29,9 @@ struct ProfileView: View {
 
 	@State private var showCreateDeleteAccountDialog = false
 
+	/// This is a workaround to the problem that directly referencing discoveryViewState.profile.image did not update the view.
+	@State private var profileImage = Image("PortraitPlaceholder")
+
 	private var mainWebsite: URL {
 		return URL(string: NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")) ?? URL(fileURLWithPath: "/")
 	}
@@ -67,7 +70,7 @@ struct ProfileView: View {
 						.textFieldStyle(.roundedBorder)
 						.padding(.top, 12)
 
-						discoveryViewState.profile.image
+						profileImage
 							.resizable()
 							.aspectRatio(contentMode: .fit)
 							.clipShape(Circle())
@@ -247,6 +250,7 @@ struct ProfileView: View {
 			}
 			.onAppear {
 				showBirthdayPicker = discoveryViewState.profile.birthday != nil
+				profileImage = discoveryViewState.profile.image
 			}
 			.onDisappear {
 				if !showBirthdayPicker {
@@ -265,9 +269,15 @@ struct ProfileView: View {
 
 	private func picked(image: UIImage) {
 		discoveryViewState.profile.picture = image
+		// gosh this is so fucking ugly
+		profileImage = Image(image.cgImage!, scale: 1.0, label: Text("A person."))
 	}
 }
 
 #Preview {
+	let ds = DiscoveryViewState()
+	let ss = SocialViewState()
 	return ProfileView() {}
+		.environmentObject(ds)
+		.environmentObject(ss)
 }
