@@ -172,4 +172,8 @@ final class ThreadSafeCallbacksMatrixSession {
 			}
 		}
 	}
+
+	func clearAllData() {
+		self.session.clearAllData()
+	}
 }

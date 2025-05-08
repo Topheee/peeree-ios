@@ -37,32 +37,50 @@ final class ServerChatController: ServerChat {
 
 	// MARK: Methods
 
-	/// this will close the underlying session and invalidate the global ServerChatController instance.
+	/// Closes the underlying session; empties and invalidates this
+	/// `ServerChatController` instance.
 	func close() {
-		for observer in notificationObservers { NotificationCenter.default.removeObserver(observer) }
-		notificationObservers.removeAll()
+		for observer in self.notificationObservers {
+			NotificationCenter.default.removeObserver(observer)
+		}
+		self.notificationObservers.removeAll()
 
+		let listeningRooms = self.roomIdsListeningOn
+		for (roomId, _) in listeningRooms {
+			self.stopListening(in: roomId)
+		}
+
+		let timelines = self.roomTimelines
+		for (roomId, _) in timelines {
+			self.stopListening(in: roomId)
+		}
+
+		self.roomTimelines.removeAll()
 		self.roomIdsListeningOn.removeAll()
 
+		self.storedMessagesEnumerators.removeAll()
+
 		// *** roughly based on MXKAccount.closeSession(true) ***
-		session.scanManager?.deleteAllAntivirusScans()
-		session.aggregations?.resetData()
-		session.close()
+		self.session.scanManager?.deleteAllAntivirusScans()
+		self.session.aggregations?.resetData()
+		self.session.close()
 	}
 
 	// as this method also invalidates the deviceId, other users cannot send us encrypted messages anymore. So we never logout except for when we delete the account.
 	/// this will close the underlying session. Do not re-use it (do not make any more calls to this ServerChatController instance).
-	func logout() async throws {
-		defer { self.close() }
-
-		try await self.session.extensiveLogout()
-
+	private func clear() async {
 		await self.persistence.clear()
+		self.close()
+		self.session.clearAllData()
 	}
 
 	/// Removes the server chat account permanently.
 	func deleteAccount(password: String) async throws {
 		do {
+			// apparently these parameters are not used anyway, but the token
+			// of the MXRestClient instead.
+			// So if we would `self.logout()` before this, we would invalidate
+			// the token and the request fails. Dang.
 			let authParams: [String: Any] = [
 				"type" : kMXLoginFlowTypePassword,
 				"user" : self.userId,
@@ -76,15 +94,7 @@ final class ServerChatController: ServerChat {
 					}
 			}
 
-			// it seems we need to log out after we deleted the account
-			do {
-				try await self.logout()
-			} catch {
-				elog(Self.LogTag, "Logout after account deletion failed:" +
-					 error.localizedDescription)
-				// do not escalate the error of the logout, as it doesn't mean
-				// we didn't successfully deactivated the account
-			}
+			await self.clear()
 
 			Task { @MainActor in
 				await self.conversationDelegate?.clear()
@@ -328,6 +338,9 @@ final class ServerChatController: ServerChat {
 	/// The timelines of rooms we are listening on.
 	private var roomTimelines = [String : EventTimeline]()
 
+	/// This variable is for caching purposes.
+	private var storedMessagesEnumerators = [String : MXEventsEnumerator]()
+
 	// MARK: Methods
 
 	/// Retrieves or creates a room with `peerID`.
@@ -379,8 +392,6 @@ final class ServerChatController: ServerChat {
 			throw ServerChatError.sdk(error)
 		}
 	}
-
-	private var storedMessagesEnumerators = [String : MXEventsEnumerator]()
 
 	/// Read past events from local storage.
 	private func loadEventsFromDisk(_ eventCount: Int, in room: Room,
@@ -519,13 +530,18 @@ final class ServerChatController: ServerChat {
 		await self.loadEventsFromDisk(10, in: room, with: peerID)
 	}
 
+	/// Revert `listenToEvents()`.
+	private func stopListening(in roomId: String) {
+		self.roomTimelines.removeValue(forKey: roomId)?.destroy()
+		self.roomIdsListeningOn.removeValue(forKey: roomId)
+	}
+
 	/// Tries to leave (and forget [once supported by the SDK]) `room`.
 	private func forgetRoom(_ roomId: String) async throws {
 		do {
 			try await session.leaveRoom(roomId)
 
-			self.roomTimelines.removeValue(forKey: roomId)?.destroy()
-			self.roomIdsListeningOn.removeValue(forKey: roomId)
+			self.stopListening(in: roomId)
 		} catch {
 			let err = error as NSError
 			if MXError.isMXError(err),

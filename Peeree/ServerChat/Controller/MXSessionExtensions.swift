@@ -31,6 +31,14 @@ extension MXSession {
 		}
 	}
 
+	/// Cleans up all locally saved data.
+	func clearAllData() {
+		self.scanManager?.deleteAllAntivirusScans()
+		self.aggregations?.resetData()
+		self.close()
+		self.store?.deleteAllData()
+	}
+
 	/// Fetches direct rooms recursively.
 	@ChatActor
 	private func directRoomInfosRecursive(with userId: String, directJoinedRooms: [MXRoom], idx: Int, infos: [DirectRoomInfo], _ completion: @escaping ([DirectRoomInfo]) -> Void) {

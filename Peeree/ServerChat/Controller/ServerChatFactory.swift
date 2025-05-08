@@ -512,15 +512,13 @@ public final class ServerChatFactory {
 				return
 			}
 
-			flog(Self.LogTag, "server chat session became unauthenticated"
+			ilog(Self.LogTag, "server chat session became unauthenticated"
 				 + " (soft logout: \(isSoftLogout), refresh token: "
 				 + "\(isRefreshTokenAuth)) \(mxError.errcode ?? "<nil>"): "
 				 + "\(mxError.error ?? "<nil>")")
 
 			if !isSoftLogout && !isRefreshTokenAuth
 				&& mxError.errcode == kMXErrCodeStringUnknownToken {
-				let error = mxError.createNSError()
-
 				Task {
 					// Our token was removed, probably due to an upgrade of the Matrix server.
 					// We need to remove it, s.t. password auth is again used to log in.
@@ -542,7 +540,8 @@ public final class ServerChatFactory {
 							 + " became invalid failed: \(error)")
 					}
 
-					await strongSelf.closeServerChat(with: error)
+					// we do not pass the error up the chain
+					await strongSelf.closeServerChat(with: nil)
 				}
 			}
 

@@ -675,6 +675,11 @@ extension Mediator: SocialViewDelegate {
 	}
 
 	private func deleteIdentityAsync() async {
+		// A bit not-so-good style to modify `accountExists` from here, where
+		// all the other modifications are from the Account module.
+		// But this disables the button in the UI.
+		self.socialViewState.accountExists = .turningOff
+
 		do {
 			self.togglePeering(on: false)
 
@@ -700,6 +705,9 @@ extension Mediator: SocialViewDelegate {
 				comment: "Standard title message of alert for internet connection errors.")
 			let message = socialModuleErrorMessage(from: error)
 			self.display(message: message, title: title)
+
+			// Reset UI state.
+			self.socialViewState.accountExists = .on
 		}
 	}
 
