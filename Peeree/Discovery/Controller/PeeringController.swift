@@ -449,6 +449,7 @@ public final class PeeringController:
 	}
 
 	/// Remove peers from disk which haven't been seen for `MaxRememberedHours` and are not pin matched.
+	// TODO: this does an aweful lot more than that and needs refactoring
 	public func cleanupPersistedPeers(allPeers: Set<Peer>,
 									  cleanupPeerIDs: [PeerID]) {
 		let now = Date()
@@ -467,15 +468,18 @@ public final class PeeringController:
 			return lastSeenAgo > PeeringController.MaxRememberedHours
 		}
 
-		let remainingPeers = allPeers.filter { peer in
+		let removePeers = allPeers.filter { peer in
 			removePeerIDs.contains(peer.id.peerID)
 		}
 
+		let remainingPeers = allPeers.subtracting(removePeers)
+
 		let p = self.persistence
 		let d = self.delegate
+
 		Task {
 			do {
-				try await p.removePeers(remainingPeers)
+				try await p.removePeers(removePeers)
 			} catch {
 				await d.encodingPeersFailed(with: error)
 			}
@@ -489,8 +493,31 @@ public final class PeeringController:
 					of: peer,
 					lastSeen: lsDates[peer.id.peerID] ?? Date.distantPast,
 					on: vm)
+			}
+		}
 
-				// TODO: vm.persona(of: peer.id.peerID).biography = peer.biography
+		Task {
+			let blobs = await withTaskGroup(of: (PeerID, PeerBlobData?).self) { group in
+				for peer in remainingPeers {
+					group.addTask {
+						(peer.id.peerID, await p.loadBlob(of: peer.id.peerID))
+					}
+				}
+
+				return await group.reduce(into: [PeerID:PeerBlobData]()) { dictionary, result in
+					if let blob = result.1 {
+						dictionary[result.0] = blob
+					}
+				}
+			}
+
+			Task { @MainActor in
+				blobs.forEach { (peerID, blob) in
+					let p = vm.persona(of: peerID)
+
+					p.biography = blob.biography
+					p.set(portrait: blob.portrait, hash: blob.portraitHash)
+				}
 			}
 		}
 	}

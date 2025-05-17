@@ -159,7 +159,8 @@ final class MockServerChatDelegate: ServerChatDelegate {
 			initialPassword: ca.initialPassword)
 
 		let scFactory = try await ServerChatFactory(
-			account: sca, ourPeerID: ac.peerID, delegate: self.delegateMock,
+			isTest: true, account: sca, ourPeerID: ac.peerID,
+			delegate: self.delegateMock,
 			conversationDelegate: self.viewModelMock)
 
 		// we need to call use() to initiate the ServerChatController

@@ -142,15 +142,21 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 		KeyValueTree<CBUUID, CharacteristicOperation>
 			.branch(key: idOpTreeIdentification, nodes: [
 			.branch(key: CBUUID.PeereeServiceID, nodes: [
-				.leaf(key: CBUUID.LocalPeerIDCharacteristicID,
-					  value: CharacteristicOperation(task: .read,
-													 mandatory: true)),
+				.leaf(key: CBUUID.OldLocalPeerIDCharacteristicID,
+					  value: CharacteristicOperation(
+						task: .read, mandatory: true)),
+// This would only make things worse at the moment - i.e., we would read more
+// data. Once the new version is wide-spread, we can switch to the new,
+// efficient characteristic.
+//				.leaf(key: CBUUID.LocalPeerIDCharacteristicID,
+//					  value: CharacteristicOperation(
+//						task: .read, mandatory: false)),
 				.leaf(key: CBUUID.LastChangedCharacteristicID,
-					  value: CharacteristicOperation(task: .read,
-													 mandatory: true)),
+					  value: CharacteristicOperation(
+						task: .read, mandatory: true)),
 				.leaf(key: CBUUID.ConnectBackCharacteristicID,
-					  value: CharacteristicOperation(task: .write,
-													 mandatory: false))
+					  value: CharacteristicOperation(
+						task: .write, mandatory: false))
 			])
 		])
 	}

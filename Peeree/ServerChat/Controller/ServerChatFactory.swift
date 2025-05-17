@@ -51,11 +51,11 @@ public final class ServerChatFactory {
 
 	/// Takes a freshly created account.
 	public convenience
-	init(account: ServerChatAccount, ourPeerID peerID: PeerID,
+	init(isTest: Bool, account: ServerChatAccount, ourPeerID peerID: PeerID,
 		 delegate: ServerChatDelegate?,
 		 conversationDelegate: (any ServerChatViewModelDelegate)?
 	) async throws {
-		self.init(ourPeerID: peerID, delegate: delegate,
+		self.init(isTest: isTest, ourPeerID: peerID, delegate: delegate,
 				  conversationDelegate: conversationDelegate)
 
 		guard let passwordData = account.initialPassword
@@ -96,9 +96,11 @@ public final class ServerChatFactory {
 	// MARK: Methods
 
 	/// Creates a factory instance.
-	public init(ourPeerID peerID: PeerID,
+	public init(isTest: Bool,
+				ourPeerID peerID: PeerID,
 				delegate: ServerChatDelegate?,
 				conversationDelegate: (any ServerChatViewModelDelegate)?) {
+		self.isTest = isTest
 		self.peerID = peerID
 		self.delegate = delegate
 		self.conversationDelegate = conversationDelegate
@@ -210,6 +212,9 @@ public final class ServerChatFactory {
 	// MARK: Static Variables
 
 	// MARK: Constants
+
+	/// Whether this is a build targeting the testing environment.
+	private let isTest: Bool
 
 	/// PeerID of the user.
 	private let peerID: PeerID
@@ -325,15 +330,30 @@ public final class ServerChatFactory {
 	/// The full home server URL.
 	private var homeServerURL: URL {
 		get throws {
-			if let homeServer = UserDefaults.standard
+			let homeServer: String
+
+			if let homeServerSetting = UserDefaults.standard
 				.string(forKey: Self.HomeServerURLKey) {
-				if let url = URL(string: homeServer) {
-					return url
-				} else {
-					throw makeProgrammingError("home server URL unparsable")
-				}
+				homeServer = homeServerSetting
 			} else {
-				throw makeProgrammingError("no home server URL set")
+				// MIGRATION BRANCH FROM v1.7.1
+
+				homeServer = self.isTest ?
+				"https://test-chat.peeree.de" : "https://chat.peeree.de"
+
+				ilog(
+					Self.LogTag,
+					"migration branch from v1.7.1: home server URL not set, setting '\(homeServer)'.")
+
+				UserDefaults.standard.set(
+					homeServer,
+					forKey: Self.HomeServerURLKey)
+			}
+
+			if let url = URL(string: homeServer) {
+				return url
+			} else {
+				throw makeProgrammingError("home server URL unparsable")
 			}
 		}
 	}

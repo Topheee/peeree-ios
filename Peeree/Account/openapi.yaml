@@ -16,7 +16,7 @@ info:
 #  summary: Identity provider API of Peeree.
   description: |
     Endpoint to manage Peeree accounts and API access.
-  version: "2.0.0"
+  version: "2.0.1"
   contact:
     name: Peeree Support
     url: https://www.peeree.de/en/about.html
@@ -286,6 +286,13 @@ components:
         'text/plain':
           schema:
             type: string
+    NotFoundResponse:
+      description: |
+        An entity was not found.
+      content:
+        'text/plain':
+          schema:
+            type: string
     RateLimitResponse:
       description: |
         The user has sent too many requests in a given amount of time.
@@ -521,6 +528,8 @@ paths:
           $ref: '#/components/responses/IdentityTokenResponse'
         '400':
           $ref: '#/components/responses/ClientSideErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
         '429':
           $ref: '#/components/responses/RateLimitResponse'
         '500':

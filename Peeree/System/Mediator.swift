@@ -28,6 +28,14 @@ final class Mediator {
 	// Log tag.
 	private static let LogTag = "Mediator"
 
+	// go against our testing endpoints in the simulator
+	#if targetEnvironment(simulator)
+	//#if DEBUG
+	public let isTest = true
+	#else
+	public let isTest = false
+	#endif
+
 	/// Task holding notification observers.
 	private var notificationTask: Task<Void, Never>?
 
@@ -279,28 +287,22 @@ final class Mediator {
 	}
 
 	init() {
-		// go against our testing endpoints in the simulator
-		#if DEBUG
+		let accountConfig: AccountModuleConfig
 
-		let isTest = true
-
-		let privateKeyTag = "Peeree.Betatesting.PrivateKey"
-		let accountConfig = AccountModuleConfig
-			.testing(.init(privateKeyTag: privateKeyTag))
-
-		#else
-
-		let isTest = false
-		let accountConfig = AccountModuleConfig.production
-
-		#endif
+		if self.isTest {
+			let privateKeyTag = "Peeree.Betatesting.PrivateKey"
+			accountConfig = AccountModuleConfig
+				.testing(.init(privateKeyTag: privateKeyTag))
+		} else {
+			accountConfig = AccountModuleConfig.production
+		}
 
 		self.accountControllerFactory = .init(
 			config: accountConfig, viewModel: self.socialViewState)
 
 		self.socialController = SocialNetworkController(
 			authenticator: self.accountControllerFactory,
-			viewModel: self.socialViewState, isTest: isTest)
+			viewModel: self.socialViewState, isTest: self.isTest)
 	}
 
 	/// Run this on application startup.
@@ -314,15 +316,16 @@ final class Mediator {
 
 		// start Bluetooth and server chat, but only if account exists
 		if let ac = try await self.accountControllerFactory.use() {
+			// we need to do this early to load peer data from disk
+			self.togglePeering(on: true)
 
 			let factory = await ServerChatFactory(
-				ourPeerID: ac.peerID, delegate: self,
+				isTest: self.isTest, ourPeerID: ac.peerID, delegate: self,
 				conversationDelegate: self.serverChatViewState)
 
 			try await self.setup(
 				factory: factory, errorTitle: NSLocalizedString(
 				"Login to Chat Server Failed", comment: "Error message title"))
-			self.togglePeering(on: true)
 		}
 
 		try await self.discoveryViewState.load()
@@ -653,8 +656,8 @@ extension Mediator: SocialViewDelegate {
 				initialPassword: ca.initialPassword)
 
 			let factory = try await ServerChatFactory(
-				account: sca, ourPeerID: ac.peerID, delegate: self,
-				conversationDelegate: self.serverChatViewState)
+				isTest: self.isTest, account: sca, ourPeerID: ac.peerID,
+				delegate: self, conversationDelegate: self.serverChatViewState)
 
 			try await self.setup(factory: factory, errorTitle: title)
 		} catch {

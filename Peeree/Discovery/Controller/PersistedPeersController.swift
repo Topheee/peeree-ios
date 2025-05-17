@@ -28,7 +28,7 @@ public actor PersistedPeersController {
 	// MARK: Methods
 
 	/// Wipes all data from disk.
-	public func clear() async {
+	public func clear() {
 		// Deleting from less to most important files.
 		try? fileManager.deleteFile(at: self.thumbnailBaseURL)
 		try? fileManager.deleteFile(at: self.biosURL)
@@ -71,7 +71,7 @@ public actor PersistedPeersController {
 		try self.savePeers()
 	}
 
-	/// Removes the returned `Peer` instances of `query` from the persisted peers set and whipes them and all associated data from disk.
+	/// Removes `peers` from the persisted peers set and whipes them and all associated data from disk.
 	public func removePeers(_ peers: Set<Peer>) throws {
 		self.persistedPeers.subtract(peers)
 		for peer in peers {
@@ -115,11 +115,11 @@ public actor PersistedPeersController {
 	}
 
 	/// Load portrait and hash of `peerID` from disk and informs delegate afterwards.
-	public func loadPortrait(of peerID: PeerID) -> (CGImage, Data)? {
+	public func loadBlob(of peerID: PeerID) -> PeerBlobData? {
 		if let blob = self.persistedBlobs[peerID],
-		   let portrait = blob.portrait,
+		   blob.portrait != nil,
 		   blob.portraitHash.count > 0 {
-			return (portrait, blob.portraitHash)
+			return blob
 		}
 
 		let url = self.pictureURL(of: peerID)
@@ -132,16 +132,20 @@ public actor PersistedPeersController {
 
 		let hash = Data(SHA256.hash(data: data))
 
+		let result: PeerBlobData
+
 		if let blob = self.persistedBlobs[peerID] {
-			self.persistedBlobs[peerID] = PeerBlobData(
+			result = PeerBlobData(
 				biography: blob.biography, portraitHash: hash,
 				portrait: image, thumbnail: blob.thumbnail)
 		} else {
-			self.persistedBlobs[peerID] = PeerBlobData(
+			result = PeerBlobData(
 				portraitHash: hash, portrait: image, thumbnail: nil)
 		}
 
-		return (image, hash: hash)
+		self.persistedBlobs[peerID] = result
+
+		return result
 	}
 
 	// MARK: - Private
@@ -202,8 +206,25 @@ public actor PersistedPeersController {
 		guard let data = fileManager.contents(atPath: self.peersURL.path) else { return }
 
 		let decoder = JSONDecoder()
-		let decodedPeers = try decoder.decode(Set<Peer>.self, from: data)
-		self.persistedPeers = decodedPeers
+
+		do {
+			let decodedPeers = try decoder.decode(Set<Peer>.self, from: data)
+			self.persistedPeers = decodedPeers
+		} catch {
+			wlog(
+				Self.LogTag, "Decoding persisted peers failed: \(error). " +
+				"Attempting migration from version 1.6.4")
+
+			let decodedPeers = try decoder.decode([Peer1_6_4].self, from: data)
+
+			// sanity check
+			try decodedPeers.forEach {
+				let m = $0.modernized()
+				_ = try m.id.publicKey()
+			}
+
+			self.persistedPeers = Set(decodedPeers.map { $0.modernized() })
+		}
 	}
 
 	/**

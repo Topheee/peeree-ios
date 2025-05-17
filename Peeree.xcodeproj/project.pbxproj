@@ -77,7 +77,11 @@
 		9D6A8C192ADF241700C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C182ADF241700C8239D /* CSProgress */; };
 		9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9D6A8C1A2ADF244100C8239D /* CSProgress */; };
 		9D78B9832DC80FA700CDA589 /* PeereeServerChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; };
-		9D78B9842DC80FA700CDA589 /* PeereeServerChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BCD29FEACA70046165E /* PeereeServerChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9D78B9B12DCE79FF00CDA589 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 9D78B9B02DCE79FF00CDA589 /* OpenAPIRuntime */; };
+		9D78B9B32DCE7A0500CDA589 /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = 9D78B9B22DCE7A0500CDA589 /* HTTPTypes */; };
+		9D78B9B72DCE7A2800CDA589 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 9D78B9B62DCE7A2800CDA589 /* OpenAPIURLSession */; };
+		9D78B9D12DCF830D00CDA589 /* PeereeIdentity1_6_4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D78B9D02DCF830500CDA589 /* PeereeIdentity1_6_4.swift */; };
+		9D78B9D72DCF85AA00CDA589 /* Peer1_6_4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D78B9D62DCF85A900CDA589 /* Peer1_6_4.swift */; };
 		9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */; };
 		9D7CB9E02AE7091900DDF10B /* Integrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D7CB9DF2AE7091900DDF10B /* Integrator.swift */; };
 		9D86978F2BB5F2250038EA3B /* RemoteState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D86978E2BB5F2250038EA3B /* RemoteState.swift */; };
@@ -90,6 +94,13 @@
 		9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */; };
 		9DA0F7BB1B5C3AB800F3BA87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */; };
 		9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */; };
+		9DA4BC3E2DD0C51500B6F6B9 /* PeereeDiscovery.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33BFB29FFA9BF0046165E /* PeereeDiscovery.framework */; };
+		9DA4BC462DD0C52F00B6F6B9 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9DA4BC452DD0C52F00B6F6B9 /* KeychainWrapper */; };
+		9DA4BC482DD0C52F00B6F6B9 /* BLEPeripheralOperations in Frameworks */ = {isa = PBXBuildFile; productRef = 9DA4BC472DD0C52F00B6F6B9 /* BLEPeripheralOperations */; };
+		9DA4BC4A2DD0C52F00B6F6B9 /* KeyValueTreeCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 9DA4BC492DD0C52F00B6F6B9 /* KeyValueTreeCoding */; };
+		9DA4BC4C2DD0C52F00B6F6B9 /* KeyValueTree in Frameworks */ = {isa = PBXBuildFile; productRef = 9DA4BC4B2DD0C52F00B6F6B9 /* KeyValueTree */; };
+		9DA4BC4E2DD0C52F00B6F6B9 /* CSProgress in Frameworks */ = {isa = PBXBuildFile; productRef = 9DA4BC4D2DD0C52F00B6F6B9 /* CSProgress */; };
+		9DA4BC5D2DD152FB00B6F6B9 /* DictionaryFileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA4BC5C2DD152F700B6F6B9 /* DictionaryFileStorage.swift */; };
 		9DB3499E25F3D2CF00FF2D56 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 9DB3499C25F3D2CF00FF2D56 /* Localizable.stringsdict */; };
 		9DB4D6292D44E61D004F3B48 /* PeereeSocial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB4D6212D44E61C004F3B48 /* PeereeSocial.framework */; };
 		9DB4D6342D44E61D004F3B48 /* PeereeSocial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DB4D6212D44E61C004F3B48 /* PeereeSocial.framework */; };
@@ -192,6 +203,20 @@
 			remoteGlobalIDString = 9DD33BCC29FEACA70046165E;
 			remoteInfo = PeereeServerChat;
 		};
+		9DA4BC342DD0C50200B6F6B9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9DA0F7B41B5C3AB800F3BA87;
+			remoteInfo = Peeree;
+		};
+		9DA4BC402DD0C51500B6F6B9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9DD33BFA29FFA9BF0046165E;
+			remoteInfo = PeereeDiscovery;
+		};
 		9DB4D62A2D44E61D004F3B48 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9DA0F7AD1B5C3AB800F3BA87 /* Project object */;
@@ -272,17 +297,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9D78B9872DC80FA700CDA589 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				9D78B9842DC80FA700CDA589 /* PeereeServerChat.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9DD33B6E29FD79580046165E /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -381,6 +395,8 @@
 		9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountControllerFactory.swift; sourceTree = "<group>"; };
 		9D6AFE58264C23E90065262D /* ServerChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatController.swift; sourceTree = "<group>"; };
 		9D78B9762DC80F9800CDA589 /* PeereeChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D78B9D02DCF830500CDA589 /* PeereeIdentity1_6_4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeereeIdentity1_6_4.swift; sourceTree = "<group>"; };
+		9D78B9D62DCF85A900CDA589 /* Peer1_6_4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peer1_6_4.swift; sourceTree = "<group>"; };
 		9D79074D27F3A08B00920D38 /* ServerChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerChatModel.swift; sourceTree = "<group>"; };
 		9D7A73092A44BB90003375D3 /* PeerDiscoveryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryState.swift; sourceTree = "<group>"; };
 		9D7CB9DF2AE7091900DDF10B /* Integrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Integrator.swift; sourceTree = "<group>"; };
@@ -398,6 +414,8 @@
 		9DA0F7B91B5C3AB800F3BA87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9DA0F7BA1B5C3AB800F3BA87 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9DA0F7C31B5C3AB800F3BA87 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		9DA4BC302DD0C50200B6F6B9 /* PeereeDiscoveryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeereeDiscoveryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9DA4BC5C2DD152F700B6F6B9 /* DictionaryFileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryFileStorage.swift; sourceTree = "<group>"; };
 		9DB3499D25F3D2CF00FF2D56 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		9DB349A025F3D2F500FF2D56 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		9DB4D6212D44E61C004F3B48 /* PeereeSocial.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PeereeSocial.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -442,6 +460,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9D70F7A62DD5368900C57515 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				PeereeDiscoveryTests.swift,
+			);
+			target = 9DA4BC2F2DD0C50200B6F6B9 /* PeereeDiscoveryTests */;
+		};
+		9D70F7AC2DD5369200C57515 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				PeereeDiscoveryTests.swift,
+			);
+			target = 9DA4BC2F2DD0C50200B6F6B9 /* PeereeDiscoveryTests */;
+		};
 		9DB4D63A2D44E61D004F3B48 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
@@ -460,6 +492,8 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9D78B9772DC80F9800CDA589 /* PeereeChatTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PeereeChatTests; sourceTree = "<group>"; };
+		9DA4BC1E2DD0C4E200B6F6B9 /* PeereeDiscoveryTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9D70F7AC2DD5369200C57515 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeDiscoveryTests; sourceTree = "<group>"; };
+		9DA4BC312DD0C50200B6F6B9 /* PeereeDiscoveryTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9D70F7A62DD5368900C57515 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeDiscoveryTests; sourceTree = "<group>"; };
 		9DB4D6222D44E61C004F3B48 /* PeereeSocial */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DB4D63A2D44E61D004F3B48 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeSocial; sourceTree = "<group>"; };
 		9DB4D62E2D44E61D004F3B48 /* PeereeSocialTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PeereeSocialTests; sourceTree = "<group>"; };
 		9DB4D66B2D44F3C5004F3B48 /* PeereeIdP */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9DB4D67F2D44F3C5004F3B48 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = PeereeIdP; sourceTree = "<group>"; };
@@ -480,6 +514,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D6A8C1B2ADF244100C8239D /* CSProgress in Frameworks */,
+				9D78B9B12DCE79FF00CDA589 /* OpenAPIRuntime in Frameworks */,
+				9D78B9B32DCE7A0500CDA589 /* HTTPTypes in Frameworks */,
 				9D9249252A0FB6C400EDD320 /* KeychainWrapper in Frameworks */,
 				9DD9972F2BBDB65A00EE3D94 /* MatrixSDK in Frameworks */,
 				9DD33BF529FF27410046165E /* DequeModule in Frameworks */,
@@ -490,7 +526,21 @@
 				9DB4D6342D44E61D004F3B48 /* PeereeSocial.framework in Frameworks */,
 				9DD33BD329FEACA70046165E /* PeereeServerChat.framework in Frameworks */,
 				9DB4D67D2D44F3C5004F3B48 /* PeereeIdP.framework in Frameworks */,
+				9D78B9B72DCE7A2800CDA589 /* OpenAPIURLSession in Frameworks */,
 				9D2CDF602A718CC500255995 /* BLEPeripheralOperations in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9DA4BC2D2DD0C50200B6F6B9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9DA4BC4A2DD0C52F00B6F6B9 /* KeyValueTreeCoding in Frameworks */,
+				9DA4BC4E2DD0C52F00B6F6B9 /* CSProgress in Frameworks */,
+				9DA4BC462DD0C52F00B6F6B9 /* KeychainWrapper in Frameworks */,
+				9DA4BC4C2DD0C52F00B6F6B9 /* KeyValueTree in Frameworks */,
+				9DA4BC3E2DD0C51500B6F6B9 /* PeereeDiscovery.framework in Frameworks */,
+				9DA4BC482DD0C52F00B6F6B9 /* BLEPeripheralOperations in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -787,6 +837,7 @@
 		9D5D46EF280C6CBD002174DB /* Discovery */ = {
 			isa = PBXGroup;
 			children = (
+				9D78B9D42DCF859800CDA589 /* Migrations */,
 				9D11B6722B5485A2002C2806 /* ViewModel */,
 				9DD33BFD29FFA9BF0046165E /* PeereeDiscovery.h */,
 				9D5D46F0280C6CE7002174DB /* Controller */,
@@ -860,6 +911,38 @@
 			path = System;
 			sourceTree = "<group>";
 		};
+		9D78B9CE2DCF82EA00CDA589 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				9D78B9CF2DCF82F500CDA589 /* 1.6.4 */,
+			);
+			path = Migrations;
+			sourceTree = "<group>";
+		};
+		9D78B9CF2DCF82F500CDA589 /* 1.6.4 */ = {
+			isa = PBXGroup;
+			children = (
+				9D78B9D02DCF830500CDA589 /* PeereeIdentity1_6_4.swift */,
+			);
+			path = 1.6.4;
+			sourceTree = "<group>";
+		};
+		9D78B9D42DCF859800CDA589 /* Migrations */ = {
+			isa = PBXGroup;
+			children = (
+				9D78B9D52DCF859F00CDA589 /* 1.6.4 */,
+			);
+			path = Migrations;
+			sourceTree = "<group>";
+		};
+		9D78B9D52DCF859F00CDA589 /* 1.6.4 */ = {
+			isa = PBXGroup;
+			children = (
+				9D78B9D62DCF85A900CDA589 /* Peer1_6_4.swift */,
+			);
+			path = 1.6.4;
+			sourceTree = "<group>";
+		};
 		9D79074A27F3A04100920D38 /* ServerChat */ = {
 			isa = PBXGroup;
 			children = (
@@ -912,6 +995,8 @@
 				9DB4D66B2D44F3C5004F3B48 /* PeereeIdP */,
 				9DB4D6772D44F3C5004F3B48 /* PeereeIdPTests */,
 				9D78B9772DC80F9800CDA589 /* PeereeChatTests */,
+				9DA4BC1E2DD0C4E200B6F6B9 /* PeereeDiscoveryTests */,
+				9DA4BC312DD0C50200B6F6B9 /* PeereeDiscoveryTests */,
 				9DA0F7B61B5C3AB800F3BA87 /* Products */,
 				9DD33C4D2A0063880046165E /* Frameworks */,
 			);
@@ -930,6 +1015,7 @@
 				9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */,
 				9DB4D6712D44F3C5004F3B48 /* PeereeIdPTests.xctest */,
 				9D78B9762DC80F9800CDA589 /* PeereeChatTests.xctest */,
+				9DA4BC302DD0C50200B6F6B9 /* PeereeDiscoveryTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -966,6 +1052,14 @@
 			path = ..;
 			sourceTree = "<group>";
 		};
+		9DA4BC5B2DD152F000B6F6B9 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				9DA4BC5C2DD152F700B6F6B9 /* DictionaryFileStorage.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		9DC7E6F42D4176CE001F0C51 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
@@ -980,6 +1074,8 @@
 		9DD33C1929FFC4F70046165E /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				9DA4BC5B2DD152F000B6F6B9 /* Controller */,
+				9D78B9CE2DCF82EA00CDA589 /* Migrations */,
 				9DD33C4829FFDC940046165E /* Model */,
 				9DC7E6F42D4176CE001F0C51 /* Utility */,
 				9DD33C2129FFC5200046165E /* PeereeCore.h */,
@@ -1097,7 +1193,6 @@
 				9D78B9722DC80F9800CDA589 /* Sources */,
 				9D78B9732DC80F9800CDA589 /* Frameworks */,
 				9D78B9742DC80F9800CDA589 /* Resources */,
-				9D78B9872DC80FA700CDA589 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1143,10 +1238,42 @@
 				9D3AEE3F2A718F0600436696 /* KeyValueTree */,
 				9D6A8C1A2ADF244100C8239D /* CSProgress */,
 				9DD9972E2BBDB65A00EE3D94 /* MatrixSDK */,
+				9D78B9B02DCE79FF00CDA589 /* OpenAPIRuntime */,
+				9D78B9B22DCE7A0500CDA589 /* HTTPTypes */,
+				9D78B9B62DCE7A2800CDA589 /* OpenAPIURLSession */,
 			);
 			productName = Peeree;
 			productReference = 9DA0F7B51B5C3AB800F3BA87 /* Peeree.app */;
 			productType = "com.apple.product-type.application";
+		};
+		9DA4BC2F2DD0C50200B6F6B9 /* PeereeDiscoveryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DA4BC362DD0C50200B6F6B9 /* Build configuration list for PBXNativeTarget "PeereeDiscoveryTests" */;
+			buildPhases = (
+				9DA4BC2C2DD0C50200B6F6B9 /* Sources */,
+				9DA4BC2D2DD0C50200B6F6B9 /* Frameworks */,
+				9DA4BC2E2DD0C50200B6F6B9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9DA4BC352DD0C50200B6F6B9 /* PBXTargetDependency */,
+				9DA4BC412DD0C51500B6F6B9 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9DA4BC312DD0C50200B6F6B9 /* PeereeDiscoveryTests */,
+			);
+			name = PeereeDiscoveryTests;
+			packageProductDependencies = (
+				9DA4BC452DD0C52F00B6F6B9 /* KeychainWrapper */,
+				9DA4BC472DD0C52F00B6F6B9 /* BLEPeripheralOperations */,
+				9DA4BC492DD0C52F00B6F6B9 /* KeyValueTreeCoding */,
+				9DA4BC4B2DD0C52F00B6F6B9 /* KeyValueTree */,
+				9DA4BC4D2DD0C52F00B6F6B9 /* CSProgress */,
+			);
+			productName = PeereeDiscoveryTests;
+			productReference = 9DA4BC302DD0C50200B6F6B9 /* PeereeDiscoveryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		9DB4D6202D44E61C004F3B48 /* PeereeSocial */ = {
 			isa = PBXNativeTarget;
@@ -1367,6 +1494,10 @@
 							};
 						};
 					};
+					9DA4BC2F2DD0C50200B6F6B9 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
+					};
 					9DB4D6202D44E61C004F3B48 = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -1392,7 +1523,6 @@
 					};
 					9DD33C2729FFC5200046165E = {
 						CreatedOnToolsVersion = 14.3;
-						TestTargetID = 9DA0F7B41B5C3AB800F3BA87;
 					};
 				};
 			};
@@ -1434,6 +1564,7 @@
 				9DB4D6272D44E61D004F3B48 /* PeereeSocialTests */,
 				9DB4D6702D44F3C5004F3B48 /* PeereeIdPTests */,
 				9D78B9752DC80F9800CDA589 /* PeereeChatTests */,
+				9DA4BC2F2DD0C50200B6F6B9 /* PeereeDiscoveryTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1460,6 +1591,13 @@
 				9D1C5BFF2B8160F400EC8FCD /* DiscoveryParticle.sks in Resources */,
 				9DA0F7C41B5C3AB800F3BA87 /* Images.xcassets in Resources */,
 				9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9DA4BC2E2DD0C50200B6F6B9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1605,6 +1743,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9DA4BC2C2DD0C50200B6F6B9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9DB4D61D2D44E61C004F3B48 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1685,6 +1830,7 @@
 				9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */,
 				9DCC48AC2D57680D00EC5BED /* AdvertiseData.swift in Sources */,
 				9D11B67A2B54A1AC002C2806 /* DiscoveryPersonAspect.swift in Sources */,
+				9D78B9D72DCF85AA00CDA589 /* Peer1_6_4.swift in Sources */,
 				9DD33C1629FFBF400046165E /* PeeringController.swift in Sources */,
 				9D7A730A2A44BB90003375D3 /* PeerDiscoveryState.swift in Sources */,
 				9DD33C0B29FFA9F90046165E /* PersistedPeersController.swift in Sources */,
@@ -1703,10 +1849,12 @@
 				9DCC488A2D4F963F00EC5BED /* Authenticator.swift in Sources */,
 				9D86978F2BB5F2250038EA3B /* RemoteState.swift in Sources */,
 				9DD33C4629FFC6E60046165E /* Logging.swift in Sources */,
+				9D78B9D12DCF830D00CDA589 /* PeereeIdentity1_6_4.swift in Sources */,
 				9DD33C2329FFC5200046165E /* PeereeCore.docc in Sources */,
 				9D11B6712B5484CF002C2806 /* PersonAspect.swift in Sources */,
 				9DD33C3C29FFC5D60046165E /* PeereeIdentity.swift in Sources */,
 				9DD33C3E29FFC5F20046165E /* GenericFunctions.swift in Sources */,
+				9DA4BC5D2DD152FB00B6F6B9 /* DictionaryFileStorage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1735,6 +1883,16 @@
 			isa = PBXTargetDependency;
 			target = 9DD33BCC29FEACA70046165E /* PeereeServerChat */;
 			targetProxy = 9D78B9852DC80FA700CDA589 /* PBXContainerItemProxy */;
+		};
+		9DA4BC352DD0C50200B6F6B9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9DA0F7B41B5C3AB800F3BA87 /* Peeree */;
+			targetProxy = 9DA4BC342DD0C50200B6F6B9 /* PBXContainerItemProxy */;
+		};
+		9DA4BC412DD0C51500B6F6B9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9DD33BFA29FFA9BF0046165E /* PeereeDiscovery */;
+			targetProxy = 9DA4BC402DD0C51500B6F6B9 /* PBXContainerItemProxy */;
 		};
 		9DB4D62B2D44E61D004F3B48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1845,9 +2003,6 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1855,8 +2010,6 @@
 					"$(inherited)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1879,12 +2032,8 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 86J6LQ96WM;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeChatTests;
@@ -2092,6 +2241,57 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		9DA4BC372DD0C50200B6F6B9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeDiscoveryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
+			};
+			name = Debug;
+		};
+		9DA4BC382DD0C50200B6F6B9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeDiscoveryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
 			name = Release;
 		};
@@ -2555,7 +2755,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
 			name = Debug;
 		};
@@ -2576,7 +2775,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
 			name = Release;
 		};
@@ -2606,6 +2804,15 @@
 			buildConfigurations = (
 				9DA0F7D71B5C3AB900F3BA87 /* Debug */,
 				9DA0F7D81B5C3AB900F3BA87 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9DA4BC362DD0C50200B6F6B9 /* Build configuration list for PBXNativeTarget "PeereeDiscoveryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9DA4BC372DD0C50200B6F6B9 /* Debug */,
+				9DA4BC382DD0C50200B6F6B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -2829,6 +3036,21 @@
 			package = 9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */;
 			productName = CSProgress;
 		};
+		9D78B9B02DCE79FF00CDA589 /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F9A2D308315005090FC /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		9D78B9B22DCE7A0500CDA589 /* HTTPTypes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DB4D6D42D47E728004F3B48 /* XCRemoteSwiftPackageReference "swift-http-types" */;
+			productName = HTTPTypes;
+		};
+		9D78B9B62DCE7A2800CDA589 /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F9D2D30832E005090FC /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
+		};
 		9D9249202A0FB69800EDD320 /* KeychainWrapper */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
@@ -2843,6 +3065,31 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
 			productName = KeychainWrapper;
+		};
+		9DA4BC452DD0C52F00B6F6B9 /* KeychainWrapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D7FEAE0291B0B4600129703 /* XCRemoteSwiftPackageReference "KeychainWrapper" */;
+			productName = KeychainWrapper;
+		};
+		9DA4BC472DD0C52F00B6F6B9 /* BLEPeripheralOperations */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D2CDF5E2A718CC500255995 /* XCRemoteSwiftPackageReference "BLEPeripheralOperations" */;
+			productName = BLEPeripheralOperations;
+		};
+		9DA4BC492DD0C52F00B6F6B9 /* KeyValueTreeCoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */;
+			productName = KeyValueTreeCoding;
+		};
+		9DA4BC4B2DD0C52F00B6F6B9 /* KeyValueTree */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D3AEE3E2A718F0600436696 /* XCRemoteSwiftPackageReference "KeyValueTree" */;
+			productName = KeyValueTree;
+		};
+		9DA4BC4D2DD0C52F00B6F6B9 /* CSProgress */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */;
+			productName = CSProgress;
 		};
 		9DB4D63D2D44E64C004F3B48 /* OpenAPIGenerator */ = {
 			isa = XCSwiftPackageProductDependency;
