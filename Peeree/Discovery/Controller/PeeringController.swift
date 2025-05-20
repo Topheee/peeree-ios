@@ -142,8 +142,9 @@ public final class PeeringController:
 	}
 
 	/// Call this after you verified the identity in `PeeringControllerDelegate.proof()`.
-	public func discover(_ peerID: PeerID) {
-		self.discoveryManager.beginDiscovery(on: peerID)
+	public func discover(_ peerID: PeerID,
+						 publicKey: KeychainWrapper.AsymmetricPublicKey) {
+		self.discoveryManager.beginDiscovery(on: peerID, publicKey: publicKey)
 	}
 
 	// MARK: LocalPeerManagerDelegate

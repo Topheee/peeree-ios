@@ -87,12 +87,22 @@ final class PeerVerificationOperationManager: PeripheralOperationTreeManagerDele
 	}
 
 	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, encounteredUnrecoverableError error: BLEPeripheralOperations.PeripheralOperationUnrecoverableError) {
-		delegate?.peerVerificationFailed(error, of: self.peerID)
+		self.delegate?.peerVerificationFailed(error, of: self.peerID)
+		self.cancel()
 	}
 
 	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, encounteredRecoverableError error: BLEPeripheralOperations.PeripheralOperationRecoverableError) -> Bool {
 		failures += 1
 		return failures < Self.MaxFailures
+	}
+
+	func peripheralOperation(
+		_ operation: BLEPeripheralOperations.PeripheralOperation,
+		encounteredWarning warning: BLEPeripheralOperations.PeripheralOperationUnrecoverableError,
+		on characteristicID: CBUUID) {
+			elog(
+				PeereeDiscovery.LogTag,
+				"PeerVerificationOperationManager.peripheralOperation encounteredWarning: \(warning) on characteristic: \(characteristicID.uuidString)")
 	}
 
 	func peripheralOperation(_ operation: PeripheralOperation, writeDataFor characteristicID: CBUUID, of peripheral: CBPeripheral) throws -> Data {
@@ -132,10 +142,10 @@ final class PeerVerificationOperationManager: PeripheralOperationTreeManagerDele
 
 				pubKey = try identity.publicKey()
 				try pubKey.verify(message: nonce, signature: verificationData.nonceSignature)
-				try pubKey.verify(message: self.peerID.encode(), signature: verificationData.peerIDSignature)
+				try pubKey.verify(message: self.peerID.encode(), signature: verificationData.oldPeerIDSignature)
 			} catch {
 				delegate?.peerVerificationFailed(error, of: self.peerID)
-				self.opManager.cancel()
+				self.cancel()
 				return
 			}
 
@@ -188,7 +198,7 @@ final class PeerVerificationOperationManager: PeripheralOperationTreeManagerDele
 						  value: CharacteristicOperation(task: .write,
 														 mandatory: true)),
 					.leaf(key: CBUUID.IdentityTokenCharacteristicID,
-						  value: CharacteristicOperation(task: .multiRead,
+						  value: CharacteristicOperation(task: .read,
 														 mandatory: false))
 				])
 			])
@@ -206,7 +216,7 @@ final class PeerVerificationOperationManager: PeripheralOperationTreeManagerDele
 					.leaf(key: CBUUID.PublicKeyCharacteristicID,
 						  value: CharacteristicOperation(task: .read,
 														 mandatory: true)),
-					.leaf(key: CBUUID.PeerIDSignatureCharacteristicID,
+					.leaf(key: CBUUID.OldPeerIDSignatureCharacteristicID,
 						  value: CharacteristicOperation(task: .read,
 														 mandatory: true))
 				])
@@ -250,12 +260,12 @@ fileprivate struct IdentityData: Codable {
 fileprivate struct VerificationData: Codable {
 	let nonceSignature: Data
 	let publicKeyData: Data
-	let peerIDSignature: Data
+	let oldPeerIDSignature: Data
 
 	enum CodingKeys: String, CodingKey {
 		case nonceSignature = "79427315-3071-4EA1-AD76-3FF04FCD51CF"
 		case publicKeyData = "2EC65417-7DE7-459B-A9CC-67AD01842A4F"
-		case peerIDSignature = "D05A4FA4-F203-4A76-A6EA-560152AD74A5"
+		case oldPeerIDSignature = "D05A4FA4-F203-4A76-A6EA-560152AD74A5"
 	}
 }
 

@@ -29,9 +29,6 @@ struct Identified {
 
 /// Denotes the state of the discovery process.
 enum PeerDiscoveryState {
-	/// Advertised PeerID and last-changed date retrieved.
-	case discovered(Date)
-
 	/// Peeree Identity verified.
 	case identified(Identified)
 

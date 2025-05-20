@@ -59,10 +59,11 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	private(set) var state: PeerDiscoveryState
 
 	/// Create an the operation manager. Start it by using `beginDiscovery()`.
-	init(peerID: PeerID, lastChanged: Date, dQueue: DispatchQueue,
-		 userIdentity: (PeerID, KeyPair)?) {
+	init(peerID: PeerID, lastChanged: Date, publicKey: AsymmetricPublicKey,
+		 dQueue: DispatchQueue, userIdentity: (PeerID, KeyPair)?) {
 		self.peerID = peerID
-		self.state = .discovered(lastChanged)
+		self.state = .identified(
+			.init(publicKey: publicKey, lastChanged: lastChanged))
 		self.dQueue = dQueue
 		self.userIdentity = userIdentity
 
@@ -143,6 +144,15 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 		default:
 			break
 		}
+	}
+
+	func peripheralOperation(
+		_ operation: BLEPeripheralOperations.PeripheralOperation,
+		encounteredWarning warning: BLEPeripheralOperations.PeripheralOperationUnrecoverableError,
+		on characteristicID: CBUUID) {
+			elog(
+				PeereeDiscovery.LogTag,
+				"PeerDiscoveryOperationManager.peripheralOperation encounteredWarning: \(warning) on characteristic: \(characteristicID.uuidString)")
 	}
 
 	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, encounteredUnrecoverableError error: BLEPeripheralOperations.PeripheralOperationUnrecoverableError) {

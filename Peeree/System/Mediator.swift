@@ -515,7 +515,7 @@ extension Mediator: PeeringControllerDelegate {
 
 			// continue discovery
 
-			self.peeringController?.discover(peerID)
+			self.peeringController?.discover(peerID, publicKey: publicKey)
 		} catch {
 			elog(Self.LogTag, "Peer verification failed: \(error)")
 		}

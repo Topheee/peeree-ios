@@ -10,6 +10,8 @@ import Foundation
 import CoreBluetooth
 import PeereeCore
 
+internal let LogTag = "PeereeDiscovery"
+
 extension CBPeripheral {
 	/// The `CBService` with the Peeree UUID, if available.
 	var peereeService: CBService? {

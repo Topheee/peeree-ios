@@ -28,6 +28,10 @@ final class Profile: DiscoveryPerson {
 
 	/// Call with the result from ``loadAsync(_:)``.
 	func load(data: ProfileData) {
+		self.isLoading = true
+
+		defer { self.isLoading = false }
+
 		data.peerInfo.map { self.info = $0 }
 		self.picture = data.picture
 		self.birthday = data.birthday
@@ -36,6 +40,8 @@ final class Profile: DiscoveryPerson {
 
 	override var info: PeerInfo {
 		didSet {
+			guard !self.isLoading else { return }
+
 			let pi = info
 			let up = userPeer
 			Task {
@@ -46,9 +52,14 @@ final class Profile: DiscoveryPerson {
 
 	var picture: UIImage? = nil {
 		didSet {
+
 			//image = picture.map { Image(uiImage: $0) } ?? Image("PortraitPlaceholder")
-			cgPicture = picture?.cgImage
-			guard let pi = picture else { return }
+			self.cgPicture = self.picture?.cgImage
+
+			self.syncHasPicture()
+
+			guard !self.isLoading, let pi = picture else { return }
+
 			let up = userPeer
 			Task {
 				do {
@@ -57,13 +68,13 @@ final class Profile: DiscoveryPerson {
 					await InAppNotificationStackViewState.shared.display(genericError: error)
 				}
 			}
-
-			syncHasPicture()
 		}
 	}
 
 	override var biography: String {
 		didSet {
+			guard !self.isLoading else { return }
+
 			let pi = biography
 			let up = userPeer
 			Task {
@@ -74,6 +85,8 @@ final class Profile: DiscoveryPerson {
 
 	var birthday: Date? {
 		didSet {
+			guard !self.isLoading else { return }
+
 			let birth = birthday
 			guard oldValue != birth else { return }
 
@@ -92,6 +105,9 @@ final class Profile: DiscoveryPerson {
 	}
 
 	private let userPeer = UserPeer()
+
+	/// Whether we are currently loading the profile from disk.
+	private var isLoading = false
 }
 
 // For SwiftUI

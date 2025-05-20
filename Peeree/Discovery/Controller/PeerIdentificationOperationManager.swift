@@ -73,6 +73,15 @@ final class PeerIdentificationOperationManager: PeripheralOperationTreeManagerDe
 		// ignored
 	}
 
+	func peripheralOperation(
+		_ operation: BLEPeripheralOperations.PeripheralOperation,
+		encounteredWarning warning: BLEPeripheralOperations.PeripheralOperationUnrecoverableError,
+		on characteristicID: CBUUID) {
+			elog(
+				PeereeDiscovery.LogTag,
+				"PeerIdentificationOperationManager.peripheralOperation encounteredWarning: \(warning) on characteristic: \(characteristicID.uuidString)")
+	}
+
 	func peripheralOperation(_ operation: BLEPeripheralOperations.PeripheralOperation, encounteredUnrecoverableError error: BLEPeripheralOperations.PeripheralOperationUnrecoverableError) {
 		guard let peripheral = self.peripheral else {
 			preconditionFailure()

@@ -2897,7 +2897,7 @@
 			repositoryURL = "https://codeberg.org/Topheee/BLEPeripheralOperations.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				minimumVersion = 2.1.0;
 			};
 		};
 		9D3AEE372A718E5800436696 /* XCRemoteSwiftPackageReference "KeyValueTreeCoding" */ = {
@@ -2945,7 +2945,7 @@
 			repositoryURL = "https://github.com/Topheee/KeychainWrapper";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
+				minimumVersion = 3.0.1;
 			};
 		};
 		9DB4D6D42D47E728004F3B48 /* XCRemoteSwiftPackageReference "swift-http-types" */ = {

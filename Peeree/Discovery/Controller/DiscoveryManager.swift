@@ -149,7 +149,8 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 		opManager.begin(on: peripheral)
 	}
 
-	func beginDiscovery(on peerID: PeereeCore.PeerID) {
+	func beginDiscovery(on peerID: PeereeCore.PeerID,
+						publicKey: KeychainWrapper.AsymmetricPublicKey) {
 		guard let peripheral = self.peripheralPeerIDs[peerID] else { return }
 
 		let opManager: PeerDiscoveryOperationManager
@@ -159,7 +160,7 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			opManager = PeerDiscoveryOperationManager(
 				peerID: peerID,
 				// hack: to not pass around the last changed date, just use now
-				lastChanged: Date(),
+				lastChanged: Date(), publicKey: publicKey,
 				dQueue: self.dQueue, userIdentity: self.userIdentity)
 			self.discoveryOperations[peerID] = opManager
 		}

@@ -46,7 +46,8 @@ extension Notification.Name {
 			self.post(on: object, userInfo: ui
 				.merging([PeerID.NotificationInfoKey : peerID]) { a, _ in a })
 		} else {
-			self.post(on: object, userInfo: userInfo)
+			self.post(
+				on: object, userInfo: [PeerID.NotificationInfoKey : peerID])
 		}
 	}
 

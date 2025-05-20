@@ -316,22 +316,30 @@ extension AccountControllerFactory {
 	public func verify(_ peerID: PeereeCore.PeerID,
 					   publicKey: any KeychainWrapper.AsymmetricPublicKey,
 					   identityToken: Data?) async throws {
-		let idTokenData: Data
-
-		if let identityToken {
-			idTokenData = identityToken
-		} else {
-			let identityToken = try await self
-				.getIdentityToken(of: peerID)
-
-			idTokenData = Data(identityToken)
-		}
-
 		// verify that the token comes from the Peeree server
 
-		let verifier = try await initTokenVerfifier()
+		let verifier = try await self.initTokenVerfifier()
 
-		let token = try await verifier.verifyIdentityToken(idTokenData)
+		let token: IdentityTokenJWT
+
+		if let identityToken {
+			do {
+				token = try await verifier.verifyIdentityToken(identityToken)
+			} catch {
+				wlog(
+					Self.LogTag,
+					"Verification of identity token retrieved via Bluetooth" +
+					"failed; fetching it from server.")
+				
+				let identityToken = try await self.getIdentityToken(of: peerID)
+
+				token = try await verifier.verifyIdentityToken(Data(identityToken))
+			}
+		} else {
+			let identityToken = try await self.getIdentityToken(of: peerID)
+
+			token = try await verifier.verifyIdentityToken(Data(identityToken))
+		}
 
 		guard let tokenPublicKeyData = token.pbk.value.data(using: .utf8),
 			  let tokenPublicKey = Data(base64Encoded: tokenPublicKeyData) else

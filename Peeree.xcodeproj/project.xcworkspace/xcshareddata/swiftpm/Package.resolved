@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://codeberg.org/Topheee/BLEPeripheralOperations.git",
       "state" : {
-        "revision" : "2abcb1efc071eb4ee7eea743a201f9fec590c3b0",
-        "version" : "2.0.1"
+        "revision" : "b55b02d591df292519c54fb930b7a017ab9e12e2",
+        "version" : "2.1.2"
       }
     },
     {
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Topheee/KeychainWrapper",
       "state" : {
-        "revision" : "986477728a5d5f9621e9ed3e1604b1647402fcb4",
-        "version" : "3.0.0"
+        "revision" : "11d0fcf5ec5559edd88534b13262cecc1d332e68",
+        "version" : "3.0.1"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mattpolzin/OpenAPIKit",
       "state" : {
-        "revision" : "da7d3a5ddff0dd8e5e9fdb5585d186d645bcc21b",
-        "version" : "3.5.0"
+        "revision" : "a75aa4166d916f1cb4a192e928a18f7b6d3516bc",
+        "version" : "3.5.2"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-        "revision" : "671108c96644956dddcd89dd59c203dcdb36cec7",
-        "version" : "1.1.4"
+        "revision" : "c1805596154bb3a265fd91b8ac0c4433b4348fb0",
+        "version" : "1.2.0"
       }
     },
     {
@@ -186,8 +186,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jpsim/Yams",
       "state" : {
-        "revision" : "b4b8042411dc7bbb696300a34a4bf3ba1b7ad19b",
-        "version" : "5.3.1"
+        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
+        "version" : "5.4.0"
       }
     }
   ],
