@@ -314,6 +314,8 @@ final class Mediator {
 			notificationTask = observeNotifications()
 		}
 
+		try await self.discoveryViewState.load()
+
 		// start Bluetooth and server chat, but only if account exists
 		if let ac = try await self.accountControllerFactory.use() {
 			// we need to do this early to load peer data from disk
@@ -327,8 +329,6 @@ final class Mediator {
 				factory: factory, errorTitle: NSLocalizedString(
 				"Login to Chat Server Failed", comment: "Error message title"))
 		}
-
-		try await self.discoveryViewState.load()
 	}
 
 	/// Call this method on `applicationWillTerminate`.

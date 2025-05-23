@@ -128,13 +128,6 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 			return
 		}
 
-		// TODO: test if we can delete this if statement
-//		if let peereeService = peripheral.peereeService {
-//			// This characteristic is optional (only present on Android).
-//			// Since the operation tree does not yet support optional characteristics, we handle this exception here by hand.
-//			peripheral.discoverCharacteristics([CBUUID.ConnectBackCharacteristicID], for: peereeService)
-//		}
-
 		let opManager: PeerVerificationOperationManager
 		if let opm = self.verifyOperations[peerID] {
 			opManager = opm

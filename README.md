@@ -15,7 +15,7 @@ settings set target.source-map /Users/runner/work/MatrixSDK/MatrixSDK/matrix-ios
 
 ## Execute Unit Tests
 
-The unit tests are still in the making. Plus, since the server implementation is private, all unit tests in `PeereeServerAPITests.swift` won't run on your system. Adding a mock server is in planning.
+The unit tests are still in the making. Plus, since the server implementation is private, all unit tests in `PeereeSocialTests.swift` won't run on your system. Adding a mock server is in planning.
 
 ## External Dependencies
 
@@ -27,4 +27,4 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-Copyright © 2023 Christopher Kobusch. All rights reserved.
+Copyright © 2025 Christopher Kobusch. All rights reserved.
