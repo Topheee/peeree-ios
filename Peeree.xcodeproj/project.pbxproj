@@ -89,6 +89,7 @@
 		9D9249212A0FB69800EDD320 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9249202A0FB69800EDD320 /* KeychainWrapper */; };
 		9D9249232A0FB6AE00EDD320 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9249222A0FB6AE00EDD320 /* KeychainWrapper */; };
 		9D9249252A0FB6C400EDD320 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9249242A0FB6C400EDD320 /* KeychainWrapper */; };
+		9D951BBE2DE1FAA30008570A /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D951BB92DE1FA620008570A /* AccountView.swift */; };
 		9D95AD212A50A64A00800066 /* PeerIdentificationOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */; };
 		9D9F39EB2A34C7FA003115D3 /* DiscoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F39EA2A34C7FA003115D3 /* DiscoveryManager.swift */; };
 		9D9F39ED2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F39EC2A34FE56003115D3 /* PeerDiscoveryOperationManager.swift */; };
@@ -404,6 +405,7 @@
 		9D86978E2BB5F2250038EA3B /* RemoteState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteState.swift; sourceTree = "<group>"; };
 		9D8A593A1B92F2B600164C9F /* PeerDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerDescription.swift; sourceTree = "<group>"; };
 		9D8A96C925F50BFC00E98F1F /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		9D951BB92DE1FA620008570A /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		9D95AD202A50A64A00800066 /* PeerIdentificationOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerIdentificationOperationManager.swift; sourceTree = "<group>"; };
 		9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPeerManager.swift; sourceTree = "<group>"; };
 		9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeeringController.swift; sourceTree = "<group>"; };
@@ -885,6 +887,7 @@
 		9D5D46F6280C7E23002174DB /* View */ = {
 			isa = PBXGroup;
 			children = (
+				9D951BB92DE1FA620008570A /* AccountView.swift */,
 				9D527DB12B743C1D00013B85 /* PeereeUtility */,
 				9D527D8E2B74359B00013B85 /* Utility */,
 				9D5D46F4280C7DC1002174DB /* Launch */,
@@ -1704,6 +1707,7 @@
 				9D0016EE2B56E6F6004A8999 /* SocialPerson.swift in Sources */,
 				9D527D9C2B74398B00013B85 /* ChatView.swift in Sources */,
 				9D527D922B74387600013B85 /* MainView.swift in Sources */,
+				9D951BBE2DE1FAA30008570A /* AccountView.swift in Sources */,
 				9D527DA82B743AB700013B85 /* CircularProgressView.swift in Sources */,
 				9D527DB72B743C7500013B85 /* FlipGroupView3.swift in Sources */,
 				9D0017152B5DCF03004A8999 /* InAppNotification.swift in Sources */,

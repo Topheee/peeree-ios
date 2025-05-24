@@ -17,7 +17,6 @@ struct ProfileView: View {
 	let doneAction: () -> Void
 
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
-	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
 	@EnvironmentObject private var socialViewState: SocialViewState
 
@@ -27,22 +26,8 @@ struct ProfileView: View {
 
 	@State private var showImagePicker: Bool = false
 
-	@State private var showCreateDeleteAccountDialog = false
-
 	/// This is a workaround to the problem that directly referencing discoveryViewState.profile.image did not update the view.
 	@State private var profileImage = Image("PortraitPlaceholder")
-
-	private var mainWebsite: URL {
-		return URL(string: NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")) ?? URL(fileURLWithPath: "/")
-	}
-
-	private var privacyWebsite: URL {
-		return URL(string: NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")) ?? URL(fileURLWithPath: "/")
-	}
-
-	private var termsWebsite: URL {
-		return URL(string: NSLocalizedString("terms-app-url", comment: "Peeree App Terms of Use URL")) ?? URL(fileURLWithPath: "/")
-	}
 
 	private let dateRange: ClosedRange<Date> = {
 		let calendar = Calendar.current
@@ -108,121 +93,9 @@ struct ProfileView: View {
 							.frame(minHeight: 32)
 							.padding(.bottom)
 					}
-
 				}
 
-				VStack {
-					VStack {
-						Button(role: socialViewState.accountExists.isOn ? .destructive : .none) {
-							showCreateDeleteAccountDialog.toggle()
-						} label: {
-							Text(socialViewState.accountExistsText)
-								.modify {
-									if #available(iOS 16, *) {
-										$0.bold(!socialViewState.accountExists.isOn)
-									} else {
-										if !socialViewState.accountExists.isOn {
-											$0.bold()
-										} else {
-											$0
-										}
-									}
-								}
-						}
-						.disabled(socialViewState.accountExists.isTransitioning)
-						.modify {
-							if #available(iOS 15, *) {
-								if socialViewState.accountExists.isOn {
-									$0.confirmationDialog(
-										"Delete Identity",
-										isPresented: $showCreateDeleteAccountDialog
-									) {
-										Button("Delete Identity", role: .destructive) {
-											socialViewState.delegate?.deleteIdentity()
-										}
-										Button("Cancel", role: .cancel) {}
-									} message: {
-										Text("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost.")
-									}
-								} else {
-									$0.confirmationDialog(
-										"Create Identity",
-										isPresented: $showCreateDeleteAccountDialog
-									) {
-										Button("Create Identity") {
-											socialViewState.delegate?.createIdentity()
-										}
-										Button("View Terms") { openTerms() }
-										Button("Cancel", role: .cancel) {}
-									} message: {
-										Text(String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button")))
-									}
-								}
-							} else {
-								if socialViewState.accountExists.isOn {
-									$0.actionSheet(isPresented: $showCreateDeleteAccountDialog) {
-										ActionSheet(title: Text("Delete Identity"),
-													message: Text("This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost."),
-													buttons: [
-														.cancel(),
-														.destructive(
-															Text("Delete Identity")) {
-																socialViewState.delegate?.deleteIdentity()
-															}])
-									}
-								} else {
-									$0.actionSheet(isPresented: $showCreateDeleteAccountDialog) {
-										ActionSheet(title: Text("Create Identity"),
-													message: Text(String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button"))),
-													buttons: [
-														.cancel(),
-														.default(Text("View Terms")) { openTerms() },
-														.destructive(
-															Text("Create Identity")) {
-																socialViewState.delegate?.createIdentity()
-															}])
-									}
-								}
-							}
-						}
-						Text(socialViewState.userPeerID?.uuidString ?? NSLocalizedString("No identity.", comment: "Placeholder for PeerID"))
-							.font(.caption)
-							.fontWeight(.light)
-							.modify {
-								if #available(iOS 16, *) {
-									$0.italic(!socialViewState.accountExists.isOn)
-								} else {
-									if !socialViewState.accountExists.isOn {
-										$0.italic()
-									}
-								}
-							}
-							.padding(.bottom, 0.5)
-
-						HStack(spacing: 24.0) {
-						 if #available(iOS 14, *) {
-							 Link("Website", destination: mainWebsite)
-							 Link("Privacy Policy", destination: privacyWebsite)
-						 } else {
-							 Button() {
-								 UIApplication.shared.open(mainWebsite)
-							 } label: {
-								 Text("Website")
-							 }
-							 Button() {
-								 UIApplication.shared.open(privacyWebsite)
-							 } label: {
-								 Text("Privacy Policy")
-							 }
-						 }
-					 }
-					}
-				}
-				.modify {
-					if verticalSizeClass == .regular {
-						$0.padding(.top).padding(.bottom)
-					} else { $0 }
-				}
+				AccountView()
 			}
 			.background(.regularMaterial)
 			.overlay(alignment: .top) {
@@ -257,13 +130,6 @@ struct ProfileView: View {
 					discoveryViewState.profile.birthday = nil
 				}
 			}
-		}
-	}
-
-	private func openTerms() {
-		let website = self.termsWebsite
-		Task { @MainActor in
-			UIApplication.shared.open(website)
 		}
 	}
 

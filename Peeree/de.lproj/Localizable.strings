@@ -239,7 +239,7 @@
 "No description available." = "No description available.";
 
 /* Placeholder for PeerID */
-"No identity." = "Fehlende Identität.";
+"No identity." = "Noch keine Identität.";
 
 /* Subhead of the placeholder shown in browse view if no peers are around. */
 "No Peeree users around." = "Keine Peeree-Benutzer in der Nähe.";
