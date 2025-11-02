@@ -27,6 +27,26 @@ struct ChatView: View {
 
 	let peerID: PeerID
 
+	/// Matrix for input line limits depending on UI state.
+	///
+	/// Dimensions:
+	/// 1. DynamicTypeSize.isAccessibilitySize
+	/// 2. Keyboard Shown
+	/// 3. UserInterfaceSizeClass (0: regular, 1: compact)
+	private let inputLineLimits = [
+		[[7, 2], [5, 1]],
+		[[4, 1], [2, 1]]
+	]
+
+	/// Number of lines for the message text field.
+	var inputLineLimit: Int {
+		let dim0 = self.dynamicTypeSize.isAccessibilitySize ? 1 : 0
+		let dim1 = self.keyboardShowing ? 1 : 0
+		let dim2 = self.verticalSizeClass == .compact ? 1 : 0
+
+		return self.inputLineLimits[dim0][dim1][dim2]
+	}
+
 	@ObservedObject private var discoveryPersona: DiscoveryPerson
 
 	@ObservedObject private var chatPersona: ServerChatPerson
@@ -34,6 +54,12 @@ struct ChatView: View {
 	@SceneStorage(SceneStorageKeyComposingMessage) private var composingMessage: String = ""
 
 	@FocusState private var messageFieldIsFocused: Bool
+
+	@Environment(\.dynamicTypeSize) private var dynamicTypeSize: DynamicTypeSize
+
+	@Environment(\.verticalSizeClass) private var verticalSizeClass
+
+	@Environment(\.keyboardShowing) private var keyboardShowing
 
 	@EnvironmentObject private var discoveryViewState: DiscoveryViewState
 
@@ -136,22 +162,21 @@ struct ChatView: View {
 				}
 			}
 
-			HStack {
-				TextField(text: $composingMessage, prompt: Text("Message")) {}
-					.modify {
-						if #available(iOS 16.0, *) {
-							$0.lineLimit(5, reservesSpace: true)
+			HStack(alignment: .bottom) {
+				if #available(iOS 16.0, *) {
+					TextField(text: $composingMessage, prompt: Text("Message"), axis: .vertical) {}
+						.lineLimit(self.inputLineLimit, reservesSpace: false)
+						.focused($messageFieldIsFocused)
+						.onSubmit {
+							self.sendMessage()
 						}
-					}
-					.focused($messageFieldIsFocused)
-					.onAppear {
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-							self.messageFieldIsFocused = true
+				} else {
+					TextField(text: $composingMessage, prompt: Text("Message")) {}
+						.focused($messageFieldIsFocused)
+						.onSubmit {
+							self.sendMessage()
 						}
-					}
-					.onSubmit {
-						sendMessage()
-					}
+				}
 				Button {
 					sendMessage()
 				} label: {
@@ -159,6 +184,11 @@ struct ChatView: View {
 						.labelStyle(.iconOnly)
 				}
 				.disabled(composingMessage == "")
+				.onAppear {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+						self.messageFieldIsFocused = true
+					}
+				}
 			}
 			.disabled(!chatPersona.readyToChat)
 			.padding()

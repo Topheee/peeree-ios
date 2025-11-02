@@ -52,8 +52,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	
 	// unfortunenately this will grow until we go offline as we do not get any disconnection notification...
 	private var _availableCentrals = [CentralID : PeerID]()
-	// we authenticate only pin matched centrals, because we take the public key from the AccountController instead of verifying with the central server each time (improving user privacy and speed)
-	private var authenticatedPinMatchedCentrals = [CentralID : PeerID]()
 	
 	private var nonces = [CentralID : Data]()
 	private var remoteNonces = [PeerID : Data]()
@@ -82,7 +80,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 	/// Forgets all data about the central with `identifier` equals to `cbPeerID`.
 	func disconnect(_ cbPeerID: UUID) {
 		_ = self._availableCentrals.removeValue(forKey: cbPeerID)
-		_ = self.authenticatedPinMatchedCentrals.removeValue(forKey: cbPeerID)
 	}
 	
 	// MARK: CBPeripheralManagerDelegate
@@ -317,7 +314,6 @@ final class LocalPeerManager: NSObject, CBPeripheralManagerDelegate {
 		peripheralManager = nil
 
 		self._availableCentrals.removeAll()
-		self.authenticatedPinMatchedCentrals.removeAll()
 		self.nonces.removeAll()
 		self.interruptedTransfers.removeAll()
 		self.delegate?.advertisingStopped(with: error)
@@ -532,6 +528,8 @@ extension PeereeIdentity {
 	/// Retrieves the binary data to be sent over Bluetooth for characteristics.
 	func getCharacteristicValue(of characteristicID: CBUUID) -> Data? {
 		switch characteristicID {
+		case CBUUID.OldLocalPeerIDCharacteristicID:
+			return self.oldIDData
 		case CBUUID.LocalPeerIDCharacteristicID:
 			return self.idData
 		case CBUUID.PublicKeyCharacteristicID:

@@ -12,6 +12,28 @@ struct AccountView: View {
 
 	var body: some View {
 		VStack {
+			Text("Your Peeree Identity")
+				.font(.headline)
+
+			Text("Unique identity in the Peeree network.")
+				.font(.subheadline)
+				.fontWeight(.light)
+				.padding(.bottom)
+
+			Text(socialViewState.userPeerID?.uuidString ?? NSLocalizedString("No identity.", comment: "Placeholder for PeerID"))
+				.font(.caption)
+				.fontWeight(.light)
+				.modify {
+					if #available(iOS 16, *) {
+						$0.italic(!socialViewState.accountExists.isOn)
+					} else {
+						if !socialViewState.accountExists.isOn {
+							$0.italic()
+						}
+					}
+				}
+				.padding(.bottom, 0.5)
+
 			Button(role: socialViewState.accountExists.isOn ? .destructive : .none) {
 				showCreateDeleteAccountDialog.toggle()
 			} label: {
@@ -41,6 +63,9 @@ struct AccountView: View {
 					Button("Create Identity") {
 						socialViewState.delegate?.createIdentity()
 					}
+					Button("Restore Identity") {
+						self.showRestoreDialog.toggle()
+					}
 					Button("View Terms") { self.openTerms() }
 				}
 			} message: {
@@ -49,30 +74,12 @@ struct AccountView: View {
 					 :
 						String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button")))
 			}
-
-			Text(socialViewState.userPeerID?.uuidString ?? NSLocalizedString("No identity.", comment: "Placeholder for PeerID"))
-				.font(.caption)
-				.fontWeight(.light)
-				.modify {
-					if #available(iOS 16, *) {
-						$0.italic(!socialViewState.accountExists.isOn)
-					} else {
-						if !socialViewState.accountExists.isOn {
-							$0.italic()
-						}
-					}
-				}
-				.padding(.bottom, 0.5)
-
-			HStack(spacing: 24.0) {
-				Link("Website", destination: mainWebsite)
-				Link("Privacy Policy", destination: privacyWebsite)
-			}
 		}
-		.modify {
-			if verticalSizeClass == .regular {
-				$0.padding(.top).padding(.bottom)
-			} else { $0 }
+		.padding(verticalSizeClass == .regular ? [.top, .bottom] : [])
+		.sheet(isPresented: $showRestoreDialog) {
+			RecoveryView(mode: .recovering({ recoveryCode in
+				self.socialViewState.delegate?.restoreIdentity(using: recoveryCode)
+			}), letters: $socialViewState.recoveryCodeLetters)
 		}
 	}
 
@@ -81,6 +88,8 @@ struct AccountView: View {
 	@EnvironmentObject private var socialViewState: SocialViewState
 
 	@State private var showCreateDeleteAccountDialog = false
+
+	@State private var showRestoreDialog = false
 
 	@Environment(\.verticalSizeClass) private var verticalSizeClass
 

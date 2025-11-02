@@ -12,8 +12,6 @@ import PeereeCore
 // External Dependencies
 import OpenAPIRuntime
 
-// TODO: localize this file
-
 internal func logOpenAPIError(tag: String, message: String,
 							  _ body: HTTPBody) async {
 	do {
@@ -32,7 +30,8 @@ internal func handle(
 	await logOpenAPIError(tag: logTag, message: "API client side error",
 						  try response.body.plainText)
 	throw createApplicationError(
-		localizedDescription: "API programming error.")
+		localizedDescription: NSLocalizedString(
+			"API programming error.", comment: "Low-level API error"))
 }
 
 /// Handle API error.
@@ -42,7 +41,8 @@ internal func handle(
 ) throws -> Never {
 	elog(logTag, "API no token error")
 	throw createApplicationError(
-		localizedDescription: "Severe API programming error.")
+		localizedDescription: NSLocalizedString(
+			"Severe API programming error.", comment: "Low-level API error"))
 }
 
 /// Handle API error.
@@ -57,6 +57,9 @@ internal func handle(
 		elog(logTag, "Undocumented API error \(statusCode)")
 	}
 
+	let format = "Unknown API error %d."
+
 	throw createApplicationError(
-		localizedDescription: "Unknown API error \(statusCode).")
+		localizedDescription: NSLocalizedString(
+			String(format: format, statusCode), comment: "Low level IdP error"))
 }

@@ -47,7 +47,8 @@ struct InAppNotificationStackView: View {
 					.offset(y: (index == stackHeight - 1) ? min(dragOffset, 0.0) : 0.0)
 					.padding(CGFloat((reversedIndex(index) + stackHeight) * 12) / 2.0)
 					.disabled(index != stackHeight - 1)
-					.animation(.easeInOut(duration: 0.4))
+					.blur(radius: (index == stackHeight - 1) ? 0.0 : 5.0)
+					.animation(.easeInOut(duration: 0.4), value:  self.displayCount)
 					.gesture(drag)
 			}
 		}

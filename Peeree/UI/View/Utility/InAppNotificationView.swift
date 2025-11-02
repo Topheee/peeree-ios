@@ -39,7 +39,7 @@ struct InAppNotificationView: View {
 		}
 		.frame(maxWidth: .infinity)
 		.padding()
-		.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+		.background(.regularMaterial.opacity(0.9), in: RoundedRectangle(cornerRadius: 12))
 		.background(RoundedRectangle(cornerRadius: 12)
 			.fill(self.backgroundColor).opacity(0.3))
 		.onTapGesture {

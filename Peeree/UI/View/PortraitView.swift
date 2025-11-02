@@ -11,7 +11,6 @@ import SwiftUI
 import PeereeCore
 import PeereeDiscovery
 
-@MainActor
 struct PortraitView: View {
 	init(peerID: PeerID, socialViewState: SocialViewState, discoveryViewState: DiscoveryViewState, onShowingDetail: ( (Bool) -> Void )? = nil) {
 		self.peerID = peerID

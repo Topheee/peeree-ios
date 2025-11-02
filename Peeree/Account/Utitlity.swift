@@ -12,8 +12,6 @@ import PeereeCore
 // External Dependencies
 import OpenAPIRuntime
 
-// TODO: localize this file
-
 internal func logOpenAPIError(tag: String, message: String,
 							  _ body: HTTPBody) async {
 	do {
@@ -32,7 +30,8 @@ internal func handle(
 	await logOpenAPIError(tag: logTag, message: "Account client side error",
 						  try response.body.plainText)
 	throw createApplicationError(
-		localizedDescription: "IdP programming error.")
+		localizedDescription: NSLocalizedString(
+			"IdP programming error.", comment: "Low level IdP error"))
 }
 
 /// Handle API error.
@@ -44,7 +43,8 @@ internal func handle(
 						  message: "Account invalid signature error",
 						  try response.body.plainText)
 	throw createApplicationError(
-		localizedDescription: "Severe IdP programming error.")
+		localizedDescription: NSLocalizedString(
+			"Severe IdP programming error.", comment: "Low level IdP error"))
 }
 
 /// Handle API error.
@@ -54,7 +54,8 @@ internal func handle(_ response: Components.Responses.RateLimitResponse,
 	await logOpenAPIError(tag: logTag, message: "Rate limit error",
 					try response.body.plainText)
 	throw createApplicationError(
-		localizedDescription: "Too many requests to IdP.")
+		localizedDescription: NSLocalizedString(
+			"Too many requests to IdP.", comment: "Low level IdP error"))
 }
 
 /// Handle API error.
@@ -64,7 +65,8 @@ internal func handle(
 ) async throws -> Never {
 	await logOpenAPIError(tag: logTag, message: "Server side error",
 						  try response.body.plainText)
-	throw createApplicationError(localizedDescription: "IdP server error.")
+	throw createApplicationError(localizedDescription: NSLocalizedString(
+		"IdP server error.", comment: "Low level IdP error"))
 }
 
 /// Handle API error.
@@ -79,6 +81,9 @@ internal func handle(
 		elog(logTag, "Undocumented IdP error \(statusCode)")
 	}
 
+	let format = "Unknown IdP error %d."
+
 	throw createApplicationError(
-		localizedDescription: "Unknown IdP error \(statusCode).")
+		localizedDescription: NSLocalizedString(
+			String(format: format, statusCode), comment: "Low level IdP error"))
 }

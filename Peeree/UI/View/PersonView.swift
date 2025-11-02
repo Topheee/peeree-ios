@@ -42,6 +42,12 @@ struct PersonView: View {
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+	@State private var labelWidth = CGFloat.zero
+
+	@State private var hasTimeElapsed = false
+
 	@State private var compact = false
 
 	@State private var showFlagAlert = false
@@ -148,6 +154,7 @@ struct PersonView: View {
 									.modify {
 										if #available(iOS 16, *) {
 											$0.italic(discoveryPersona.biography == "")
+												.scrollIndicators(.visible, axes: .vertical)
 										} else {
 											if discoveryPersona.biography == "" {
 												$0.italic()
@@ -178,6 +185,21 @@ struct PersonView: View {
 								.lineLimit(1)
 								.foregroundColor(Color.indigo)
 								.padding(.top, 8)
+								.overlay {
+									HStack {
+										Spacer()
+										Rectangle()
+											.fill(Color("ColorDivider"))
+											.frame(maxWidth: hasTimeElapsed ? 0.0 : .infinity)
+											.animation(reduceMotion ? .none : .easeOut(duration: 1.3), value: hasTimeElapsed)
+									}
+									.padding(.leading, -12)
+								}
+								.onAppear {
+									DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+										hasTimeElapsed = true
+									}
+								}
 						}
 					}
 					.padding()
@@ -207,43 +229,24 @@ struct PersonView: View {
 							.foregroundColor(.orange)
 					}
 					.disabled(discoveryPersona.isUser)
-					.modify {
-						if #available(iOS 15, *) {
-							$0.alert(
-								"Unpin or Report",
-								isPresented: $showFlagAlert,
-								presenting: discoveryPersona
-							) { details in
-								Button("Unpin", role: .destructive) {
-									socialViewState.delegate?.removePin(peerID: peerID)
-								}
-								.disabled(!socialPersona.pinState.isPinned)
-								Button("Report Portrait") {
-									socialViewState.delegate?.reportPortrait(peerID: peerID)
-								}
-								.disabled(discoveryPersona.cgPicture == nil || socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none)
-								Button("Cancel", role: .cancel) {
-
-								}
-							} message: { details in
-								Text("Remove the pin or report the portrait of \(details.info.nickname).")
-							}
-						} else if socialPersona.pinState.isPinned || (discoveryPersona.cgPicture != nil && socialViewState.classify(imageHash: discoveryPersona.pictureHash) == .none) {
-							$0.actionSheet(isPresented: $showFlagAlert) {
-								ActionSheet(title: Text("Unpin or Report"),
-											message: Text("Remove the pin or report the portrait of \(discoveryPersona.info.nickname)."),
-											buttons: [
-												.cancel(),
-												.destructive(
-													Text("Unpin")) {
-														socialViewState.delegate?.removePin(peerID: peerID)
-													},
-												.default(
-													Text("Report Portrait")) {
-														socialViewState.delegate?.reportPortrait(peerID: peerID)
-													}])
-							}
+					.alert(
+						"Unpin or Report",
+						isPresented: $showFlagAlert,
+						presenting: discoveryPersona
+					) { details in
+						Button("Unpin", role: .destructive) {
+							socialViewState.delegate?.removePin(peerID: peerID)
 						}
+						.disabled(!socialPersona.pinState.isPinned)
+						Button("Report Portrait") {
+							socialViewState.delegate?.reportPortrait(peerID: peerID)
+						}
+						.disabled(discoveryPersona.cgPicture == nil || socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none)
+						Button("Cancel", role: .cancel) {
+
+						}
+					} message: { details in
+						Text("Remove the pin or report the portrait of \(details.info.nickname).")
 					}
 				}
 			}
@@ -276,7 +279,7 @@ struct PersonView: View {
 
 
 #Preview("App Store Scene 2") {
-	let language = "en"
+	let language = "de"
 	let path = Bundle.main.path(forResource: language, ofType: "lproj")
 	let bundle = Bundle(path: path!)!
 
@@ -286,7 +289,7 @@ struct PersonView: View {
 	p.info.age = 22
 	p.info.gender = .female
 	p.info.nickname = "Sarah"
-	p.set(portrait: UIImage(named: "p1")?.cgImage, hash: Data())
+	p.set(portrait: UIImage(named: "portrait")?.cgImage, hash: Data())
 	let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
 	p.biography = String(format: bioFormat, "Andrei Caliman")
 

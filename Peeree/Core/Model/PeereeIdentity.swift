@@ -52,16 +52,14 @@ public struct PeereeIdentity: Sendable, Codable {
 	}
 
 	/// The binary representation of `peerID`.
-	public var idData: Data { return peerID.encode() }
+	public var idData: Data { return Data(peerID.binaryRepresentation) }
+
+	/// The binary representation of `peerID`.
+	public var oldIDData: Data { return peerID.encode() }
 }
 
 extension PeereeIdentity: Equatable {
 	public static func ==(lhs: PeereeIdentity, rhs: PeereeIdentity) -> Bool {
 		return lhs.peerID == rhs.peerID && lhs.publicKeyData == rhs.publicKeyData
 	}
-}
-
-extension PeereeIdentity: Hashable {
-	public var hashValue: Int { return peerID.hashValue ^ publicKeyData.hashValue } // TODO: no idea if XOR is a safe and good combination
-	public func hash(into hasher: inout Hasher) { hasher.combine(peerID); hasher.combine(publicKeyData) }
 }

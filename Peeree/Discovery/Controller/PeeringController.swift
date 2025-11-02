@@ -217,11 +217,15 @@ public final class PeeringController:
 		}
 
 		// publish fraction updates
-		progress.addFractionCompletedNotification { _, _, fractionCompleted in
+		progress.addFractionCompletedNotification { completedUnitCount, totalUnitCount, fractionCompleted in
 			Task { @MainActor in
 				let model = vm.persona(of: peerID)
-				// update UI less frequently; in 2% steps
-				if fractionCompleted - model.pictureProgress > 0.02 {
+
+				if completedUnitCount == totalUnitCount {
+					// hide progress view
+					model.pictureProgress = 0.0
+				} else if fractionCompleted - model.pictureProgress > 0.02 {
+					// update UI less frequently; in 2% steps
 					model.pictureProgress = fractionCompleted
 				}
 			}

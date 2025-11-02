@@ -25,6 +25,18 @@
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Agreement to Terms of Use";
 
+/* Low-level API error */
+"API programming error." = "API programming error.";
+
+/* Low-level API error */
+"Severe API programming error." = "Severe API programming error.";
+
+/* Low-level API error */
+"Unknown API error %d." = "Unknown API error %d.";
+
+/* Error title */
+"Bluetooth Advertising Failed" = "Bluetooth Advertising Failed";
+
 /* Error title */
 "Bluetooth Publish Failed" = "Bluetooth Publish Failed";
 
@@ -349,6 +361,9 @@
 /* Title of sequence number reset failure alert */
 "Resetting Server Nonce Failed" = "Resetting Server Nonce Failed";
 
+/* Error title */
+"Restart Bluetooth Advertising Failed" = "Restart Bluetooth Advertising Failed";
+
 /* Trait */
 "ruleAwareness" = "Rule Awareness";
 
@@ -617,6 +632,14 @@
 
 "Tap to show biography." = "Tap to show biography.";
 
+"Create an identity in your profile to be able to pin people." = "Create an identity in your profile to be able to pin people.";
+
+"Your Peeree Identity" = "Your Peeree Identity";
+
+"Unique identity in the Peeree network." = "Unique identity in the Peeree network.";
+
+"Restore Identity" = "Restore Identity";
+
 /* Placeholder text */
 "No messages." = "No messages.";
 
@@ -624,7 +647,56 @@
 
 "Load older messages …" = "Load older messages …";
 
+/***************************** Recovery View **********************************/
+
+"Account Recovery" = "Account Recovery";
+
+"Enter your recovery phrase." = "Enter your recovery phrase.";
+
+"Your secret recovery phrase." = "Your secret recovery phrase.";
+
+"This will log you out on any other device." = "This will log you out on any other device.";
+
+"It is not possible to view this code again." = "It is not possible to view this code again.";
+
+"Recover Account" = "Recover Account";
+
+"Save Code" = "Save Code";
+
+"Share" = "Share";
+
+"Copy to Clipboard" = "Copy to Clipboard";
+
+"Save in iCloud" = "Save in iCloud";
+
+"Recovering your account overrides all data, except for your profile." = "Recovering your account overrides all data, except for your profile.";
+
+"Export code for save storage." = "Export code for save storage.";
+
+"Saved to iCloud." = "Saved to iCloud.";
+
+"Type or paste your code." = "Type or paste your code.";
+
+"Store your code in a secure and durable location, e.g. a password manager." = "Store your code in a secure and durable location, e.g. a password manager.";
+
 "" = "";
+
+/****************************** PeereeSocial **********************************/
+
+/* Low level IdP error */
+"IdP programming error." = "IdP programming error.";
+
+/* Low level IdP error */
+"Severe IdP programming error." = "Severe IdP programming error.";
+
+/* Low level IdP error */
+"Too many requests to IdP." = "Too many requests to IdP.";
+
+/* Low level IdP error */
+"IdP server error." = "IdP server error.";
+
+/* Low level IdP error */
+"Unknown IdP error %d." = "Unknown IdP error %d.";
 
 /********************************************/
 /* App Store Screenshot keys. */

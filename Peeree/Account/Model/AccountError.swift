@@ -8,7 +8,7 @@
 
 
 /// An `error` created by the account module.
-enum AccountError: Error {
+public enum AccountError: Error {
 
 	/// Thrown when no server chat account exists yet.
 	case noAccount

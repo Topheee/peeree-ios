@@ -25,6 +25,18 @@
 /* Title of identity creation alert */
 "Agreement to Terms of Use" = "Akzeptieren der Nutzungsbedingungen";
 
+/* Low-level API error */
+"API programming error." = "API-Programmierfehler.";
+
+/* Low-level API error */
+"Severe API programming error." = "Schwerer API-Programmierfehler.";
+
+/* Low-level API error */
+"Unknown API error %d." = "Unbekannter API-Programmierfehler %d.";
+
+/* Error title */
+"Bluetooth Advertising Failed" = "Bluetooth-Sender Fehlgeschlagen";
+
 /* Error title */
 "Bluetooth Publish Failed" = "Bluetooth Publish Fehlgeschlagen";
 
@@ -349,6 +361,9 @@
 /* Title of sequence number reset failure alert */
 "Resetting Server Nonce Failed" = "Zurücksetzen der Server-Nonce fehlgeschlagen";
 
+/* Error title */
+"Restart Bluetooth Advertising Failed" = "Neustarten des Bluetooth-Senders Fehlgeschlagen";
+
 /* Trait */
 "ruleAwareness" = "Rule Awareness";
 
@@ -617,12 +632,69 @@
 
 "Tap to show biography." = "Tippe um Steckbrief zu zeigen.";
 
+"Create an identity in your profile to be able to pin people." = "Erstelle eine Identität in deinem Profil, um Leute pinnen zu können.";
+
+"Your Peeree Identity" = "Deine Peeree-Identität";
+
+"Unique identity in the Peeree network." = "Einzigartige Identität im Peeree-Netzwerk.";
+
+"Restore Identity" = "Identität wiederherstellen";
+
 /* Placeholder text */
 "No messages." = "Keine Nachrichten.";
 
 "The Peeree Way" = "Der Peeree-Weg";
 
 "Load older messages …" = "Ältere Nachrichten laden …";
+
+/***************************** Recovery View **********************************/
+
+"Account Recovery" = "Account-Wiederherstellung";
+
+"Enter your recovery phrase." = "Gib deinen Wiederherstellungs-Code ein.";
+
+"Your secret recovery phrase." = "Dein Wiederherstellungs-Code.";
+
+"This will log you out on any other device." = "Hiermit wirst du von allen anderen Geräten ausgeloggt.";
+
+"It is not possible to view this code again." = "Es ist nicht möglich den Code ein weiteres Mal anzuzeigen.";
+
+"Recover Account" = "Account wiederherstellen";
+
+"Save Code" = "Code sichern";
+
+"Share" = "Teilen";
+
+"Copy to Clipboard" = "In die Zwischenablage kopieren";
+
+"Save in iCloud" = "In iCloud sichern";
+
+"Recovering your account overrides all data, except for your profile." = "Die Wiederherstellung überschreibt alle vorherigen Daten, bis auf das Profil.";
+
+"Export code for save storage." = "Code zu einem sicheren Speicher exportieren.";
+
+"Saved to iCloud." = "In iCloud gespeichert.";
+
+"Type or paste your code." = "Tippe oder füge deinen Code ein.";
+
+"Store your code in a secure and durable location, e.g. a password manager." = "Sichere deinen Code an einem sicheren und beständigen Ort, z. B. einem Passwort-Manager.";
+
+/****************************** PeereeSocial **********************************/
+
+/* Low level IdP error */
+"IdP programming error." = "IdP Programmier-Fehler.";
+
+/* Low level IdP error */
+"Severe IdP programming error." = "Schwerer IdP Programmier-Fehler.";
+
+/* Low level IdP error */
+"Too many requests to IdP." = "Zu viele Anfragen beim IdP.";
+
+/* Low level IdP error */
+"IdP server error." = "IdP Server-Fehler.";
+
+/* Low level IdP error */
+"Unknown IdP error %d." = "Unbekannter IdP-Fehler %d.";
 
 /********************************************/
 /* App Store Screenshot keys. */

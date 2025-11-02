@@ -69,42 +69,31 @@ final class Mediator {
 		}
 	}
 
-	private func restartAdvertising() throws {
+	private func restartAdvertising() async {
 		guard let pc = self.peeringController else { return }
-		advertiseDataSync { result in
-			// TODO: error handling
-			switch result {
-			case .success(let data):
-				guard let data else { return }
 
-				do {
-					try pc.restartAdvertising(data: data)
-				} catch {
-					elog(Self.LogTag, "restartAdvertising fail: \(error)")
-				}
-			case .failure(let error):
-				elog(Self.LogTag, "advertiseDataSync: \(error)")
-			}
+		do {
+			guard let data = try await self.advertiseData() else { return }
+			try pc.restartAdvertising(data: data)
+		} catch {
+			let title = NSLocalizedString(
+				"Restart Bluetooth Advertising Failed", comment: "Error title")
+			self.display(error: error, title: title)
 		}
 	}
 
-	private func startAdvertising() {
+	private func startAdvertising() async {
 		guard let pc = self.peeringController else { return }
 
 		guard pc.checkPeering() else { return }
 
-		self.advertiseDataSync { result in
-			switch result {
-			case .success(let data):
-				guard let data else { return }
-				do {
-					try pc.startAdvertising(data: data, restartOnly: false)
-				} catch {
-					elog(Self.LogTag, "startAdvertising fail: \(error)")
-				}
-			case .failure(let error):
-				elog(Self.LogTag, "advertiseDataSync2: \(error)")
-			}
+		do {
+			guard let data = try await self.advertiseData() else { return }
+			try pc.startAdvertising(data: data, restartOnly: false)
+		} catch {
+			let title = NSLocalizedString(
+				"Bluetooth Advertising Failed", comment: "Error title")
+			self.display(error: error, title: title)
 		}
 	}
 
@@ -137,8 +126,7 @@ final class Mediator {
 						.map ({ notification in
 							return false
 						}) {
-						// TODO: error handling
-						try? await self.restartAdvertising()
+						await self.restartAdvertising()
 					}
 				}
 
@@ -516,6 +504,12 @@ extension Mediator: PeeringControllerDelegate {
 			// continue discovery
 
 			self.peeringController?.discover(peerID, publicKey: publicKey)
+		} catch PeereeIdP.AccountError.noAccount {
+			wlog(Self.LogTag,
+				 "We do not yet have an account, so cannot verify this peer.")
+
+			// continue discovery. We are in demo mode anyway.
+			self.peeringController?.discover(peerID, publicKey: publicKey)
 		} catch {
 			elog(Self.LogTag, "Peer verification failed: \(error)")
 		}
@@ -583,6 +577,7 @@ extension Mediator: DiscoveryBackend {
 					"Bluetooth Initialization Failed",
 					comment: "Low-level error")
 				self.display(error: error, title: title)
+				return
 			}
 
 			peeringController = newPC
@@ -639,6 +634,12 @@ extension Mediator {
 extension Mediator: SocialViewDelegate {
 	func createIdentity() {
 		Task { await self.createOrRestoreIdentityAsync(using: nil) }
+	}
+
+	func restoreIdentity(using recoveryCode: String) {
+		Task {
+			await self.createOrRestoreIdentityAsync(using: recoveryCode)
+		}
 	}
 
 	private func createOrRestoreIdentityAsync(using recoveryCode: String?)

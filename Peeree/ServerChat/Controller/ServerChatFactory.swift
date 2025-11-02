@@ -320,11 +320,11 @@ public final class ServerChatFactory {
 
 	/// Set always same parameters on `credentials`.
 	private func prepare(credentials: MXCredentials) throws {
-		// this cost me at least one week: the credentials have the port stripped, because the `home_server` field in mxLoginResponse does not contain the port …
-		// TODO: credentials.homeServer = homeServerURL.absoluteString
-
 		// we currently only support one device
-		credentials.deviceId = try genericPasswordFromKeychain(account: self.keychainAccount, service: Self.DeviceIDKeychainService, encoding: Self.KeychainEncoding)
+		credentials.deviceId = try genericPasswordFromKeychain(
+			account: self.keychainAccount,
+			service: Self.DeviceIDKeychainService,
+			encoding: Self.KeychainEncoding)
 	}
 
 	/// The full home server URL.
@@ -562,11 +562,12 @@ public final class ServerChatFactory {
 
 					// we do not pass the error up the chain
 					await strongSelf.closeServerChat(with: nil)
-				}
-			}
 
-			// TODO: this must probably be called inside the Task above
-			completion?()
+					completion?()
+				}
+			} else {
+				completion?()
+			}
 		})
 
 		restClient.completionQueue = ChatActor.dQueue

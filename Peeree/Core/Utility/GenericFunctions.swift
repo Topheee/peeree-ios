@@ -550,6 +550,27 @@ extension Collection where Element: GenComparable {
 	}
 }
 
+extension FileManager {
+
+	/// Persists an `Encodable` `Collection` at `url`.
+	func save<EncodableCollection: Encodable>(
+		_ save: EncodableCollection, at url: URL)
+	throws where EncodableCollection: Collection {
+		if save.isEmpty {
+			try self.deleteFile(at: url)
+		} else {
+			let jsonData = try JSONEncoder().encode(save)
+
+			if !self.createFile(
+				atPath: url.path, contents: jsonData, attributes: nil) {
+				throw createApplicationError(
+					localizedDescription:
+						"could not create file \(url.path)")
+			}
+		}
+	}
+}
+
 
 import ImageIO
 import CoreServices

@@ -30,6 +30,12 @@ final class SocialViewState:
 	/// The `PeerID` of the local user, if available.
 	public var userPeerID: PeerID? = nil
 
+	/// Single characters and digits of the account recovery code.
+	@Published public var recoveryCodeLetters: [String] = Array<String>(repeating: "", count: 32)
+
+	/// Display the recovery screen.
+	@Published public var presentRecoveryCode = false
+
 	/// Whether the user has create a `PeereeIdentity`.
 	@Published public var accountExists: RemoteToggle = .off
 

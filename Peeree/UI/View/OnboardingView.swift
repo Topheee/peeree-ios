@@ -31,6 +31,8 @@ fileprivate func onboardingDescription(of state: PinState) -> String {
 struct OnboardingView: View {
 	@Binding var peering: Bool
 
+	@EnvironmentObject private var socialViewState: SocialViewState
+
 	@State private var pinState = PinState.unpinned
 
 	@State private var showingExplanation = false
@@ -130,13 +132,18 @@ struct OnboardingView: View {
 					.font(.body)
 
 				if verticalSizeClass == .regular {
-					Text(peering ? "Visit crowded places to find other Peeree users." : "Peeree is all about Pinning. Pin people who you are interested in. If the pin is mutual, you can start chatting.")
+					Text(peering ?
+						 (socialViewState.accountExists.isOn ?
+						  "Visit crowded places to find other Peeree users." :
+							"Create an identity in your profile to be able to pin people.")
+						 :
+							"Peeree is all about Pinning. Pin people who you are interested in. If the pin is mutual, you can start chatting.")
 						.font(.footnote)
 						.padding(4)
 				}
 			}
 			.padding()
-			.background(RoundedRectangle(cornerRadius: 16).fill(peering ? Color.secondary : Color("ColorDivider")))
+			.background(RoundedRectangle(cornerRadius: 16).fill(Color("ColorDivider")))
 
 			Button {
 				showingExplanation.toggle()
@@ -176,9 +183,13 @@ struct OnboardingView: View {
 }
 
 #Preview {
+	let ss = SocialViewState()
 	return OnboardingView(peering: Binding.constant(false))
+		.environmentObject(ss)
 }
 
 #Preview {
+	let ss = SocialViewState()
 	return OnboardingView(peering: Binding.constant(true))
+		.environmentObject(ss)
 }

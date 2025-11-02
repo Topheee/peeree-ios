@@ -54,7 +54,7 @@ public actor AccountControllerFactory {
 
 		if let ac = AccountController.load(
 			isTest: isTest, keyPair: keyPair, viewModel: self.viewModel) {
-			self.setInstance(ac)
+			self.setInstance(ac, recoveryCode: nil)
 			return ac
 		} else { return nil }
 	}
@@ -133,8 +133,7 @@ public actor AccountControllerFactory {
 
 			let a = AccountController.create(
 				isTest: isTest, peerID: peerID, keyPair: keyPair)
-			self.setInstance(a)
-			self.reportCreatingInstance(result: .success(a), vm: vm)
+			self.setInstance(a, recoveryCode: account.recoveryCode)
 
 			let chatAccount = ChatAccount(
 				userID: account.chatAccount.userID,
@@ -149,7 +148,11 @@ public actor AccountControllerFactory {
 
 			return (a, chatAccount)
 		} catch let error {
-			reportCreatingInstance(result: .failure(error), vm: vm)
+
+			Task { @MainActor in
+				vm.accountExists = .off
+			}
+
 			if let apiError = error as? OpenAPIRuntime.ClientError {
 				// not beautiful, but easiest way to show transport errors
 				throw apiError.underlyingError
@@ -263,28 +266,21 @@ public actor AccountControllerFactory {
 
 	// MARK: Static Functions
 
-	/// Establish the singleton instance.
-	private func setInstance(_ ac: AccountController) {
-		instance = ac
+	/// Establish the singleton instance and update the view model.
+	private func setInstance(_ ac: AccountController, recoveryCode: String?) {
+		self.instance = ac
 
 		let peerID = ac.peerID
+		let vm = self.viewModel
 
 		Task { @MainActor in
-			viewModel.userPeerID = peerID
-			viewModel.accountExists = .on
-		}
-	}
+			vm.userPeerID = peerID
+			vm.accountExists = .on
 
-	/// Concludes registration process; must be called on `dQueue`!
-	private func reportCreatingInstance(
-		result: Result<AccountController, Error>,
-		vm: any AccountViewModelDelegate) {
-		Task { @MainActor in
-			switch result {
-			case .success(_):
-				vm.accountExists = .on
-			case .failure(_):
-				vm.accountExists = .off
+			if let recoveryCode {
+				vm.recoveryCodeLetters = recoveryCode.unicodeScalars
+					.map { String($0) }
+				vm.presentRecoveryCode = true
 			}
 		}
 	}

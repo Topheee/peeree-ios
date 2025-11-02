@@ -16,45 +16,19 @@ struct ProfileView: View {
 
 	let doneAction: () -> Void
 
-	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
-
-	@EnvironmentObject private var socialViewState: SocialViewState
-
-	@EnvironmentObject private var discoveryViewState: DiscoveryViewState
-
-	@State private var showBirthdayPicker: Bool = false
-
-	@State private var showImagePicker: Bool = false
-
-	/// This is a workaround to the problem that directly referencing discoveryViewState.profile.image did not update the view.
-	@State private var profileImage = Image("PortraitPlaceholder")
-
-	private let dateRange: ClosedRange<Date> = {
-		let calendar = Calendar.current
-		let today = Date()
-		let thisYear = calendar.component(.year, from: today)
-		let thisMonth = calendar.component(.month, from: today)
-		let thisDay = calendar.component(.day, from: today)
-		let startComponents = DateComponents(year: thisYear-PeerInfo.MaxAge, month: thisMonth, day: thisDay)
-		let endComponents = DateComponents(year: thisYear-PeerInfo.MinAge, month: thisMonth, day: thisDay)
-		return (calendar.date(from:startComponents) ?? today)
-			...
-			(calendar.date(from:endComponents) ?? today)
-	}()
-
 	var body: some View {
 		NavigationView {
-			VStack(alignment: .center) {
+			ZStack(alignment: .bottom) {
 				Form {
 					VStack {
 						TextField(text: $discoveryViewState.profile.info.nickname, prompt: Text("Name")) {
-
+							
 						}
 						.textInputAutocapitalization(.words)
 						.disableAutocorrection(true)
 						.textFieldStyle(.roundedBorder)
 						.padding(.top, 12)
-
+						
 						profileImage
 							.resizable()
 							.aspectRatio(contentMode: .fit)
@@ -68,23 +42,23 @@ struct ProfileView: View {
 								ImagePicker { picked(image: $0) }
 							}
 					}
-
+					
 					VStack {
 						Toggle("Show Age on Profile", isOn: $showBirthdayPicker)
-
+						
 						if showBirthdayPicker {
 							// https://stackoverflow.com/questions/59272801/swiftui-datepicker-binding-optional-date-valid-nil#59274498
 							DatePicker("Birthday", selection: $discoveryViewState.profile.uiBirthday, in: dateRange, displayedComponents: [.date])
 								.padding(.top)
 						}
 					}
-
+					
 					Picker("Gender", selection: $discoveryViewState.profile.info.gender) {
 						Text("Male").tag(PeerInfo.Gender.male)
 						Text("Female").tag(PeerInfo.Gender.female)
 						Text("Queer").tag(PeerInfo.Gender.queer)
 					}
-
+					
 					VStack(alignment: .leading) {
 						Text("Biography:")
 							.padding(.top)
@@ -93,11 +67,16 @@ struct ProfileView: View {
 							.frame(minHeight: 32)
 							.padding(.bottom)
 					}
-				}
+					
+					AccountView()
+						.frame(maxWidth: .infinity)
 
-				AccountView()
-			}
-			.background(.regularMaterial)
+					Link("Website", destination: mainWebsite)
+					Link("Privacy Policy", destination: privacyWebsite)
+				}
+				.padding()
+				.background(.thinMaterial)
+				}
 			.overlay(alignment: .top) {
 				InAppNotificationStackView(controller: InAppNotificationStackViewState.shared)
 					.padding()
@@ -132,6 +111,40 @@ struct ProfileView: View {
 			}
 		}
 	}
+
+	// - MARK: Private
+
+	private let dateRange: ClosedRange<Date> = {
+		let calendar = Calendar.current
+		let today = Date()
+		let thisYear = calendar.component(.year, from: today)
+		let thisMonth = calendar.component(.month, from: today)
+		let thisDay = calendar.component(.day, from: today)
+		let startComponents = DateComponents(year: thisYear-PeerInfo.MaxAge, month: thisMonth, day: thisDay)
+		let endComponents = DateComponents(year: thisYear-PeerInfo.MinAge, month: thisMonth, day: thisDay)
+		return (calendar.date(from:startComponents) ?? today)
+			...
+			(calendar.date(from:endComponents) ?? today)
+	}()
+
+	private var mainWebsite: URL {
+		return URL(string: NSLocalizedString("https://www.peeree.de/en/index.html", comment: "Peeree Homepage")) ?? URL(fileURLWithPath: "/")
+	}
+
+	private var privacyWebsite: URL {
+		return URL(string: NSLocalizedString("https://www.peeree.de/en/privacy.html", comment: "Peeree Privacy Policy")) ?? URL(fileURLWithPath: "/")
+	}
+
+	@EnvironmentObject private var socialViewState: SocialViewState
+
+	@EnvironmentObject private var discoveryViewState: DiscoveryViewState
+
+	@State private var showBirthdayPicker: Bool = false
+
+	@State private var showImagePicker: Bool = false
+
+	/// This is a workaround to the problem that directly referencing discoveryViewState.profile.image did not update the view.
+	@State private var profileImage = Image("PortraitPlaceholder")
 
 	private func picked(image: UIImage) {
 		discoveryViewState.profile.picture = image
