@@ -13,7 +13,7 @@ import PeereeCore
 import PeereeIdP
 
 private final class ServerChatDataSourceMock: ServerChatDataSource {
-	func hasPinMatch(with peerID: PeereeCore.PeerID, forceCheck: Bool) async throws -> Bool {
+	func hasPinMatch(with peerID: PeereeCore.PeerID, forceCheck: Bool) async -> Bool {
 		// shoulda do somin
 		return false
 	}

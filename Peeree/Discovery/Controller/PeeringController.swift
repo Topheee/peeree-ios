@@ -133,12 +133,13 @@ public final class PeeringController:
 	}
 
 	/// Read-only access to persisted peers.
-	public func readPeer(_ peerID: PeerID,
-						 _ completion: @Sendable @escaping (Peer?) -> Void) {
-		let p = self.persistence
-		Task {
-			completion(await p.readPeer(peerID))
-		}
+	public func readPeer(_ peerID: PeerID) async -> Peer? {
+		return await self.persistence.readPeer(peerID)
+	}
+
+	/// Locator of file containing the portrait of `peerID` (if available).
+	public func pictureURL(of peerID: PeerID) -> URL {
+		return self.persistence.pictureURL(of: peerID)
 	}
 
 	/// Call this after you verified the identity in `PeeringControllerDelegate.proof()`.

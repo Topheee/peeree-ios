@@ -35,7 +35,7 @@ extension Notification.Name {
 // https://swiftpackageindex.com/apple/swift-openapi-generator/1.6.0/tutorials/swift-openapi-generator/clientxcode
 public actor SocialNetworkController: PeereeCore.Authenticator {
 
-	public var viewModel: any SocialViewModelDelegate
+	private var viewModel: any SocialViewModelDelegate
 
 	public var pinMatches: Set<PeerID> { return self.pinnedByPeers }
 
@@ -137,7 +137,7 @@ public actor SocialNetworkController: PeereeCore.Authenticator {
 		switch result {
 		case .ok(_):
 			self.removePin(from: id)
-			self.updateModels(of: [id.peerID])
+			self.updateModels(of: [peerID])
 		case .badRequest(let clientSideError):
 			try await handle(clientSideError, logTag: Self.LogTag)
 		case .unauthorized(let error):

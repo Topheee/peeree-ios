@@ -85,7 +85,7 @@ public protocol ServerChat: Sendable {
 /// Information provider for the server chat.
 public protocol ServerChatDataSource: Sendable {
 	/// Queries pin state of peers.
-	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async throws -> Bool
+	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async -> Bool?
 
 	/// Queries for all pin-matched peers.
 	func pinMatches() async -> Set<PeerID>

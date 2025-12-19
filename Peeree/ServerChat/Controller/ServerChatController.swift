@@ -72,6 +72,10 @@ final class ServerChatController: ServerChat {
 		await self.persistence.clear()
 		self.close()
 		self.session.clearAllData()
+
+		Task { @MainActor in
+			await self.conversationDelegate?.clear()
+		}
 	}
 
 	/// Removes the server chat account permanently.
@@ -95,10 +99,6 @@ final class ServerChatController: ServerChat {
 			}
 
 			await self.clear()
-
-			Task { @MainActor in
-				await self.conversationDelegate?.clear()
-			}
 		} catch {
 			throw ServerChatError.sdk(error)
 		}
@@ -277,22 +277,13 @@ final class ServerChatController: ServerChat {
 	}
 
 	func recreateRoom(with peerID: PeerID) async throws {
-		let oldRoom = await self.session
-			.getJoinedOrInvitedRoom(
-				with: peerID.serverChatUserId(self.mxClient), bothJoined: false)
+		let oldRooms = self.session
+			.directRooms(with: peerID.serverChatUserId(self.mxClient))
 
 		_ = try await self.reallyCreateRoom(with: peerID)
 		dlog(Self.LogTag, "Created new room to replace broken encryption.")
 
-		if let room = oldRoom, let roomId = room.roomId {
-			do {
-				try await self.forgetRoom(roomId)
-			} catch {
-				dlog(Self.LogTag,
-					 "forgetting room with broken encryption failed: "
-					 + error.localizedDescription)
-			}
-		}
+		await self.forgetRooms(oldRooms.compactMap(\.roomId))
 	}
 
 	// MARK: - Private
@@ -589,7 +580,9 @@ final class ServerChatController: ServerChat {
 					throw ServerChatError.fatal(error)
 				}
 
-				let pinMatch = try await self.refreshPinMatchStatus(of: peerID, force: true)
+				let pinMatch = await self
+					.refreshPinMatchStatus(of: peerID, force: true) ?? false
+
 				guard pinMatch else {
 					throw ServerChatError.cannotChat(peerID, .unmatched)
 				}
@@ -683,23 +676,26 @@ final class ServerChatController: ServerChat {
 					return
 				}
 
-				do {
-					// check whether we still have a pin match with this person
-					var result = try await dataSource.hasPinMatch(with: peerID, forceCheck: false)
+				// check whether we still have a pin match with this person
+				// in case of an error, we try again first
+				var result = await self.dataSource
+					.hasPinMatch(with: peerID, forceCheck: false) ?? false
 
-					guard result else {
-						result = try await self.dataSource.hasPinMatch(with: peerID, forceCheck: true)
-
-						if result {
-							await self.join(roomId: roomId, with: peerID)
-						} else {
-							await self.leaveChat(with: peerID)
-						}
-
+				guard result else {
+					guard let uncertainResult = await self.dataSource
+						.hasPinMatch(with: peerID, forceCheck: true)
+					else {
+						// do not do anything right now
 						return
 					}
-				} catch {
-					flog(Self.LogTag, "Error checking pin match: \(error)")
+
+					if uncertainResult {
+						await self.join(roomId: roomId, with: peerID)
+					} else {
+						await self.leaveChat(with: peerID)
+					}
+
+					return
 				}
 
 				await self.join(roomId: roomId, with: peerID)
@@ -725,7 +721,7 @@ final class ServerChatController: ServerChat {
 				}
 
 				// check whether we still have a pin match with this person
-				_ = try? await refreshPinMatchStatus(of: peerID, force: true)
+				_ = await refreshPinMatchStatus(of: peerID, force: true)
 
 			default:
 				wlog(Self.LogTag, "Unexpected room membership \(memberContent.membership ?? "<nil>").")
@@ -836,8 +832,10 @@ final class ServerChatController: ServerChat {
 
 	/// Refreshes the pin status with the Peeree server. Returns if we have a pin match.
 	/// Forgets all rooms with `peerID` if we do not have a pin match..
-	private func refreshPinMatchStatus(of peerID: PeerID, force: Bool) async throws -> Bool {
-		let result = try await dataSource.hasPinMatch(with: peerID, forceCheck: force)
+	private func refreshPinMatchStatus(of peerID: PeerID, force: Bool) async -> Bool? {
+		guard let result = await dataSource
+			.hasPinMatch(with: peerID, forceCheck: force) else { return nil }
+
 		if result {
 			return true
 		} else {

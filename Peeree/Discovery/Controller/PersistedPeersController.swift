@@ -13,7 +13,7 @@ import CryptoKit
 import PeereeCore
 
 /// This is basically an actor around a set of PeerInfos. It is simple and stupid, but doesn't need optimization yet.
-public actor PersistedPeersController {
+internal actor PersistedPeersController {
 	// MARK: - Public and Internal
 
 	public init(filename: String) {
@@ -185,7 +185,7 @@ public actor PersistedPeersController {
 	}
 
 	/// Locator of file containing the portrait of `peerID` (if available); thread-safe.
-	private func pictureURL(of peerID: PeerID) -> URL {
+	internal nonisolated func pictureURL(of peerID: PeerID) -> URL {
 		// Create a file path to our documents directory
 		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
 		return URL(fileURLWithPath: paths[0]).appendingPathComponent("\(filename).\(peerID.uuidString).jpeg", isDirectory: false)

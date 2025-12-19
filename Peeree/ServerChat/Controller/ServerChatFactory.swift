@@ -59,7 +59,7 @@ public final class ServerChatFactory {
 				  conversationDelegate: conversationDelegate)
 
 		guard let passwordData = account.initialPassword
-			.data(prefixedEncoding: .utf8) else {
+			.data(prefixedEncoding: Self.KeychainEncoding) else {
 			throw ServerChatError.fatal(ServerChatError
 				.parsing("Invalid initial password."))
 		}
@@ -249,7 +249,7 @@ public final class ServerChatFactory {
 											dataSource: dataSource)
 	}
 
-	/// Creates an account on the chat server.
+	/// Changes the password of the chat account.
 	/// - Throws: `ServerChatError`
 	private func changePassword(of account: ServerChatAccount) async throws {
 		// In case we need to restore the old password.

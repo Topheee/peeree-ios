@@ -142,9 +142,7 @@ public actor AccountControllerFactory {
 				deviceID: account.chatAccount.deviceID,
 				initialPassword: account.chatAccount.initialPassword)
 
-			Notification.Name.accountCreated
-				.post(on: a,
-					  userInfo: [PeerID.NotificationInfoKey : peerID])
+			Notification.Name.accountCreated.post(for: peerID)
 
 			return (a, chatAccount)
 		} catch let error {

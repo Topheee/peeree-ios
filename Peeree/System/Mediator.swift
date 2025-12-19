@@ -201,8 +201,32 @@ final class Mediator {
 		}
 	}
 
+	/// Wrapper around ``NotificationManager.displayPeerRelatedNotification()``.
+	private func displayPeerRelatedNotification(
+		title: String, body: String, peerID: PeerID,
+		category: NotificationManager.NotificationCategory
+	) {
+		guard let discoveryPerson = self.discoveryViewState.people[peerID] else {
+			assertionFailure()
+			return
+		}
+
+		let pictureURL = self.peeringController?.pictureURL(
+			of: discoveryPerson.peerID)
+
+		NotificationManager.displayPeerRelatedNotification(
+			title: title, body: body, discoveryPerson: discoveryPerson,
+			pictureURL: pictureURL, category: category
+		)
+	}
+
 	private func received(message: String, from peerID: PeerID) {
-		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
+		guard let discoveryPerson = self.discoveryViewState.people[peerID] else {
+			assertionFailure()
+			return
+		}
+
+		let name = discoveryPerson.info.nickname
 
 		let title: String
 		if #available(iOS 10.0, *) {
@@ -217,7 +241,7 @@ final class Mediator {
 
 		guard messagesNotVisible || !self.appViewState.isActive else { return }
 
-		NotificationManager.displayPeerRelatedNotification(
+		self.displayPeerRelatedNotification(
 			title: title, body: message, peerID: peerID, category: .message)
 	}
 
@@ -245,7 +269,7 @@ final class Mediator {
 		let category: NotificationManager.NotificationCategory =
 			idModel.pinState == .pinMatch ? .none : .peerAppeared
 
-		NotificationManager.displayPeerRelatedNotification(
+		self.displayPeerRelatedNotification(
 			title: String(format: alertBodyFormat, model.info.nickname),
 			body: "", peerID: peerID, category: category)
 	}
@@ -264,7 +288,7 @@ final class Mediator {
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
 			let alertBody = String(format: alertBodyFormat, discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString)
 
-			NotificationManager.displayPeerRelatedNotification(
+			self.displayPeerRelatedNotification(
 				title: title, body: alertBody, peerID: peerID,
 				category: .pinMatch)
 		}
@@ -426,9 +450,16 @@ extension Mediator: ServerChatDelegate {
 // MARK: ServerChatDataSource
 extension Mediator: ServerChatDataSource {
 
-	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async throws -> Bool {
-		let id = try await socialController.id(of: peerID)
-		return try await socialController.updatePinStatus(of: id, force: forceCheck) == .pinMatch
+	func hasPinMatch(with peerID: PeerID, forceCheck: Bool) async -> Bool? {
+		do {
+			let id = try await socialController.id(of: peerID)
+			return try await socialController.updatePinStatus(of: id, force: forceCheck) == .pinMatch
+		} catch {
+			self.display(
+				error: error, title: NSLocalizedString(
+					"Pin Match Check Failed", comment: "Error message title"))
+			return nil
+		}
 	}
 
 	/// Queries for all pin-matched peers.
@@ -551,11 +582,9 @@ extension Mediator: DiscoveryBackend {
 	func readPeer(_ peerID: PeerID) async -> Peer? {
 		guard let pc = self.peeringController else { return nil }
 
-		return await withCheckedContinuation { continuation in
-			pc.readPeer(peerID) { peer in
-				continuation.resume(returning: peer)
-			}
-		}
+		return await Task { @MainActor in
+			return await pc.readPeer(peerID)
+		}.value
 	}
 
 	/// Toggle the bluetooth network between _on_ and _off_.

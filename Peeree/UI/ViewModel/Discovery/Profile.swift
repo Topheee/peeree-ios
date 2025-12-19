@@ -15,6 +15,7 @@ final class Profile: DiscoveryPerson {
 
 	/// Call ``load(data:)`` with the result of this function.
 	func loadAsync(_ completion: (@Sendable @escaping (Result<ProfileData, Error>) -> Void)) {
+		self.isLoading = true
 		let up = self.userPeer
 		Task {
 			do {
@@ -28,8 +29,6 @@ final class Profile: DiscoveryPerson {
 
 	/// Call with the result from ``loadAsync(_:)``.
 	func load(data: ProfileData) {
-		self.isLoading = true
-
 		defer { self.isLoading = false }
 
 		data.peerInfo.map { self.info = $0 }

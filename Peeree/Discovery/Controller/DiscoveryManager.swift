@@ -195,11 +195,11 @@ final class DiscoveryManager: NSObject, CBCentralManagerDelegate, PeerIdentifica
 	/// First operation carried out when a peer is encountered.
 	private var identifyOperations = [CBPeripheral : PeerIdentificationOperationManager]()
 
-	/// First operation carried out when a peer is encountered.
+	/// Second operation carried out when a peer is encountered.
 	private
 	var verifyOperations = [PeerID : PeerVerificationOperationManager]()
 
-	/// Manager to retrieve data from a peer.
+	/// Third operation carried out when a peer is encountered.
 	private var discoveryOperations = [PeerID : PeerDiscoveryOperationManager]()
 
 	/// The last changed data of each completely discovered peer.

@@ -6,12 +6,13 @@
 //  Copyright © 2021 Kobusch. All rights reserved.
 //
 
-import UIKit
+@preconcurrency import UIKit
 import CoreServices
 import PeereeCore
 import PeereeServerChat
 import PeereeIdP
 import PeereeDiscovery
+import UniformTypeIdentifiers
 
 final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
@@ -169,45 +170,53 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 	// MARK: Methods
 
 	/// shows an in-app or system (local) notification related to a peer
-	static func displayPeerRelatedNotification(title: String, body: String, peerID: PeerID, category: NotificationCategory) {
-			let center = UNUserNotificationCenter.current()
-			let content = UNMutableNotificationContent()
-			content.title = title
-			content.body = body.replacingOccurrences(of: "%", with: "%%")
-			content.sound = UNNotificationSound.default
-			content.userInfo = [Self.PeerIDKey : peerID.uuidString]
-			content.categoryIdentifier = category.rawValue
-			content.threadIdentifier = peerID.uuidString
+	static func displayPeerRelatedNotification(
+		title: String, body: String, discoveryPerson: DiscoveryPerson,
+		pictureURL: URL?, category: NotificationCategory
+	) {
+		let peerID = discoveryPerson.peerID
 
-			if #available(iOS 15, *) {
-				switch category {
-				case .peerAppeared:
-					content.relevanceScore = 1.0
-					content.interruptionLevel = .timeSensitive
-				case .pinMatch:
-					content.relevanceScore = 0.9
-					content.interruptionLevel = .timeSensitive
-				case .message:
-					content.relevanceScore = 0.8
-					content.interruptionLevel = .timeSensitive
-				case .none:
-					content.relevanceScore = 0.0
-					content.interruptionLevel = .passive
-				}
+		let center = UNUserNotificationCenter.current()
+		let content = UNMutableNotificationContent()
+		content.title = title
+		content.body = body.replacingOccurrences(of: "%", with: "%%")
+		content.sound = UNNotificationSound.default
+		content.userInfo = [Self.PeerIDKey : peerID.uuidString]
+		content.categoryIdentifier = category.rawValue
+		content.threadIdentifier = peerID.uuidString
+
+		switch category {
+		case .peerAppeared:
+			content.relevanceScore = 1.0
+			content.interruptionLevel = .timeSensitive
+		case .pinMatch:
+			content.relevanceScore = 0.9
+			content.interruptionLevel = .timeSensitive
+		case .message:
+			content.relevanceScore = 0.8
+			content.interruptionLevel = .timeSensitive
+		case .none:
+			content.relevanceScore = 0.0
+			content.interruptionLevel = .passive
+		}
+
+		if let pictureURL, let attachment = try? UNNotificationAttachment(
+			identifier: NotificationManager.PortraitAttachmentIdentifier,
+			url: pictureURL,
+			options: [UNNotificationAttachmentOptionsTypeHintKey : UTType.jpeg]) {
+			content.attachments = [attachment]
+		}
+
+		center.add(UNNotificationRequest(
+			identifier: UUID().uuidString, content: content,
+			trigger: UNTimeIntervalNotificationTrigger(
+				timeInterval: 0.1, repeats: false))
+		) { (error) in
+			if let error {
+				elog(Self.LogTag, "Scheduling local notification failed: "
+					 + error.localizedDescription)
 			}
-
-			// TODO: copy the user's portrait to a temporary location to be able to attach it
-//			if let attachment = try? UNNotificationAttachment(identifier: NotificationManager.PortraitAttachmentIdentifier,
-//													  url: PeeringController.shared.pictureURL(of: peerID),
-//															  options: [UNNotificationAttachmentOptionsTypeHintKey : kUTTypeJPEG]) {
-//				content.attachments = [attachment]
-//			}
-
-			center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false))) { (error) in
-				if let error {
-					elog(Self.LogTag, "Scheduling local notification failed: \(error.localizedDescription)")
-				}
-			}
+		}
 
 		// unschedule all remote notifications when we received a local one
 		Self.dismissRemoteNotifications()

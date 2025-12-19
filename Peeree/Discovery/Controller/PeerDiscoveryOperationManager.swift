@@ -294,16 +294,6 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 	/// The Decoder to unmarshal the results of the sub-operations.
 	private let decoder = KeyValueTreeCoding.DataTreeDecoder()
 
-	/// The ID of the first remote authentication step.
-	private static let idOpTreeRemoteAuth1UUID = UUID()
-	private static
-	var idOpTreeRemoteAuth1: CBUUID { CBUUID(nsuuid: idOpTreeRemoteAuth1UUID) }
-
-	/// The ID of the second remote authentication step.
-	private static let idOpTreeRemoteAuth2UUID = UUID()
-	private static
-	var idOpTreeRemoteAuth2: CBUUID { CBUUID(nsuuid: idOpTreeRemoteAuth2UUID) }
-
 	/// The ID of the main information retrieval step.
 	private static let idOpTreePeerDataUUID = UUID()
 	private static

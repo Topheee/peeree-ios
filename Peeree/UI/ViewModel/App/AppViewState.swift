@@ -8,13 +8,16 @@
 
 import SwiftUI
 
+/// State of the whole application.
 final class AppViewState: ObservableObject {
 
-	// MARK: Static Constants
+	// MARK: Variables
 
+	/// Whether the application is in front.
 	var isActive: Bool {
 		return scenePhase == .active
 	}
 
+	/// An indication of a scene’s operational state.
 	var scenePhase: ScenePhase = .inactive
 }

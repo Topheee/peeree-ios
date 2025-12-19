@@ -210,7 +210,7 @@ struct PersonView: View {
 						}
 					}
 
-					Text(discoveryPersona.peerID.uuidString)
+					Text(peerID.uuidString)
 						.font(.caption)
 						.fontWeight(.light)
 				}
