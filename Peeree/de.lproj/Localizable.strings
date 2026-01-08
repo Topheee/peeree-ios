@@ -610,8 +610,6 @@
 
 "PinTemplate" = "Pin-Knopf";
 
-"PinTemplateFilled" = "Filled Pin";
-
 "%lld" = "%lld";
 
 "Use this button to pin people." = "Drücke diesen Knopf um Leute zu pinnen.";

@@ -22,6 +22,8 @@ final class SocialViewState:
 	/// Social personas must have a `PinState`.
 	typealias RequiredData = PinState
 
+	public static let RecoveryCodeLength: Int = 36
+
 	var delegate: SocialViewDelegate?
 
 	/// All known people.
@@ -31,7 +33,8 @@ final class SocialViewState:
 	public var userPeerID: PeerID? = nil
 
 	/// Single characters and digits of the account recovery code.
-	@Published public var recoveryCodeLetters: [String] = Array<String>(repeating: "", count: 32)
+	@Published public var recoveryCodeLetters: [String] = Array<String>(
+		repeating: "", count: RecoveryCodeLength)
 
 	/// Display the recovery screen.
 	@Published public var presentRecoveryCode = false

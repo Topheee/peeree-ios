@@ -68,6 +68,11 @@ final class MockSocialViewModelDelegate: SocialViewModelDelegate {
 }
 
 final class MockAccountViewModelDelegate: AccountViewModelDelegate {
+	var recoveryCodeLetters: [String] = "B117D2A8-4446-4268-9764-3B2BDD1153F7"
+		.unicodeScalars.map { String($0) }
+
+	var presentRecoveryCode: Bool = false
+
 	var userPeerID: PeereeCore.PeerID?
 
 	var accountExists: PeereeCore.RemoteToggle = .off

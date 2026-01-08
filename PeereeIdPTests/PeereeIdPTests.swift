@@ -12,6 +12,11 @@ import Testing
 import PeereeCore
 
 final class MockAccountViewModelDelegate: AccountViewModelDelegate {
+	var recoveryCodeLetters: [String] = "B117D2A8-4446-4268-9764-3B2BDD1153F7"
+		.unicodeScalars.map { String($0) }
+
+	var presentRecoveryCode: Bool = false
+
 	var userPeerID: PeereeCore.PeerID?
 
 	var accountExists: PeereeCore.RemoteToggle = .off
@@ -116,6 +121,21 @@ final class MockAccountViewModelDelegate: AccountViewModelDelegate {
 
 			#expect(!accessTokenData.accessToken.isEmpty)
 			#expect(accessTokenData.expiresAt > Date())
+		}
+
+		@Test func testRecoverAccount() async throws {
+			let recoveryCode = self.viewModelDelegate.recoveryCodeLetters
+				.joined()
+
+			//  need a new factory to not raise `accountAlreadyExists`
+			let newFactory = AccountControllerFactory(
+				config: .testing(.init(privateKeyTag: self.privateTag)),
+				viewModel: self.viewModelDelegate)
+
+			let (ac2, _) = try await newFactory
+				.createOrRecoverAccount(using: recoveryCode)
+
+			#expect(await ac2.peerID == self.accountController.peerID)
 		}
 	}
 }

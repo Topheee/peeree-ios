@@ -127,6 +127,7 @@ struct FilterView: View {
 					} label: {
 						Label("Done", systemImage: "checkmark.circle")
 					}
+					.tint(.accent)
 				}
 			}
 		}

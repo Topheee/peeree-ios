@@ -90,6 +90,7 @@ struct ProfileView: View {
 						Text("Preview")
 					}
 					.isDetailLink(true)
+					.tint(.accent)
 				}
 
 				ToolbarItem(placement: .navigationBarLeading) {
@@ -98,6 +99,7 @@ struct ProfileView: View {
 					} label: {
 						Label("Done", systemImage: "checkmark.circle")
 					}
+					.tint(.accent)
 				}
 			}
 			.onAppear {

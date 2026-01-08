@@ -109,6 +109,9 @@ struct ChatView: View {
 							}
 						}
 						.padding(.bottom, chatMessageAreaHeight + 6)
+						.onTapGesture {
+							messageFieldIsFocused.toggle()
+						}
 
 						Rectangle().fill(Color.clear).id(serverChatViewState.bottomViewID)
 					}
@@ -135,9 +138,6 @@ struct ChatView: View {
 					} else {
 						$0
 					}
-				}
-				.onTapGesture {
-					messageFieldIsFocused.toggle()
 				}
 			} else {
 				VStack {
@@ -170,18 +170,21 @@ struct ChatView: View {
 						.onSubmit {
 							self.sendMessage()
 						}
+						.padding([.top, .bottom], 4)
 				} else {
 					TextField(text: $composingMessage, prompt: Text("Message")) {}
 						.focused($messageFieldIsFocused)
 						.onSubmit {
 							self.sendMessage()
 						}
+						.padding([.top, .bottom], 4)
 				}
 				Button {
 					sendMessage()
 				} label: {
 					Label("Send", systemImage: composingMessage == "" ? "paperplane" : "paperplane.fill")
 						.labelStyle(.iconOnly)
+						.font(.title)
 				}
 				.disabled(composingMessage == "")
 				.onAppear {
@@ -192,7 +195,16 @@ struct ChatView: View {
 			}
 			.disabled(!chatPersona.readyToChat)
 			.padding()
-			.background(.regularMaterial)
+			.modify {
+				if #available(iOS 26.0, *) {
+					$0.glassEffect(
+						.regular.interactive(),
+						in: .rect(cornerRadius: 16.0))
+						.padding([.leading, .trailing, .bottom])
+				} else {
+					$0
+				}
+			}
 			.overlay(
 				GeometryReader { geometry in
 					Color.clear

@@ -131,17 +131,13 @@ struct BrowseView: View {
 		.modify {
 			if #available(iOS 26.0, *) {
 				$0.glassEffect(in: .rect(cornerRadius: 16.0))
+			} else {
+				$0
 			}
 		}
 		.padding()
 		.shadow(radius: 10)
 		.offset(x: 0, y: discoveryViewState.peering ? max(dragOffset, 0.0) : 0.0)
 		.animation(.snappy, value: discoveryViewState.peering)
-		.onAppear {
-			discoveryViewState.browsing = true
-		}
-		.onDisappear {
-			discoveryViewState.browsing = false
-		}
 	}
 }

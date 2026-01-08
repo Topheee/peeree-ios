@@ -79,6 +79,7 @@ struct AccountView: View {
 		.sheet(isPresented: $showRestoreDialog) {
 			RecoveryView(mode: .recovering({ recoveryCode in
 				self.socialViewState.delegate?.restoreIdentity(using: recoveryCode)
+				self.showRestoreDialog = false
 			}), letters: $socialViewState.recoveryCodeLetters)
 		}
 	}

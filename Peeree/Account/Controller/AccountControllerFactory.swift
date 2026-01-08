@@ -101,7 +101,8 @@ public actor AccountControllerFactory {
 				response = try await client()
 					.postAccount(
 						query: .init(publicKey: .init(publicKeyData)),
-						headers: .init(recoveryCode: recoveryCode))
+						headers: .init(recoveryCode: recoveryCode),
+						body: .json(channel))
 
 			} else {
 				response = try await client()

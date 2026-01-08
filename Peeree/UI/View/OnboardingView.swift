@@ -118,12 +118,14 @@ struct OnboardingView: View {
 							} animation: { phase in
 								if phase == .chargingUp {
 									.bouncy(duration:    PinMatchAnimationPhase.pinPhaseAnimationDuration,
-											extraBounce: phase == .chargingUp ? 0.3 : 0.0)
+											extraBounce: phase == .chargingUp ? 0.2 : 0.0)
 								} else {
 									.bouncy(duration:    PinMatchAnimationPhase.pinPhaseAnimationDuration / 2,
-											extraBounce: phase == .chargingUp ? 0.3 : 0.0)
+											extraBounce: phase == .chargingUp ? 0.2 : 0.0)
 								}
 							}
+						} else {
+							$0
 						}
 					}
 				}

@@ -31,9 +31,6 @@ final class DiscoveryViewState: ObservableObject, DiscoveryViewModelDelegate {
 
 	// MARK: Variables
 
-	/// Whether the main / browse view is in front.
-	var browsing = false
-
 	/// The `PeeringController.peering` state for the main thread.
 	@Published var peering: Bool = false
 

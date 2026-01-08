@@ -64,6 +64,20 @@ public final class ServerChatFactory {
 				.parsing("Invalid initial password."))
 		}
 
+		// remove credential remains
+
+		try? self.removePasswordFromKeychain()
+
+		try? removeGenericPasswordFromKeychain(
+			account: self.keychainAccount,
+			service: Self.AccessTokenKeychainService)
+		try? removeGenericPasswordFromKeychain(
+			account: self.keychainAccount,
+			service: Self.RefreshTokenKeychainService)
+		try? removeGenericPasswordFromKeychain(
+			account: self.keychainAccount,
+			service: Self.DeviceIDKeychainService)
+
 		do {
 			try persistPasswordInKeychain(passwordData)
 		} catch let error {

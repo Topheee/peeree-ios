@@ -21,7 +21,7 @@ struct MainView: View {
 
 	@EnvironmentObject private var socialViewState: SocialViewState
 
-	@State private var browsePaneHeight: CGFloat = 0.0
+	@State private var browsePaneHeight: CGFloat = 60.0
 
 	@State private var showingProfile = false
 	@State private var showingFilter = false
@@ -50,7 +50,7 @@ struct MainView: View {
 						}
 					}
 					.listStyle(.inset)
-					.padding(.bottom, browsePaneHeight + 12)
+					.padding(.bottom, browsePaneHeight + 16)
 				}
 
 				BrowseView()
@@ -76,6 +76,7 @@ struct MainView: View {
 					} label: {
 						Label("Profile", systemImage: "person.crop.circle")
 					}
+					.tint(.accent)
 				}
 
 				ToolbarItem(placement: .navigationBarTrailing) {
@@ -84,6 +85,7 @@ struct MainView: View {
 					} label: {
 						Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
 					}
+					.tint(.accent)
 				}
 			}
 			.sheet(isPresented: $showingProfile) {
@@ -137,7 +139,7 @@ import PeereeServerChat
 
 	ns.display(InAppNotification(localizedTitle: "A title", localizedMessage: "Huhu", severity: .warning, furtherDescription: "Oh shit 4"))
 
-	let recoveryCode = "F8EAB860BC564F9498FCFF6864C47B71"
+	let recoveryCode = "B117D2A8-4446-4268-9764-3B2BDD1153F7"
 
 	ss.recoveryCodeLetters = recoveryCode.unicodeScalars.map { String($0) }
 	ss.presentRecoveryCode = true

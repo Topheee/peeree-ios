@@ -122,6 +122,12 @@ struct RecoveryView: View {
 			.disableAutocorrection(true)
 			.textFieldStyle(.roundedBorder)
 
+			if #available(iOS 16.0, *), self.entry {
+				PasteButton(payloadType: String.self) { paste in
+					paste.first.map { self.fillIn(text: $0) }
+				}
+			}
+
 			AdaptiveStackView(orientation: verticalSizeClass == .compact ? .horizontal : .vertical) {
 				Button(entry ? "Recover Account" : "Save Code", role: .none) {
 					self.showActionDialog.toggle()
@@ -153,12 +159,6 @@ struct RecoveryView: View {
 				.sheet(isPresented: $showShare) {
 					ActivityViewController(configuration: self.shareConfiguration())
 				}
-
-				if #available(iOS 16.0, *), self.entry {
-					PasteButton(payloadType: String.self) { paste in
-						paste.first.map { self.fillIn(text: $0) }
-					}
-				}
 			}
 			.padding(.top, 8)
 
@@ -177,8 +177,10 @@ struct RecoveryView: View {
 			}
 		}
 		.onAppear {
-			// Always pre-fill with data from cloud.
-			self.actionLoadFromCloud()
+			if self.entry {
+				// Always pre-fill with data from cloud.
+				self.actionLoadFromCloud()
+			}
 		}
 
 		Text(entry ? "Type or paste your code." : "Store your code in a secure and durable location, e.g. a password manager.")
@@ -209,19 +211,14 @@ struct RecoveryView: View {
 
 	/// Splits up `text` and fills it into the TextFields.
 	private func fillIn(text: String) {
-		let letterCount = self.letters.count
-
-		self.letters.removeAll()
-
-		text.unicodeScalars.filter { scalar in
-			scalar.properties.isASCIIHexDigit
+		let validChars = text.unicodeScalars.filter { scalar in
+			scalar.properties.isASCIIHexDigit || scalar == "-"
 		}
 		.map { String($0) }
-		.forEach { item in
-			self.letters.append(item)
-		}
 
-		self.letters.removeSubrange(letterCount...)
+		self.letters.replaceSubrange(
+			0..<min(validChars.endIndex, self.letters.endIndex),
+			with: validChars)
 	}
 
 		/// Make sure that each element in `letters` is just one character long.
@@ -251,9 +248,7 @@ struct RecoveryView: View {
 
 	/// The patched-together recovery code.
 	private var recoveryCode: String {
-		return self.letters.reduce("") { partialResult, result in
-			return partialResult + result
-		}
+		return self.letters.joined()
 	}
 
 		/// Configuration for the system's share sheet.
@@ -325,7 +320,7 @@ struct RecoveryView: View {
 #Preview {
 	RecoveryView(mode: .recovering({ code in
 	}), letters: Binding.constant(
-		"0E2BE86C1C5F44B3B618F11E64EC043D".unicodeScalars.map {
+		"B117D2A8-4446-4268-9764-3B2BDD1153F7".unicodeScalars.map {
 			String($0)
 		}))
 }
