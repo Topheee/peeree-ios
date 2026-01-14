@@ -200,7 +200,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			content.interruptionLevel = .passive
 		}
 
-		if let pictureURL, let attachment = try? UNNotificationAttachment(
+		if discoveryPerson.info.hasPicture, discoveryPerson.cgPicture != nil,
+		   let pictureURL, let attachment = try? UNNotificationAttachment(
 			identifier: NotificationManager.PortraitAttachmentIdentifier,
 			url: pictureURL,
 			options: [UNNotificationAttachmentOptionsTypeHintKey : UTType.jpeg]) {
@@ -208,9 +209,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		}
 
 		center.add(UNNotificationRequest(
-			identifier: UUID().uuidString, content: content,
-			trigger: UNTimeIntervalNotificationTrigger(
-				timeInterval: 0.1, repeats: false))
+			identifier: UUID().uuidString, content: content, trigger: nil)
 		) { (error) in
 			if let error {
 				elog(Self.LogTag, "Scheduling local notification failed: "
@@ -233,7 +232,10 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 				return notification.request.identifier
 			}
 
-			center.removeDeliveredNotifications(withIdentifiers: remoteNotificationIdentifiers)
+			guard !remoteNotificationIdentifiers.isEmpty else { return }
+
+			center.removeDeliveredNotifications(
+				withIdentifiers: remoteNotificationIdentifiers)
 		}
 	}
 }

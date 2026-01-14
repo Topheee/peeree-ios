@@ -32,3 +32,41 @@ struct ActivityViewController: UIViewControllerRepresentable {
 
 	func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityViewController>) {}
 }
+
+extension UIImage {
+	/// Extract a squared image from the center.
+	public func centerSquared() -> CGImage? {
+		guard self.size.width != self.size.height else { return self.cgImage }
+
+		let edgeLength = min(self.size.width, self.size.height)
+		let size = CGSize(squareEdgeLength: edgeLength)
+
+		let x: CGFloat, y: CGFloat
+
+		switch self.imageOrientation {
+		case .up, .down, .upMirrored, .downMirrored:
+			x = (self.size.width - edgeLength) / 2
+			y = (self.size.height - edgeLength) / 2
+		case .left, .right, .leftMirrored, .rightMirrored:
+			x = (self.size.height - edgeLength) / 2
+			y = (self.size.width - edgeLength) / 2
+		@unknown default:
+			assertionFailure()
+			x = (self.size.width - edgeLength) / 2
+			y = (self.size.height - edgeLength) / 2
+		}
+
+		let cropRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+
+		return self.cgImage?.cropping(to: cropRect)
+	}
+
+	// https://stackoverflow.com/a/40867644
+	func scaled(to newSize: CGSize) -> UIImage {
+		let image = UIGraphicsImageRenderer(size: newSize).image { _ in
+			draw(in: CGRect(origin: .zero, size: newSize))
+		}
+
+		return image.withRenderingMode(renderingMode)
+	}
+}

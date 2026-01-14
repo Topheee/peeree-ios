@@ -16,7 +16,7 @@ struct ProfileData {
 
 	var peerInfo: PeerInfo?
 
-	var picture: UIImage?
+	var picture: CGImage?
 
 	var biography: String
 
@@ -116,11 +116,13 @@ final actor UserPeer {
 			peerInfo?.age = nil
 		}
 
-		let image: UIImage?
+		let image: CGImage?
 		if peerInfo?.hasPicture ?? false,
 		   let provider = CGDataProvider(url: UserPeer.pictureResourceURL as CFURL) {
-			let cgPicture = CGImage(jpegDataProviderSource: provider, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
-			image = cgPicture.map { UIImage(cgImage: $0) }
+			image = CGImage(
+				jpegDataProviderSource: provider, decode: nil,
+				shouldInterpolate: true,
+				intent: CGColorRenderingIntent.defaultIntent)
 		} else {
 			image = nil
 		}

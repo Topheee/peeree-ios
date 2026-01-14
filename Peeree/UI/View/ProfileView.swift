@@ -39,7 +39,9 @@ struct ProfileView: View {
 								}
 							}
 							.sheet(isPresented: $showImagePicker) {
-								ImagePicker { picked(image: $0) }
+								ImagePicker {
+									self.picked($0)
+								}
 							}
 					}
 					
@@ -148,10 +150,19 @@ struct ProfileView: View {
 	/// This is a workaround to the problem that directly referencing discoveryViewState.profile.image did not update the view.
 	@State private var profileImage = Image("PortraitPlaceholder")
 
-	private func picked(image: UIImage) {
-		discoveryViewState.profile.picture = image
-		// gosh this is so fucking ugly
-		profileImage = Image(image.cgImage!, scale: 1.0, label: Text("A person."))
+	private func picked(_ result: Result<UIImage, Error>) {
+		switch result {
+		case .success(let image):
+			guard let scaledImage = discoveryViewState.profile.set(
+				image: image)?.cgImage
+			else {
+				return
+			}
+
+			profileImage = Image(scaledImage, scale: 1.0, label: Text("A person."))
+		case .failure(let error):
+			InAppNotificationStackViewState.shared.display(genericError: error)
+		}
 	}
 }
 

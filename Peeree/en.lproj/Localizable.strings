@@ -37,6 +37,9 @@
 /* Error title */
 "Bluetooth Advertising Failed" = "Bluetooth Advertising Failed";
 
+/* Low-level error */
+"Bluetooth Initialization Failed" = "Bluetooth Initialization Failed";
+
 /* Error title */
 "Bluetooth Publish Failed" = "Bluetooth Publish Failed";
 
@@ -100,6 +103,9 @@
 /* User-facing security error. */
 "chat_server_cert_invalid" = "Chat server certificate is invalid. The security of the connection cannot be guaranteed and thus it was cancelled.";
 
+/* Title of alert. */
+"Decoding Persisted Chat Data Failed" = "Decoding Persisted Chat Data Failed";
+
 /* Low-level error */
 "Decoding Recent Peers Failed" = "Decoding Recent Peers Failed";
 
@@ -138,6 +144,9 @@
 
 /* Placeholder for missing biography */
 "Empty Biography." = "Empty Biography.";
+
+/* Title of alert. */
+"Encoding Persisted Chat Data Failed" = "Encoding Persisted Chat Data Failed";
 
 /* Low-level error */
 "Encoding Recent Peers Failed" = "Encoding Recent Peers Failed";
@@ -306,6 +315,9 @@
 
 /* Title of in-app error notification */
 "Pin Failed" = "Pin Failed";
+
+/* Error message title */
+"Pin Match Check Failed" = "Pin Match Check Failed";
 
 /* Notification alert body when a pin match occured. */
 "Pin Match with %@!" = "Pin Match with %@!";

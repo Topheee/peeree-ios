@@ -32,7 +32,7 @@ final class Profile: DiscoveryPerson {
 		defer { self.isLoading = false }
 
 		data.peerInfo.map { self.info = $0 }
-		self.picture = data.picture
+		self.cgPicture = data.picture
 		self.birthday = data.birthday
 		self.biography = data.biography
 	}
@@ -49,25 +49,45 @@ final class Profile: DiscoveryPerson {
 		}
 	}
 
-	var picture: UIImage? = nil {
-		didSet {
-
-			//image = picture.map { Image(uiImage: $0) } ?? Image("PortraitPlaceholder")
-			self.cgPicture = self.picture?.cgImage
-
+	func set(image: UIImage?) -> UIImage? {
+		guard let image else {
+			self.cgPicture = nil
 			self.syncHasPicture()
+			return nil
+		}
 
-			guard !self.isLoading, let pi = picture else { return }
+		guard let squaredImage = image.centerSquared() else {
+			assertionFailure()
+			return nil
+		}
 
-			let up = userPeer
-			Task {
-				do {
-					try await up.modify(portrait: pi.cgImage)
-				} catch {
-					await InAppNotificationStackViewState.shared.display(genericError: error)
-				}
+		let scaledSquaredUIImage = UIImage(
+			cgImage: squaredImage, scale: image.scale,
+			orientation: image.imageOrientation)
+			.scaled(to: CGSize(squareEdgeLength: Self.MaxProfileEdgeLength))
+
+		guard let scaledSquaredImage = scaledSquaredUIImage.cgImage else {
+			assertionFailure()
+			return nil
+		}
+
+		self.cgPicture = scaledSquaredImage
+
+		self.syncHasPicture()
+
+		guard !self.isLoading else { return nil }
+
+		let up = userPeer
+		Task {
+			do {
+				try await up.modify(portrait: scaledSquaredImage)
+			} catch {
+				await InAppNotificationStackViewState.shared.display(
+					genericError: error)
 			}
 		}
+
+		return scaledSquaredUIImage
 	}
 
 	override var biography: String {
@@ -103,6 +123,11 @@ final class Profile: DiscoveryPerson {
 		self.isUser = true
 	}
 
+	// MARK: - Private
+
+	/// Maximum amount of pixels in each direction of the profile image.
+	private static let MaxProfileEdgeLength: CGFloat = 256
+
 	private let userPeer = UserPeer()
 
 	/// Whether we are currently loading the profile from disk.
@@ -136,9 +161,9 @@ extension Profile {
 
 	/// Sets `hasPicture`of `peerInfo` based on `cgPicture` and returns whether the value really changed; call only from `queue`.
 	@discardableResult private func syncHasPicture() -> Bool {
-		let oldValue = info.hasPicture
-		let newValue = picture != nil
-		info.hasPicture = newValue
+		let oldValue = self.info.hasPicture
+		let newValue = self.cgPicture != nil
+		self.info.hasPicture = newValue
 		return oldValue != newValue
 	}
 }

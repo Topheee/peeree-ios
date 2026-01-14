@@ -144,8 +144,7 @@ public struct PeerInfo: Codable, Sendable {
 		}
 
 		// same as self.nicknameData = nicknameData
-		nickname = String(dataPrefixedEncoding: nicknameData) ?? ""
-		if nickname == "" { return nil }
+		self.nickname = String(dataPrefixedEncoding: nicknameData) ?? ""
 	}
 
 	// MARK: Classes, Structs, Enums
