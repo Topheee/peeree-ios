@@ -57,9 +57,10 @@ internal func handle(
 		elog(logTag, "Undocumented API error \(statusCode)")
 	}
 
-	let format = "Unknown API error %d."
+	let format = NSLocalizedString(
+		"Unknown API error %d.", comment: "Low level IdP error")
 
 	throw createApplicationError(
-		localizedDescription: NSLocalizedString(
-			String(format: format, statusCode), comment: "Low level IdP error"))
+		localizedDescription: String.localizedStringWithFormat(
+			format, statusCode))
 }

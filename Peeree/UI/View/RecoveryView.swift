@@ -128,7 +128,6 @@ struct RecoveryView: View {
 				}
 			}
 
-			AdaptiveStackView(orientation: verticalSizeClass == .compact ? .horizontal : .vertical) {
 				Button(entry ? "Recover Account" : "Save Code", role: .none) {
 					self.showActionDialog.toggle()
 				}
@@ -159,7 +158,6 @@ struct RecoveryView: View {
 				.sheet(isPresented: $showShare) {
 					ActivityViewController(configuration: self.shareConfiguration())
 				}
-			}
 			.padding(.top, 8)
 
 			Text(self.showSavedToCloud ? "Saved to iCloud." : "")

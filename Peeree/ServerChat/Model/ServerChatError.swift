@@ -34,31 +34,4 @@ public enum ServerChatError: Error {
 
 	/// Thrown when we are not able to chat with a peer for `reason`.
 	case cannotChat(PeerID, ServerChatCannotChatReason)
-
-	/// Parsing a server response failed; passes a localized error message.
-	case parsing(String)
-
-	/// Passes on an error produced by the SDK.
-	case sdk(Error)
-
-	/// Passes on a fatal error.
-	case fatal(Error)
-}
-
-/// Server chat informed party.
-public enum ServerChatFail {
-	/// Configuring the Pusher on the server chat server failed.
-	case configurePusherFailed
-
-	/// Joining a server chat room failed.
-	case cannotJoinRoom
-
-	/// The certificate of the server is invalid.
-	case serverChatCertificateIsInvalid
-
-	/// An unexpected error occurred when loading auxilarily chat data.
-	case decodingPersistedChatDataFailed
-
-	/// An unexpected error occurred when storing auxilarily chat data.
-	case encodingPersistedChatDataFailed
 }

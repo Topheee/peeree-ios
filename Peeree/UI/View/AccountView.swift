@@ -72,7 +72,7 @@ struct AccountView: View {
 				Text(socialViewState.accountExists.isOn ?
 					 "This will delete your global Peeree identity and cannot be undone. All your pins as well as pins on you will be lost."
 					 :
-						String(format: NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button")))
+						String.localizedStringWithFormat(NSLocalizedString("By tapping on '%@', you agree to our Terms of Use.", comment: "Message in identity creation alert."), NSLocalizedString("Create Identity", comment: "Caption of button")))
 			}
 		}
 		.padding(verticalSizeClass == .regular ? [.top, .bottom] : [])

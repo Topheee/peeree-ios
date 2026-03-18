@@ -291,7 +291,8 @@ struct PersonView: View {
 	p.info.nickname = "Sarah"
 	p.set(portrait: UIImage(named: "portrait")?.cgImage, hash: Data())
 	let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
-	p.biography = String(format: bioFormat, "Andrei Caliman")
+	p.biography = String.localizedStringWithFormat(
+		bioFormat, "Andrei Caliman")
 
 	let sp = ss.demo(p.peerID)
 	sp.pinState = .pinMatch

@@ -60,8 +60,8 @@ public final class ServerChatFactory {
 
 		guard let passwordData = account.initialPassword
 			.data(prefixedEncoding: Self.KeychainEncoding) else {
-			throw ServerChatError.fatal(ServerChatError
-				.parsing("Invalid initial password."))
+			throw makeEncodingError(
+				in: Self.LogTag, encoding: Self.KeychainEncoding)
 		}
 
 		// remove credential remains
@@ -88,7 +88,9 @@ public final class ServerChatFactory {
 					 "Could not remove password from keychain after insert failed: \(removeError.localizedDescription)")
 			}
 
-			throw ServerChatError.fatal(error)
+			throw makeFailedAssumptionError(
+				"Saving server chat password failed.",
+				in: Self.LogTag, cause: error)
 		}
 
 		UserDefaults.standard.set(
@@ -165,12 +167,14 @@ public final class ServerChatFactory {
 				// This most likely means that no account exists, which we could delete, so we do not report an error here.
 				return
 			} else {
-				throw ServerChatError.fatal(error)
+				throw makeFailedAssumptionError(
+					"Unexpected error while retrieving password from keychain",
+					in: Self.LogTag, cause: error)
 			}
 		}
 
 		guard let scc = self.serverChatController else {
-			throw ServerChatError.fatal(unexpectedNilError())
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		try await scc.deleteAccount(password: password)
@@ -267,17 +271,18 @@ public final class ServerChatFactory {
 	/// - Throws: `ServerChatError`
 	private func changePassword(of account: ServerChatAccount) async throws {
 		// In case we need to restore the old password.
-		guard let oldPassword = account.initialPassword
-			.data(using: .utf8) else {
-			throw ServerChatError.fatal(makeProgrammingError(
-				"initial password not utf8-compatible"))
+		guard let oldPassword = account.initialPassword.data(using: .utf8)
+		else {
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		var passwordRawData: Data
 		do {
 			passwordRawData = try generateRandomData(length: Int.random(in: 24...26))
 		} catch let error {
-			throw ServerChatError.fatal(error)
+			throw makeFailedAssumptionError(
+				"failed to generate random data",
+				in: Self.LogTag, cause: error)
 		}
 
 		var passwordData = passwordRawData.base64EncodedData()
@@ -294,7 +299,9 @@ public final class ServerChatFactory {
 			try self.persistPasswordInKeychain(passwordData)
 		} catch let error {
 			self.restore(oldPassword: oldPassword)
-			throw ServerChatError.fatal(error)
+			throw makeFailedAssumptionError(
+				"failed to remove old password and store new one",
+				in: Self.LogTag, cause: error)
 		}
 
 		let changePasswordClient = MXRestClient(credentials: account.credentials)
@@ -308,8 +315,11 @@ public final class ServerChatFactory {
 				switch response {
 				case .failure(let error):
 					defer {
-						continuation
-							.resume(throwing: ServerChatError.sdk(error))
+						let thrownError = makeFailedAssumptionError(
+							"failed to change password", in: Self.LogTag,
+							cause: error)
+
+						continuation.resume(throwing: thrownError)
 					}
 
 					self.restore(oldPassword: oldPassword)
@@ -367,7 +377,7 @@ public final class ServerChatFactory {
 			if let url = URL(string: homeServer) {
 				return url
 			} else {
-				throw makeProgrammingError("home server URL unparsable")
+				throw makeUnexpectedNilError(in: Self.LogTag)
 			}
 		}
 	}
@@ -414,7 +424,10 @@ public final class ServerChatFactory {
 			bootstrapMXClient.login(parameters: parameters) { response in
 				if let error = response.error as NSError? {
 					defer {
-						continuation.resume(throwing: ServerChatError.sdk(error))
+						continuation.resume(
+							throwing: makeFailedAssumptionError(
+								"Matrix login failed.",
+								in: Self.LogTag, cause: error))
 					}
 
 					if let mxErrCode = error.userInfo[kMXErrorCodeKey] as? String {
@@ -435,14 +448,13 @@ public final class ServerChatFactory {
 				}
 
 				guard let json = response.value else {
-					elog(Self.LogTag, "Login response is nil.")
-					continuation.resume(throwing: ServerChatError
-						.fatal(unexpectedNilError()))
+					continuation.resume(throwing: makeUnexpectedNilError(in: Self.LogTag))
 					return
 				}
 				guard let loginResponse = MXLoginResponse(fromJSON: json) else {
-					continuation.resume(throwing: ServerChatError.parsing(
-						"ERROR: Cannot create login response from JSON \(json)."))
+					continuation.resume(throwing: makeFailedAssumptionError(
+						"ERROR: Cannot create login response from JSON \(json).",
+						in: Self.LogTag))
 					return
 				}
 
@@ -454,7 +466,9 @@ public final class ServerChatFactory {
 					try self.storeCredentialsInKeychain(credentials)
 				} catch {
 					continuation.resume(
-						throwing: ServerChatError.fatal(error))
+						throwing: makeFailedAssumptionError(
+							"Storing server chat credentials in keychain failed.",
+							in: Self.LogTag, cause: error))
 					return
 				}
 
@@ -472,7 +486,7 @@ public final class ServerChatFactory {
 	private func storeCredentialsInKeychain(_ credentials: MXCredentials) throws {
 		guard let accessToken = credentials.accessToken,
 			  let deviceId = credentials.deviceId else {
-			throw unexpectedNilError()
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		// possible old tokens are automatically overridden
@@ -505,10 +519,12 @@ public final class ServerChatFactory {
 			}
 
 			return try await setupInstance(with: creds, dataSource: dataSource)
-		} catch let error as ServerChatError {
+		} catch let error as AudiencedError {
 			throw error
 		} catch let error {
-			throw ServerChatError.fatal(error)
+			throw makeFailedAssumptionError(
+				"Matrix session cannot be resumed",
+				in: Self.LogTag, cause: error)
 		}
 	}
 
@@ -519,8 +535,11 @@ public final class ServerChatFactory {
 	) async throws -> ServerChatController {
 
 		let restClient: MXRestClient = MXRestClient(credentials: credentials, unrecognizedCertificateHandler: { data in
-			flog(Self.LogTag, "server chat certificate is not trusted.")
-			Task { await self.delegate?.serverChatCertificateIsInvalid() }
+			Task {
+				await self.delegate?.serverChatError(makeExternalError(
+					"server chat certificate is not trusted.", in: Self.LogTag))
+			}
+
 			return false
 		}, persistentTokenDataHandler: { callback in
 			dlog(Self.LogTag, "server chat persistentTokenDataHandler was called.")
@@ -610,7 +629,9 @@ public final class ServerChatFactory {
 			return c
 		} catch {
 			c.close()
-			throw ServerChatError.sdk(error)
+			throw makeFailedAssumptionError(
+				"Starting Matrix session failed.",
+				in: Self.LogTag, cause: error)
 		}
 	}
 

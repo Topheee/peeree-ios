@@ -178,7 +178,7 @@ final class PeerDiscoveryOperationManager: PeripheralOperationTreeManagerDelegat
 		switch characteristicID {
 		case CBUUID.RemoteUUIDCharacteristicID:
 			guard let userPeerID = self.userIdentity?.0 else {
-				throw unexpectedNilError()
+				throw makeUnexpectedNilError(in: Self.LogTag)
 			}
 
 			return userPeerID.encode()

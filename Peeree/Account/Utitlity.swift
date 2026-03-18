@@ -81,9 +81,10 @@ internal func handle(
 		elog(logTag, "Undocumented IdP error \(statusCode)")
 	}
 
-	let format = "Unknown IdP error %d."
+	let format = NSLocalizedString(
+		"Unknown IdP error %d.", comment: "Low level IdP error")
 
 	throw createApplicationError(
-		localizedDescription: NSLocalizedString(
-			String(format: format, statusCode), comment: "Low level IdP error"))
+		localizedDescription: String.localizedStringWithFormat(
+			format, statusCode))
 }

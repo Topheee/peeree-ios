@@ -56,7 +56,8 @@ final class ThreadSafeCallbacksMatrixSession {
 			self.session.canEnableE2EByDefaultInNewRoom(withUsers: users) { canEnable in
 				continuation.resume(returning: canEnable)
 			} failure: { error in
-				continuation.resume(throwing: error ?? unexpectedNilError())
+				continuation.resume(throwing: error ?? makeUnexpectedNilError(
+					in: "ThreadSafeCallbacksMatrixSession"))
 			}
 		}
 	}

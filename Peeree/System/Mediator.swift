@@ -233,8 +233,10 @@ final class Mediator {
 			// The localizedUserNotificationString(forKey:arguments:) method delays the loading of the localized string until the notification is delivered. Thus, if the user changes language settings before a notification is delivered, the alert text is updated to the user’s current language instead of the language that was set when the notification was scheduled.
 			title = NSString.localizedUserNotificationString(forKey: "Message from %@.", arguments: [name])
 		} else {
-			let titleFormat = NSLocalizedString("Message from %@.", comment: "Notification alert body when a message is received.")
-			title = String(format: titleFormat, name)
+			let titleFormat = NSLocalizedString(
+				"Message from %@.",
+				comment: "Notification alert body when a message is received.")
+			title = String.localizedStringWithFormat(titleFormat, name)
 		}
 
 		let messagesNotVisible = self.serverChatViewState.displayedPeerID != peerID
@@ -270,7 +272,8 @@ final class Mediator {
 			idModel.pinState == .pinMatch ? .none : .peerAppeared
 
 		self.displayPeerRelatedNotification(
-			title: String(format: alertBodyFormat, model.info.nickname),
+			title: String.localizedStringWithFormat(
+				alertBodyFormat, model.info.nickname),
 			body: "", peerID: peerID, category: category)
 	}
 
@@ -286,7 +289,10 @@ final class Mediator {
 		} else {
 			let title = NSLocalizedString("New Pin Match!", comment: "Notification alert title when a pin match occured.")
 			let alertBodyFormat = NSLocalizedString("Pin Match with %@!", comment: "Notification alert body when a pin match occured.")
-			let alertBody = String(format: alertBodyFormat, discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString)
+			let alertBody = String.localizedStringWithFormat(
+				alertBodyFormat,
+				discoveryViewState.people[peerID]?.info.nickname
+					?? peerID.uuidString)
 
 			self.displayPeerRelatedNotification(
 				title: title, body: alertBody, peerID: peerID,
@@ -410,25 +416,10 @@ extension Mediator {
 // MARK: ServerChatDelegate
 
 extension Mediator: ServerChatDelegate {
-	func decodingPersistedChatDataFailed(with error: Error) {
-		self.display(error: error, title:NSLocalizedString( "Decoding Persisted Chat Data Failed", comment: "Title of alert."))
-	}
-
-	func encodingPersistedChatDataFailed(with error: Error) {
-		self.display(error: error, title: NSLocalizedString("Encoding Persisted Chat Data Failed", comment: "Title of alert."))
-	}
-
-	func configurePusherFailed(_ error: Error) {
-		self.display(error: error, title: NSLocalizedString("Push Notifications Unavailable", comment: "Title of alert."))
-	}
-
-	func cannotJoinRoom(_ error: Error) {
-		self.display(error: error, title: NSLocalizedString("Cannot Join Room", comment: "Title of alert."))
-	}
-
-	func serverChatCertificateIsInvalid() {
-		let error = createApplicationError(localizedDescription: NSLocalizedString("chat_server_cert_invalid", comment: "User-facing security error."))
-		self.display(error: error, title: NSLocalizedString("Connection to Chat Server Failed", comment: "Error message title"))
+	func serverChatError(_ error: Error) async {
+		self.display(error: error, title: NSLocalizedString(
+			"Connection to Chat Server Failed",
+			comment: "Error message title"))
 	}
 
 	func serverChatClosed(error: Error?) {

@@ -100,20 +100,13 @@ final class ServerChatController: ServerChat {
 
 			await self.clear()
 		} catch {
-			throw ServerChatError.sdk(error)
+			throw makeFailedAssumptionError(
+				"Matrix account deletion failed",
+				in: Self.LogTag, cause: error)
 		}
 	}
 
 	// MARK: ServerChat
-
-	/// Checks whether `peerID` can receive or messages.
-	func canChat(with peerID: PeerID) async throws {
-		if await session.getJoinedOrInvitedRoom(
-			with: peerID.serverChatUserId(self.mxClient),
-			bothJoined: true) == nil {
-			throw ServerChatError.cannotChat(peerID, .notJoined)
-		}
-	}
 
 	/// Send a `message` to `peerID`.
 	func send(message: String, to peerID: PeerID) async throws {
@@ -209,7 +202,9 @@ final class ServerChatController: ServerChat {
 			case .failure(let error):
 				elog(Self.LogTag, "setPusher() failed: \(error)")
 				Task {
-					await self.delegate?.configurePusherFailed(error)
+					await self.delegate?.serverChatError(
+						makeFailedAssumptionError(
+							"setPusher() failed", in: Self.LogTag, cause: error))
 				}
 			case .success():
 				dlog(Self.LogTag, "setPusher() was successful.")
@@ -233,7 +228,10 @@ final class ServerChatController: ServerChat {
 		do {
 			try await persistence.set(lastRead: date, of: peerID)
 		} catch {
-			await self.delegate?.encodingPersistedChatDataFailed(with: error)
+			await self.delegate?.serverChatError(
+				makeFailedAssumptionError(
+					"encoding persisted chat data failed",
+					in: Self.LogTag, cause: error))
 		}
 
 		Task { @MainActor in
@@ -253,7 +251,9 @@ final class ServerChatController: ServerChat {
 			}
 		} catch {
 			Task {
-				await self.delegate?.serverChatInternalErrorOccured(error)
+				await self.delegate?.serverChatError(
+					makeFailedAssumptionError(
+						"initiateChat failed", in: Self.LogTag, cause: error))
 			}
 		}
 	}
@@ -265,7 +265,9 @@ final class ServerChatController: ServerChat {
 			do {
 				try await persistence.removePeerData([peerID])
 			} catch {
-				await self.delegate?.encodingPersistedChatDataFailed(with: error)
+				await self.delegate?.serverChatError(
+					makeFailedAssumptionError(
+						"leave chat failed", in: Self.LogTag, cause: error))
 			}
 		}
 		
@@ -341,7 +343,7 @@ final class ServerChatController: ServerChat {
 		if let room = room { return room }
 
 		guard let client = self.session.matrixRestClient else {
-			throw ServerChatError.fatal(unexpectedNilError())
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		do {
@@ -380,7 +382,8 @@ final class ServerChatController: ServerChat {
 
 			return room
 		} catch {
-			throw ServerChatError.sdk(error)
+			throw makeFailedAssumptionError(
+				"reallyCreateRoom failed", in: Self.LogTag, cause: error)
 		}
 	}
 
@@ -450,7 +453,7 @@ final class ServerChatController: ServerChat {
 				}
 				wlog(Self.LogTag, "Couldn't decrypt event: "
 					 + "\(failedEvent.eventId ?? "<nil>"). Reason: "
-					 + "\(failedEvent.decryptionError ?? unexpectedNilError())")
+					 + "\(String(describing: failedEvent.decryptionError))")
 			}
 
 			let failedMsgs = failedEvents.map {
@@ -459,7 +462,7 @@ final class ServerChatController: ServerChat {
 
 			catchUpDecryptedMessages.append(contentsOf: failedMsgs)
 
-			let e = error ?? unexpectedNilError()
+			let e = error ?? makeUnexpectedNilError(in: Self.LogTag)
 
 			Task { @MainActor in
 				await self.conversationDelegate?.persona(of: peerID).roomError = e
@@ -575,9 +578,9 @@ final class ServerChatController: ServerChat {
 				do {
 					try await self.forgetRoom(room.roomId!)
 				} catch {
-					dlog(Self.LogTag, "forgetting room after we got a forbidden error failed:"
-						 + error.localizedDescription)
-					throw ServerChatError.fatal(error)
+					throw makeFailedAssumptionError(
+						"forgetting room after we got a forbidden error failed",
+						in: Self.LogTag, cause: error)
 				}
 
 				let pinMatch = await self
@@ -592,7 +595,9 @@ final class ServerChatController: ServerChat {
 				// TODO: knock on room instead once that is supported by MatrixSDK
 				_ = try await self.getOrCreateRoom(with: peerID)
 			default:
-				throw ServerChatError.sdk(sdkError)
+				throw makeFailedAssumptionError(
+					"cannot recover from Matrix error",
+					in: Self.LogTag, cause: sdkError)
 			}
 		} else {
 			// NSError
@@ -602,15 +607,16 @@ final class ServerChatController: ServerChat {
 				// we trust all devices by default - this is not the best security, but helps us right now
 				guard let crypto = session.crypto,
 						let unknownDevices = sdkError.userInfo[MXEncryptingErrorUnknownDeviceDevicesKey] as? MXUsersDevicesMap<MXDeviceInfo> else {
-					throw ServerChatError.fatal(sdkError)
+					throw makeFailedAssumptionError(
+						"can't get known devices", in: Self.LogTag,
+						cause: sdkError)
 				}
 
 				let _: Bool = try await
 				withCheckedThrowingContinuation { continuation in
 					crypto.trustAll(devices: unknownDevices) { error in
 						if let error {
-							continuation.resume(
-								throwing: ServerChatError.sdk(error))
+							continuation.resume(throwing: error)
 						} else {
 							continuation.resume(returning: true)
 						}
@@ -618,7 +624,7 @@ final class ServerChatController: ServerChat {
 				}
 
 			default:
-				throw ServerChatError.sdk(sdkError)
+				throw sdkError
 			}
 		}
 	}
@@ -636,7 +642,7 @@ final class ServerChatController: ServerChat {
 
 			elog(Self.LogTag, "Cannot join room \(roomId): \(error)")
 			Task {
-				await self.delegate?.cannotJoinRoom(error)
+				await self.delegate?.serverChatError(error)
 			}
 		}
 	}
@@ -678,7 +684,7 @@ final class ServerChatController: ServerChat {
 
 				// check whether we still have a pin match with this person
 				// in case of an error, we try again first
-				var result = await self.dataSource
+				let result = await self.dataSource
 					.hasPinMatch(with: peerID, forceCheck: false) ?? false
 
 				guard result else {
@@ -824,7 +830,7 @@ final class ServerChatController: ServerChat {
 			} catch {
 				elog(Self.LogTag, "failed to really create room with \(peerID): \(error.localizedDescription)")
 				Task {
-					await self.delegate?.serverChatInternalErrorOccured(error)
+					await self.delegate?.serverChatError(error)
 				}
 			}
 		}
@@ -862,13 +868,13 @@ final class ServerChatController: ServerChat {
 		observeNotifications()
 
 		guard let sessionCreds = session.credentials else {
-			throw unexpectedNilError()
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		do {
 			try await persistence.loadInitialData()
 		} catch {
-			await self.delegate?.decodingPersistedChatDataFailed(with: error)
+			await self.delegate?.serverChatError(error)
 		}
 
 		let lastReads = await persistence.lastReads

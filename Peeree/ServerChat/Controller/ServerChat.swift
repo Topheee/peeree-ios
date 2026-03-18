@@ -48,9 +48,6 @@ import PeereeCore
 
 /// Communications through a matrix session (`MXSession`); only access directly through `ServerChatFactory.chat()` to be on the right dispatch queue!
 public protocol ServerChat: Sendable {
-	/// Checks whether `peerID` can receive or messages.
-	/// - Throws: `ServerChatError`.
-	func canChat(with peerID: PeerID) async throws
 
 	/// Send a message to recipient identified by `peerID`.
 	/// - Throws: `ServerChatError`.
@@ -93,26 +90,11 @@ public protocol ServerChatDataSource: Sendable {
 
 /// Server chat informed party.
 public protocol ServerChatDelegate: AnyObject, Sendable {
-	/// Configuring the Pusher on the server chat server failed.
-	func configurePusherFailed(_ error: Error) async
-
-	/// Joining a server chat room failed.
-	func cannotJoinRoom(_ error: Error) async
-
-	/// The certificate of the server is invalid.
-	func serverChatCertificateIsInvalid() async
+	/// An error in the chat module occurred.
+	func serverChatError(_ error: Error) async
 
 	/// The server chat session disconnected.
 	///
 	/// - Parameter error: Set if the server chat session became invalid.
 	func serverChatClosed(error: Error?) async
-
-	/// An unexpected error occurred, mostly network-related; use for logging.
-	func serverChatInternalErrorOccured(_ error: Error) async
-
-	/// An unexpected error occurred when loading auxilarily chat data.
-	func decodingPersistedChatDataFailed(with error: Error) async
-
-	/// An unexpected error occurred when storing auxilarily chat data.
-	func encodingPersistedChatDataFailed(with error: Error) async
 }

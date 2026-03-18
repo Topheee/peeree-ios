@@ -99,8 +99,10 @@ func peerIDFrom(serverChatUserId userId: String) -> PeerID? {
 extension ChatMessage {
 	/// Extracts the ID, message and timestamp from `event`.
 	init(messageEvent event: MXEvent, ourUserId: String) throws {
+		let errorDomain = "ChatMessage"
+
 		guard let eventId = event.eventId else {
-			throw ServerChatError.parsing("Event-ID is nil.")
+			throw makeUnexpectedNilError(in: "errorDomain")
 		}
 
 		self.eventID = eventId
@@ -113,14 +115,19 @@ extension ChatMessage {
 		}
 
 		guard event.content["format"] == nil else {
-			throw ServerChatError.parsing("Body is formatted \(String(describing: event.content["format"])), ignoring.")
+			throw makeFailedAssumptionError(
+				"Body is formatted \(String(describing: event.content["format"])).",
+				in: errorDomain)
 		}
 		let messageType = MXMessageType(identifier: event.content["msgtype"] as? String ?? "error_message_type_not_a_string")
 		guard messageType == .text || messageType == .notice else {
-			throw ServerChatError.parsing("Unsupported message type: \(messageType).")
+			throw makeFailedAssumptionError(
+				"Unsupported message type: \(messageType).", in: errorDomain)
 		}
 		guard let message = event.content["body"] as? String else {
-			throw ServerChatError.parsing("Message body not a string: \(event.content["body"] ?? "<nil>").")
+			throw makeFailedAssumptionError(
+				"Message body not a string: \(event.content["body"] ?? "<nil>").",
+				in: errorDomain)
 		}
 
 		self.message = message
@@ -131,15 +138,11 @@ extension ChatMessage {
 func makeChatMessage(messageEvent event: MXEvent, ourUserId: String) -> ChatMessage {
 	do {
 		return try ChatMessage(messageEvent: event, ourUserId: ourUserId)
-	} catch ServerChatError.parsing(let parseError) {
-		return ChatMessage(eventID: event.eventId ?? "",
-						   type: .broken,
-						   message: parseError,
-						   timestamp: Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0))
 	} catch {
-		return ChatMessage(eventID: event.eventId ?? "",
-						   type: .broken,
-						   message: error.localizedDescription,
-						   timestamp: Date(timeIntervalSince1970: Double(event.originServerTs) / 1000.0))
+		return ChatMessage(
+			eventID: event.eventId ?? "", type: .broken,
+			message: error.localizedDescription,
+			timestamp: Date(
+				timeIntervalSince1970: Double(event.originServerTs) / 1000.0))
 	}
 }

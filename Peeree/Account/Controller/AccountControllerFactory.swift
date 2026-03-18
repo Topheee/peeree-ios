@@ -129,7 +129,9 @@ public actor AccountControllerFactory {
 			}
 
 			guard let peerID = UUID(uuidString: account.userID) else {
-				throw makeProgrammingError("Malformed peerID \(account.userID)")
+				throw AudiencedError(
+					source: .vendor, domain: Self.LogTag,
+					message: "Malformed peerID \(account.userID)")
 			}
 
 			let a = AccountController.create(
@@ -207,7 +209,7 @@ public actor AccountControllerFactory {
 			guard let result = URL(string:
 				self.isTest ? "https://www.peeree.de/.well-known/jwks-test" :
 					"https://www.peeree.de/.well-known/jwks") else {
-				throw unexpectedNilError()
+				throw makeUnexpectedNilError(in: Self.LogTag)
 			}
 
 			return result
@@ -324,7 +326,7 @@ extension AccountControllerFactory {
 				wlog(
 					Self.LogTag,
 					"Verification of identity token retrieved via Bluetooth" +
-					"failed; fetching it from server.")
+					"failed (\(error); fetching it from server.")
 				
 				let identityToken = try await self.getIdentityToken(of: peerID)
 
@@ -339,16 +341,17 @@ extension AccountControllerFactory {
 		guard let tokenPublicKeyData = token.pbk.value.data(using: .utf8),
 			  let tokenPublicKey = Data(base64Encoded: tokenPublicKeyData) else
 		{
-			throw unexpectedNilError()
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		// check if public key matches the one from the token
 
 		guard try publicKey.externalRepresentation() == tokenPublicKey else {
-			throw createApplicationError(
-				localizedDescription: NSLocalizedString(
-				"Someone is not who they say they are.",
-				comment: "Public key mismatch"))
+			throw AudiencedError(
+				source: .external, domain: Self.LogTag,
+				message: NSLocalizedString(
+					"Someone is not who they say they are.",
+					comment: "Public key mismatch"))
 		}
 	}
 }
@@ -367,7 +370,7 @@ extension AccountControllerFactory: PeereeCore.Authenticator {
 
 		guard let tokenString = String(
 			data: Data(accessToken), encoding: .utf8) else {
-			throw unexpectedNilError()
+			throw makeUnexpectedNilError(in: Self.LogTag)
 		}
 
 		return .init(accessToken: tokenString, expiresAt: payload.exp.value)

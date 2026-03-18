@@ -14,12 +14,6 @@ import PeereeCore
 @MainActor
 public protocol SocialViewModelDelegate: Sendable, PersonAspectState where Aspect: SocialPersonAspect, RequiredData == PinState {
 
-	/// Our PeerID.
-	var userPeerID: PeerID? { get set }
-
-	/// Whether we are registered with Peeree.
-	var accountExists: RemoteToggle { get set }
-
 	/// Hashes of known inappropriate photos.
 	var objectionableImageHashes: Set<Data> { get set }
 

@@ -182,7 +182,9 @@ import PeereeServerChat
 		let dp = ds.addPersona(of: peerID, with: p)
 		dp.set(portrait: UIImage(named: "p\((advancing(&index) % 4) + 1)")?.cgImage, hash: Data())
 		let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
-		dp.biography = String(format: bioFormat, unsplashAuthors[(index - 1) % 4])
+		dp.biography = String.localizedStringWithFormat(
+			bioFormat, unsplashAuthors[(index - 1) % 4])
+
 		let sp = ss.demo(peerID)
 		sp.pinState = dp.info.nickname == "Sarah" ? .unpinned : .pinMatch
 		if sp.pinState == .pinMatch {
@@ -236,7 +238,8 @@ import PeereeServerChat
 	let dp = ds.addPersona(of: peerID, with: p)
 	dp.set(portrait: UIImage(named: "portrait")?.cgImage, hash: Data())
 	let bioFormat = bundle.localizedString(forKey: "Photo from Unsplash by %@.", value: nil, table: nil)
-	dp.biography = String(format: bioFormat, "Andrei Caliman")
+	dp.biography = String.localizedStringWithFormat(
+		bioFormat, "Andrei Caliman")
 
 	let sp = ss.demo(peerID)
 	sp.pinState = .pinMatch

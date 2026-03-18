@@ -81,55 +81,6 @@ public func arrayFromBundle(name: String) -> [String]? {
 	return NSArray(contentsOf: url) as? [String]
 }
 
-/// Creates an `NSError` with the main bundle's `bundleIdentifier` as `domain`.
-public func createApplicationError(localizedDescription: String, code: Int = -1) -> Error {
-	return NSError(domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath, code: code, userInfo: [NSLocalizedDescriptionKey : localizedDescription])
-}
-
-/// Always throws an error; use in situations where there must be a developer mistake.
-public func makeProgrammingError(_ description: String,
-							 code: Int = -1) -> Error {
-	return NSError(
-		domain: Bundle.main.bundleIdentifier ?? Bundle.main.bundlePath,
-		code: code,
-		userInfo: [NSLocalizedDescriptionKey : description])
-}
-
-/// Creates an unrecoverable error describing an unexpected nil value.
-public func unexpectedNilError() -> Error {
-	return createApplicationError(localizedDescription: "Found unexpected nil object", code: -1)
-}
-
-/// Creates an unrecoverable error describing an unexpected enum value.
-public func unexpectedEnumValueError() -> Error {
-	return createApplicationError(localizedDescription: "Found unexpected enumeration case", code: -1)
-}
-
-/// Creates an `Error` based on the value of `errno`.
-public func createSystemError() -> Error? {
-	let code = errno
-	guard let errorCString = strerror(code), let errorString = String(utf8String: errorCString) else { return nil }
-
-	return createApplicationError(localizedDescription: errorString, code: Int(code))
-}
-
-/// Retrieves the error message describing `status`.
-public func errorMessage(describing status: OSStatus) -> String {
-	let fallbackMessage = "OSStatus \(status)"
-	let msg: String
-	#if os(OSX)
-		msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
-	#else
-		if #available(iOS 11.3, *) {
-			msg = "\(SecCopyErrorMessageString(status, nil) ?? fallbackMessage as CFString)"
-		} else {
-			perror(nil)
-			msg = fallbackMessage
-		}
-	#endif
-	return msg
-}
-
 /// Throwing wrapper around `SecRandomCopyBytes(_:_:_:)`.
 public func generateRandomData(length: Int) throws -> Data {
 	var nonce = Data(count: length)

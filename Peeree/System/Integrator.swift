@@ -35,16 +35,6 @@ func serverChatModuleErrorMessage(from error: ServerChatError, on discoveryViewS
 	switch error {
 	case .identityMissing:
 		return NSLocalizedString("Chatting requires a Peeree Identity.", comment: "Error message")
-	case .parsing(let parsingError):
-		return parsingError
-	case .sdk(let sdkError):
-		if (sdkError as NSError).code == NSURLErrorCannotConnectToHost && (sdkError as NSError).domain == NSURLErrorDomain {
-			return serverDownMessage
-		} else {
-			return sdkError.localizedDescription
-		}
-	case .fatal(let error):
-		return error.localizedDescription
 	case .cannotChat(let peerID, let reason):
 		let format: String
 		switch reason {
@@ -59,7 +49,7 @@ func serverChatModuleErrorMessage(from error: ServerChatError, on discoveryViewS
 		}
 
 		let name = discoveryViewState.people[peerID]?.info.nickname ?? peerID.uuidString
-		return String(format: format, name)
+		return String.localizedStringWithFormat(format, name)
 	case .noAccount:
 		return NSLocalizedString(
 			"No chat account yet.",
