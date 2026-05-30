@@ -20,4 +20,7 @@ final class AppViewState: ObservableObject {
 
 	/// An indication of a scene’s operational state.
 	var scenePhase: ScenePhase = .inactive
+
+	/// Whether the user opted in for sending technical error reports.
+	@Published var shareErrorReports: Bool = false
 }

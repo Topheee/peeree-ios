@@ -17,12 +17,6 @@ public enum PeerDistance {
 	case unknown, close, nearby, far
 }
 
-/// Main information provider for the PeereeDiscovery module.
-public protocol PeeringControllerDataSource: Sendable {
-	/// Asks for a list of `PeerID`s which can be safely removed from disk.
-	func cleanup(allPeers: Set<Peer>) async
-}
-
 /// Receiver of `PeeringController` events.
 public protocol PeeringControllerDelegate: Sendable {
 	/// Advertising the Bluetooth service stopped ungracefully.
@@ -34,7 +28,7 @@ public protocol PeeringControllerDelegate: Sendable {
 	/// A serialization error occurred.
 	func decodingPeersFailed(with error: Error) async
 
-	/// If `isAvailable`, you might call `PeeringController.change(peering: true)`.
+	/// If `isAvailable`, you might call ``PeeringController/goPeering()``.
 	func bluetoothNetwork(isAvailable: Bool) async
 
 	/// Verify that this identity is actually part of the Peeree network.
@@ -51,23 +45,13 @@ extension Notification.Name {
 }
 
 /// The PeeringController singleton is the app's interface to the bluetooth network as well as to information about stored peers.
-public final class PeeringController:
+internal final class PeeringController:
 	LocalPeerManagerDelegate, DiscoveryManagerDelegate {
 	// MARK: - Public and Internal
-
-	// MARK: Classes, Structs, Enums
-
-	/// Keys in the `userInfo` dict of a notification.
-	public enum NotificationInfoKey: String {
-		case again
-	}
 
 	// MARK: Variables
 
 	private let viewModel: any DiscoveryViewModelDelegate
-
-	/// Provider of information.
-	private let dataSource: PeeringControllerDataSource
 
 	/// Receives general updates and errors of the `PeeringController`.
 	private let delegate: PeeringControllerDelegate
@@ -79,21 +63,26 @@ public final class PeeringController:
 		return self.discoveryManager.isScanning
 	}
 
-	/// Controls whether our Bluetooth service is 'online', meaning we are scanning and, if possible, advertising.
-	public func change(peering newValue: Bool, data: AdvertiseData?) throws {
-		guard newValue != self.discoveryManager.isScanning else { return }
+	/// Starts scanning and, if possible, advertising.
+	func goPeering(data: AdvertiseData?) throws {
+		guard !self.checkPeering() else { return }
 
-		if newValue {
-			self.discoveryManager.scan()
-			if let data {
-				try self.startAdvertising(data: data, restartOnly: false)
-			}
-		} else {
-			self.stopAdvertising()
-			self.discoveryManager.stopScan()
+		self.discoveryManager.scan()
+		if let data {
+			try self.startAdvertising(data: data, restartOnly: false)
 		}
 
-		self.connectionChangedState(newValue)
+		self.connectionChangedState(true)
+	}
+
+	/// Stops scanning and advertising.
+	func stopPeering() {
+		guard self.checkPeering() else { return }
+
+		self.stopAdvertising()
+		self.discoveryManager.stopScan()
+
+		self.connectionChangedState(false)
 	}
 
 	/// Restart advertising if it is currently on, e.g. when the user peer data changed.
@@ -130,16 +119,6 @@ public final class PeeringController:
 	public func stopRanging() {
 		rangeBlock = nil
 		rangePeerID = nil
-	}
-
-	/// Read-only access to persisted peers.
-	public func readPeer(_ peerID: PeerID) async -> Peer? {
-		return await self.persistence.readPeer(peerID)
-	}
-
-	/// Locator of file containing the portrait of `peerID` (if available).
-	public func pictureURL(of peerID: PeerID) -> URL {
-		return self.persistence.pictureURL(of: peerID)
 	}
 
 	/// Call this after you verified the identity in `PeeringControllerDelegate.proof()`.
@@ -194,7 +173,8 @@ public final class PeeringController:
 		self.updateLastSeen(of: peerID)
 
 		// make sure the notification is sent only after the view model is updated:
-		Notification.Name.peerAppeared.post(for: peerID, userInfo: [Self.NotificationInfoKey.again: true])
+		Notification.Name.peerAppeared.post(
+			for: peerID, userInfo: [DiscoveryNotificationInfoKey.again: true])
 	}
 
 	func peerDisappeared(_ peerID: PeerID, cbPeerID: UUID) {
@@ -244,8 +224,11 @@ public final class PeeringController:
 
 	private func updateLastSeen(of peerID: PeerID) {
 		let now = Date()
-		self.lastSeenDates[peerID] = now
-		archiveObjectInUserDefs(self.lastSeenDates as NSDictionary, forKey: Self.LastSeenKey)
+		let p = self.persistence
+
+		Task {
+			await p.updateLastSeen(now, of: peerID)
+		}
 
 		let vm = self.viewModel
 		Task { @MainActor in
@@ -347,38 +330,16 @@ public final class PeeringController:
 	}
 
 	/// Creates the central entry point to the Discovery module.
-	public init(viewModel: any DiscoveryViewModelDelegate, dataSource: PeeringControllerDataSource, delegate: PeeringControllerDelegate) {
+	internal init(
+		persistence: PersistedPeersController,
+		viewModel: any DiscoveryViewModelDelegate,
+		delegate: PeeringControllerDelegate
+	) {
+		self.persistence = persistence
 		self.viewModel = viewModel
-		self.dataSource = dataSource
 		self.delegate = delegate
 
 		discoveryManager.delegate = self
-	}
-
-	private func readPeers(_ completion: @escaping @Sendable
-						   ([(Peer, PeerBlobData)]) -> Void) {
-		let p = self.persistence
-		Task {
-			let peers = try await p.loadInitialData()
-			completion(peers)
-		}
-	}
-
-	/// Load data from disk and publish it to the view model.
-	public func initialize() throws {
-		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(
-			PeeringController.LastSeenKey,
-			containing: [NSUUID.self, NSDate.self])
-
-		let lsDates = nsLastSeenDates as? [PeerID : Date] ?? [PeerID : Date]()
-		self.lastSeenDates = lsDates
-
-		let ds = self.dataSource
-		self.readPeers { peers in
-			Task {
-				await ds.cleanup(allPeers: Set(peers.map { $0.0 }))
-			}
-		}
 	}
 
 	// MARK: - Private
@@ -387,9 +348,6 @@ public final class PeeringController:
 
 	// Log tag.
 	private static let LogTag = "PeeringController"
-
-	private static let LastSeenKey = "RecentPeersController.LastSeenKey"
-	private static let MaxRememberedHours = 48
 
 	// MARK: Static Methods
 
@@ -408,12 +366,7 @@ public final class PeeringController:
 	private var localPeerManager: LocalPeerManager? = nil
 	private let discoveryManager = DiscoveryManager()
 
-	private let persistence = PersistedPeersController(filename: "peers.json")
-
-	// MARK: Variables
-
-	/// when was a specific PeerID last encountered via Bluetooth.
-	private var lastSeenDates: [PeerID : Date] = [:]
+	private let persistence: PersistedPeersController
 
 	// MARK: Methods
 
@@ -451,80 +404,6 @@ public final class PeeringController:
 	private func obtained(_ picture: CGImage, hash: Data, of peerID: PeerID) {
 		self.publish(to: peerID) { model in
 			model.set(portrait: picture, hash: hash)
-		}
-	}
-
-	/// Remove peers from disk which haven't been seen for `MaxRememberedHours` and are not pin matched.
-	// TODO: this does an aweful lot more than that and needs refactoring
-	public func cleanupPersistedPeers(allPeers: Set<Peer>,
-									  cleanupPeerIDs: [PeerID]) {
-		let now = Date()
-		let never = Date.distantPast
-		let cal = Calendar.current as NSCalendar
-
-		let lsDates = self.lastSeenDates
-
-		let removePeerIDs = cleanupPeerIDs.filter { peerID in
-			let lastSeenAgoCalc = cal.components(
-				NSCalendar.Unit.hour,
-				from: lsDates[peerID] ?? never,
-				to: now, options: []).hour
-
-			let lastSeenAgo = lastSeenAgoCalc ?? PeeringController.MaxRememberedHours + 1
-			return lastSeenAgo > PeeringController.MaxRememberedHours
-		}
-
-		let removePeers = allPeers.filter { peer in
-			removePeerIDs.contains(peer.id.peerID)
-		}
-
-		let remainingPeers = allPeers.subtracting(removePeers)
-
-		let p = self.persistence
-		let d = self.delegate
-
-		Task {
-			do {
-				try await p.removePeers(removePeers)
-			} catch {
-				await d.encodingPeersFailed(with: error)
-			}
-		}
-
-		let vm = self.viewModel
-
-		Task { @MainActor in
-			for peer in remainingPeers {
-				Self.updateViewModels(
-					of: peer,
-					lastSeen: lsDates[peer.id.peerID] ?? Date.distantPast,
-					on: vm)
-			}
-		}
-
-		Task {
-			let blobs = await withTaskGroup(of: (PeerID, PeerBlobData?).self) { group in
-				for peer in remainingPeers {
-					group.addTask {
-						(peer.id.peerID, await p.loadBlob(of: peer.id.peerID))
-					}
-				}
-
-				return await group.reduce(into: [PeerID:PeerBlobData]()) { dictionary, result in
-					if let blob = result.1 {
-						dictionary[result.0] = blob
-					}
-				}
-			}
-
-			Task { @MainActor in
-				blobs.forEach { (peerID, blob) in
-					let p = vm.persona(of: peerID)
-
-					p.biography = blob.biography
-					p.set(portrait: blob.portrait, hash: blob.portraitHash)
-				}
-			}
 		}
 	}
 

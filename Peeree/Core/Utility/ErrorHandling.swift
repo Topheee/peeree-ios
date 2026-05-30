@@ -96,7 +96,7 @@ public func makeConsumerError(
 	_ description: String, in domain: String, cause: Error? = nil
 ) -> Error {
 	return AudiencedError(
-		source: .consumer, domain: domain, message: description)
+		source: .consumer, domain: domain, message: description, cause: cause)
 }
 
 /// Creates an unrecoverable error describing an unexpected error source.
@@ -122,7 +122,7 @@ public func makeUserError(
 	_ localizedDescription: String, in domain: String
 ) -> Error {
 	return AudiencedError(
-		source: .vendor, domain: domain, message: localizedDescription)
+		source: .user, domain: domain, message: localizedDescription)
 }
 
 /// Creates an unrecoverable error describing an unexpected nil value.

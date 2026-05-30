@@ -11,6 +11,7 @@ import SwiftUI
 import PeereeCore
 import PeereeDiscovery
 
+@MainActor
 final class Profile: DiscoveryPerson {
 
 	/// Call ``load(data:)`` with the result of this function.

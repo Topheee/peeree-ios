@@ -106,31 +106,11 @@ final class MockServerChatViewModelDelegate: ServerChatViewModelDelegate {
 }
 
 final class MockServerChatDelegate: ServerChatDelegate {
-	func configurePusherFailed(_ error: any Error) async {
+	func serverChatError(_ error: any Error) async {
 		// shoulda do somin
 	}
-	
-	func cannotJoinRoom(_ error: any Error) async {
-		// shoulda do somin
-	}
-	
-	func serverChatCertificateIsInvalid() async {
-		// shoulda do somin
-	}
-	
+
 	func serverChatClosed(error: (any Error)?) async {
-		// shoulda do somin
-	}
-	
-	func serverChatInternalErrorOccured(_ error: any Error) async {
-		// shoulda do somin
-	}
-	
-	func decodingPersistedChatDataFailed(with error: any Error) async {
-		// shoulda do somin
-	}
-	
-	func encodingPersistedChatDataFailed(with error: any Error) async {
 		// shoulda do somin
 	}
 }

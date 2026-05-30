@@ -21,8 +21,6 @@ struct MainView: View {
 
 	@EnvironmentObject private var socialViewState: SocialViewState
 
-	@State private var browsePaneHeight: CGFloat = 60.0
-
 	@State private var showingProfile = false
 	@State private var showingFilter = false
 
@@ -33,35 +31,26 @@ struct MainView: View {
 
 		NavigationView {
 			ZStack(alignment: .bottom) {
-				if chatViewState.matchedPeople.isEmpty {
-					VStack {
-						Spacer()
+				ScrollView() {
+					if chatViewState.matchedPeople.isEmpty {
 						OnboardingView(peering: $discoveryViewState.peering)
-						Spacer(minLength: browsePaneHeight - 8)
 					}
-				} else {
-					List(chatViewState.matchedPeople, id: \.id) { chatPersona in
-						let discoveryPersona = discoveryViewState.persona(of: chatPersona.peerID)
-						NavigationLink(tag: chatPersona.peerID, selection: $serverChatViewState.displayedPeerID) {
-							ChatView(discoveryPersona: discoveryPersona, chatPersona: chatPersona)
-								.addKeyboardVisibilityToEnvironment()
-						} label: {
-							ChatTableCell(chatPersona: chatPersona, discoveryPersona: discoveryPersona)
+
+					BrowseView()
+
+					LazyVStack {
+						ForEach(chatViewState.matchedPeople, id: \.id) { chatPersona in
+							let discoveryPersona = discoveryViewState.persona(of: chatPersona.peerID)
+							NavigationLink(tag: chatPersona.peerID, selection: $serverChatViewState.displayedPeerID) {
+								ChatView(discoveryPersona: discoveryPersona, chatPersona: chatPersona)
+									.addKeyboardVisibilityToEnvironment()
+							} label: {
+								ChatTableCell(chatPersona: chatPersona, discoveryPersona: discoveryPersona)
+									.foregroundColor(Color(.label))
+							}
 						}
 					}
-					.listStyle(.inset)
-					.padding(.bottom, browsePaneHeight + 16)
 				}
-
-				BrowseView()
-					.overlay(
-						GeometryReader(content: { geometry in
-							Color.clear
-								.onAppear(perform: {
-									self.browsePaneHeight = geometry.frame(in: .local).size.height
-								})
-						})
-					)
 			}
 			.navigationTitle("Pinboard")
 			.modify {

@@ -43,6 +43,8 @@ final class Mediator {
 
 	private let accountControllerFactory: AccountControllerFactory
 
+	private let discoveryController = DiscoveryController()
+
 	private let socialController: SocialNetworkController
 
 	private var serverChatFactory: ServerChatFactory?
@@ -54,52 +56,6 @@ final class Mediator {
 	let socialViewState = SocialViewState()
 
 	let serverChatViewState = ServerChatViewState()
-
-	private var peeringController: PeeringController?
-
-	private func advertiseDataSync(_ completion: @MainActor @escaping
-								   (Result<AdvertiseData?, Error>) -> Void) {
-		Task {
-			do {
-				let data = try await self.advertiseData()
-				completion(.success(data))
-			} catch {
-				completion(.failure(error))
-			}
-		}
-	}
-
-	private func restartAdvertising() async {
-		guard let pc = self.peeringController else { return }
-
-		do {
-			guard let data = try await self.advertiseData() else { return }
-			try pc.restartAdvertising(data: data)
-		} catch {
-			let title = NSLocalizedString(
-				"Restart Bluetooth Advertising Failed", comment: "Error title")
-			self.display(error: error, title: title)
-		}
-	}
-
-	private func startAdvertising() async {
-		guard let pc = self.peeringController else { return }
-
-		guard pc.checkPeering() else { return }
-
-		do {
-			guard let data = try await self.advertiseData() else { return }
-			try pc.startAdvertising(data: data, restartOnly: false)
-		} catch {
-			let title = NSLocalizedString(
-				"Bluetooth Advertising Failed", comment: "Error title")
-			self.display(error: error, title: title)
-		}
-	}
-
-	private func teardown() {
-		self.peeringController?.teardown()
-	}
 
 	/// Observes relevant notifications in `NotificationCenter`.
 	private nonisolated func observeNotifications() -> Task<Void, Never> {
@@ -126,7 +82,16 @@ final class Mediator {
 						.map ({ notification in
 							return false
 						}) {
-						await self.restartAdvertising()
+						do {
+							guard let data = try await self.advertiseData()
+							else { return }
+
+							try await self.discoveryController.restartAdvertising(data: data)
+						} catch {
+							let title = NSLocalizedString(
+								"Restart Bluetooth Advertising Failed", comment: "Error title")
+							await self.display(error: error, title: title)
+						}
 					}
 				}
 
@@ -136,7 +101,16 @@ final class Mediator {
 						.map ({ notification in
 							return false
 						}) {
-						await self.startAdvertising()
+						do {
+							guard let data = try await self.advertiseData()
+							else { return }
+
+							try await self.discoveryController.startAdvertising(data: data)
+						} catch {
+							let title = NSLocalizedString(
+								"Bluetooth Advertising Failed", comment: "Error title")
+							await self.display(error: error, title: title)
+						}
 					}
 				}
 
@@ -146,7 +120,7 @@ final class Mediator {
 						.map ({ notification in
 							return false
 						}) {
-						await self.teardown()
+						await self.discoveryController.teardown()
 					}
 				}
 
@@ -180,7 +154,7 @@ final class Mediator {
 				taskGroup.addTask {
 					for await (peerID, again) in Notification.Name.peerAppeared
 						.observe(transform: { notification in
-							return notification.userInfo?[PeeringController.NotificationInfoKey.again.rawValue] as? Bool ?? false
+							return notification.userInfo?[DiscoveryNotificationInfoKey.again.rawValue] as? Bool ?? false
 						}) {
 						await self.peerAppeared(peerID, again: again)
 					}
@@ -211,13 +185,15 @@ final class Mediator {
 			return
 		}
 
-		let pictureURL = self.peeringController?.pictureURL(
-			of: discoveryPerson.peerID)
+		Task {
+			let pictureURL = await self.discoveryController.pictureURL(
+				of: discoveryPerson.peerID)
 
-		NotificationManager.displayPeerRelatedNotification(
-			title: title, body: body, discoveryPerson: discoveryPerson,
-			pictureURL: pictureURL, category: category
-		)
+			NotificationManager.displayPeerRelatedNotification(
+				title: title, body: body, discoveryPerson: discoveryPerson,
+				pictureURL: pictureURL, category: category
+			)
+		}
 	}
 
 	private func received(message: String, from peerID: PeerID) {
@@ -301,7 +277,9 @@ final class Mediator {
 	}
 
 	private func load(_ peerID: PeerID) {
-		self.peeringController?.loadAdditionalInfo(of: peerID, loadPortrait: true)
+		Task {
+			await self.discoveryController.loadAdditionalInfo(of: peerID)
+		}
 	}
 
 	init() {
@@ -331,6 +309,11 @@ final class Mediator {
 		if notificationTask == nil {
 			notificationTask = observeNotifications()
 		}
+
+		// We need to load the discovery data here, since it is used in chat
+		// list as well.
+		try await self.discoveryController.initialize(
+			dataSource: self, viewModel: self.discoveryViewState)
 
 		try await self.discoveryViewState.load()
 
@@ -462,20 +445,14 @@ extension Mediator: ServerChatDataSource {
 
 // MARK: - Discovery
 
-
-// MARK: PeeringControllerDataSource
-extension Mediator: PeeringControllerDataSource {
-
-	func cleanup(allPeers: Set<Peer>) async {
+extension Mediator: DiscoveryControllerDataSource {
+	func sortOut(peers: [PeereeDiscovery.Peer]) async -> [PeereeCore.PeerID] {
 		// never remove our own view model or the view model of pinned peers
-		let cleanupPeerIDs = await socialController.unpinnedPeers(
-			allPeers.map { $0.id })
-
-		peeringController?.cleanupPersistedPeers(
-				  allPeers: allPeers, cleanupPeerIDs: cleanupPeerIDs)
+		await self.socialController.unpinnedPeers(peers.map { $0.id })
 	}
 
-	func advertiseData() async throws -> AdvertiseData? {
+
+	private func advertiseData() async throws -> AdvertiseData? {
 		let ds = self.discoveryViewState
 		let info = ds.profile.info
 		let bio = ds.profile.biography
@@ -502,8 +479,9 @@ extension Mediator: PeeringControllerDelegate {
 	}
 
 	func bluetoothNetwork(isAvailable: Bool) {
-		guard peeringController != nil else { return }
-		go(peering: isAvailable)
+		Task {
+			await self.go(peering: isAvailable)
+		}
 	}
 
 	func encodingPeersFailed(with error: Error) {
@@ -525,13 +503,13 @@ extension Mediator: PeeringControllerDelegate {
 
 			// continue discovery
 
-			self.peeringController?.discover(peerID, publicKey: publicKey)
+			await self.discoveryController.discover(peerID, publicKey: publicKey)
 		} catch PeereeIdP.AccountError.noAccount {
 			wlog(Self.LogTag,
 				 "We do not yet have an account, so cannot verify this peer.")
 
 			// continue discovery. We are in demo mode anyway.
-			self.peeringController?.discover(peerID, publicKey: publicKey)
+			await self.discoveryController.discover(peerID, publicKey: publicKey)
 		} catch {
 			elog(Self.LogTag, "Peer verification failed: \(error)")
 		}
@@ -540,75 +518,81 @@ extension Mediator: PeeringControllerDelegate {
 
 extension Mediator: DiscoveryBackend {
 
-	/// Turn `PeeringController` on or off.
-	private func go(peering: Bool) {
-		guard let pc = peeringController else { return }
+	/// Go online or offline on the Bluetooth network. Requires the "Discovery"
+	/// stack to be loaded (`Mediator.preparePeering`).
+	private func go(peering: Bool) async {
 
-		self.advertiseDataSync { result in
-			let title = NSLocalizedString("Going Online Failed",
-										  comment: "Low-level error")
+		let fb = UIImpactFeedbackGenerator()
+		fb.prepare()
 
-			switch result {
-			case .success(let data):
-				do {
-					let fb = UIImpactFeedbackGenerator()
-					fb.prepare()
+		if peering {
+			do {
+				guard let data = try await self.advertiseData() else { return }
 
-					try pc.change(peering: peering, data: data)
+				try await self.discoveryController.goOnline(data)
+			} catch {
+				UINotificationFeedbackGenerator()
+					.notificationOccurred(.error)
 
-					fb.impactOccurred()
-				} catch {
-					UINotificationFeedbackGenerator()
-						.notificationOccurred(.error)
+				let title = NSLocalizedString(
+					"Going Online Failed", comment: "Low-level error")
 
-					self.display(error: error, title: title)
-				}
-			case .failure(let failure):
-				self.display(error: failure, title: title)
+				self.display(error: error, title: title)
 			}
+		} else {
+			await self.discoveryController.goOffline()
 		}
+
+		fb.impactOccurred()
 	}
 
 	/// Read-only access to persisted peers.
 	func readPeer(_ peerID: PeerID) async -> Peer? {
-		guard let pc = self.peeringController else { return nil }
-
 		return await Task { @MainActor in
-			return await pc.readPeer(peerID)
+			return await self.discoveryController.readPeer(peerID)
 		}.value
+	}
+
+	/// Loads the Bluetooth / "Discovery" stack.
+	private func preparePeering() async {
+		let dvs = self.discoveryViewState
+
+		// Delayed creation of the PeeringController to avoid displaying the
+		// Bluetooth permission dialog at app start
+		do {
+			try await self.discoveryController
+				.preparePeering(viewModel: dvs, pcDelegate: self)
+		} catch {
+			let title = NSLocalizedString(
+				"Bluetooth Initialization Failed",
+				comment: "Low-level error")
+			self.display(error: error, title: title)
+			return
+		}
+
 	}
 
 	/// Toggle the bluetooth network between _on_ and _off_.
 	func togglePeering(on: Bool) {
 		let dvs = self.discoveryViewState
 
-		/// Delayed setting of the PeeringController's delegate to avoid displaying the Bluetooth permission dialog at app start
-		guard peeringController != nil else {
-			guard on else { return }
-
-			// first time accessing Bluetooth
-			// PeeringController.isBluetoothOn is `false` in all cases here!
-			// Creating a PeeringController will trigger `bluetoothNetwork(isAvailable:)`, which will then automatically go online
-			let newPC = PeeringController(viewModel: dvs, dataSource: self, delegate: self)
-			do {
-				try newPC.initialize()
-			} catch {
-				let title = NSLocalizedString(
-					"Bluetooth Initialization Failed",
-					comment: "Low-level error")
-				self.display(error: error, title: title)
+		Task {
+			guard await self.discoveryController.isPeeringPrepared() else {
+				// On very first request, load Bluetooth networking ("peering")
+				// stack. This will fire `bluetoothNetwork(isAvailable: Bool)`.
+				await self.preparePeering()
 				return
 			}
 
-			peeringController = newPC
-
-			return
-		}
-
-		if dvs.isBluetoothOn {
-			go(peering: on)
-		} else if on {
-			open(urlString: UIApplication.openSettingsURLString)
+			if dvs.isBluetoothOn {
+				// If Bluetooth stack is loaded (and as such, all permissions
+				// are granted), activate it.
+				await self.go(peering: on)
+			} else if on {
+				// If Bluetooth stack is loaded, but unavailable, request
+				// permissions.
+				open(urlString: UIApplication.openSettingsURLString)
+			}
 		}
 	}
 }

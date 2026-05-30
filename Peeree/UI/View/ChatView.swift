@@ -108,7 +108,7 @@ struct ChatView: View {
 								.font(.caption)
 							}
 						}
-						.padding(.bottom, chatMessageAreaHeight + 6)
+						.padding(.bottom, chatMessageAreaHeight)
 						.onTapGesture {
 							messageFieldIsFocused.toggle()
 						}

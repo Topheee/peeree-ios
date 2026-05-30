@@ -25,6 +25,9 @@ internal actor PersistedPeersController {
 	/// All saved peer data.
 	private(set) var persistedPeers = Set<Peer>()
 
+	/// Last encounter of PeerID via Bluetooth.
+	private(set) var lastSeenDates: [PeerID : Date] = [:]
+
 	// MARK: Methods
 
 	/// Wipes all data from disk.
@@ -71,6 +74,13 @@ internal actor PersistedPeersController {
 		try self.savePeers()
 	}
 
+	/// Set last seen date of peer.
+	public func updateLastSeen(_ lastSeen: Date, of peerID: PeerID) {
+		self.lastSeenDates[peerID] = lastSeen
+		archiveObjectInUserDefs(
+			self.lastSeenDates as NSDictionary, forKey: Self.LastSeenKey)
+	}
+
 	/// Removes `peers` from the persisted peers set and whipes them and all associated data from disk.
 	public func removePeers(_ peers: Set<Peer>) throws {
 		self.persistedPeers.subtract(peers)
@@ -103,15 +113,28 @@ internal actor PersistedPeersController {
 	}
 
 	/// Retrieves all necessary data from disk. You should call this method as soon as possible after creating the `PersistedPeersController`.
-	public func loadInitialData() throws -> [(Peer, PeerBlobData)] {
+	public func loadInitialData()
+	throws -> ([PersistedPeerInfo], [PeerID : Date]) {
 		// important loads first
+
+		let nsLastSeenDates: NSDictionary? = unarchiveObjectFromUserDefs(
+			Self.LastSeenKey, containing: [NSUUID.self, NSDate.self])
+
+		let lsDates = nsLastSeenDates as? [PeerID : Date] ?? [PeerID : Date]()
+		self.lastSeenDates = lsDates
+
 		try self.loadPeers()
 		try self.loadBios()
 		try self.loadThumbnails()
 
-		return self.persistedPeers.map { peer in
-			(peer, self.persistedBlobs[peer.id.peerID] ?? PeerBlobData())
-		}
+		return (
+			self.persistedPeers.map { peer in
+				PersistedPeerInfo(
+					peer: peer,
+					blob: self.persistedBlobs[peer.id.peerID] ?? PeerBlobData(),
+					lastSeen: lsDates[peer.id.peerID] ?? Date.distantPast)
+			},
+			lsDates)
 	}
 
 	/// Load portrait and hash of `peerID` from disk and informs delegate afterwards.
@@ -154,6 +177,8 @@ internal actor PersistedPeersController {
 
 	// Log tag.
 	private static let LogTag = "PersistedPeersController"
+
+	private static let LastSeenKey = "RecentPeersController.LastSeenKey"
 
 	// MARK: Constants
 
@@ -320,6 +345,13 @@ public struct PeerBlobData: Sendable {
 	public var portraitHash = Data()
 	public var portrait: CGImage?
 	public var thumbnail: CGImage?
+}
+
+/// All persisted peer data
+public struct PersistedPeerInfo: Sendable {
+	public var peer: Peer
+	public var blob: PeerBlobData
+	public var lastSeen: Date
 }
 
 extension PeerBlobData {

@@ -200,13 +200,13 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			content.interruptionLevel = .passive
 		}
 
-		if discoveryPerson.info.hasPicture, discoveryPerson.cgPicture != nil,
-		   let pictureURL, let attachment = try? UNNotificationAttachment(
-			identifier: NotificationManager.PortraitAttachmentIdentifier,
-			url: pictureURL,
-			options: [UNNotificationAttachmentOptionsTypeHintKey : UTType.jpeg]) {
-			content.attachments = [attachment]
-		}
+//		if discoveryPerson.info.hasPicture, discoveryPerson.cgPicture != nil,
+//		   let pictureURL, let attachment = try? UNNotificationAttachment(
+//			identifier: NotificationManager.PortraitAttachmentIdentifier,
+//			url: pictureURL,
+//			options: [UNNotificationAttachmentOptionsTypeHintKey : UTType.jpeg]) {
+//			content.attachments = [attachment]
+//		}
 
 		center.add(UNNotificationRequest(
 			identifier: UUID().uuidString, content: content, trigger: nil)

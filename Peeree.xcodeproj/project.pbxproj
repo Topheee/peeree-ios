@@ -128,14 +128,15 @@
 		9DB4D68A2D44F3E8004F3B48 /* AccountViewModelDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D1C9A1D2D328510008FB7A8 /* AccountViewModelDelegate.swift */; };
 		9DB4D68B2D44F3E8004F3B48 /* AccountControllerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D6A8C1C2AE0651300C8239D /* AccountControllerFactory.swift */; };
 		9DB4D68C2D44F3E8004F3B48 /* AccountController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D400E611EBA2B9C0006480A /* AccountController.swift */; };
-		9DB4D6902D44F40C004F3B48 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D68F2D44F40C004F3B48 /* OpenAPIRuntime */; };
-		9DB4D6922D44F40C004F3B48 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D6912D44F40C004F3B48 /* OpenAPIURLSession */; };
 		9DB4D6932D44F40C004F3B48 /* PeereeCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD33C1F29FFC5200046165E /* PeereeCore.framework */; };
 		9DB4D6BD2D46E88C004F3B48 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D6BC2D46E88C004F3B48 /* OpenAPIRuntime */; };
 		9DB4D6D62D47E728004F3B48 /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D6D52D47E728004F3B48 /* HTTPTypes */; };
 		9DB4D6DC2D47E818004F3B48 /* KeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D6DB2D47E818004F3B48 /* KeychainWrapper */; };
 		9DB4D6DE2D47E81E004F3B48 /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB4D6DD2D47E81E004F3B48 /* HTTPTypes */; };
 		9DBC63992ABF5723000A5EBD /* EncryptionKeyManager.swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DBC63982ABF5723000A5EBD /* EncryptionKeyManager.swift.swift */; };
+		9DC248142FC79B6D00B3FCFE /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 9DC248132FC79B6D00B3FCFE /* OpenAPIRuntime */; };
+		9DC248182FC79B7500B3FCFE /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 9DC248172FC79B7500B3FCFE /* OpenAPIURLSession */; };
+		9DC87BBE2FA7B32D0029225A /* DiscoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC87BBB2FA7B3270029225A /* DiscoveryController.swift */; };
 		9DCA59E52932173F008A4853 /* LLDBInitFile in Resources */ = {isa = PBXBuildFile; fileRef = 9DCA59E42932173F008A4853 /* LLDBInitFile */; };
 		9DCC48882D4F962800EC5BED /* AuthenticationMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48852D4F6DEF00EC5BED /* AuthenticationMiddleware.swift */; };
 		9DCC488A2D4F963F00EC5BED /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCC48892D4F963D00EC5BED /* Authenticator.swift */; };
@@ -437,6 +438,7 @@
 		9DC00AB42662F27500C1DA3C /* PeerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoTests.swift; sourceTree = "<group>"; };
 		9DC7E6EA2D41746E001F0C51 /* openapi-generator-config.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "openapi-generator-config.yaml"; sourceTree = "<group>"; };
 		9DC7E6EC2D41748B001F0C51 /* openapi.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = openapi.yaml; sourceTree = "<group>"; };
+		9DC87BBB2FA7B3270029225A /* DiscoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryController.swift; sourceTree = "<group>"; };
 		9DCA59E02931372D008A4853 /* ThreadSafeMatrixWrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeMatrixWrappers.swift; sourceTree = "<group>"; };
 		9DCA59E229314772008A4853 /* MXCryptoExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXCryptoExtensions.swift; sourceTree = "<group>"; };
 		9DCA59E42932173F008A4853 /* LLDBInitFile */ = {isa = PBXFileReference; lastKnownFileType = text; path = LLDBInitFile; sourceTree = "<group>"; };
@@ -581,10 +583,10 @@
 			files = (
 				9DB4D6DC2D47E818004F3B48 /* KeychainWrapper in Frameworks */,
 				9DB4D6DE2D47E81E004F3B48 /* HTTPTypes in Frameworks */,
+				9DC248142FC79B6D00B3FCFE /* OpenAPIRuntime in Frameworks */,
 				9DB4D6932D44F40C004F3B48 /* PeereeCore.framework in Frameworks */,
+				9DC248182FC79B7500B3FCFE /* OpenAPIURLSession in Frameworks */,
 				9D5B4B322D7658BE00BE5D7A /* JWTKit in Frameworks */,
-				9DB4D6922D44F40C004F3B48 /* OpenAPIURLSession in Frameworks */,
-				9DB4D6902D44F40C004F3B48 /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -862,6 +864,7 @@
 		9D5D46F0280C6CE7002174DB /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				9DC87BBB2FA7B3270029225A /* DiscoveryController.swift */,
 				9D9BC64C1E1C604B00D031C5 /* LocalPeerManager.swift */,
 				9D9BC6521E1C6A3D00D031C5 /* PeeringController.swift */,
 				9D7FE29F27975629000AE7C5 /* PersistedPeersController.swift */,
@@ -1304,7 +1307,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				9DB4D63E2D44E64C004F3B48 /* PBXTargetDependency */,
+				9DE3A8122FBCF2070015D0A0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9DB4D6222D44E61C004F3B48 /* PeereeSocial */,
@@ -1356,18 +1359,18 @@
 			buildRules = (
 			);
 			dependencies = (
-				9DB4D6872D44F3D5004F3B48 /* PBXTargetDependency */,
+				9DC248102FC79B3F00B3FCFE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9DB4D66B2D44F3C5004F3B48 /* PeereeIdP */,
 			);
 			name = PeereeIdP;
 			packageProductDependencies = (
-				9DB4D68F2D44F40C004F3B48 /* OpenAPIRuntime */,
-				9DB4D6912D44F40C004F3B48 /* OpenAPIURLSession */,
 				9DB4D6DB2D47E818004F3B48 /* KeychainWrapper */,
 				9DB4D6DD2D47E81E004F3B48 /* HTTPTypes */,
 				9D5B4B312D7658BE00BE5D7A /* JWTKit */,
+				9DC248132FC79B6D00B3FCFE /* OpenAPIRuntime */,
+				9DC248172FC79B7500B3FCFE /* OpenAPIURLSession */,
 			);
 			productName = PeereeIdP;
 			productReference = 9DB4D66A2D44F3C5004F3B48 /* PeereeIdP.framework */;
@@ -1494,7 +1497,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftMigration = 0700;
 				LastSwiftUpdateCheck = 1630;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2650;
 				ORGANIZATIONNAME = Kobusch;
 				TargetAttributes = {
 					9D78B9752DC80F9800CDA589 = {
@@ -1844,6 +1847,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DC87BBE2FA7B32D0029225A /* DiscoveryController.swift in Sources */,
 				9DD33C0F29FFA9FF0046165E /* PeerDescription.swift in Sources */,
 				9DD33C0C29FFA9FF0046165E /* DiscoveryExtensions.swift in Sources */,
 				9D5B4B2C2D75B40300BE5D7A /* PeerVerificationOperationManager.swift in Sources */,
@@ -1931,10 +1935,6 @@
 			target = 9DB4D6202D44E61C004F3B48 /* PeereeSocial */;
 			targetProxy = 9DB4D6322D44E61D004F3B48 /* PBXContainerItemProxy */;
 		};
-		9DB4D63E2D44E64C004F3B48 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 9DB4D63D2D44E64C004F3B48 /* OpenAPIGenerator */;
-		};
 		9DB4D6742D44F3C5004F3B48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9DB4D6692D44F3C5004F3B48 /* PeereeIdP */;
@@ -1950,9 +1950,9 @@
 			target = 9DB4D6692D44F3C5004F3B48 /* PeereeIdP */;
 			targetProxy = 9DB4D67B2D44F3C5004F3B48 /* PBXContainerItemProxy */;
 		};
-		9DB4D6872D44F3D5004F3B48 /* PBXTargetDependency */ = {
+		9DC248102FC79B3F00B3FCFE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = 9DB4D6862D44F3D5004F3B48 /* OpenAPIGenerator */;
+			productRef = 9DC2480F2FC79B3F00B3FCFE /* OpenAPIGenerator */;
 		};
 		9DD33BD229FEACA70046165E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1982,6 +1982,10 @@
 			isa = PBXTargetDependency;
 			target = 9DD33C1E29FFC5200046165E /* PeereeCore */;
 			targetProxy = 9DD33C3229FFC5210046165E /* PBXContainerItemProxy */;
+		};
+		9DE3A8122FBCF2070015D0A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 9DE3A8112FBCF2070015D0A0 /* OpenAPIGenerator */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2125,7 +2129,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_OPTIMIZE_OBJECT_LIFETIME = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES = YES;
 			};
 			name = Debug;
@@ -2186,7 +2190,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_OPTIMIZE_OBJECT_LIFETIME = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 				_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES = YES;
 			};
@@ -2207,7 +2211,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.8.0;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				DEVELOPMENT_ASSET_PATHS = "\"Peeree/System/Supporting Files/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
@@ -2224,13 +2228,12 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -2251,7 +2254,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.8.0;
+				CURRENT_PROJECT_VERSION = 1.8.1;
 				DEVELOPMENT_ASSET_PATHS = "\"Peeree/System/Supporting Files/Preview Content\"";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_ON_DEMAND_RESOURCES = NO;
@@ -2270,14 +2273,13 @@
 					"@executable_path/Frameworks",
 				);
 				LLVM_LTO = YES_THIN;
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.8.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "Kobusch.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -2305,7 +2307,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2327,7 +2328,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeDiscoveryTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2366,7 +2366,6 @@
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2401,7 +2400,6 @@
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2424,7 +2422,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2443,7 +2440,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeSocialTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2479,7 +2475,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2511,7 +2506,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2533,7 +2527,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2552,7 +2545,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = Kobusch.PeereeIdPTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Peeree.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Peeree";
 			};
@@ -2589,7 +2581,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2622,7 +2613,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2659,7 +2649,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2692,7 +2681,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2732,7 +2720,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2768,7 +2755,6 @@
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -2793,7 +2779,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -2813,7 +2798,6 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -3022,10 +3006,10 @@
 		};
 		9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/PeereeApp/MatrixSDK";
+			repositoryURL = "https://github.com/Topheee/MatrixSDK";
 			requirement = {
 				kind = exactVersion;
-				version = 0.27.6;
+				version = 0.27.19;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -3131,27 +3115,7 @@
 			package = 9D6A8C172ADF240300C8239D /* XCRemoteSwiftPackageReference "CSProgress" */;
 			productName = CSProgress;
 		};
-		9DB4D63D2D44E64C004F3B48 /* OpenAPIGenerator */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DD57F992D3082E3005090FC /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
-			productName = "plugin:OpenAPIGenerator";
-		};
 		9DB4D64B2D44EB80004F3B48 /* OpenAPIURLSession */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DD57F9D2D30832E005090FC /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
-			productName = OpenAPIURLSession;
-		};
-		9DB4D6862D44F3D5004F3B48 /* OpenAPIGenerator */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DD57F992D3082E3005090FC /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
-			productName = "plugin:OpenAPIGenerator";
-		};
-		9DB4D68F2D44F40C004F3B48 /* OpenAPIRuntime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DD57F9A2D308315005090FC /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
-			productName = OpenAPIRuntime;
-		};
-		9DB4D6912D44F40C004F3B48 /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9DD57F9D2D30832E005090FC /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
 			productName = OpenAPIURLSession;
@@ -3175,6 +3139,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9DB4D6D42D47E728004F3B48 /* XCRemoteSwiftPackageReference "swift-http-types" */;
 			productName = HTTPTypes;
+		};
+		9DC2480F2FC79B3F00B3FCFE /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F992D3082E3005090FC /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
+		};
+		9DC248132FC79B6D00B3FCFE /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F9A2D308315005090FC /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		9DC248172FC79B7500B3FCFE /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F9D2D30832E005090FC /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
 		};
 		9DD33BF029FF27160046165E /* DequeModule */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -3200,6 +3179,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9DD9972D2BBDB65A00EE3D94 /* XCRemoteSwiftPackageReference "MatrixSDK" */;
 			productName = MatrixSDK;
+		};
+		9DE3A8112FBCF2070015D0A0 /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9DD57F992D3082E3005090FC /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
 		};
 		9DF2D9CD2A7C2E4A00C71507 /* KeyValueTree */ = {
 			isa = XCSwiftPackageProductDependency;

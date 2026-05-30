@@ -12,6 +12,7 @@ import PeereeCore
 import PeereeDiscovery
 
 /// View model of a person in the discovery module.
+@MainActor
 class DiscoveryPerson: ObservableObject {
 
 	/// The PeerID identifying this view model.
