@@ -295,6 +295,9 @@
 /* TraitDescription */
 "opennessToChangeDescription" = "Are new environments not a big deal for you?";
 
+/* Accessibility label */
+"Peeree Identity" = "Peeree Identity";
+
 /* Title of alert when the user wants to go online but lacks an account and it's creation failed. */
 "Peeree Identity Required" = "Peeree Identity Required";
 
@@ -403,6 +406,9 @@
 /* Title of alert dialog */
 "Sending Message Failed" = "Sending Message Failed";
 
+/* Short description in onboarding */
+"sentence_about_peeree" = "Peeree uses just Bluetooth to search for other users. Once you've both pinned each other, you can start chatting.";
+
 /* The user is not logged in to server chat */
 "server_chat_controller_nil" = "No connection to the chat server.";
 
@@ -445,6 +451,9 @@
 /* The user lacks a Peeree account */
 "Tap on 'Profile' to create your Peeree identity." = "Tap on 'Profile' to create your Peeree identity.";
 
+/* Subhead of the online mode placeholder shown in browse view when Bluetooth is on. */
+"Tap to go offline" = "Tap to go offline";
+
 /* Subhead of the offline mode placeholder shown in browse view when Bluetooth is on. */
 "Tap to go online" = "Tap to go online";
 
@@ -483,6 +492,9 @@
 
 /* Alert action button title */
 "Unpin" = "Unpin";
+
+/* Accessibility label */
+"Unpinned" = "Unpinned";
 
 /* Caption of identity creation alert action. */
 "View Terms" = "View Terms";
@@ -530,6 +542,21 @@
 /* SwiftUI keys. */
 "Offline" = "Offline";
 
+"Chats" = "Chats";
+
+"Check pin state" = "Check pin state";
+
+"Sent" = "Sent";
+
+"Received" = "Received";
+
+"New person in your vicinity. Tap to view." = "New person in your vicinity. Tap to view.";
+
+"Online with %i people in your vicinity. %i new messages." = "Online with %i people in your vicinity. %i new messages.";
+
+/* Accessibility summary */
+"Offline. %i new messages." = "Offline. %i new messages.";
+
 "Create your profile." = "Create your profile.";
 
 "Setup filter." = "Setup filter.";
@@ -540,7 +567,7 @@
 
 "Learn more about how Peeree works" = "Learn more about how Peeree works";
 
-"Swipe up or tap to find new people." = "Swipe up or tap to find new people.";
+"Go online to activate Bluetooth and find new people." = "Go online to activate Bluetooth and find new people.";
 
 "Pinboard" = "Pinboard";
 

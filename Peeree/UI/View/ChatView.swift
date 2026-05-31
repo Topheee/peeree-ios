@@ -80,6 +80,7 @@ struct ChatView: View {
 					ScrollView() {
 						VStack {
 							Text(chatPersona.technicalInfo)
+								.accessibilityHidden(true)
 							// not state of the art, but it is what it is
 							Button("Load older messages …") {
 								loadOlderMessages()
@@ -162,7 +163,7 @@ struct ChatView: View {
 				}
 			}
 
-			HStack(alignment: .bottom) {
+			HStack(alignment: .center) {
 				if #available(iOS 16.0, *) {
 					TextField(text: $composingMessage, prompt: Text("Message"), axis: .vertical) {}
 						.lineLimit(self.inputLineLimit, reservesSpace: false)
@@ -170,14 +171,12 @@ struct ChatView: View {
 						.onSubmit {
 							self.sendMessage()
 						}
-						.padding([.top, .bottom], 4)
 				} else {
 					TextField(text: $composingMessage, prompt: Text("Message")) {}
 						.focused($messageFieldIsFocused)
 						.onSubmit {
 							self.sendMessage()
 						}
-						.padding([.top, .bottom], 4)
 				}
 				Button {
 					sendMessage()
@@ -194,13 +193,14 @@ struct ChatView: View {
 				}
 			}
 			.disabled(!chatPersona.readyToChat)
-			.padding()
+			.padding(6)
 			.modify {
 				if #available(iOS 26.0, *) {
 					$0.glassEffect(
 						.regular.interactive(),
 						in: .rect(cornerRadius: 16.0))
-						.padding([.leading, .trailing, .bottom])
+					.padding([.leading, .trailing])
+					.padding(.bottom, 4)
 				} else {
 					$0
 				}

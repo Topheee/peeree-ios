@@ -14,6 +14,7 @@ struct AccountView: View {
 		VStack {
 			Text("Your Peeree Identity")
 				.font(.headline)
+				.accessibilityHidden(true)
 
 			Text("Unique identity in the Peeree network.")
 				.font(.subheadline)
@@ -33,6 +34,7 @@ struct AccountView: View {
 					}
 				}
 				.padding(.bottom, 0.5)
+				.accessibilityHint("Your Peeree Identity")
 
 			Button(role: socialViewState.accountExists.isOn ? .destructive : .none) {
 				showCreateDeleteAccountDialog.toggle()

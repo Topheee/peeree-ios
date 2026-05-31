@@ -28,6 +28,8 @@ struct TagView: View {
 				.frame(maxHeight: labelHeight)
 
 			Text(text)
+				.fontWeight(.light)
+				//.foregroundColor(Color.white)
 				.padding(.trailing, 6)
 				.overlay(
 					GeometryReader { geometry in

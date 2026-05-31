@@ -105,6 +105,7 @@ struct PortraitView: View {
 							TagView(text: "\(age)")
 								.transition(AnyTransition.identity)
 								.font(.caption)
+								.accessibilityLabel("Age")
 						}
 					}
 				}
@@ -112,6 +113,8 @@ struct PortraitView: View {
 		}
 		.transition(AnyTransition.move(edge: .top))
 		.padding(2)
+		.accessibilityElement(children: .combine)
+		.accessibilityHint("New person in your vicinity. Tap to view.")
 	}
 }
 

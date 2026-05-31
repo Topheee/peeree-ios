@@ -295,8 +295,11 @@
 /* TraitDescription */
 "opennessToChangeDescription" = "Are new environments not a big deal for you?";
 
+/* Accessibility label */
+"Peeree Identity" = "Peeree-Identität";
+
 /* Title of alert when the user wants to go online but lacks an account and it's creation failed. */
-"Peeree Identity Required" = "Peeree Identität erforderlich";
+"Peeree Identity Required" = "Peeree-Identität erforderlich";
 
 /* Header of table view section in browse view, which contains entries for peers currently available on the network (so they are hear around). */
 "People Around" = "Personen in der Nähe";
@@ -403,6 +406,9 @@
 /* Title of alert dialog */
 "Sending Message Failed" = "Nachricht senden fehlgeschlagen";
 
+/* Short description in onboarding */
+"sentence_about_peeree" = "Peeree sucht allein über Bluetooth nach anderen Peeree-Nutzern. Nachdem ihr euch gegenseitig gepinnt habt, könnt ihr miteinander schreiben.";
+
 /* The user is not logged in to server chat */
 "server_chat_controller_nil" = "Keine Verbindung mit dem Chatserver.";
 
@@ -445,6 +451,9 @@
 /* The user lacks a Peeree account */
 "Tap on 'Profile' to create your Peeree identity." = "Tippe auf \"Profil\", um deine Peeree-Identität zu erstellen.";
 
+/* Subhead of the online mode placeholder shown in browse view when Bluetooth is on. */
+"Tap to go offline" = "Tippe um offline zu gehen.";
+
 /* Subhead of the offline mode placeholder shown in browse view when Bluetooth is on. */
 "Tap to go online" = "Tippe um online zu gehen.";
 
@@ -483,6 +492,9 @@
 
 /* Alert action button title */
 "Unpin" = "Pin entfernen";
+
+/* Accessibility label */
+"Unpinned" = "Ungepinnt";
 
 /* Caption of identity creation alert action. */
 "View Terms" = "Bedingungen ansehen";
@@ -528,6 +540,16 @@
 /* SwiftUI keys. */
 "Offline" = "Offline";
 
+"Chats" = "Chats";
+
+"Check pin state" = "Pin-Status überprüfen";
+
+"Sent" = "Gesendet";
+
+"Received" = "Empfangen";
+
+"New person in your vicinity. Tap to view." = "Neue Person in deiner Umgebung. Tippe, um sie anzuzeigen.";
+
 "Create your profile." = "Erstelle deine Profil.";
 
 "Setup filter." = "Filtere Leute.";
@@ -538,7 +560,7 @@
 
 "Learn more about how Peeree works" = "Erfahre, wie Peeree funktioniert";
 
-"Swipe up or tap to find new people." = "Wische nach oben oder tippe, um neue Leute zu finden.";
+"Go online to activate Bluetooth and find new people." = "Gehe online, um Bluetooth zu aktivieren und neue Leute zu finden.";
 
 "Pinboard" = "Pinnwand";
 

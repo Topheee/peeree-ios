@@ -35,8 +35,10 @@ struct MessageTableCell: View {
 					.background(
 						Image(decorative: message.sent ? "MessageBubbleSend" : "MessageBubbleReceive")
 					)
+					.accessibilityHint(message.sent ? "Sent" : "Received")
 
 				Spacer()
+					.accessibilityHidden(true)
 
 				Text(message.formattedTime)
 					.font(.caption)
@@ -44,6 +46,9 @@ struct MessageTableCell: View {
 					.padding(.all, 4)
 			}
 		}
+		.accessibilityElement(children: .combine)
+		.accessibilityLabel(message.message)
+		.accessibilityHint(message.sent ? "Sent" : "Received")
 	}
 
 	// MARK: Private

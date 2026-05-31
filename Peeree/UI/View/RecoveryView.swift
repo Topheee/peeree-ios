@@ -84,6 +84,7 @@ struct RecoveryView: View {
 		if self.verticalSizeClass != .compact {
 			Text(entry ? "Enter your recovery phrase." : "Your secret recovery phrase.")
 				.font(.caption)
+				.accessibilityHidden(true)
 		}
 
 		if !self.dynamicTypeSize.isAccessibilitySize {
@@ -121,6 +122,8 @@ struct RecoveryView: View {
 			.textInputAutocapitalization(.characters)
 			.disableAutocorrection(true)
 			.textFieldStyle(.roundedBorder)
+			.accessibilityElement(children: .combine)
+			.accessibilityHint(entry ? "Enter your recovery phrase." : "Your secret recovery phrase.")
 
 			if #available(iOS 16.0, *), self.entry {
 				PasteButton(payloadType: String.self) { paste in
@@ -131,6 +134,7 @@ struct RecoveryView: View {
 				Button(entry ? "Recover Account" : "Save Code", role: .none) {
 					self.showActionDialog.toggle()
 				}
+				.accessibilityHint(self.entry ? "Recovering your account overrides all data, except for your profile." : "Export code for save storage.")
 				.buttonStyle(.borderedProminent)
 				.disabled(!self.filled)
 				.confirmationDialog(
@@ -164,10 +168,9 @@ struct RecoveryView: View {
 				.font(.caption)
 		}
 		.padding()
-		.background(Color("ColorDivider"))
-		.border(Color("ColorDivider"), width: 5.0)
+		.background(.regularMaterial)
 		.cornerRadius(20.0)
-		.shadow(radius: 5.0)
+		.shadow(radius: 3.0)
 		.onChange(of: self.letters) { _ in
 			self.distributeLetters()
 			if let l = self.letterFocus {
@@ -184,6 +187,8 @@ struct RecoveryView: View {
 		Text(entry ? "Type or paste your code." : "Store your code in a secure and durable location, e.g. a password manager.")
 			.font(.footnote)
 			.padding(.top, 2)
+			.padding([.leading, .trailing], 4)
+			.accessibilityHidden(true)
 	}
 
 	/// The username of the stored credential.
@@ -210,7 +215,7 @@ struct RecoveryView: View {
 	/// Splits up `text` and fills it into the TextFields.
 	private func fillIn(text: String) {
 		let validChars = text.unicodeScalars.filter { scalar in
-			scalar.properties.isASCIIHexDigit || scalar == "-"
+			scalar.properties.isASCIIHexDigit || String(scalar) == "-"
 		}
 		.map { String($0) }
 

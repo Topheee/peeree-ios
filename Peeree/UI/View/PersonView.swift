@@ -44,17 +44,17 @@ struct PersonView: View {
 
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+	@Environment(\.dynamicTypeSize) private var dynamicTypeSize: DynamicTypeSize
+
 	@State private var labelWidth = CGFloat.zero
 
 	@State private var hasTimeElapsed = false
 
-	@State private var compact = false
+	@State private var smallPortrait = false
 
 	@State private var showFlagAlert = false
 
 	@State private var labelHeight = CGFloat.zero
-
-	@State private var bioHeight = CGFloat.zero
 
 	var body: some View {
 		ZStack {
@@ -62,11 +62,16 @@ struct PersonView: View {
 				.animation(.easeIn.delay(PinMatchAnimationPhase.pinPhaseAnimationDuration * 2).speed(1.8), value: socialPersona.pinState == .pinMatch)
 				.ignoresSafeArea()
 
-			AdaptiveStackView(orientation: verticalSizeClass == .compact ? .horizontal : .vertical) {
-				AdaptiveStackView(orientation: compact ? .horizontal : .vertical) {
+			AdaptiveStackView(
+				orientation: verticalSizeClass == .compact
+					? .horizontal : .vertical,
+				spacing: verticalSizeClass == .compact ? -10 : -26
+			) {
+				VStack(spacing: -40) {
 					discoveryPersona.image
 						.resizable()
 						.aspectRatio(contentMode: .fit)
+						.frame(maxWidth: smallPortrait ? 120 : nil)
 						.blur(radius: socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none ? 10 : 0)
 						.clipShape(Circle())
 						.modify {
@@ -76,26 +81,18 @@ struct PersonView: View {
 								$0
 							}
 						}
-						.padding(.bottom, 4)
 						.onTapGesture {
 							withAnimation(.snappy) {
-								compact.toggle()
+								smallPortrait.toggle()
 							}
 						}
-
-					AdaptiveStackView(orientation: compact ? .horizontal : .vertical) {
-
-						AdaptiveStackView(orientation: compact ? .vertical : .horizontal, horizontalAlignment: .leading) {
-							if let age = discoveryPersona.info.age {
-								TagView(text: "\(age)")
-							}
-							TagView(text: discoveryPersona.genderText)
-						}
+						.accessibilityAddTraits(.isButton)
 
 						PinButton(pinState: socialPersona.pinState, font: .title) {
 							guard !discoveryPersona.isUser else { return }
 							socialViewState.delegate?.pinToggle(peerID: peerID)
 						}
+						.shadow(radius: 5.0)
 						.padding([.bottom, .top])
 						.modify {
 							if #available(iOS 17, *) {
@@ -119,7 +116,6 @@ struct PersonView: View {
 								}
 							}
 						}
-					}
 				}
 
 				VStack {
@@ -129,6 +125,7 @@ struct PersonView: View {
 								.fill(Color.gray)
 								.frame(maxHeight: max(12, labelHeight - 8))
 							Text("Biography")
+								.accessibilityAddTraits(.isHeader)
 								.font(.title2)
 								.overlay(
 									GeometryReader(content: { geometry in
@@ -143,13 +140,18 @@ struct PersonView: View {
 
 							Capsule()
 								.fill(Color.gray)
-								.padding(.leading, 12)
+								.padding(.leading, 8)
 								.frame(maxWidth: 64, maxHeight: max(12, labelHeight - 8))
 						}
 
 						ScrollView(.vertical) {
 							HStack {
-								Text(discoveryPersona.biography == "" ? NSLocalizedString("No biography.", comment: "SwiftUI") : (compact ? NSLocalizedString("Tap to show biography.", comment: "SwiftUI") : discoveryPersona.biography))
+								Text(
+									discoveryPersona.biography == ""
+									? NSLocalizedString(
+										"No biography.", comment: "SwiftUI")
+									: discoveryPersona.biography
+								)
 									.font(.body)
 									.modify {
 										if #available(iOS 16, *) {
@@ -163,25 +165,17 @@ struct PersonView: View {
 											}
 										}
 									}
-									.overlay(
-										GeometryReader(content: { geometry in
-											Color.clear
-												.onAppear(perform: {
-													self.bioHeight = geometry.frame(in: .local).size.height
-												})
-										})
-									)
 
 								if verticalSizeClass != .compact {
 									Spacer()
 								}
 							}
 						}
-						.frame(maxHeight: compact ? min(bioHeight, 42) : bioHeight)
 
-						if !compact && discoveryPersona.biography != "" {
+						if !dynamicTypeSize.isAccessibilitySize {
 							Text(discoveryPersona.info.nickname)
-								.font(.custom("Bradley Hand", fixedSize: 24))
+								.accessibilityHidden(true)
+								.font(.custom("Bradley Hand", size: 24, relativeTo: .body))
 								.lineLimit(1)
 								.foregroundColor(Color.indigo)
 								.padding(.top, 8)
@@ -201,19 +195,37 @@ struct PersonView: View {
 									}
 								}
 						}
+
+						HStack {
+							if let age = discoveryPersona.info.age {
+								TagView(text: "\(age)")
+									.accessibilityHint("Age")
+							}
+							TagView(text: discoveryPersona.genderText)
+						}
+						.frame(maxWidth: .infinity)
 					}
 					.padding()
-					.background(RoundedRectangle(cornerRadius: 16).fill(Color("ColorDivider")))
+					.modify {
+						if #available(iOS 26.0, *) {
+							$0.glassEffect(in: .rect(cornerRadius: 16.0))
+						} else {
+							$0
+						}
+					}
+					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
 					.onTapGesture {
 						withAnimation(.snappy) {
-							compact.toggle()
+							smallPortrait.toggle()
 						}
 					}
 
 					Text(peerID.uuidString)
 						.font(.caption)
 						.fontWeight(.light)
+						.accessibilityHint("Peeree Identity")
 				}
+				.zIndex(-1)
 			}
 			.padding()
 			.navigationTitle(discoveryPersona.info.nickname)

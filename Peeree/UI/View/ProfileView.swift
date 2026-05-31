@@ -64,10 +64,12 @@ struct ProfileView: View {
 					VStack(alignment: .leading) {
 						Text("Biography:")
 							.padding(.top)
+							.accessibilityHidden(true)
 						TextEditor(text: $discoveryViewState.profile.biography)
 							.background(RoundedRectangle(cornerRadius: 5).fill(Color("ColorDivider")))
 							.frame(minHeight: 32)
 							.padding(.bottom)
+							.accessibilityHint("Biography:")
 					}
 					
 					AccountView()

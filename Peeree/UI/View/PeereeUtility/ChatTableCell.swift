@@ -39,9 +39,12 @@ struct ChatTableCell: View {
 						}
 					}
 					.lineLimit(1)
+					.foregroundStyle(.secondary)
+					.accessibilityLabel(chatPersona.lastMessage?.message ?? NSLocalizedString("No messages.", comment: "Placeholder text"))
 			}
 
 			Spacer()
+				.accessibilityHidden(true)
 
 			if chatPersona.unreadMessages > 0 {
 				Text("\(chatPersona.unreadMessages)")
@@ -52,7 +55,8 @@ struct ChatTableCell: View {
 					.background(Circle().fill(Color.blue))
 			}
 		}
-		.padding()
+		.padding([.leading, .trailing, .bottom])
+		.accessibilityElement(children: .combine)
 	}
 }
 

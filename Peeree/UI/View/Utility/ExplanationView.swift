@@ -31,6 +31,7 @@ struct ExplanationView: View {
 								.resizable()
 								.aspectRatio(contentMode: .fit)
 								.frame(height: 52)
+								.accessibilityHidden(true)
 
 							Text(explanation.title)
 								.font(.title3)
@@ -56,11 +57,19 @@ struct ExplanationView: View {
 							.aspectRatio(contentMode: .fit)
 					}
 				}
+				.accessibilityHidden(true)
 			}
 			.padding()
 			.frame(maxWidth: .infinity)
 			.frame(height: 120)
 			.background(.regularMaterial)
+			.modify {
+				if #available(iOS 26.0, *) {
+					$0.glassEffect(in: .rect(cornerRadius: 16.0))
+				} else {
+					$0
+				}
+			}
 		}
 	}
 }

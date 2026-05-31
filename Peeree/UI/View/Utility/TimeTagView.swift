@@ -17,6 +17,7 @@ struct TimeTagView: View {
 		HStack {
 			Image(systemName: "clock.fill")
 				.frame(maxHeight: labelHeight)
+				.accessibilityHidden(true)
 			Text(text)
 				.padding(.trailing, 6)
 				.overlay(

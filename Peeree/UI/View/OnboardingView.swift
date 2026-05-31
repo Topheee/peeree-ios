@@ -80,6 +80,7 @@ struct OnboardingView: View {
 					.frame(maxWidth: 60, maxHeight: 80)
 				}
 				.opacity(peering ? 0.0 : 1.0)
+				.accessibilityHidden(true)
 			}
 
 			Spacer()
@@ -88,7 +89,7 @@ struct OnboardingView: View {
 				if !peering {
 					if verticalSizeClass == .regular {
 						Text("Demo")
-							.font(.title3)
+							.font(.title2)
 					}
 
 					PinButton(pinState: self.pinState, font: .title2) {
@@ -139,12 +140,19 @@ struct OnboardingView: View {
 						  "Visit crowded places to find other Peeree users." :
 							"Create an identity in your profile to be able to pin people.")
 						 :
-							"Peeree is all about Pinning. Pin people you find interesting. If the pin is mutual, you can start chatting.")
+							"sentence_about_peeree")
 						.font(.footnote)
 						.padding(4)
 				}
 			}
 			.padding()
+			.modify {
+				if #available(iOS 26.0, *) {
+					$0.glassEffect(in: .rect(cornerRadius: 16.0))
+				} else {
+					$0
+				}
+			}
 			.background(RoundedRectangle(cornerRadius: 16).fill(Color("ColorDivider")))
 
 			Button {
@@ -168,7 +176,7 @@ struct OnboardingView: View {
 			if verticalSizeClass == .regular {
 				VStack {
 					HStack(alignment: .bottom) {
-						Text("Swipe up or tap to find new people.")
+						Text("Go online to activate Bluetooth and find new people.")
 
 						ArrowShape(from: CGPoint(x: 0 , y: 40),
 								   to: CGPoint(x: 46, y: 60),

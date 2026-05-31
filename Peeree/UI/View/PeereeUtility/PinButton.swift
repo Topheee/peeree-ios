@@ -44,9 +44,12 @@ struct PinButton: View {
 				if pinState == .pinMatch {
 					Text("Pin Match!")
 						.font(font)
+						.accessibilityHidden(true)
 				}
 			}
 		}
+		.accessibilityLabel(pinState == .pinMatch ? "Pin Match!" : (pinState == .pinned ? "Pinned" : "Unpinned"))
+		.accessibilityHint(pinState == .pinMatch ? "Check pin state" : (pinState == .pinned ? "Upin" : "Pin"))
 		.frame(maxHeight: 72)
 		.buttonStyle(PinButtonStyle())
 //		.shadow(radius: self.pinState == .pinMatch ? 10 : 0)

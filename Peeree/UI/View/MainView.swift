@@ -30,13 +30,17 @@ struct MainView: View {
 	var body: some View {
 
 		NavigationView {
-			ZStack(alignment: .bottom) {
 				ScrollView() {
 					if chatViewState.matchedPeople.isEmpty {
 						OnboardingView(peering: $discoveryViewState.peering)
 					}
 
 					BrowseView()
+
+					Text("Chats")
+						.font(.subheadline).bold()
+						.frame(maxWidth: .infinity, alignment: .leading)
+						.padding([.leading, .trailing])
 
 					LazyVStack {
 						ForEach(chatViewState.matchedPeople, id: \.id) { chatPersona in
@@ -51,7 +55,6 @@ struct MainView: View {
 						}
 					}
 				}
-			}
 			.navigationTitle("Pinboard")
 			.modify {
 				if #available(iOS 16, *) {
