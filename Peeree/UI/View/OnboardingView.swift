@@ -153,7 +153,7 @@ struct OnboardingView: View {
 					$0
 				}
 			}
-			.background(RoundedRectangle(cornerRadius: 16).fill(Color("ColorDivider")))
+			.background(RoundedRectangle(cornerRadius: 16).fill(.thickMaterial))
 
 			Button {
 				showingExplanation.toggle()

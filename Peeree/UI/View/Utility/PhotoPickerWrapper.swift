@@ -15,7 +15,7 @@ struct ImagePicker: UIViewControllerRepresentable {
 	@Environment(\.presentationMode)
 	var presentationMode
 
-	let selectionFinishedAction: @MainActor (Result<UIImage, Error>) -> Void
+	let selectionFinishedAction: @Sendable @MainActor (Result<UIImage, Error>) -> Void
 
 	final class Coordinator:
 		NSObject, UINavigationControllerDelegate,
@@ -24,11 +24,11 @@ struct ImagePicker: UIViewControllerRepresentable {
 
 		@Binding var presentationMode: PresentationMode
 
-		let selectionFinishedAction: @MainActor (Result<UIImage, Error>) -> Void
+		let selectionFinishedAction: @Sendable @MainActor (Result<UIImage, Error>) -> Void
 
 		init(
 			presentationMode: Binding<PresentationMode>,
-			selectionFinishedAction: @MainActor @escaping (Result<UIImage, Error>) -> Void
+			selectionFinishedAction: @Sendable @MainActor @escaping (Result<UIImage, Error>) -> Void
 		) {
 			self._presentationMode = presentationMode
 			self.selectionFinishedAction = selectionFinishedAction

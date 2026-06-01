@@ -212,7 +212,7 @@
 "Local" = "Local";
 
 /* Content of onboarding description paragraph. */
-"Local content" = "Your personal information is presented only to people around you. Your portrait, name and gender is broadcast only to them.";
+"Local content" = "Your personal information is presented only to people around you. Your portrait, name, and gender is broadcast only to them.";
 
 /* Error message title */
 "Login to Chat Server Failed" = "Login to Chat Server Failed";

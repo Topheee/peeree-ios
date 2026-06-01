@@ -15,6 +15,8 @@ struct InAppNotificationStackView: View {
 
 	@GestureState private var dragOffset: CGFloat = 0.0
 
+	@AccessibilityFocusState private var isNotificationFocused: Bool
+
 	private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
 	private var drag: some Gesture {
@@ -50,7 +52,11 @@ struct InAppNotificationStackView: View {
 					.blur(radius: (index == stackHeight - 1) ? 0.0 : 5.0)
 					.animation(.easeInOut(duration: 0.4), value:  self.displayCount)
 					.gesture(drag)
+					.accessibilityFocused($isNotificationFocused)
 			}
+		}
+		.onChange(of: self.controller.notifications.count) { value in
+			isNotificationFocused = (value > 0)
 		}
 	}
 }

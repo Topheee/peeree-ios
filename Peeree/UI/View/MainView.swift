@@ -33,14 +33,17 @@ struct MainView: View {
 				ScrollView() {
 					if chatViewState.matchedPeople.isEmpty {
 						OnboardingView(peering: $discoveryViewState.peering)
+							.padding(.horizontal)
 					}
 
 					BrowseView()
 
-					Text("Chats")
-						.font(.subheadline).bold()
-						.frame(maxWidth: .infinity, alignment: .leading)
-						.padding([.leading, .trailing])
+					if !chatViewState.matchedPeople.isEmpty {
+						Text("Chats")
+							.font(.subheadline).bold()
+							.frame(maxWidth: .infinity, alignment: .leading)
+							.padding([.leading, .trailing])
+					}
 
 					LazyVStack {
 						ForEach(chatViewState.matchedPeople, id: \.id) { chatPersona in

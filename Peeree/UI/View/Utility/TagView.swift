@@ -22,14 +22,14 @@ struct TagView: View {
 	var body: some View {
 		HStack {
 			Circle()
-				.fill(Color.white)
+				.fill(Color("StaticTextOnColor"))
 				.padding(.vertical, 2)
 				.padding(.leading, 2)
 				.frame(maxHeight: labelHeight)
 
 			Text(text)
 				.fontWeight(.light)
-				//.foregroundColor(Color.white)
+				.foregroundColor(Color("StaticTextOnColor"))
 				.padding(.trailing, 6)
 				.overlay(
 					GeometryReader { geometry in
@@ -57,7 +57,9 @@ struct TagView: View {
 				.onAppear(perform: delayText)
 		}
 		.padding(4)
-		.background(RoundedRectangle(cornerRadius: 15).fill(Color.accentColor))
+		.background(
+			RoundedRectangle(cornerRadius: 15)
+				.fill(Color("StaticBackgroundAccent")))
 	}
 
 	private func delayText() {

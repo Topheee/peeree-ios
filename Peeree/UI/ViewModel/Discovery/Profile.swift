@@ -83,7 +83,7 @@ final class Profile: DiscoveryPerson {
 			do {
 				try await up.modify(portrait: scaledSquaredImage)
 			} catch {
-				await InAppNotificationStackViewState.shared.display(
+				InAppNotificationStackViewState.shared.display(
 					genericError: error)
 			}
 		}

@@ -109,6 +109,7 @@ struct ChatView: View {
 								.font(.caption)
 							}
 						}
+						.padding(.horizontal)
 						.padding(.bottom, chatMessageAreaHeight)
 						.onTapGesture {
 							messageFieldIsFocused.toggle()
@@ -183,7 +184,7 @@ struct ChatView: View {
 				} label: {
 					Label("Send", systemImage: composingMessage == "" ? "paperplane" : "paperplane.fill")
 						.labelStyle(.iconOnly)
-						.font(.title)
+						.font(.title2)
 				}
 				.disabled(composingMessage == "")
 				.onAppear {

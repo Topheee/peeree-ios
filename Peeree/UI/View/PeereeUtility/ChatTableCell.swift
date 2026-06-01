@@ -50,9 +50,9 @@ struct ChatTableCell: View {
 				Text("\(chatPersona.unreadMessages)")
 					.font(.subheadline)
 					.fontWeight(.light)
-					.foregroundColor(.white)
+					.foregroundColor(Color("StaticText"))
 					.padding(12)
-					.background(Circle().fill(Color.blue))
+					.background(Circle().fill(Color("StaticBackgroundAnalogous")))
 			}
 		}
 		.padding([.leading, .trailing, .bottom])

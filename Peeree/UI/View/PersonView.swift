@@ -50,7 +50,7 @@ struct PersonView: View {
 
 	@State private var hasTimeElapsed = false
 
-	@State private var smallPortrait = false
+	@State private var portraitOnly = false
 
 	@State private var showFlagAlert = false
 
@@ -58,8 +58,14 @@ struct PersonView: View {
 
 	var body: some View {
 		ZStack {
-			LinearGradient(colors: [Color.accentColor, Color("ColorBackground")], startPoint: UnitPoint(x: 1, y: 1), endPoint: UnitPoint(x: 1, y: socialPersona.pinState == .pinMatch ? 0 : 1))
-				.animation(.easeIn.delay(PinMatchAnimationPhase.pinPhaseAnimationDuration * 2).speed(1.8), value: socialPersona.pinState == .pinMatch)
+			LinearGradient(
+				colors: [Color("StaticBackgroundAccent"), Color("ColorBackground")],
+				startPoint: UnitPoint(x: 1, y: 1),
+				endPoint: UnitPoint(x: 1, y: socialPersona.pinState == .pinMatch ? 0 : 1)
+			)
+				.animation(.easeIn
+					.delay(PinMatchAnimationPhase.pinPhaseAnimationDuration * 2)
+					.speed(1.8), value: socialPersona.pinState == .pinMatch)
 				.ignoresSafeArea()
 
 			AdaptiveStackView(
@@ -67,11 +73,10 @@ struct PersonView: View {
 					? .horizontal : .vertical,
 				spacing: verticalSizeClass == .compact ? -10 : -26
 			) {
-				VStack(spacing: -40) {
+				VStack(spacing: portraitOnly ? 20 : -40) {
 					discoveryPersona.image
 						.resizable()
 						.aspectRatio(contentMode: .fit)
-						.frame(maxWidth: smallPortrait ? 120 : nil)
 						.blur(radius: socialViewState.classify(imageHash: discoveryPersona.pictureHash) != .none ? 10 : 0)
 						.clipShape(Circle())
 						.modify {
@@ -83,7 +88,7 @@ struct PersonView: View {
 						}
 						.onTapGesture {
 							withAnimation(.snappy) {
-								smallPortrait.toggle()
+								portraitOnly.toggle()
 							}
 						}
 						.accessibilityAddTraits(.isButton)
@@ -118,6 +123,7 @@ struct PersonView: View {
 						}
 				}
 
+				if !portraitOnly {
 				VStack {
 					VStack(alignment: .leading) {
 						HStack {
@@ -174,17 +180,18 @@ struct PersonView: View {
 
 						if !dynamicTypeSize.isAccessibilitySize {
 							Text(discoveryPersona.info.nickname)
-								.accessibilityHidden(true)
+								.frame(maxWidth: .infinity, alignment: .trailing)
 								.font(.custom("Bradley Hand", size: 24, relativeTo: .body))
 								.lineLimit(1)
 								.foregroundColor(Color.indigo)
 								.padding(.top, 8)
-								.overlay {
+								.reverseMask {
 									HStack {
 										Spacer()
 										Rectangle()
-											.fill(Color("ColorDivider"))
+											.fill(Color.white)
 											.frame(maxWidth: hasTimeElapsed ? 0.0 : .infinity)
+											//.blendMode(.destinationOut)
 											.animation(reduceMotion ? .none : .easeOut(duration: 1.3), value: hasTimeElapsed)
 									}
 									.padding(.leading, -12)
@@ -194,6 +201,7 @@ struct PersonView: View {
 										hasTimeElapsed = true
 									}
 								}
+								.accessibilityHidden(true)
 						}
 
 						HStack {
@@ -216,7 +224,7 @@ struct PersonView: View {
 					.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
 					.onTapGesture {
 						withAnimation(.snappy) {
-							smallPortrait.toggle()
+							portraitOnly.toggle()
 						}
 					}
 
@@ -226,6 +234,7 @@ struct PersonView: View {
 						.accessibilityHint("Peeree Identity")
 				}
 				.zIndex(-1)
+				} //: !portraitOnly
 			}
 			.padding()
 			.navigationTitle(discoveryPersona.info.nickname)
@@ -267,6 +276,23 @@ struct PersonView: View {
 			if socialPersona.pinState == .pinMatch {
 				UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
 			}
+		}
+	}
+}
+
+ // https://medium.com/@insub4067/swiftui-using-mask-to-create-holes-in-views-90fce29175fe
+extension View {
+
+	@ViewBuilder func reverseMask<Mask: View>(
+		alignment: Alignment = .center,
+		@ViewBuilder _ mask: () -> Mask
+	) -> some View {
+		self.mask {
+			Rectangle()
+				.overlay(alignment: alignment) {
+					mask()
+						.blendMode(.destinationOut)
+				}
 		}
 	}
 }

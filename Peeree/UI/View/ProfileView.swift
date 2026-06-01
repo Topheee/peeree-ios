@@ -43,6 +43,7 @@ struct ProfileView: View {
 									self.picked($0)
 								}
 							}
+							.accessibilityAddTraits(.isButton)
 					}
 					
 					VStack {

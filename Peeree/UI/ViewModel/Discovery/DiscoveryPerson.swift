@@ -103,7 +103,7 @@ extension DiscoveryPerson {
 	private static let NowThreshold: TimeInterval = 5.0
 }
 
-extension DiscoveryPerson: Hashable {
+extension DiscoveryPerson: @MainActor Hashable {
 	public static func == (lhs: DiscoveryPerson, rhs: DiscoveryPerson) -> Bool {
 		return lhs.peerID == rhs.peerID
 	}

@@ -93,6 +93,11 @@ struct BrowseView: View {
 					.accessibilityHint(
 						discoveryViewState.peering ?
 							"Tap to go offline" : "Tap to go online")
+					.onTapGesture {
+						// this tap gesture is mainly for voiceover
+						self.discoveryViewState.backend?
+							.togglePeering(on: !discoveryViewState.peering)
+					}
 					.accessibilityAddTraits(.isButton)
 			}
 		}

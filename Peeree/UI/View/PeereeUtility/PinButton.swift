@@ -14,12 +14,8 @@ struct PinButtonStyle: ButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
 		configuration.label
 			.padding()
-			.background(Color.accentColor)
-			.modify {
-				if #available(iOS 15, *) {
-					$0.foregroundStyle(.white)
-				} else { $0 }
-			}
+			.background(Color("ButtonBackgroundAccent"))
+			.foregroundStyle(Color("ButtonTextColor"))
 			.clipShape(Capsule())
 			.scaleEffect(configuration.isPressed ? 0.9 : 1)
 			.transformEffect(configuration.isPressed ? .init(translationX: 0, y: 2) : .identity)

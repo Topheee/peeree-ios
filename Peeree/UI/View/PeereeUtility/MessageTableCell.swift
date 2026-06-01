@@ -13,6 +13,8 @@ import PeereeServerChat
 struct MessageTableCell: View {
 	let message: ChatMessage
 
+	@Environment(\.colorScheme) var colorScheme
+
 	var body: some View {
 		HStack {
 			FlipGroupView3(if: message.sent) {
@@ -28,12 +30,18 @@ struct MessageTableCell: View {
 						}
 					}
 					.textSelection(.enabled)
-					.foregroundColor(Color.white)
+					.foregroundColor(Color("StaticTextOnColor"))
 					.multilineTextAlignment(.leading)
-					.padding(.horizontal, 20.0)
-					.padding(.vertical, 4.0)
+					.padding(.horizontal, 8)
+					.padding(.vertical, 4)
 					.background(
-						Image(decorative: message.sent ? "MessageBubbleSend" : "MessageBubbleReceive")
+						RoundedRectangle(cornerRadius: 12).fill(
+							Color(
+								message.sent
+								? (colorScheme == .light ? "StaticBackgroundAnalogous" : "StaticBackgroundTriadicPurple")
+								: (colorScheme == .light ? "StaticBackgroundTriadicBlue" : "StaticBackgroundComplementary")
+								)
+						)
 					)
 					.accessibilityHint(message.sent ? "Sent" : "Received")
 
